@@ -2,7 +2,7 @@ import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import Login from "@/pages/auth/login";
 import Dashboard from "@/pages/private/dashboard";
-import LandingPage from "@/pages/public/landing-page";
+import Homepage from "@/pages/public/home-page";
 import { BrowserRouter, Route, Routes } from "react-router";
 
 function AppRoutes() {
@@ -13,7 +13,7 @@ function AppRoutes() {
           path="/"
           element={
             <UnauthenticatedGuard>
-              <LandingPage />
+              <Homepage />
             </UnauthenticatedGuard>
           }
         />

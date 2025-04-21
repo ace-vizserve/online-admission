@@ -5,7 +5,7 @@ function AuthGuard({ children }: { children: ReactNode }) {
   const user = true;
 
   if (!user) {
-    return <Navigate to={"/"} />;
+    return <Navigate to={"/login"} />;
   }
 
   return <>{children}</>;
