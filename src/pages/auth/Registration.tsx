@@ -2,15 +2,29 @@ import students from "@/assets/landing-page/students.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { z } from "zod";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
-import { z } from "zod";
+
 
 const registrationSchema = z
   .object({
@@ -97,7 +111,14 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Email Address</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="Enter your email" autoComplete="email" {...field} />
+
+                            <Input
+                              type="email"
+                              placeholder="Enter your email"
+                              autoComplete="email"
+                              {...field}
+                            />
+
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -111,7 +132,12 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <PasswordInput placeholder="Enter your password" autoComplete="new-password" {...field} />
+                            <PasswordInput
+                              placeholder="Enter your password"
+                              autoComplete="new-password"
+                              {...field}
+                            />
+
                           </FormControl>
                           <FormMessage />
                         </FormItem>
