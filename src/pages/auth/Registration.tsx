@@ -144,7 +144,7 @@ function Registration() {
               </Form>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link to="/login" className="underline">
+                <Link to="#" className="underline">
                   Login
                 </Link>
               </div>
