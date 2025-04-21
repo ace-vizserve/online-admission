@@ -2,18 +2,19 @@ import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import Login from "@/pages/auth/login";
 import Dashboard from "@/pages/private/dashboard";
-import LandingPage from "@/pages/public/landing-page";
-import { BrowserRouter, Route, Routes } from "react-router";
+import Homepage from "@/pages/public/home-page";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Navigate to={"/login"} />} />
         <Route
-          path="/"
+          path="/welcome"
           element={
             <UnauthenticatedGuard>
-              <LandingPage />
+              <Homepage />
             </UnauthenticatedGuard>
           }
         />
