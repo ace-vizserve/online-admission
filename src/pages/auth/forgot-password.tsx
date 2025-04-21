@@ -37,8 +37,8 @@ function ForgotPassword() {
         <Card className="w-full border-none shadow-none max-w-xl">
           <Logo className="mx-auto" />
           <CardHeader>
-            <CardTitle className="font-semibold text-2xl lg:text-3xl text-center">Forgot your password?</CardTitle>
-            <CardDescription className="text-sm lg:text-base text-center">
+            <CardTitle className="text-2xl">Forgot your password?</CardTitle>
+            <CardDescription>
               Enter the email address associated with your account and we'll send you a link to reset your password.
             </CardDescription>
           </CardHeader>
