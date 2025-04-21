@@ -2,7 +2,7 @@ import students from "@/assets/landing-page/students.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -62,9 +62,10 @@ function Login() {
                             <FormControl>
                               <Input
                                 id="email"
-                                placeholder="johndoe@mail.com"
+                                placeholder="Enter your email here"
                                 type="email"
                                 autoComplete="email"
+                                autoFocus
                                 {...field}
                               />
                             </FormControl>
@@ -79,7 +80,12 @@ function Login() {
                           <FormItem className="grid gap-2">
                             <div className="flex justify-between items-center">
                               <FormLabel htmlFor="password">Password</FormLabel>
-                              <Link to="#" className="ml-auto inline-block text-sm underline">
+                              <Link
+                                to="/forgot-password"
+                                className={buttonVariants({
+                                  variant: "link",
+                                  className: "!p-0",
+                                })}>
                                 Forgot your password?
                               </Link>
                             </div>

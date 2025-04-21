@@ -1,5 +1,6 @@
 import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
+import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import { Checkout } from "@/pages/private/Checkout";
@@ -32,6 +33,14 @@ function AppRoutes() {
           element={
             <UnauthenticatedGuard>
               <Login />
+            </UnauthenticatedGuard>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <UnauthenticatedGuard>
+              <ForgotPassword />
             </UnauthenticatedGuard>
           }
         />
