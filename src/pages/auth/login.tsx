@@ -2,7 +2,7 @@ import students from "@/assets/landing-page/students.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -73,6 +73,11 @@ function Login() {
                           </FormItem>
                         )}
                       />
+                      <div className="w-max ml-auto text-sm">
+                        <Link to="/forgot-password" className="underline">
+                          Forgot your password?
+                        </Link>
+                      </div>
                       <FormField
                         control={form.control}
                         name="password"
@@ -80,14 +85,6 @@ function Login() {
                           <FormItem className="grid gap-2">
                             <div className="flex justify-between items-center">
                               <FormLabel htmlFor="password">Password</FormLabel>
-                              <Link
-                                to="/forgot-password"
-                                className={buttonVariants({
-                                  variant: "link",
-                                  className: "!p-0",
-                                })}>
-                                Forgot your password?
-                              </Link>
                             </div>
                             <FormControl>
                               <PasswordInput
@@ -109,7 +106,7 @@ function Login() {
                 </Form>
                 <div className="mt-4 text-center text-sm">
                   Don&apos;t have an account?{" "}
-                  <Link to="/registration" className={buttonVariants({ variant: "link", className: "!p-0" })}>
+                  <Link to="/registration" className="underline">
                     Sign up
                   </Link>
                 </div>

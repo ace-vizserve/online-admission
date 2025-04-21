@@ -1,6 +1,6 @@
 import Logo from "@/components/logo";
 import PageMetaData from "@/components/page-metadata";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -73,14 +73,11 @@ function ForgotPassword() {
                 </div>
               </form>
             </Form>
-            <Link
-              to={"/login"}
-              className={buttonVariants({
-                variant: "link",
-                className: "mt-4 w-full",
-              })}>
-              Back to login
-            </Link>
+            <div className="mt-4 text-center text-sm">
+              <Link to={"/login"} className="underline">
+                Back to login
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
