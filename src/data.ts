@@ -42,6 +42,12 @@ export const PARENTS_DASHBOARD_TITLE_DESCRIPTION = {
     "Access your personalized HFSE Admissions dashboard to manage student profiles, upload documents, receive notifications, and track your child’s enrollment progress.",
 };
 
+export const FORGOT_PASSWORD_TITLE_DESCRIPTION = {
+  title: "Reset Your Password | HFSE International School Admissions",
+  description:
+    "Forgot your password? Reset it here to regain access to your HFSE Parent Portal and continue managing your child's admission and enrollment requirements.",
+};
+
 export const faq = [
   {
     question: "How do I start the admission process?",

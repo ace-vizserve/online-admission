@@ -19,10 +19,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { z } from "zod";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
+
 
 const registrationSchema = z
   .object({
@@ -109,12 +111,14 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Email Address</FormLabel>
                           <FormControl>
+
                             <Input
                               type="email"
                               placeholder="Enter your email"
                               autoComplete="email"
                               {...field}
                             />
+
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -133,6 +137,7 @@ function Registration() {
                               autoComplete="new-password"
                               {...field}
                             />
+
                           </FormControl>
                           <FormMessage />
                         </FormItem>
