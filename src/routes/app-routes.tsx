@@ -11,7 +11,14 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to={"/login"} />} />
+        <Route
+          path="/"
+          element={
+            <UnauthenticatedGuard>
+              <Navigate to={"/login"} />
+            </UnauthenticatedGuard>
+          }
+        />
         <Route
           path="/welcome"
           element={
