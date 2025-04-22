@@ -54,6 +54,12 @@ export const USER_DASHBOARD_TITLE_DESCRIPTION = {
     "Access and manage your child’s enrollment requirements with ease through the HFSE Online Admission Parent Dashboard. Upload documents, track application status, and stay updated—all in one place.",
 };
 
+export const STUDENT_PROFILE_TITLE_DESCRIPTION = {
+  title: "Student Profile | HFSE International School Online Admission",
+  description:
+    "View and update your child’s personal information, enrollment details, and submitted documents through the HFSE Online Admission Student Profile page.",
+};
+
 export const faq = [
   {
     question: "How do I start the admission process?",

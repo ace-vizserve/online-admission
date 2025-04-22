@@ -27,8 +27,8 @@ function Profile({ studentID }: ProfileProps) {
     <Tabs
       defaultValue={tabs[0].value}
       orientation="vertical"
-      className="w-full flex flex-col xl:flex-row items-start gap-4 justify-center py-6 lg:py-8">
-      <TabsList className="w-full xl:w-[250px] flex flex-col gap-1 h-max">
+      className="w-full flex flex-col xl:flex-row items-start gap-4 justify-center py-4 lg:py-6">
+      <TabsList className="w-full xl:w-[250px] flex flex-col gap-1 h-max !bg-white">
         <div className="w-full mt-4 mb-2 md:mb-4 lg:mb-8 space-y-4 px-4">
           <Avatar className="size-24 mx-auto">
             <AvatarImage src="https://github.com/shadcn.png" />
@@ -41,7 +41,10 @@ function Profile({ studentID }: ProfileProps) {
         </div>
 
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.value} value={tab.value} className="w-full p-3 md:p-4">
+          <TabsTrigger
+            key={tab.value}
+            value={tab.value}
+            className="w-full p-3 md:p-4 data-[state=active]:bg-primary data-[state=active]:text-white">
             <tab.icon className="size-5" /> {tab.name}
           </TabsTrigger>
         ))}
@@ -109,9 +112,13 @@ function InfoBox({ label, value }: { label: string; value: string }) {
                   <UsersIcon className="stroke-white size-4" />
                 </div>
               </div>
-              <ul className="mt-4 text-base font-semibold list-disc ml-5">
-                <li>Emily Doe (Age 10)</li>
-                <li>Jacob Doe (Age 8)</li>
+              <ul className="mt-4 text-sm">
+                <li>
+                  <p className="font-semibold mt-1">Emily Doe (Age 10)</p>
+                </li>
+                <li>
+                  <p className="font-semibold mt-1">Jacob Doe (Age 8)</p>
+                </li>
               </ul>
             </CardHeader>
           </Card>
