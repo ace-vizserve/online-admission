@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import students from "@/assets/landing-page/students.png";
+=======
+import students2 from "@/assets/landing-page/students2.png";
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
@@ -19,11 +23,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { z } from "zod";
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
 const registrationSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
@@ -68,7 +80,11 @@ function Registration() {
           <Card className="border-none shadow-none w-full max-w-xl">
             <Logo className="mx-auto" />
             <CardHeader>
+<<<<<<< HEAD
               <CardTitle className="text-2xl text-center">Parent Portal Registration</CardTitle>
+=======
+              <CardTitle className="text-2xl">Parent Portal Registration</CardTitle>
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -109,12 +125,20 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Email Address</FormLabel>
                           <FormControl>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
                             <Input
                               type="email"
                               placeholder="Enter your email"
                               autoComplete="email"
                               {...field}
                             />
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -133,6 +157,10 @@ function Registration() {
                               autoComplete="new-password"
                               {...field}
                             />
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -174,7 +202,11 @@ function Registration() {
         </MaxWidthWrapper>
         <div className="bg-muted hidden lg:flex lg:items-center lg:justify-center">
           <img
+<<<<<<< HEAD
             src={students}
+=======
+            src={students2}
+>>>>>>> 3952eeb43824ac9e8d4f6021107faa1e767d7f4c
             alt="HFSE International School Students"
             className="object-cover w-3/4 h-auto rounded-lg"
           />
