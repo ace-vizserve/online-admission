@@ -6,6 +6,7 @@ import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
+import { Enrollment } from "@/pages/private/enrollment";
 import Homepage from "@/pages/public/home-page";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
@@ -75,7 +76,15 @@ function AppRoutes() {
           />
           {/* <Route path="enrollment" element={<Enrollment />} />
   <Route path="documents" element={<Documents />} /> */}
-
+  <Route
+            index
+            path="enrolment"
+            element={
+              <AuthGuard>
+                <Enrollment />
+              </AuthGuard>
+            }
+          />
           <Route path="*" element={<h1>404 Page not found</h1>} />
         </Route>
       </Routes>
