@@ -42,6 +42,12 @@ export const PARENTS_DASHBOARD_TITLE_DESCRIPTION = {
     "Access your personalized HFSE Admissions dashboard to manage student profiles, upload documents, receive notifications, and track your child’s enrollment progress.",
 };
 
+export const PARENT_PORTAL_REGISTRATION = {
+  title: "Parent Portal Registration | Create Your Account",
+  description:
+    "Register for the HFSE Admissions Portal to start your child’s application process. Create a secure account to manage documents and track progress.",
+};
+
 export const faq = [
   {
     question: "How do I start the admission process?",
