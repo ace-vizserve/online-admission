@@ -5,7 +5,7 @@ function UnauthenticatedGuard({ children }: { children: ReactNode }) {
   const user = false;
 
   if (user) {
-    return <Navigate to={"/dashboard"} />;
+    return <Navigate to={"/admission/dashboard"} />;
   }
 
   return <>{children}</>;
