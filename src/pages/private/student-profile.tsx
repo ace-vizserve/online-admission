@@ -1,6 +1,6 @@
 import Profile from "@/components/private/student-profile/profile";
 import { Button } from "@/components/ui/button";
-import { UserPlus2 } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useParams } from "react-router";
 
 function StudentProfile() {
@@ -13,7 +13,7 @@ function StudentProfile() {
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
       <Button className="w-max ml-auto gap-2">
-        <UserPlus2 /> Enroll a new student
+        <Edit /> Edit Information
       </Button>
       <Profile studentID={params.id} />
     </div>
