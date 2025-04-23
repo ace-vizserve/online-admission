@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Contact, Copy, MoreHorizontal, User } from "lucide-react";
+import { ArrowUpDown, Copy, MoreHorizontal, User } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -117,10 +117,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
                 <User className="mr-1" /> View full profile
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem className="text-xs">
-              <Contact className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
-              View Family Profile
-            </DropdownMenuItem>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => copyStudentID(student.id)} className="text-xs">
               <Copy className="mr-1" />
