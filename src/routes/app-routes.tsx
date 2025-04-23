@@ -6,7 +6,8 @@ import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
-import { Enrollment } from "@/pages/private/enrollment";
+import { Enrollment } from "@/pages/private/Enrollment";
+import StudentProfile from "@/pages/private/student-profile";
 import Homepage from "@/pages/public/home-page";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
@@ -74,9 +75,18 @@ function AppRoutes() {
               </AuthGuard>
             }
           />
-          {/* <Route path="enrollment" element={<Enrollment />} />
-  <Route path="documents" element={<Documents />} /> */}
-  <Route
+
+          <Route
+            index
+            path="students/:id"
+            element={
+              <AuthGuard>
+                <StudentProfile />
+              </AuthGuard>
+            }
+          />
+
+          <Route
             index
             path="enrolment"
             element={
@@ -85,8 +95,13 @@ function AppRoutes() {
               </AuthGuard>
             }
           />
+          {/* <Route path="enrollment" element={<Enrollment />} />
+  <Route path="documents" element={<Documents />} /> */}
+
           <Route path="*" element={<h1>404 Page not found</h1>} />
         </Route>
+
+        <Route path="*" element={<h1>404 Page not found</h1>} />
       </Routes>
     </BrowserRouter>
   );

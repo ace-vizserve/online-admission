@@ -1,6 +1,4 @@
 import students2 from "@/assets/landing-page/students2.png";
-import PageMetaData from "@/components/page-metadata";
-import { PARENT_PORTAL_REGISTRATION } from "@/data";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
@@ -42,9 +40,6 @@ const registrationSchema = z
 type RegistrationSchema = z.infer<typeof registrationSchema>;
 
 function Registration() {
-
-  const { title, description } = PARENT_PORTAL_REGISTRATION;
-
   const form = useForm<RegistrationSchema>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
@@ -68,7 +63,6 @@ function Registration() {
 
   return (
     <div className="h-screen flex items-center justify-center">
-      <PageMetaData title={title} description={description} />
       <div className="w-full h-full grid lg:grid-cols-2">
         <MaxWidthWrapper className="h-full w-full max-w-2xl flex items-center justify-center">
           <Card className="border-none shadow-none w-full max-w-xl">
