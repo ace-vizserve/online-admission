@@ -39,25 +39,25 @@ const data: levelYear[] = [
     id: "stu002",
     studentName: "Abe Dela Cruz",
     academicYear: "A.Y.2024",
-    level: "Primary 1",
+    level: "Primary 3",
   },
   {
     id: "stu003",
     studentName: "Monserrat Reyes",
     academicYear: "A.Y.2024",
-    level: "Primary 1",
+    level: "Primary 2",
   },
   {
     id: "stu004",
     studentName: "Silas Tan",
     academicYear: "A.Y.2024",
-    level: "Primary 1",
+    level: "Primary 4",
   },
   {
     id: "stu005",
     studentName: "Carmella Garcia",
     academicYear: "A.Y.2024",
-    level: "Primary 1",
+    level: "Primary 2",
   },
 ];
 
