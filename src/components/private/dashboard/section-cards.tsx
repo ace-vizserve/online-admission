@@ -1,5 +1,6 @@
 import { CirclePlus, ExternalLink, GraduationCap, PlusCircleIcon, UserPlus2, Users } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router";
@@ -15,7 +16,7 @@ export function SectionCards() {
                 <div className="rounded-md bg-primary p-2">
                   <Users className="stroke-white size-5" />
                 </div>
-                <CardDescription>Total Children Enrolled</CardDescription>
+                <CardDescription className="font-medium">Total Children Enrolled</CardDescription>
               </div>
               <Link
                 className={buttonVariants({
@@ -38,24 +39,19 @@ export function SectionCards() {
                 <div className="rounded-md bg-primary p-2">
                   <GraduationCap className="stroke-white size-5" />
                 </div>
-                <CardDescription>Current Enrolled Students</CardDescription>
+                <CardDescription className="font-medium">Enrolled Students</CardDescription>
               </div>
-              <Link
-                className={buttonVariants({
-                  variant: "link",
-                  size: "sm",
-                })}
-                to="/admission/enrolment/total-enrolled"
-                title="View details">
-                <ExternalLink className="size-4" />
-              </Link>
+
+              <Badge className="text-[0.7rem]" variant={"outline"}>
+                S.Y. {new Date().getFullYear()} - {new Date().getFullYear() + 1}
+              </Badge>
             </div>
             <CardTitle className="text-4xl font-bold tabular-nums text-primary">6</CardTitle>
           </CardHeader>
         </Card>
       </div>
       <Button size={"lg"} className="w-max ml-auto flex xl:hidden gap-2">
-        Enrol a Student <PlusCircleIcon />{" "}
+        Enrol a Student <PlusCircleIcon />
       </Button>
       <Button className="hidden xl:flex order-1 xl:order-last h-max w-full xl:w-1/4 p-0" variant={"ghost"}>
         <Card className="w-full max-w-full xl:max-w-[370px] bg-transparent shadow-none">

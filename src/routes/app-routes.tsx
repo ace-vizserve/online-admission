@@ -4,6 +4,7 @@ import AdmissionLayout from "@/components/layout/admission";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
+import NotFound from "@/pages/not-found";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
 import { Enrollment } from "@/pages/private/Enrollment";
@@ -98,10 +99,10 @@ function AppRoutes() {
           {/* <Route path="enrollment" element={<Enrollment />} />
   <Route path="documents" element={<Documents />} /> */}
 
-          <Route path="*" element={<h1>404 Page not found</h1>} />
+          <Route path="*" element={<NotFound />} />
         </Route>
 
-        <Route path="*" element={<h1>404 Page not found</h1>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
