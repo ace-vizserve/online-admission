@@ -56,7 +56,14 @@ export const USER_DASHBOARD_TITLE_DESCRIPTION = {
 
 export const PARENT_PORTAL_REGISTRATION = {
   title: "Parent Portal Registration | HFSE Admissions Portal",
-  description: "Create your parent account to start the HFSE admissions process. Fill out the registration form, upload required documents, and manage your child’s application easily.",
+  description:
+    "Create your parent account to start the HFSE admissions process. Fill out the registration form, upload required documents, and manage your child’s application easily.",
+};
+
+export const STUDENT_PROFILE_TITLE_DESCRIPTION = {
+  title: "Student Profile | HFSE International School Online Admission",
+  description:
+    "View and update your child’s personal information, enrollment details, and submitted documents through the HFSE Online Admission Student Profile page.",
 };
 
 export const faq = [
