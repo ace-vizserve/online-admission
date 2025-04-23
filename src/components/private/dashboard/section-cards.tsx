@@ -53,7 +53,7 @@ export function SectionCards() {
       <Button size={"lg"} className="w-max ml-auto flex xl:hidden gap-2">
         Enrol a Student <PlusCircleIcon />
       </Button>
-      <Button className="hidden xl:flex order-1 xl:order-last h-max w-full xl:w-1/4 p-0" variant={"ghost"}>
+      <Button className="hidden xl:flex order-1 xl:order-last h-max w-full xl:w-1/4 p-0 mt-6" variant={"ghost"}>
         <Card className="w-full max-w-full xl:max-w-[370px] bg-transparent shadow-none">
           <CardHeader className="relative flex flex-col gap-2">
             <div className="w-full flex items-center justify-between">

@@ -32,31 +32,31 @@ const data: levelYear[] = [
   {
     id: "stu001",
     studentName: "Ken Ramos",
-    academicYear: "A.Y.2024",
+    academicYear: "AY2024",
     level: "Primary 1",
   },
   {
     id: "stu002",
     studentName: "Abe Dela Cruz",
-    academicYear: "A.Y.2024",
+    academicYear: "AY2024",
     level: "Primary 3",
   },
   {
     id: "stu003",
     studentName: "Monserrat Reyes",
-    academicYear: "A.Y.2024",
+    academicYear: "AY2024",
     level: "Primary 2",
   },
   {
     id: "stu004",
     studentName: "Silas Tan",
-    academicYear: "A.Y.2024",
+    academicYear: "AY2024",
     level: "Primary 4",
   },
   {
     id: "stu005",
     studentName: "Carmella Garcia",
-    academicYear: "A.Y.2024",
+    academicYear: "AY2024",
     level: "Primary 2",
   },
 ];
@@ -80,7 +80,7 @@ export const columns: ColumnDef<levelYear>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-10 tabular-nums">{row.getValue("academicYear")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-13 tabular-nums">{row.getValue("academicYear")}</div>,
   },
   {
     accessorKey: "level",
@@ -112,7 +112,7 @@ export const columns: ColumnDef<levelYear>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/students/${student.id}`}>
+            <Link to={`/admission/single-student/${student.id}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View full profile
               </DropdownMenuItem>
@@ -163,7 +163,7 @@ function StudentsList() {
 
   return (
     <div className="w-full py-7 md:py-14">
-      <h1 className="font-bold text-lg lg:text-2xl">Students List</h1>
+      <h1 className="font-bold text-lg lg:text-2xl">Students List </h1> 
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter names..."
