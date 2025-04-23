@@ -7,6 +7,7 @@ import Registration from "@/pages/auth/Registration";
 import NotFound from "@/pages/not-found";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
+import { Enrollment } from "@/pages/private/Enrollment";
 import StudentProfile from "@/pages/private/student-profile";
 import Homepage from "@/pages/public/home-page";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
@@ -82,6 +83,16 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <StudentProfile />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            index
+            path="enrolment"
+            element={
+              <AuthGuard>
+                <Enrollment />
               </AuthGuard>
             }
           />
