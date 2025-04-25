@@ -2,7 +2,6 @@ import students2 from "@/assets/landing-page/students2.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Card,
   CardContent,
@@ -25,33 +24,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
-import { Label } from "@radix-ui/react-label";
 
-const registrationSchema = z
-  .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string(),
-    mother: z.boolean(),
-    father: z.boolean(),
-    guardian: z.boolean(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Passwords do not match",
-  })
-  .refine(
-    (data) => {
-      const selections = [data.mother, data.father, data.guardian];
-      return selections.filter(Boolean).length === 1;
-    },
-    {
-      path: ["mother", "father", "guardian"],
-      message: "Please select only one role",
-    }
-  );
+const registrationSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+  role: z.enum(["mother", "father", "guardian"], {
+    message: "Please select a valid role",
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  path: ["confirmPassword"],
+  message: "Passwords do not match",
+});
 
 type RegistrationSchema = z.infer<typeof registrationSchema>;
 
@@ -64,9 +50,7 @@ function Registration() {
       email: "",
       password: "",
       confirmPassword: "",
-      mother: false,
-      father: false,
-      guardian: false,
+      role: undefined, // Default to undefined
     },
   });
 
@@ -120,79 +104,6 @@ function Registration() {
                         </FormItem>
                       )}
                     />
-                    <div className="mb-0">
-                      <Label>Role</Label>
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="mother"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={(checked) => {
-                                form.setValue("mother", !!checked);
-                                if (checked) {
-                                  form.setValue("father", false);
-                                  form.setValue("guardian", false);
-                                }
-                              }}
-                              disabled={form.watch("father") || form.watch("guardian")}
-                            />
-                          </FormControl>
-                          <FormLabel className="text-sm font-normal">Mother</FormLabel>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="father"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={(checked) => {
-                                form.setValue("father", !!checked);
-                                if (checked) {
-                                  form.setValue("mother", false);
-                                  form.setValue("guardian", false);
-                                }
-                              }}
-                              disabled={form.watch("mother") || form.watch("guardian")}
-                            />
-                          </FormControl>
-                          <FormLabel className="text-sm font-normal">Father</FormLabel>
-                        </FormItem>
-                      )}
-                    />
-
-                    <Label>Are you a guardian?</Label>
-                    <FormField
-                      control={form.control}
-                      name="guardian"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={(checked) => {
-                                form.setValue("guardian", !!checked);
-                                if (checked) {
-                                  form.setValue("mother", false);
-                                  form.setValue("father", false);
-                                }
-                              }}
-                              disabled={form.watch("mother") || form.watch("father")}
-                            />
-                          </FormControl>
-                          <FormLabel className="text-sm font-normal">Guardian</FormLabel>
-                        </FormItem>
-                      )}
-                    />
-
 
                     {/* Dropdown for Parent/Guardian Role */}
                     <FormField
@@ -206,7 +117,7 @@ function Registration() {
                               onValueChange={(value) => field.onChange(value)}
                               value={field.value}
                             >
-                              <SelectTrigger className="w-[550px]">
+                              <SelectTrigger>
                                 <SelectValue placeholder="Select a role" />
                               </SelectTrigger>
                               <SelectContent>
