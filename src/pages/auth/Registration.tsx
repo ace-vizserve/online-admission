@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
+import { Label } from "@radix-ui/react-label";
 
 const registrationSchema = z
   .object({
@@ -119,6 +120,8 @@ function Registration() {
                         </FormItem>
                       )}
                     />
+
+                    <Label>Please select your role in relation to the student:</Label>
                     <FormField
                       control={form.control}
                       name="mother"
@@ -165,6 +168,7 @@ function Registration() {
                       )}
                     />
 
+                    <Label>Are you registering as the student's Guardian?</Label>
                     <FormField
                       control={form.control}
                       name="guardian"
