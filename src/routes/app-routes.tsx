@@ -7,6 +7,7 @@ import Registration from "@/pages/auth/Registration";
 import NotFound from "@/pages/not-found";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
+import Documents from "@/pages/private/documents";
 import { Enrollment } from "@/pages/private/Enrollment";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
@@ -107,8 +108,26 @@ function AppRoutes() {
               </AuthGuard>
             }
           />
-          {/* <Route path="enrollment" element={<Enrollment />} />
-  <Route path="documents" element={<Documents />} /> */}
+
+          <Route
+            index
+            path="documents"
+            element={
+              <AuthGuard>
+                <Documents />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            index
+            path="student-file/:id"
+            element={
+              <AuthGuard>
+                <SingleEnrol />
+              </AuthGuard>
+            }
+          />
 
           <Route path="*" element={<NotFound />} />
         </Route>
