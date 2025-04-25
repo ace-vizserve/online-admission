@@ -38,7 +38,6 @@ const data: SingleStudent[] = [
     studentName: "Abe Dela Cruz",
     status: "Not Enroled",
     academicYear: "AY2022",
-    academicYear: "AY2023",
     level: "Primary 3",
   },
   {
