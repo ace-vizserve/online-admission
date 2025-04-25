@@ -117,7 +117,7 @@ function Registration() {
                               onValueChange={(value) => field.onChange(value)}
                               value={field.value}
                             >
-                              <SelectTrigger className="w-full">
+                              <SelectTrigger>
                                 <SelectValue placeholder="Select a role" />
                               </SelectTrigger>
                               <SelectContent>
