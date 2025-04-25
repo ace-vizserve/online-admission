@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Contact, Copy, MoreHorizontal, User } from "lucide-react";
+import { ArrowUpDown, Contact, MoreHorizontal, User } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,14 +19,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { levelYear } from "@/level";
 import { Link } from "react-router";
-import { toast } from "sonner";
 
 const data: levelYear[] = [
   {
@@ -119,12 +117,7 @@ export const columns: ColumnDef<levelYear>[] = [
             </Link>
             <DropdownMenuItem className="text-xs">
               <Contact className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
-              View Family Profile
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => copyStudentID(student.id)} className="text-xs">
-              <Copy className="mr-1" />
-              Copy Student ID
+              View All Enrolments
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -133,13 +126,6 @@ export const columns: ColumnDef<levelYear>[] = [
   },
 ];
 
-function copyStudentID(studentID: string) {
-  navigator.clipboard.writeText(studentID);
-  toast.info("Copied!", {
-    description: "Student ID has been copied to your clipboard.",
-  });
-  toast.dismiss();
-}
 
 function StudentsList() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
