@@ -24,44 +24,50 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { levelYear } from "@/level";
+import { Documents } from "@/documents";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
-const data: levelYear[] = [
+
+const data: Documents[] = [
   {
     id: "stu001",
     studentName: "Ken Ramos",
-    academicYear: "AY2026",
+    status: "For verification",
+    academicYear: "AY2023",
     level: "Primary 1",
   },
   {
     id: "stu002",
     studentName: "Abe Dela Cruz",
+    status: "Verified",
     academicYear: "AY2022",
     level: "Primary 3",
   },
   {
     id: "stu003",
     studentName: "Monserrat Reyes",
-    academicYear: "AY2025",
+    status: "For verification",
+    academicYear: "AY2024",
     level: "Primary 2",
   },
   {
     id: "stu004",
     studentName: "Silas Tan",
-    academicYear: "AY2024",
+    status: "For verification",
+    academicYear: "AY2025",
     level: "Primary 4",
   },
   {
     id: "stu005",
     studentName: "Carmella Garcia",
-    academicYear: "AY2023",
+    status: "Verified",
+    academicYear: "AY2026",
     level: "Primary 2",
   },
 ];
 
-export const columns: ColumnDef<levelYear>[] = [
+export const columns: ColumnDef<Documents>[] = [
   {
     accessorKey: "studentName",
     header: "Student Name",
@@ -88,7 +94,7 @@ export const columns: ColumnDef<levelYear>[] = [
       return (
         <Button
           variant={"ghost"}
-          className="cursor-pointer"
+          className="cursor-pointer mr-5"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Level
           <ArrowUpDown />
@@ -96,6 +102,21 @@ export const columns: ColumnDef<levelYear>[] = [
       );
     },
     cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("level")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer ml-10"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Status
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs pl-13 tabular-nums">{row.getValue("status")}</div>,
   },
   {
     id: "actions",
@@ -141,7 +162,7 @@ function copyStudentID(studentID: string) {
   toast.dismiss();
 }
 
-function StudentsList() {
+function DocumentsList() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
@@ -163,7 +184,7 @@ function StudentsList() {
 
   return (
     <div className="w-full py-7 md:py-14">
-      <h1 className="font-bold text-lg lg:text-2xl">Students List </h1> 
+      <h1 className="font-bold text-lg lg:text-2xl">Documents List</h1> 
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter names..."
@@ -224,4 +245,4 @@ function StudentsList() {
   );
 }
 
-export default StudentsList;
+export default DocumentsList;
