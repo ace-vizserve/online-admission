@@ -1,5 +1,5 @@
 import PageMetaData from "@/components/page-metadata";
-import EnrolNewStudentStepsLoader from "@/components/private/enrol-student/steps/enrol-new-student-steps-loader";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import {
   campusDevelopmentFee,
   classLevels,
@@ -18,18 +18,15 @@ import {
 } from "@/data";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, CircleHelp } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { ArrowRight, CircleCheckBigIcon, CircleHelp } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Navigate, useNavigate } from "react-router";
-
+import { Link } from "react-router";
 import { toast } from "sonner";
 
-function EnrollmentInformation() {
+function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
-  const navigate = useNavigate();
-  const [isPending, setTransition] = useTransition();
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolOldStudentContext();
   const [discountType, setDiscountType] = useState<string>("");
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
@@ -37,18 +34,6 @@ function EnrollmentInformation() {
       ...formState.enrollmentInfo,
     },
   });
-
-  useEffect(() => {
-    if (form.formState.isSubmitSuccessful) {
-      setTransition(() => {
-        navigate("/enrol-student/new/upload-requirements");
-      });
-    }
-  }, [form.formState.isSubmitSuccessful, navigate]);
-
-  if (formState.familyInfo?.motherInfo == null) {
-    return <Navigate to={"/enrol-student/new/family-info"} />;
-  }
 
   function onSubmit(values: EnrollmentInformationSchema) {
     setFormState({
@@ -60,19 +45,21 @@ function EnrollmentInformation() {
     });
   }
 
-  if (isPending) {
-    return <EnrolNewStudentStepsLoader />;
-  }
-
   return (
     <>
       <PageMetaData title={title} description={description} />
       <div className="w-full flex-1">
         <Card className="w-full mx-auto border-none shadow-none">
-          <CardHeader>
+          <CardHeader className="gap-8">
             <CardTitle className="text-center text-xl lg:text-2xl text-primary">
               Input the necessary enrollment information
             </CardTitle>
+
+            <Alert className="w-max mx-auto border-emerald-600/50 text-emerald-600 [&>svg]:text-emerald-600 bg-green-50">
+              <CircleCheckBigIcon className="h-4 w-4" />
+              <AlertTitle>Promotion Eligible</AlertTitle>
+              <AlertDescription>Student is eligible to move up to the next grade level.</AlertDescription>
+            </Alert>
           </CardHeader>
           <CardContent className="px-0">
             <Form {...form}>
@@ -371,4 +358,4 @@ function EnrollmentInformation() {
   );
 }
 
-export default EnrollmentInformation;
+export default OldEnrollmentInformation;

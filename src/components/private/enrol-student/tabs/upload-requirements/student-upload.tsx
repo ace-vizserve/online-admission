@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { studentUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save } from "lucide-react";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import StudentFileUploaderDialog from "./student-file-uploader-dialog";
 
 function StudentUpload() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolOldStudentContext();
   const [idPicture, setIdPicture] = useState<File[] | null>(null);
   const [birthCertificate, setBirthCertificate] = useState<File[] | null>(null);
   const [transcriptOfRecords, setTranscriptOfRecords] = useState<File[] | null>(null);

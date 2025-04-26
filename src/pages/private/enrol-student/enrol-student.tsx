@@ -1,6 +1,6 @@
 import PageMetaData from "@/components/page-metadata";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
 import { Field, Radio, RadioGroup } from "@headlessui/react";
@@ -10,16 +10,19 @@ import { Link } from "react-router";
 
 const studentList = [
   {
+    id: "std001",
     name: "Jane Cruz",
     yearLevel: "Grade 3",
     avatar: "https://i.pravatar.cc/100?img=12",
   },
   {
+    id: "std002",
     name: "Luke Reyes",
     yearLevel: "Grade 5",
     avatar: "https://i.pravatar.cc/100?img=5",
   },
   {
+    id: "std003",
     name: "Mia Santos",
     yearLevel: "Grade 6",
     avatar: "https://i.pravatar.cc/100?img=8",
@@ -62,20 +65,22 @@ function EnrolStudent() {
               )}
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
-              <Button
-                size={"lg"}
-                disabled={!studentList.length || !selected}
-                className="w-full gap-2"
-                variant={"outline"}>
-                <ArrowRight /> Enrol Student
-              </Button>
+              <Link
+                to={`/enrol-student/${selected.id}/student-info`}
+                className={buttonVariants({
+                  size: "lg",
+                  variant: "outline",
+                  className: "gap-2 w-full",
+                })}>
+                Enrol Student <ArrowRight />
+              </Link>
               <Link
                 to={"/enrol-student/new/student-info"}
                 className={buttonVariants({
                   size: "lg",
                   className: "gap-2 w-full",
                 })}>
-                <UserPlus2 /> Add new student
+                Add new student <UserPlus2 />
               </Link>
             </CardFooter>
           </Card>

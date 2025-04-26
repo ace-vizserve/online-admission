@@ -6,23 +6,19 @@ import LocationSelector from "@/components/ui/location-input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
 import { motherInformationSchema, MotherInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { ArrowRight, Calendar as CalendarIcon } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { Calendar as CalendarIcon, Save } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
 
 function MotherInformation() {
-  const navigate = useNavigate();
-  const [isPending, setTransition] = useTransition();
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolOldStudentContext();
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
 
@@ -42,21 +38,9 @@ function MotherInformation() {
         motherInfo: { ...values },
       },
     });
-    toast.success("Family information details saved!", {
-      description: "Proceeding to the next step...",
+    toast.success("Mother information details saved!", {
+      description: "Make sure to double check everything",
     });
-  }
-
-  useEffect(() => {
-    if (form.formState.isSubmitSuccessful) {
-      setTransition(() => {
-        navigate("/enrol-student/new/enrollment-info");
-      });
-    }
-  }, [form.formState.isSubmitSuccessful, navigate]);
-
-  if (isPending) {
-    return <EnrolNewStudentStepsLoader />;
   }
 
   return (
@@ -70,7 +54,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>First name</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder="" type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother first name.</FormDescription>
                 <FormMessage />
@@ -87,7 +71,7 @@ function MotherInformation() {
                   Middle name <span className="text-xs text-muted-foreground">(optional)</span>
                 </FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder="" type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother middle name.</FormDescription>
                 <FormMessage />
@@ -104,7 +88,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Last name</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder="" type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother lastname.</FormDescription>
                 <FormMessage />
@@ -119,7 +103,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Preferred name</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder="" type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother preferred name.</FormDescription>
                 <FormMessage />
@@ -219,7 +203,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder="" type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother NRIC/FIN.</FormDescription>
                 <FormMessage />
@@ -234,7 +218,7 @@ function MotherInformation() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput placeholder="Placeholder" {...field} defaultCountry="TR" />
                   </FormControl>
                   <FormDescription>Enter the student's mother mobile phone.</FormDescription>
                   <FormMessage />
@@ -249,7 +233,7 @@ function MotherInformation() {
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
                   <FormControl>
-                    <Input type="email" {...field} />
+                    <Input placeholder="" type="email" {...field} />
                   </FormControl>
                   <FormDescription>Enter the student's mother email address.</FormDescription>
                   <FormMessage />
@@ -267,7 +251,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder="" type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother work company.</FormDescription>
                 <FormMessage />
@@ -282,7 +266,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Work Position</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder="" type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother work position.</FormDescription>
                 <FormMessage />
@@ -292,13 +276,13 @@ function MotherInformation() {
         </div>
 
         <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          Proceed to Next Step
-          <ArrowRight />
+          Save
+          <Save />
         </Button>
 
         <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Proceed to Next Step
-          <ArrowRight />
+          Save
+          <Save />
         </Button>
       </form>
     </Form>

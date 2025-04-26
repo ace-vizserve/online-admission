@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { EnrolNewStudentFormState } from "./types";
+import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "./types";
 
 export type EnrolNewStudentStore = {
   formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
@@ -24,3 +24,19 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
     }
   )
 );
+
+export type EnrolOldStudentStore = {
+  formState: Partial<EnrolOldStudentFormState> | Record<string, null>;
+  setFormState: (data: Partial<EnrolOldStudentFormState>) => void;
+};
+
+export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()((set) => ({
+  formState: {},
+  setFormState: (data: Partial<EnrolOldStudentFormState>) =>
+    set((state) => ({
+      formState: {
+        ...state.formState,
+        ...data,
+      },
+    })),
+}));

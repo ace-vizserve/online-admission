@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { languages, religions } from "@/data";
 import { cn } from "@/lib/utils";
 import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function StudentDetails() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolOldStudentContext();
   const [files, setFiles] = useState<File[] | null>(null);
 
   const dropZoneConfig: DropzoneOptions = {
@@ -49,35 +49,17 @@ function StudentDetails() {
 
   function onSubmit(values: StudentDetailsSchema) {
     toast.success("Student details saved!", {
-      description: "You're now ready to fill out the Address & Contact tab.",
+      description: "Don't forget to check the other details",
     });
 
-    if (formState.studentInfo?.addressContact == null) {
-      setFormState({
-        studentInfo: {
-          studentDetails: values,
-          addressContact: {
-            contactPerson: "",
-            contactPersonNumber: "",
-            countryCode: ["", ""],
-            homePhone: "",
-            livingWithWhom: "",
-            parentsMaritalStatus: "",
-            studentHomeAddress: "",
-            studentPostalCode: "",
-          },
+    setFormState({
+      studentInfo: {
+        studentDetails: values,
+        addressContact: {
+          ...formState.studentInfo!.addressContact,
         },
-      });
-    } else {
-      setFormState({
-        studentInfo: {
-          studentDetails: values,
-          addressContact: {
-            ...formState.studentInfo.addressContact,
-          },
-        },
-      });
-    }
+      },
+    });
   }
 
   return (

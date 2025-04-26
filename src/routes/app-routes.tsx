@@ -2,6 +2,7 @@ import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
+import OldStudentLayout from "@/components/layout/old-student-layout";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
@@ -15,6 +16,10 @@ import EnrollmentInformation from "@/pages/private/enrol-student/new/enrollment-
 import FamilyInformation from "@/pages/private/enrol-student/new/family-information";
 import StudentInformation from "@/pages/private/enrol-student/new/student-information";
 import UploadRequirements from "@/pages/private/enrol-student/new/upload-requiremts";
+import OldEnrollmentInformation from "@/pages/private/enrol-student/old/old-enrollment-information";
+import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-information";
+import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
+import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requiremts";
 import { Enrollment } from "@/pages/private/Enrollment";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
@@ -146,6 +151,45 @@ function AppRoutes() {
             </AuthGuard>
           }
         />
+
+        <Route element={<OldStudentLayout />}>
+          <Route
+            index
+            path="/enrol-student/:id/student-info"
+            element={
+              <AuthGuard>
+                <OldStudentInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            index
+            path="/enrol-student/:id/family-info"
+            element={
+              <AuthGuard>
+                <OldFamilyInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            index
+            path="/enrol-student/:id/enrollment-info"
+            element={
+              <AuthGuard>
+                <OldEnrollmentInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            index
+            path="/enrol-student/:id/documents"
+            element={
+              <AuthGuard>
+                <OldUploadRequirements />
+              </AuthGuard>
+            }
+          />
+        </Route>
 
         <Route element={<NewStudentLayout />}>
           <Route
