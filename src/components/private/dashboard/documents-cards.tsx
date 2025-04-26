@@ -2,10 +2,9 @@ import { CirclePlus, ExternalLink, GraduationCap, PlusCircle, UserPlus2, Users }
 // import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom"; // Updated import for React Router v6+
+import { Link } from "react-router"; // Updated import for React Router v6+
 
 export function DocumentsCards() {
-  
   return (
     <div className="flex flex-col xl:flex-row justify-between gap-4">
       <div className="order-2 flex flex-col lg:flex-row gap-4 w-full">
@@ -22,8 +21,7 @@ export function DocumentsCards() {
               <Link
                 to="/admission/add-student"
                 className={buttonVariants({ variant: "link", size: "sm" })}
-                title="Add Student"
-              >
+                title="Add Student">
                 <CirclePlus className="size-4" />
               </Link>
             </div>
@@ -43,8 +41,7 @@ export function DocumentsCards() {
               <Link
                 to="/admission/enrol-student"
                 className={buttonVariants({ variant: "link", size: "sm" })}
-                title="Enrol Student"
-              >
+                title="Enrol Student">
                 <ExternalLink className="size-4" />
               </Link>
             </div>
@@ -79,8 +76,7 @@ export function DocumentsCards() {
               <Link
                 to="/admission/total-students"
                 className={buttonVariants({ variant: "link", size: "sm" })}
-                title="View Total Students"
-              >
+                title="View Total Students">
                 <ExternalLink className="size-4" />
               </Link>
             </div>
