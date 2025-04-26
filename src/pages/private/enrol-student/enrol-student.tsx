@@ -47,7 +47,7 @@ function EnrolStudent() {
             variant: "link",
             className: "gap-2",
           })}>
-          <ArrowLeft /> Back to Dashboard
+          <ArrowLeft /> Go back
         </Link>
       </div>
       <div className="min-h-screen flex items-center justify-center relative bg-muted">

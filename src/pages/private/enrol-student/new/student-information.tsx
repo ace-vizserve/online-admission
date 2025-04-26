@@ -48,7 +48,7 @@ function StudentInformationTabs() {
           <TabsTrigger
             key={tab.value}
             value={tab.value}
-            className="border shadow flex items-center justify-center gap-2 p-6 data-[state=active]:bg-primary data-[state=active]:text-white cursor-pointer">
+            className="border shadow flex flex-col lg:flex-row items-center justify-center gap-2 p-6 data-[state=active]:bg-primary data-[state=active]:text-white cursor-pointer">
             <tab.icon /> {tab.name}
           </TabsTrigger>
         ))}

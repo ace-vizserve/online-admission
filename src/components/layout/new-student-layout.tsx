@@ -15,7 +15,7 @@ function NewStudentLayout() {
             variant: "link",
             className: "gap-2",
           })}>
-          <ArrowLeft /> Back to Dashboard
+          <ArrowLeft /> Go back
         </Link>
       </div>
       <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">

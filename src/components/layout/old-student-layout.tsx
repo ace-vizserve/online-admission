@@ -15,7 +15,7 @@ function OldStudentLayout() {
             variant: "link",
             className: "gap-2",
           })}>
-          <ArrowLeft /> Back to Dashboard
+          <ArrowLeft /> Go back
         </Link>
         <Button className="gap-2" size={"lg"}>
           Submit Application <ArrowRight />
