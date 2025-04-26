@@ -66,6 +66,12 @@ export const STUDENT_PROFILE_TITLE_DESCRIPTION = {
     "View and update your child’s personal information, enrollment details, and submitted documents through the HFSE Online Admission Student Profile page.",
 };
 
+export const ENROL_NEW_STUDENT_TITLE_DESCRIPTION = {
+  title: "Enrol a Student | HFSE International School Online Admission",
+  description:
+    "Complete the enrollment process for a new student. Fill in the necessary details, provide documents, and submit the application for review.",
+};
+
 export const ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION = {
   title: "Student Information - Enrol New Student | HFSE International School Online Admission",
   description:

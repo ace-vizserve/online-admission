@@ -1,6 +1,8 @@
+import PageMetaData from "@/components/page-metadata";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
 import { Field, Radio, RadioGroup } from "@headlessui/react";
 import { ArrowLeft, ArrowRight, UserPlus2, UserRoundPlus } from "lucide-react";
 import { memo, useCallback, useState } from "react";
@@ -25,6 +27,7 @@ const studentList = [
 ];
 
 function EnrolStudent() {
+  const { title, description } = ENROL_NEW_STUDENT_TITLE_DESCRIPTION;
   const [selected, setSelected] = useState(studentList[0]);
 
   const selectStudent = useCallback((student: (typeof studentList)[number]) => {
@@ -32,45 +35,53 @@ function EnrolStudent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-muted">
-      <Link
-        to={"/admission/dashboard"}
-        className={buttonVariants({
-          variant: "link",
-          className: "absolute left-4 top-4 gap-2",
-        })}>
-        <ArrowLeft /> Back to Dashboard
-      </Link>
-
-      <div className="w-full px-6 md:px-0">
-        <Card className="w-full max-w-xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Select a student</CardTitle>
-            <CardDescription>Selecting a student will proceed with the enrolment process</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {studentList.length > 0 ? <StudentsList selected={selected} setSelected={selectStudent} /> : <NoStudents />}
-          </CardContent>
-          <CardFooter className="flex flex-col gap-2">
-            <Button
-              size={"lg"}
-              disabled={!studentList.length || !selected}
-              className="w-full gap-2"
-              variant={"outline"}>
-              <ArrowRight /> Enrol Student
-            </Button>
-            <Link
-              to={"/enrol-student/new/student-info"}
-              className={buttonVariants({
-                size: "lg",
-                className: "gap-2 w-full",
-              })}>
-              <UserPlus2 /> Add new student
-            </Link>
-          </CardFooter>
-        </Card>
+    <>
+      <PageMetaData title={title} description={description} />
+      <div className="fixed top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b px-6 md:px-8">
+        <Link
+          to={"/admission/dashboard"}
+          className={buttonVariants({
+            variant: "link",
+            className: "gap-2",
+          })}>
+          <ArrowLeft /> Back to Dashboard
+        </Link>
       </div>
-    </div>
+      <div className="min-h-screen flex items-center justify-center relative bg-muted">
+        <div className="w-full px-6 md:px-0">
+          <Card className="w-full max-w-xl mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl">Select a student</CardTitle>
+              <CardDescription>Selecting a student will proceed with the enrolment process</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {studentList.length > 0 ? (
+                <StudentsList selected={selected} setSelected={selectStudent} />
+              ) : (
+                <NoStudents />
+              )}
+            </CardContent>
+            <CardFooter className="flex flex-col gap-2">
+              <Button
+                size={"lg"}
+                disabled={!studentList.length || !selected}
+                className="w-full gap-2"
+                variant={"outline"}>
+                <ArrowRight /> Enrol Student
+              </Button>
+              <Link
+                to={"/enrol-student/new/student-info"}
+                className={buttonVariants({
+                  size: "lg",
+                  className: "gap-2 w-full",
+                })}>
+                <UserPlus2 /> Add new student
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    </>
   );
 }
 

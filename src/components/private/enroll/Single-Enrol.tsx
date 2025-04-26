@@ -1,5 +1,14 @@
 "use client";
-import { useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SingleStudent } from "@/single-student";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,17 +22,7 @@ import {
 } from "@tanstack/react-table";
 import { ArrowUpDown, Contact, MoreHorizontal, User } from "lucide-react";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { SingleStudent } from "@/single-student";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 
 const data: SingleStudent[] = [
   {
@@ -49,21 +48,20 @@ const data: SingleStudent[] = [
   },
 ];
 
-
 export const columns: ColumnDef<SingleStudent>[] = [
   {
     accessorKey: "academicYear",
     header: ({ column }) => {
-          return (
-            <Button
-              variant={"ghost"}
-              className="cursor-pointer"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Academic Year
-              <ArrowUpDown />
-            </Button>
-          );
-        },
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Academic Year
+          <ArrowUpDown />
+        </Button>
+      );
+    },
     cell: ({ row }) => <div className="capitalize text-xs ml-9">{row.getValue("academicYear")}</div>,
   },
   {
@@ -126,7 +124,6 @@ export const columns: ColumnDef<SingleStudent>[] = [
     },
   },
 ];
-
 
 function SingleEnrol() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
