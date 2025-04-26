@@ -5,7 +5,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
@@ -16,7 +16,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function SiblingInformation() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolOldStudentContext();
   const form = useForm<SiblingInformationSchema>({
     resolver: zodResolver(siblingInformationSchema),
     defaultValues: {
@@ -47,7 +47,7 @@ function SiblingInformation() {
         <EmptySibling />
       ) : (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto ">
             {fields.map((field, index) => (
               <Card key={field.id} className="flex flex-col space-y-8 shadow-none border-none">
                 <CardHeader className="w-full flex items-center justify-between">

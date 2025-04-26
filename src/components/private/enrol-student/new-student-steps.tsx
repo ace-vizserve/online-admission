@@ -25,7 +25,7 @@ const STEPS = [
   },
 ];
 
-function Steps() {
+function NewStudentSteps() {
   const { pathname } = useLocation();
 
   return (
@@ -62,4 +62,4 @@ function Steps() {
   );
 }
 
-export default Steps;
+export default NewStudentSteps;

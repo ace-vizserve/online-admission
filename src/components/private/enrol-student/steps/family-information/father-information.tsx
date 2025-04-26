@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function FatherInformation() {
-  const { formState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolNewStudentContext();
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
 
@@ -30,18 +30,17 @@ function FatherInformation() {
   });
 
   function onSubmit(values: FatherInformationSchema) {
-    try {
-      console.log(values);
-      console.log(countryName);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
+    console.log(countryName);
+    setFormState({
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo!,
+        fatherInfo: { ...values },
+      },
+    });
+    toast.success("Father information details saved!", {
+      description: "Make sure to double check everything",
+    });
   }
 
   return (
@@ -55,7 +54,7 @@ function FatherInformation() {
               <FormItem>
                 <FormLabel>First name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's father first name.</FormDescription>
                 <FormMessage />
@@ -72,7 +71,7 @@ function FatherInformation() {
                   Middle name <span className="text-xs text-muted-foreground">(optional)</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's father middle name.</FormDescription>
                 <FormMessage />
@@ -89,7 +88,7 @@ function FatherInformation() {
               <FormItem>
                 <FormLabel>Last name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's father lastname.</FormDescription>
                 <FormMessage />
@@ -104,7 +103,7 @@ function FatherInformation() {
               <FormItem>
                 <FormLabel>Preferred name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's father preferred name.</FormDescription>
                 <FormMessage />
@@ -204,7 +203,7 @@ function FatherInformation() {
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's father NRIC/FIN.</FormDescription>
                 <FormMessage />
@@ -219,7 +218,7 @@ function FatherInformation() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput placeholder="Placeholder" {...field} defaultCountry="TR" />
+                    <PhoneInput {...field} defaultCountry="TR" />
                   </FormControl>
                   <FormDescription>Enter the student's father mobile phone.</FormDescription>
                   <FormMessage />
@@ -252,7 +251,7 @@ function FatherInformation() {
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's father work company.</FormDescription>
                 <FormMessage />
@@ -267,7 +266,7 @@ function FatherInformation() {
               <FormItem>
                 <FormLabel>Work Position</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's father work position.</FormDescription>
                 <FormMessage />

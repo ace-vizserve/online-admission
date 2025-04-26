@@ -1,13 +1,12 @@
 import { Button } from "@/components/ui/button";
 
 import { Form } from "@/components/ui/form";
-import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { wait } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CheckCircle } from "lucide-react";
+import { Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate } from "react-router";
@@ -17,7 +16,7 @@ import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-di
 type SubmitState = "idle" | "pending" | "success";
 
 function ParentGuardianUpload() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolOldStudentContext();
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [passport, setPassport] = useState<File[] | null>(null);
   const [pass, setPass] = useState<File[] | null>(null);
@@ -32,7 +31,7 @@ function ParentGuardianUpload() {
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (formState.uploadRequirements?.studentUploadRequirements == null) {
       toast.warning("Student Documents is missing!", {
-        description: "Please fill out all required fields to move proceed.",
+        description: "Please fill out all required fields to proceed.",
       });
       window.scrollTo({
         top: 0,
@@ -87,28 +86,16 @@ function ParentGuardianUpload() {
         </div>
 
         <Button
-          disabled={submitState == "pending"}
           size="lg"
-          className="bg-green-500 hover:bg-green-600 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase mt-8"
+          className="mt-8 mb-0 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase"
           type="submit">
-          {submitState == "pending" ? "Submitting" : "Submit Application"}
-          {submitState == "pending" ? (
-            <DotPulse size="30" speed="1.3" color="white" />
-          ) : (
-            <CheckCircle className="w-6 h-6" />
-          )}
+          Save
+          <Save />
         </Button>
 
-        <Button
-          disabled={submitState == "pending"}
-          className="bg-green-500 hover:bg-green-600 flex lg:hidden w-full p-6 gap-2 uppercase mt-8"
-          type="submit">
-          {submitState == "pending" ? "Submitting" : "Submit Application"}
-          {submitState == "pending" ? (
-            <DotPulse size="20" speed="1.3" color="white" />
-          ) : (
-            <CheckCircle className="w-6 h-6" />
-          )}
+        <Button className="mt-8 mb-0 flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
       </form>
     </Form>
