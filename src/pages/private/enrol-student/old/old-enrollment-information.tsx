@@ -50,12 +50,12 @@ function OldEnrollmentInformation() {
       <PageMetaData title={title} description={description} />
       <div className="w-full flex-1">
         <Card className="w-full mx-auto border-none shadow-none">
-          <CardHeader className="gap-8">
-            <CardTitle className="text-center text-xl lg:text-2xl text-primary">
+          <CardHeader className="gap-8 p-0">
+            <CardTitle className="text-balance text-center text-xl lg:text-2xl text-primary">
               Input the necessary enrollment information
             </CardTitle>
 
-            <Alert className="w-max mx-auto border-emerald-600/50 text-emerald-600 [&>svg]:text-emerald-600 bg-green-50">
+            <Alert className="w-full max-w-full lg:max-w-sm lg:mx-auto border-emerald-600/50 text-emerald-600 [&>svg]:text-emerald-600 bg-green-50">
               <CircleCheckBigIcon className="h-4 w-4" />
               <AlertTitle>Promotion Eligible</AlertTitle>
               <AlertDescription>Student is eligible to move up to the next grade level.</AlertDescription>
