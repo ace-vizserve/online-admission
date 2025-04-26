@@ -1,6 +1,7 @@
 import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import AdmissionLayout from "@/components/layout/admission";
+import NewStudentLayout from "@/components/layout/new-student-layout";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
@@ -8,6 +9,12 @@ import NotFound from "@/pages/not-found";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
 import Documents from "@/pages/private/documents";
+import ApplicationSubmitted from "@/pages/private/enrol-student/application-submitted";
+import EnrolStudent from "@/pages/private/enrol-student/enrol-student";
+import EnrollmentInformation from "@/pages/private/enrol-student/new/enrollment-information";
+import FamilyInformation from "@/pages/private/enrol-student/new/family-information";
+import StudentInformation from "@/pages/private/enrol-student/new/student-information";
+import UploadRequirements from "@/pages/private/enrol-student/new/upload-requiremts";
 import { Enrollment } from "@/pages/private/Enrollment";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
@@ -66,7 +73,6 @@ function AppRoutes() {
             </UnauthenticatedGuard>
           }
         />
-
         {/* Parent Routes */}
         <Route path="admission" element={<AdmissionLayout />}>
           <Route
@@ -131,7 +137,64 @@ function AppRoutes() {
 
           <Route path="*" element={<NotFound />} />
         </Route>
+        <Route
+          index
+          path="enrol-student"
+          element={
+            <AuthGuard>
+              <EnrolStudent />
+            </AuthGuard>
+          }
+        />
 
+        <Route element={<NewStudentLayout />}>
+          <Route
+            index
+            path="/enrol-student/new/student-info"
+            element={
+              <AuthGuard>
+                <StudentInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            index
+            path="/enrol-student/new/family-info"
+            element={
+              <AuthGuard>
+                <FamilyInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            index
+            path="/enrol-student/new/enrollment-info"
+            element={
+              <AuthGuard>
+                <EnrollmentInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            index
+            path="/enrol-student/new/upload-requirements"
+            element={
+              <AuthGuard>
+                <UploadRequirements />
+              </AuthGuard>
+            }
+          />
+        </Route>
+
+        <Route
+          index
+          path="/application-submitted"
+          element={
+            <AuthGuard>
+              <ApplicationSubmitted />
+            </AuthGuard>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
