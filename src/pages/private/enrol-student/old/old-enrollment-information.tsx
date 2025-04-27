@@ -18,7 +18,7 @@ import {
 } from "@/data";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, CircleCheckBigIcon, CircleHelp } from "lucide-react";
+import { CircleCheckBigIcon, CircleHelp, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
@@ -339,17 +339,14 @@ function OldEnrollmentInformation() {
                   )}
                 </div>
 
-                <Button
-                  size={"lg"}
-                  className="hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase"
-                  type="submit">
-                  Proceed to Next Step
-                  <ArrowRight />
+                <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+                  Save
+                  <Save />
                 </Button>
 
                 <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-                  Proceed to Next Step
-                  <ArrowRight />
+                  Save
+                  <Save />
                 </Button>
               </form>
             </Form>

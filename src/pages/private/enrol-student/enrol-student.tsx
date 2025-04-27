@@ -1,3 +1,4 @@
+import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
@@ -60,17 +61,20 @@ function EnrolStudent() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b px-6 md:px-8">
-        <Link
-          to={"/admission/dashboard"}
-          className={buttonVariants({
-            variant: "link",
-            className: "gap-2",
-          })}>
-          <ArrowLeft /> Go back
-        </Link>
+
+      <div className="w-full fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+        <MaxWidthWrapper className="w-full max-w-screen-2xl">
+          <Link
+            to={"/admission/dashboard"}
+            className={buttonVariants({
+              variant: "link",
+              className: "gap-2",
+            })}>
+            <ArrowLeft /> Go back
+          </Link>
+        </MaxWidthWrapper>
       </div>
-      <div className="h-screen max-h-[600px] flex items-center justify-center relative bg-muted">
+      <div className="w-full h-screen flex items-center justify-center bg-muted">
         <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
           <CardHeader className="text-center px-2">
             <CardTitle className="text-lg">Select a student</CardTitle>
