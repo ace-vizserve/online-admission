@@ -1,9 +1,10 @@
 import EnrolOldStudentContextProvider from "@/context/enrol-old-student-context";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link, Outlet } from "react-router";
 import MaxWidthWrapper from "../max-width-wrapper";
 import OldStudentSteps from "../private/enrol-student/old-student-steps";
-import { Button, buttonVariants } from "../ui/button";
+import SubmitApplicationDialog from "../private/enrol-student/submit-application-dialog";
+import { buttonVariants } from "../ui/button";
 
 function OldStudentLayout() {
   return (
@@ -18,9 +19,7 @@ function OldStudentLayout() {
             })}>
             <ArrowLeft /> Go back
           </Link>
-          <Button className="gap-2" size={"lg"}>
-            Submit Application <ArrowRight />
-          </Button>
+          <SubmitApplicationDialog />
         </MaxWidthWrapper>
       </div>
 
