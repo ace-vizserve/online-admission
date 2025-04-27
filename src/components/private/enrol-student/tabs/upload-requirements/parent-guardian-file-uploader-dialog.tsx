@@ -90,15 +90,21 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             <FormField
               control={form.control}
               name={name}
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormControl>
                     <FileUploader
                       value={value}
-                      onValueChange={onValueChange}
+                      onValueChange={(file) => {
+                        if (file) {
+                          form.setValue(name, file[0]);
+                          form.trigger(name);
+                        }
+                        onValueChange(file);
+                      }}
                       dropzoneOptions={dropZoneConfig}
                       className="relative bg-background rounded-lg">
-                      <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
+                      <FileInput id="fileInput" className="bg-muted border-2 border-dashed">
                         <div className="flex items-center justify-center flex-col p-8 w-full">
                           <CloudUpload className="text-gray-500 w-10 h-10" />
                           <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
@@ -141,7 +147,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         {value &&
                           value.length > 0 &&
                           value.map((file, i) => (
-                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                            <FileUploaderItem key={i} index={i}>
                               <Paperclip className="h-4 w-4 stroke-current" />
                               <span>{file.name}</span>
                             </FileUploaderItem>
@@ -350,15 +356,20 @@ function ParentGuardianFileUploaderDrawer({
           <FormField
             control={form.control}
             name={name}
-            render={({ field }) => (
+            render={() => (
               <FormItem>
                 <FormControl>
                   <FileUploader
                     value={value}
-                    onValueChange={onValueChange}
+                    onValueChange={(file) => {
+                      if (file) {
+                        form.setValue(name, file[0]);
+                      }
+                      onValueChange(file);
+                    }}
                     dropzoneOptions={dropZoneConfig}
                     className="relative bg-background rounded-lg">
-                    <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
+                    <FileInput id="fileInput" className="bg-muted border-2 border-dashed">
                       <div className="flex items-center justify-center flex-col p-8 w-full">
                         <CloudUpload className="text-gray-500 w-10 h-10" />
                         <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
@@ -401,7 +412,7 @@ function ParentGuardianFileUploaderDrawer({
                       {value &&
                         value.length > 0 &&
                         value.map((file, i) => (
-                          <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                          <FileUploaderItem key={i} index={i}>
                             <Paperclip className="h-4 w-4 stroke-current" />
                             <span>{file.name}</span>
                           </FileUploaderItem>
