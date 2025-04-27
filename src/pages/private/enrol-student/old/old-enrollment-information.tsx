@@ -51,11 +51,11 @@ function OldEnrollmentInformation() {
       <div className="w-full flex-1">
         <Card className="w-full mx-auto border-none shadow-none">
           <CardHeader className="gap-8 p-0">
-            <CardTitle className="text-balance text-center text-xl lg:text-2xl text-primary">
+            <CardTitle className="text-balance text-center text-2xl text-primary">
               Input the necessary enrollment information
             </CardTitle>
 
-            <Alert className="w-full max-w-full lg:max-w-sm lg:mx-auto border-emerald-600/50 text-emerald-600 [&>svg]:text-emerald-600 bg-green-50">
+            <Alert className="w-full max-w-full sm:max-w-sm sm:mx-auto border-emerald-600/50 text-emerald-600 [&>svg]:text-emerald-600 bg-green-50">
               <CircleCheckBigIcon className="h-4 w-4" />
               <AlertTitle>Promotion Eligible</AlertTitle>
               <AlertDescription>Student is eligible to move up to the next grade level.</AlertDescription>
@@ -63,7 +63,9 @@ function OldEnrollmentInformation() {
           </CardHeader>
           <CardContent className="px-0">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-6xl mx-auto py-10">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8 max-w-6xl mx-auto py-0 md:py-6 lg:py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
@@ -173,7 +175,7 @@ function OldEnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a verified email to display" />
+                              <SelectValue placeholder="Yes or No" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -198,7 +200,7 @@ function OldEnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a verified email to display" />
+                              <SelectValue placeholder="Yes or No" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -221,7 +223,7 @@ function OldEnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a verified email to display" />
+                              <SelectValue placeholder="Yes or No" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

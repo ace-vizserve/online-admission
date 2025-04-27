@@ -1,4 +1,4 @@
-import { CirclePlus, ExternalLink, GraduationCap, Users } from "lucide-react";
+import { ExternalLink, GraduationCap, UserPlus, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -57,18 +57,17 @@ export function SectionCards() {
           size: "lg",
           className: "w-max ml-auto flex xl:hidden gap-2",
         })}>
-        Enrol a Student
-        <CirclePlus className="size-4" />
+        Enrol Student
+        <UserPlus />
       </Link>
 
       <Link
         className={buttonVariants({
-          size: "lg",
-          className: "!hidden xl:!flex gap-2 order-1 xl:order-last h-max w-full xl:w-1/5 p-6",
+          className: "!hidden xl:!flex gap-2 order-1 xl:order-last h-max w-full xl:w-1/5 py-6",
         })}
         to="/enrol-student">
-        Enrol a Student
-        <CirclePlus className="size-4" />
+        Enrol Student
+        <UserPlus className="size-5" />
       </Link>
     </div>
   );

@@ -186,7 +186,7 @@ function EnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a verified email to display" />
+                              <SelectValue placeholder="Yes or No" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -211,7 +211,7 @@ function EnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a verified email to display" />
+                              <SelectValue placeholder="Yes or No" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -234,7 +234,7 @@ function EnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a verified email to display" />
+                              <SelectValue placeholder="Yes or No" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
