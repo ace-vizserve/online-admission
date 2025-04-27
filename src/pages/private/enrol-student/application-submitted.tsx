@@ -7,7 +7,7 @@ function ApplicationSubmitted() {
     <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
       <div className="flex flex-col items-center gap-2">
         <div className="relative animate-bounce">
-          <img src="/like.png" className="size-40 object-cover" />
+          <img src="/like.png" className="size-32 md:size-40 object-cover" />
           <div className="absolute top-4 flex gap-2 -rotate-45">
             <div className="w-1 h-4 bg-yellow-400 rounded-full" />
             <div className="w-1 h-4 bg-yellow-400 rounded-full" />
