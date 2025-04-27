@@ -74,7 +74,13 @@ function StudentDetails() {
               <FormControl>
                 <FileUploader
                   value={files}
-                  onValueChange={setFiles}
+                  onValueChange={(file) => {
+                    if (file) {
+                      form.setValue("studentPhoto", file[0]);
+                      form.trigger("studentPhoto");
+                    }
+                    setFiles(file);
+                  }}
                   dropzoneOptions={dropZoneConfig}
                   className="relative bg-background rounded-lg">
                   <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
@@ -93,14 +99,14 @@ function StudentDetails() {
                         <div className="flex items-center gap-1">
                           <Paperclip className="h-4 w-4 stroke-current" />
                           <span className="text-sm font-medium">
-                            {formState.studentInfo.studentDetails.studentPhoto.split("\\").pop()}
+                            {formState.studentInfo.studentDetails.studentPhoto.name.split("\\").pop()}
                           </span>
                         </div>
 
                         <Trash2
                           className="h-4 w-4 "
                           onClick={() => {
-                            form.setValue("studentPhoto", "");
+                            form.setValue("studentPhoto", undefined as unknown as File, { shouldValidate: true });
                             setFiles([]);
                             setFormState({
                               ...formState,
@@ -108,7 +114,7 @@ function StudentDetails() {
                                 ...formState.studentInfo!,
                                 studentDetails: {
                                   ...formState.studentInfo!.studentDetails,
-                                  studentPhoto: "",
+                                  studentPhoto: undefined as unknown as File,
                                 },
                               },
                             });
@@ -119,7 +125,7 @@ function StudentDetails() {
                     {files &&
                       files.length > 0 &&
                       files.map((file, i) => (
-                        <FileUploaderItem setValue={form.setValue} inputKey="studentPhoto" key={i} index={i}>
+                        <FileUploaderItem key={i} index={i}>
                           <Paperclip className="h-4 w-4 stroke-current" />
                           <span>{file.name}</span>
                         </FileUploaderItem>

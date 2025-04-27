@@ -7,7 +7,7 @@ import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirement
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CheckCircle } from "lucide-react";
+import { Send } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate } from "react-router";
@@ -52,7 +52,7 @@ function ParentGuardianUpload() {
     setSubmitState("pending");
     await wait(2000);
     setSubmitState("success");
-    setFormState({});
+    localStorage.removeItem("enrolNewStudentFormState");
   }
 
   if (submitState == "success") {
@@ -92,11 +92,7 @@ function ParentGuardianUpload() {
           className="bg-green-500 hover:bg-green-600 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase mt-8"
           type="submit">
           {submitState == "pending" ? "Submitting" : "Submit Application"}
-          {submitState == "pending" ? (
-            <DotPulse size="30" speed="1.3" color="white" />
-          ) : (
-            <CheckCircle className="w-6 h-6" />
-          )}
+          {submitState == "pending" ? <DotPulse size="30" speed="1.3" color="white" /> : <Send className="w-6 h-6" />}
         </Button>
 
         <Button
@@ -104,11 +100,7 @@ function ParentGuardianUpload() {
           className="bg-green-500 hover:bg-green-600 flex lg:hidden w-full p-6 gap-2 uppercase mt-8"
           type="submit">
           {submitState == "pending" ? "Submitting" : "Submit Application"}
-          {submitState == "pending" ? (
-            <DotPulse size="20" speed="1.3" color="white" />
-          ) : (
-            <CheckCircle className="w-6 h-6" />
-          )}
+          {submitState == "pending" ? <DotPulse size="20" speed="1.3" color="white" /> : <Send className="w-6 h-6" />}
         </Button>
       </form>
     </Form>
