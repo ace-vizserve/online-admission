@@ -15,7 +15,7 @@ const STEPS = [
   },
   {
     name: "Enrollment Information",
-    description: "Academic history",
+    description: "Student Enrollment Details",
     url: "/enrol-student/new/enrollment-info",
   },
   {

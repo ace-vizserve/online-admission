@@ -57,7 +57,7 @@ function OldStudentSteps() {
         }>
         <div className="space-y-1 text-center px-6 py-4">
           <p className="text-sm font-semibold">Enrollment Information</p>
-          <p className="text-xs text-muted-foreground">Academic history</p>
+          <p className="text-xs text-muted-foreground">Student Enrollment Details</p>
         </div>
       </NavLink>
 
