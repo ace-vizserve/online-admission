@@ -19,6 +19,15 @@ export type StudentInfo = {
   fatherName: string;
 };
 
+export type levelYear = {
+  id: string;
+  studentName: string;
+  academicYear: string;
+  level: string;
+  status: string;
+};
+
+
 export type EnrolNewStudentFormState = {
   studentInfo: {
     studentDetails: StudentDetailsSchema;

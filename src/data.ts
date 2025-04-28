@@ -102,6 +102,19 @@ export const ENROL_NEW_STUDENT_REVIEW_SUBMIT_TITLE_DESCRIPTION = {
     "Review all the information entered before submitting. Make sure everything is correct for a smooth enrollment process.",
 };
 
+export const ENROL_NEW_STUDENT_SUCCESS_TITLE_DESCRIPTION = {
+  title: "Enrollment Successful | HFSE International School Online Admission",
+  description:
+    "Congratulations! Your child's enrollment has been successfully submitted. You will receive updates on the application status soon.",
+};
+
+export const ENROLMENT_PAGE_FOR_STUDENT = {
+  title: "Student Enrollment Records | HFSE International School",
+  description:
+    "Explore the comprehensive list of students enrolled at HFSE International School over the past years. This archive provides insights into our diverse and growing student community.",
+};
+
+
 export const faq = [
   {
     question: "How do I start the admission process?",

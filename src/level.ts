@@ -3,5 +3,6 @@ export type levelYear = {
     studentName: string;
     academicYear: string;
     level: string;
+    status: string;
   };
   
