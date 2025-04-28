@@ -1,5 +1,4 @@
 import { CirclePlus, ExternalLink, GraduationCap, UserPlus2, Users } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
