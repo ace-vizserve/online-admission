@@ -32,30 +32,35 @@ const data: levelYear[] = [
     studentName: "Ken Ramos",
     academicYear: "AY2026",
     level: "Primary 1",
+    status: "Enrolled",
   },
   {
     id: "stu002",
     studentName: "Abe Dela Cruz",
     academicYear: "AY2022",
     level: "Primary 3",
+    status: "Enrolled",
   },
   {
     id: "stu003",
     studentName: "Monserrat Reyes",
     academicYear: "AY2025",
     level: "Primary 2",
+    status: "Enrolled",
   },
   {
     id: "stu004",
     studentName: "Silas Tan",
     academicYear: "AY2024",
     level: "Primary 4",
+    status: "Enrolled",
   },
   {
     id: "stu005",
     studentName: "Carmella Garcia",
     academicYear: "AY2023",
     level: "Primary 2",
+    status: "Enrolled",
   },
 ];
 
@@ -94,6 +99,21 @@ export const columns: ColumnDef<levelYear>[] = [
       );
     },
     cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("level")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Status
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("status")}</div>,
   },
   {
     id: "actions",

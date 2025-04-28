@@ -1,8 +1,10 @@
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
-export function createClient() {
-  return createBrowserClient(
-    "https://dioketiuedohqlaegzhm.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpb2tldGl1ZWRvaHFsYWVnemhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc1NDI4NTksImV4cCI6MjA1MzExODg1OX0.aOl2aPqWDCvzc1eCenT2cqkSPw87zDc36WB9x1dyxs4"
-  );
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+console.log('Supabase Key:', import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+

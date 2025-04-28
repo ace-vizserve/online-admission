@@ -66,6 +66,55 @@ export const STUDENT_PROFILE_TITLE_DESCRIPTION = {
     "View and update your child’s personal information, enrollment details, and submitted documents through the HFSE Online Admission Student Profile page.",
 };
 
+export const ENROL_NEW_STUDENT_TITLE_DESCRIPTION = {
+  title: "Enrol a Student | HFSE International School Online Admission",
+  description:
+    "Complete the enrollment process for a new student. Fill in the necessary details, provide documents, and submit the application for review.",
+};
+
+export const ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION = {
+  title: "Student Information - Enrol New Student | HFSE International School Online Admission",
+  description:
+    "Provide student details to begin the enrollment process. Ensure all information is accurate and up-to-date.",
+};
+
+export const ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION = {
+  title: "Family Information - Enrol New Student | HFSE International School Online Admission",
+  description:
+    "Enter family and guardian information. This helps us understand your child's support system for a smooth enrollment.",
+};
+
+export const ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION = {
+  title: "Enrollment Information - Enrol New Student | HFSE International School Online Admission",
+  description:
+    "Provide the student's academic history to complete the enrollment. This includes previous schooling details and more.",
+};
+
+export const ENROL_NEW_STUDENT_UPLOAD_REQUIREMENTS_TITLE_DESCRIPTION = {
+  title: "Upload Requirements - Enrol New Student | HFSE International School Online Admission",
+  description:
+    "Submit all necessary documents to complete the enrollment. Upload academic, identification, and other required files.",
+};
+
+export const ENROL_NEW_STUDENT_REVIEW_SUBMIT_TITLE_DESCRIPTION = {
+  title: "Review & Submit - Enrol New Student | HFSE International School Online Admission",
+  description:
+    "Review all the information entered before submitting. Make sure everything is correct for a smooth enrollment process.",
+};
+
+export const ENROL_NEW_STUDENT_SUCCESS_TITLE_DESCRIPTION = {
+  title: "Enrollment Successful | HFSE International School Online Admission",
+  description:
+    "Congratulations! Your child's enrollment has been successfully submitted. You will receive updates on the application status soon.",
+};
+
+export const ENROLMENT_PAGE_FOR_STUDENT = {
+  title: "Student Enrollment Records | HFSE International School",
+  description:
+    "Explore the comprehensive list of students enrolled at HFSE International School over the past years. This archive provides insights into our diverse and growing student community.",
+};
+
+
 export const faq = [
   {
     question: "How do I start the admission process?",
@@ -132,3 +181,249 @@ export const features = [
       "Once all requirements are fulfilled, finalize your child’s admission and prepare for their learning journey.",
   },
 ];
+
+export const maritalStatuses = [
+  { label: "Single", value: "single" },
+  { label: "Married", value: "married" },
+  { label: "Separated", value: "separated" },
+  { label: "Divorced", value: "divorced" },
+  { label: "Widowed", value: "widowed" },
+] as const;
+
+export const passTypes = [
+  { label: "Singaporean", value: "singaporean" },
+  { label: "Singaporean PR", value: "singapore_pr" },
+  { label: "Dependant Pass", value: "dependant_pass" },
+  { label: "Student Pass", value: "student_pass" },
+  { label: "Long Term Visit Pass", value: "ltv_pass" },
+] as const;
+
+export const religions = [
+  { label: "Christianity", value: "christianity" },
+  { label: "Roman Catholic", value: "romanCatholic" },
+  { label: "Islam", value: "islam" },
+  { label: "Hinduism", value: "hinduism" },
+  { label: "Buddhism", value: "buddhism" },
+  { label: "Judaism", value: "judaism" },
+  { label: "Other", value: "other" },
+] as const;
+
+export const classLevels = [
+  { label: "Young Starters", value: "young-starters" },
+  { label: "Primary 1", value: "primary-1" },
+  { label: "Primary 2", value: "primary-2" },
+  { label: "Primary 3", value: "primary-3" },
+  { label: "Primary 4", value: "primary-4" },
+  { label: "Primary 5", value: "primary-5" },
+  { label: "Primary 6", value: "primary-6" },
+  { label: "Secondary 1", value: "secondary-1" },
+  { label: "Secondary 2", value: "secondary-2" },
+  { label: "Secondary 3", value: "secondary-3" },
+  { label: "Secondary 4", value: "secondary-4" },
+] as const;
+
+export const classTypes = [
+  { label: "Enrichment Class", value: "enrichment-class" },
+  { label: "Global Class 3 (ENGLISH + FRENCH)", value: "global-class-3-en-fr" },
+  { label: "Global Class 2 (ENGLISH + TAMIL)", value: "global-class-2-en-ta" },
+  { label: "Global Class 1 (ENGLISH + MANDARIN)", value: "global-class-1-en-zh" },
+  { label: "Standard Class (ENGLISH + TAGALOG)", value: "standard-class-en-fil" },
+] as const;
+
+export const preferredSchedule = [
+  { label: "Afternoon", value: "afternoon" },
+  { label: "Morning", value: "morning" },
+] as const;
+
+export const campusDevelopmentFee = [
+  { label: "Option 1", value: "option-1" },
+  { label: "Option 2", value: "option-2" },
+  { label: "Option 3", value: "option-3" },
+] as const;
+
+export const languages = [
+  { label: "Afar", value: "aa" },
+  { label: "Abkhazian", value: "ab" },
+  { label: "Afrikaans", value: "af" },
+  { label: "Akan", value: "ak" },
+  { label: "Amharic", value: "am" },
+  { label: "Arabic", value: "ar" },
+  { label: "Aragonese", value: "an" },
+  { label: "Assamese", value: "as" },
+  { label: "Avaric", value: "av" },
+  { label: "Avestan", value: "ae" },
+  { label: "Aymara", value: "ay" },
+  { label: "Azerbaijani", value: "az" },
+  { label: "Bashkir", value: "ba" },
+  { label: "Belarusian", value: "be" },
+  { label: "Bulgarian", value: "bg" },
+  { label: "Bihari", value: "bh" },
+  { label: "Bislama", value: "bi" },
+  { label: "Bambara", value: "bm" },
+  { label: "Bengali", value: "bn" },
+  { label: "Tibetan", value: "bo" },
+  { label: "Breton", value: "br" },
+  { label: "Bosnian", value: "bs" },
+  { label: "Catalan", value: "ca" },
+  { label: "Chechen", value: "ce" },
+  { label: "Chamorro", value: "ch" },
+  { label: "Corsican", value: "co" },
+  { label: "Cree", value: "cr" },
+  { label: "Czech", value: "cs" },
+  { label: "Church Slavic", value: "cu" },
+  { label: "Chuvash", value: "cv" },
+  { label: "Welsh", value: "cy" },
+  { label: "Danish", value: "da" },
+  { label: "German", value: "de" },
+  { label: "Divehi", value: "dv" },
+  { label: "Dzongkha", value: "dz" },
+  { label: "Ewe", value: "ee" },
+  { label: "Greek", value: "el" },
+  { label: "English", value: "en" },
+  { label: "Esperanto", value: "eo" },
+  { label: "Spanish", value: "es" },
+  { label: "Estonian", value: "et" },
+  { label: "Basque", value: "eu" },
+  { label: "Persian", value: "fa" },
+  { label: "Fulah", value: "ff" },
+  { label: "Finnish", value: "fi" },
+  { label: "Fijian", value: "fj" },
+  { label: "Faroese", value: "fo" },
+  { label: "French", value: "fr" },
+  { label: "Western Frisian", value: "fy" },
+  { label: "Irish", value: "ga" },
+  { label: "Gaelic", value: "gd" },
+  { label: "Galician", value: "gl" },
+  { label: "Guarani", value: "gn" },
+  { label: "Gujarati", value: "gu" },
+  { label: "Manx", value: "gv" },
+  { label: "Hausa", value: "ha" },
+  { label: "Hebrew", value: "he" },
+  { label: "Hindi", value: "hi" },
+  { label: "Hiri Motu", value: "ho" },
+  { label: "Croatian", value: "hr" },
+  { label: "Haitian", value: "ht" },
+  { label: "Hungarian", value: "hu" },
+  { label: "Armenian", value: "hy" },
+  { label: "Herero", value: "hz" },
+  { label: "Interlingua", value: "ia" },
+  { label: "Indonesian", value: "id" },
+  { label: "Interlingue", value: "ie" },
+  { label: "Igbo", value: "ig" },
+  { label: "Sichuan Yi", value: "ii" },
+  { label: "Inupiaq", value: "ik" },
+  { label: "Ido", value: "io" },
+  { label: "Icelandic", value: "is" },
+  { label: "Italian", value: "it" },
+  { label: "Inuktitut", value: "iu" },
+  { label: "Japanese", value: "ja" },
+  { label: "Javanese", value: "jv" },
+  { label: "Georgian", value: "ka" },
+  { label: "Kongo", value: "kg" },
+  { label: "Kikuyu", value: "ki" },
+  { label: "Kuanyama", value: "kj" },
+  { label: "Kazakh", value: "kk" },
+  { label: "Kalaallisut", value: "kl" },
+  { label: "Khmer", value: "km" },
+  { label: "Kannada", value: "kn" },
+  { label: "Korean", value: "ko" },
+  { label: "Kanuri", value: "kr" },
+  { label: "Kashmiri", value: "ks" },
+  { label: "Kurdish", value: "ku" },
+  { label: "Komi", value: "kv" },
+  { label: "Cornish", value: "kw" },
+  { label: "Kirghiz", value: "ky" },
+  { label: "Latin", value: "la" },
+  { label: "Luxembourgish", value: "lb" },
+  { label: "Ganda", value: "lg" },
+  { label: "Limburgan", value: "li" },
+  { label: "Lingala", value: "ln" },
+  { label: "Lao", value: "lo" },
+  { label: "Lithuanian", value: "lt" },
+  { label: "Luba-Katanga", value: "lu" },
+  { label: "Latvian", value: "lv" },
+  { label: "Malagasy", value: "mg" },
+  { label: "Marshallese", value: "mh" },
+  { label: "Maori", value: "mi" },
+  { label: "Macedonian", value: "mk" },
+  { label: "Malayalam", value: "ml" },
+  { label: "Mongolian", value: "mn" },
+  { label: "Marathi", value: "mr" },
+  { label: "Malay", value: "ms" },
+  { label: "Maltese", value: "mt" },
+  { label: "Burmese", value: "my" },
+  { label: "Nauru", value: "na" },
+  { label: "Norwegian Bokmål", value: "nb" },
+  { label: "North Ndebele", value: "nd" },
+  { label: "Nepali", value: "ne" },
+  { label: "Ndonga", value: "ng" },
+  { label: "Dutch", value: "nl" },
+  { label: "Norwegian Nynorsk", value: "nn" },
+  { label: "Norwegian", value: "no" },
+  { label: "South Ndebele", value: "nr" },
+  { label: "Navajo", value: "nv" },
+  { label: "Chichewa", value: "ny" },
+  { label: "Occitan", value: "oc" },
+  { label: "Ojibwa", value: "oj" },
+  { label: "Oromo", value: "om" },
+  { label: "Oriya", value: "or" },
+  { label: "Ossetian", value: "os" },
+  { label: "Panjabi", value: "pa" },
+  { label: "Pali", value: "pi" },
+  { label: "Polish", value: "pl" },
+  { label: "Pashto", value: "ps" },
+  { label: "Portuguese", value: "pt" },
+  { label: "Quechua", value: "qu" },
+  { label: "Romansh", value: "rm" },
+  { label: "Rundi", value: "rn" },
+  { label: "Romanian", value: "ro" },
+  { label: "Russian", value: "ru" },
+  { label: "Kinyarwanda", value: "rw" },
+  { label: "Sanskrit", value: "sa" },
+  { label: "Sardinian", value: "sc" },
+  { label: "Sindhi", value: "sd" },
+  { label: "Northern Sami", value: "se" },
+  { label: "Sango", value: "sg" },
+  { label: "Sinhala", value: "si" },
+  { label: "Slovak", value: "sk" },
+  { label: "Slovenian", value: "sl" },
+  { label: "Samoan", value: "sm" },
+  { label: "Shona", value: "sn" },
+  { label: "Somali", value: "so" },
+  { label: "Albanian", value: "sq" },
+  { label: "Serbian", value: "sr" },
+  { label: "Swati", value: "ss" },
+  { label: "Sotho, Southern", value: "st" },
+  { label: "Sundanese", value: "su" },
+  { label: "Swedish", value: "sv" },
+  { label: "Swahili", value: "sw" },
+  { label: "Tamil", value: "ta" },
+  { label: "Telugu", value: "te" },
+  { label: "Tajik", value: "tg" },
+  { label: "Thai", value: "th" },
+  { label: "Tigrinya", value: "ti" },
+  { label: "Turkmen", value: "tk" },
+  { label: "Tagalog", value: "tl" },
+  { label: "Tswana", value: "tn" },
+  { label: "Tonga", value: "to" },
+  { label: "Turkish", value: "tr" },
+  { label: "Tsonga", value: "ts" },
+  { label: "Tatar", value: "tt" },
+  { label: "Twi", value: "tw" },
+  { label: "Tahitian", value: "ty" },
+  { label: "Uighur", value: "ug" },
+  { label: "Ukrainian", value: "uk" },
+  { label: "Urdu", value: "ur" },
+  { label: "Uzbek", value: "uz" },
+  { label: "Venda", value: "ve" },
+  { label: "Vietnamese", value: "vi" },
+  { label: "Volapük", value: "vo" },
+  { label: "Walloon", value: "wa" },
+  { label: "Wolof", value: "wo" },
+  { label: "Xhosa", value: "xh" },
+  { label: "Yiddish", value: "yi" },
+  { label: "Yoruba", value: "yo" },
+  { label: "Zhuang", value: "za" },
+  { label: "Chinese", value: "zh" },
+  { label: "Zulu", value: "zu" },
+] as const;

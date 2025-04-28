@@ -1,0 +1,360 @@
+import PageMetaData from "@/components/page-metadata";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import {
+  campusDevelopmentFee,
+  classLevels,
+  classTypes,
+  ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
+  preferredSchedule,
+} from "@/data";
+import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CircleCheckBigIcon, CircleHelp, Save } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router";
+import { toast } from "sonner";
+
+function OldEnrollmentInformation() {
+  const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
+  const { formState, setFormState } = useEnrolOldStudentContext();
+  const [discountType, setDiscountType] = useState<string>("");
+  const form = useForm<EnrollmentInformationSchema>({
+    resolver: zodResolver(enrollmentInformationSchema),
+    defaultValues: {
+      ...formState.enrollmentInfo,
+    },
+  });
+
+  function onSubmit(values: EnrollmentInformationSchema) {
+    setFormState({
+      ...formState,
+      enrollmentInfo: values,
+    });
+    toast.success("Enrollment information details saved!", {
+      description: "Proceeding to the next step...",
+    });
+  }
+
+  return (
+    <>
+      <PageMetaData title={title} description={description} />
+      <div className="w-full flex-1">
+        <Card className="w-full mx-auto border-none shadow-none">
+          <CardHeader className="gap-8 p-0">
+            <CardTitle className="text-balance text-center text-2xl text-primary">
+              Input the necessary enrollment information
+            </CardTitle>
+
+            <Alert className="w-full max-w-full sm:max-w-sm sm:mx-auto border-emerald-600/50 text-emerald-600 [&>svg]:text-emerald-600 bg-green-50">
+              <CircleCheckBigIcon className="h-4 w-4" />
+              <AlertTitle>Promotion Eligible</AlertTitle>
+              <AlertDescription>Student is eligible to move up to the next grade level.</AlertDescription>
+            </Alert>
+          </CardHeader>
+          <CardContent className="px-0">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8 max-w-6xl mx-auto py-0 md:py-6 lg:py-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
+                  <FormField
+                    control={form.control}
+                    name="classLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Class Level</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a class level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <ScrollArea className="h-52">
+                              {classLevels.map((level) => (
+                                <SelectItem key={level.value} value={level.value}>
+                                  {level.label}
+                                </SelectItem>
+                              ))}
+                            </ScrollArea>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Select the appropriate class level for the student.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="classType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Class Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a class level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {classTypes.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Choose the type of class (e.g., Enrichment Class).</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="preferredSchedule"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preferred Schedule</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a class level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {preferredSchedule.map((schedule) => (
+                              <SelectItem key={schedule.value} value={schedule.value}>
+                                {schedule.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Select your preferred time slot for classes.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-4 lg:gap-6 w-full">
+                  <FormField
+                    control={form.control}
+                    name="additionalLearningOrSpecialNeeds"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Additional learning or Special needs</FormLabel>
+                        <FormControl>
+                          <Input type="" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Indicate if the student has any learning needs or special requirements.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="busService"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bus Service</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Yes or No" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Will the student be using the school's bus service?</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
+                  <FormField
+                    control={form.control}
+                    name="schoolUniform"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>School Uniform</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Yes or No" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Will you avail a school uniform?</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="studentCare"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Student Care</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Yes or No" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Will you avail student care service?</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="campusDevelopmentFee"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="relative flex justify-between items-center">
+                          <FormLabel>Campus Development Fee</FormLabel>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Link
+                                  className={buttonVariants({
+                                    variant: "ghost",
+                                    size: "icon",
+                                    className: "absolute right-0 -top-4",
+                                  })}
+                                  target="_blank"
+                                  to={
+                                    "https://hgochparbrqtgeigvnzx.supabase.co/storage/v1/object/public/users/cdfdetails.PNG"
+                                  }>
+                                  <CircleHelp className="stroke-blue-600 stroke-2" />
+                                </Link>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Click here to see CDF details.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a class level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {campusDevelopmentFee.map((fee) => (
+                              <SelectItem key={fee.value} value={fee.value}>
+                                {fee.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <FormDescription>Select your preferred payment method.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="max-w-2xl mx-auto space-y-4 bg-emerald-400 p-6 rounded-2xl border border-muted shadow-sm">
+                  <div className="space-y-4">
+                    <Label className="text-xl text-white font-semibold">Apply a Discount</Label>
+                    <Select onValueChange={setDiscountType} value={discountType}>
+                      <SelectTrigger className="w-full bg-white">
+                        <SelectValue placeholder="Select a discount option" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-muted shadow-lg rounded-lg">
+                        <SelectItem value="referred-by-someone">🎯 Referred by someone</SelectItem>
+                        <SelectItem value="discount-code">🏷️ Discount code</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {discountType === "referred-by-someone" && (
+                    <FormField
+                      control={form.control}
+                      name="referralName"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-white">Referrer's Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter referrer's full name" className="bg-white" {...field} />
+                          </FormControl>
+                          <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {discountType === "discount-code" && (
+                    <FormField
+                      control={form.control}
+                      name="discount"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-white">Discount Code</FormLabel>
+                          <FormControl>
+                            <Input placeholder='Use code "AY250H01EN"' className="bg-white" {...field} />
+                          </FormControl>
+                          <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+
+                <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+                  Save
+                  <Save />
+                </Button>
+
+                <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+                  Save
+                  <Save />
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}
+
+export default OldEnrollmentInformation;

@@ -9,12 +9,12 @@ export const Enrollment = () => {
 
   return (
     <>
-    <PageMetaData title={title} description={description} />
+      <PageMetaData title={title} description={description} />
 
-    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
-      <SectionCards />
-      <Enroll />
-    </div>
-  </>
-  )
-}
+      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
+        <SectionCards />
+        <Enroll />
+      </div>
+    </>
+  );
+};
