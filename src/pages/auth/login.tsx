@@ -1,4 +1,4 @@
-import students from "@/assets/landing-page/students.png";
+import students from "@/assets/students-login.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
