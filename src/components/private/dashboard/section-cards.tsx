@@ -1,9 +1,10 @@
-import { CirclePlus, ExternalLink, GraduationCap, PlusCircleIcon, UserPlus2, Users } from "lucide-react";
+import { CirclePlus, ExternalLink, GraduationCap, UserPlus2, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router";
+import { cn } from "@/lib/utils";
 
 export function SectionCards() {
   return (
@@ -50,29 +51,29 @@ export function SectionCards() {
           </CardHeader>
         </Card>
       </div>
-      <Button size={"lg"} className="w-max ml-auto flex xl:hidden gap-2">
-        Enrol a Student <PlusCircleIcon />
-      </Button>
+
       <Button className="hidden xl:flex order-1 xl:order-last h-max w-full xl:w-1/4 p-0 mt-6" variant={"ghost"}>
         <Card className="w-full max-w-full xl:max-w-[370px] bg-transparent shadow-none">
           <CardHeader className="relative flex flex-col gap-2">
-            <div className="w-full flex items-center justify-between">
+          <Link
+          className={cn(
+            buttonVariants({ variant: "link", size: "sm" }),
+            "hover:no-underline"
+          )}
+          to="/admission/enrolment/total-enrolled"
+          title="View details"
+        >
+
+            <div className="w-full flex items-center justify-between ml-5">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="rounded-md bg-primary p-2">
+                <div className="rounded-md bg-primary p-2 ml-2">
                   <UserPlus2 className="stroke-white size-5" />
                 </div>
                 <CardDescription>Enrol Student</CardDescription>
               </div>
-              <Link
-                className={buttonVariants({
-                  variant: "link",
-                  size: "sm",
-                })}
-                to="/admission/enrolment/total-enrolled"
-                title="View details">
-                <CirclePlus className="size-4" />
-              </Link>
+                <CirclePlus className="size-4 ml-5" />
             </div>
+            </Link>
           </CardHeader>
         </Card>
       </Button>

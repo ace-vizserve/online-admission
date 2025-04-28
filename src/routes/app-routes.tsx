@@ -9,6 +9,7 @@ import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
 import Documents from "@/pages/private/documents";
 import { Enrollment } from "@/pages/private/Enrollment";
+import { Files } from "@/pages/private/files";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
 import Homepage from "@/pages/public/home-page";
@@ -124,7 +125,7 @@ function AppRoutes() {
             path="student-file/:id"
             element={
               <AuthGuard>
-                <SingleEnrol />
+                <Files />
               </AuthGuard>
             }
           />

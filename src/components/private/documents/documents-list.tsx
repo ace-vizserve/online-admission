@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,7 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Contact, Copy, MoreHorizontal, User } from "lucide-react";
+import { ArrowUpDown, FileText, MoreHorizontal, User } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,14 +17,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Documents } from "@/documents";
 import { Link } from "react-router";
-import { toast } from "sonner";
 
 
 const data: Documents[] = [
@@ -133,34 +129,23 @@ export const columns: ColumnDef<Documents>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/single-student/${student.id}`}>
+            <Link to={`/admission/students/${student.id}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View full profile
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem className="text-xs">
-              <Contact className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
-              View Family Profile
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => copyStudentID(student.id)} className="text-xs">
-              <Copy className="mr-1" />
-              Copy Student ID
-            </DropdownMenuItem>
+            <Link to={`/admission/student-file/${student.id}`}>
+              <DropdownMenuItem className="text-xs">
+                <FileText className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
+                View documents
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
 ];
-
-function copyStudentID(studentID: string) {
-  navigator.clipboard.writeText(studentID);
-  toast.info("Copied!", {
-    description: "Student ID has been copied to your clipboard.",
-  });
-  toast.dismiss();
-}
 
 function DocumentsList() {
   const [sorting, setSorting] = React.useState<SortingState>([]);

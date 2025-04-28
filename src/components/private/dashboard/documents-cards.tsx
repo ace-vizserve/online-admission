@@ -13,7 +13,7 @@ export function DocumentsCards() {
         <Card className="w-full max-w-full xl:max-w-[370px]">
           <CardHeader className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground ml-10">
                 <div className="rounded-md bg-primary p-2">
                   <UserPlus2 className="stroke-white size-5" />
                 </div>
