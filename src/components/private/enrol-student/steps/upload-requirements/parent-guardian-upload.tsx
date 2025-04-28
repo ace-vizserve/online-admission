@@ -52,7 +52,7 @@ function ParentGuardianUpload() {
     setSubmitState("pending");
     await wait(2000);
     setSubmitState("success");
-    localStorage.removeItem("enrolNewStudentFormState");
+    sessionStorage.removeItem("enrolNewStudentFormState");
   }
 
   if (submitState == "success") {

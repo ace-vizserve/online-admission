@@ -1,10 +1,8 @@
-import { createClient } from "@/lib/client";
+import { supabase } from "@/lib/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type FileError, type FileRejection, useDropzone } from "react-dropzone";
 
-const supabase = createClient();
-
-interface FileWithPreview extends File {
+export interface FileWithPreview extends File {
   preview?: string;
   errors: readonly FileError[];
 }
@@ -126,7 +124,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 
     const responses = await Promise.all(
       filesToUpload.map(async (file) => {
-        const { error } = await supabase.storage
+        const { error, data } = await supabase.storage
           .from(bucketName)
           .upload(path ? `${path}/${file.name}` : file.name, file, {
             cacheControl: cacheControl.toString(),
@@ -135,7 +133,11 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
         if (error) {
           return { name: file.name, message: error.message };
         } else {
-          return { name: file.name, message: undefined };
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from(bucketName).getPublicUrl(data.path);
+
+          return { name: file.name, message: undefined, filePath: publicUrl };
         }
       })
     );
@@ -145,7 +147,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     setErrors(responseErrors);
 
     const responseSuccesses = responses.filter((x) => x.message === undefined);
-    const newSuccesses = Array.from(new Set([...successes, ...responseSuccesses.map((x) => x.name)]));
+    const newSuccesses = Array.from(new Set([...successes, ...responseSuccesses.map((x) => x.filePath)]));
     setSuccesses(newSuccesses);
 
     setLoading(false);

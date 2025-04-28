@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-const IMAGE_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters long"),
@@ -12,9 +10,7 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const studentDetailsSchema = z.object({
-  studentPhoto: z.instanceof(File, { message: "Photo is required" }).refine((file) => {
-    return IMAGE_FILE_TYPES.includes(file.type);
-  }, "File must be a PNG/JPG/JPEG type"),
+  studentPhoto: z.string().url().min(1, { message: "Photo is required" }),
   firstName: z.string().min(1, {
     message: "First name is required",
   }),
@@ -239,19 +235,17 @@ export const enrollmentInformationSchema = z.object({
 z.instanceof(File, { message: "Photo is required" });
 
 export const studentUploadRequirementsSchema = z.object({
-  idPicture: z.instanceof(File, { message: "ID picture is required" }).refine((file) => {
-    return IMAGE_FILE_TYPES.includes(file.type);
-  }, "File must be a PNG/JPG/JPEG type"),
-  birthCertificate: z.instanceof(File, { message: "Birth certificate is required" }),
-  transcriptOfRecords: z.instanceof(File, { message: "Transcript of records is required" }),
-  form12: z.instanceof(File, { message: "Form 12 is required" }),
-  medicalExam: z.instanceof(File, { message: "Medical exam is required" }),
-  passport: z.instanceof(File, { message: "Student's passport copy is required" }),
+  idPicture: z.string().url().min(1, { message: "ID picture is required" }),
+  birthCertificate: z.string().url().min(1, { message: "Birth certificate is required" }),
+  transcriptOfRecords: z.string().url().min(1, { message: "Transcript of record is required" }),
+  form12: z.string().url().min(1, { message: "Form 12 is required" }),
+  medicalExam: z.string().url().min(1, { message: "Medical exam result is required" }),
+  passport: z.string().url().min(1, { message: "Student's passport copy is required" }),
   passportNumber: z.string().min(1, "Passport number is required"),
   passportExpiryDate: z.coerce.date({
     errorMap: () => ({ message: "Enter a valid passport expiry date" }),
   }),
-  pass: z.instanceof(File, { message: "Student's pass copy is required" }),
+  pass: z.string().url().min(1, { message: "Student's pass copy is required" }),
   passType: z.string().min(1, "Pass type is required"),
   passExpiryDate: z.coerce.date({
     errorMap: () => ({ message: "Enter a valid pass expiry date" }),
@@ -259,12 +253,12 @@ export const studentUploadRequirementsSchema = z.object({
 });
 
 export const parentGuardianUploadRequirementsSchema = z.object({
-  passport: z.instanceof(File, { message: "Parent/Guardian's passport copy is required" }),
+  passport: z.string().url().min(1, { message: "Student's passport copy is required" }),
   passportNumber: z.string().min(1, "Passport number is required"),
   passportExpiryDate: z.coerce.date({
     errorMap: () => ({ message: "Enter a valid passport expiry date" }),
   }),
-  pass: z.instanceof(File, { message: "Parent/Guardian's pass copy is required" }),
+  pass: z.string().url().min(1, { message: "Student's pass copy is required" }),
   passType: z.string().min(1, "Pass type is required"),
   passExpiryDate: z.coerce.date({
     errorMap: () => ({ message: "Enter a valid pass expiry date" }),

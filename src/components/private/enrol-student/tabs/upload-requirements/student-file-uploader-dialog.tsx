@@ -94,13 +94,7 @@ const StudentFileUploaderDialog = memo(function ({
                   <FormControl>
                     <FileUploader
                       value={value}
-                      onValueChange={(file) => {
-                        if (file) {
-                          form.setValue(name, file[0]);
-                          form.trigger(name);
-                        }
-                        onValueChange(file);
-                      }}
+                      onValueChange={onValueChange}
                       dropzoneOptions={dropZoneConfig}
                       className="relative bg-background rounded-lg">
                       <FileInput id="fileInput" className="bg-muted border-2 border-dashed">
@@ -360,12 +354,7 @@ function StudentFileUploaderDrawer({
                 <FormControl>
                   <FileUploader
                     value={value}
-                    onValueChange={(file) => {
-                      if (file) {
-                        form.setValue(name, file[0]);
-                      }
-                      onValueChange(file);
-                    }}
+                    onValueChange={onValueChange}
                     dropzoneOptions={dropZoneConfig}
                     className="relative bg-background rounded-lg">
                     <FileInput id="fileInput" className="bg-muted border-2 border-dashed">

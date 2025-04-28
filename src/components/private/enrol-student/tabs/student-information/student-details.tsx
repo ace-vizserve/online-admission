@@ -74,13 +74,7 @@ function StudentDetails() {
               <FormControl>
                 <FileUploader
                   value={files}
-                  onValueChange={(file) => {
-                    if (file) {
-                      form.setValue("studentPhoto", file[0]);
-                      form.trigger("studentPhoto");
-                    }
-                    setFiles(file);
-                  }}
+                  onValueChange={setFiles}
                   dropzoneOptions={dropZoneConfig}
                   className="relative bg-background rounded-lg">
                   <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
@@ -94,19 +88,19 @@ function StudentDetails() {
                     </div>
                   </FileInput>
                   <FileUploaderContent>
-                    {files == null && formState.studentInfo?.studentDetails.studentPhoto && (
+                    {files == null && formState.studentInfo?.studentDetails.studentPhoto != null && (
                       <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
                         <div className="flex items-center gap-1">
                           <Paperclip className="h-4 w-4 stroke-current" />
                           <span className="text-sm font-medium">
-                            {formState.studentInfo.studentDetails.studentPhoto.name.split("\\").pop()}
+                            {formState.studentInfo.studentDetails.studentPhoto}
                           </span>
                         </div>
 
                         <Trash2
                           className="h-4 w-4 "
                           onClick={() => {
-                            form.setValue("studentPhoto", undefined as unknown as File, { shouldValidate: true });
+                            form.setValue("studentPhoto", "");
                             setFiles([]);
                             setFormState({
                               ...formState,
@@ -114,7 +108,7 @@ function StudentDetails() {
                                 ...formState.studentInfo!,
                                 studentDetails: {
                                   ...formState.studentInfo!.studentDetails,
-                                  studentPhoto: undefined as unknown as File,
+                                  studentPhoto: "",
                                 },
                               },
                             });
