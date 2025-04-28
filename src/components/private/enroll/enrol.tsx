@@ -110,15 +110,17 @@ export const columns: ColumnDef<levelYear>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/single-student/${student.id}`}>
+            <Link to={`/admission/students/${student.id}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View full profile
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem className="text-xs">
-              <Contact className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
-              View Family Profile
-            </DropdownMenuItem>
+            <Link to={`/admission/single-student/${student.id}`}>
+              <DropdownMenuItem className="text-xs">
+                <Contact className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
+                View All Enrolments
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       );

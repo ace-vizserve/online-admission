@@ -21,6 +21,7 @@ import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-i
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
 import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requiremts";
 import { Enrollment } from "@/pages/private/Enrollment";
+import { Files } from "@/pages/private/files";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
 import Homepage from "@/pages/public/home-page";
@@ -135,7 +136,7 @@ function AppRoutes() {
             path="student-file/:id"
             element={
               <AuthGuard>
-                <SingleEnrol />
+                <Files />
               </AuthGuard>
             }
           />
