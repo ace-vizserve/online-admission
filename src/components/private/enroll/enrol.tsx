@@ -116,6 +116,21 @@ export const columns: ColumnDef<levelYear>[] = [
      cell: ({ row }) => <div className="text-xs pl-13 tabular-nums">{row.getValue("status")}</div>,
    },
   {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Status
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("status")}</div>,
+  },
+  {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {

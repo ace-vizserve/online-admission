@@ -1,4 +1,4 @@
-import students2 from "@/assets/landing-page/students2.png";
+import students2 from "@/assets/landing-page/Secondary-Students-Group-Children_3.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
