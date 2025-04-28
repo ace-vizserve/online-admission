@@ -65,36 +65,46 @@ const data: StudentInfo[] = [
 ];
 
 export const columns: ColumnDef<StudentInfo>[] = [
- {
-     accessorKey: "studentName",
-     header: "Student Name",
-     cell: ({ row }) => <div className="capitalize text-xs">{row.getValue("studentName")}</div>,
-   },
-   {
-     accessorKey: "age",
-     header: ({ column }) => {
-       return (
-         <Button
-           variant={"ghost"}
-           className="cursor-pointer"
-           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-           Age
-           <ArrowUpDown />
-         </Button>
-       );
-     },
-     cell: ({ row }) => <div className="text-xs tabular-nums">{row.getValue("age")} years old</div>,
-   },
-   {
-     accessorKey: "motherName",
-     header: () => "Mother's Name",
-     cell: ({ row }) => <div className="text-xs">{row.getValue("motherName")}</div>,
-   },
-   {
-     accessorKey: "fatherName",
-     header: () => "Father's Name",
-     cell: ({ row }) => <div className="text-xs">{row.getValue("fatherName")}</div>,
-   },
+{
+    accessorKey: "studentName",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Student Name
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs pl-4 tabular-nums">{row.getValue("studentName")} years old</div>,
+  },
+  {
+    accessorKey: "age",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Age
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs tabular-nums">{row.getValue("age")} years old</div>,
+  },
+  {
+    accessorKey: "motherName",
+    header: () => "Mother's Name",
+    cell: ({ row }) => <div className="text-xs">{row.getValue("motherName")}</div>,
+  },
+  {
+    accessorKey: "fatherName",
+    header: () => "Father's Name",
+    cell: ({ row }) => <div className="text-xs">{row.getValue("fatherName")}</div>,
+  },
   {
     id: "actions",
     enableHiding: false,
