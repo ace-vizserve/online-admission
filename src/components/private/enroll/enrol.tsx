@@ -96,21 +96,6 @@ export const columns: ColumnDef<StudentInfo>[] = [
      cell: ({ row }) => <div className="text-xs">{row.getValue("fatherName")}</div>,
    },
   {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant={"ghost"}
-          className="cursor-pointer"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Status
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("status")}</div>,
-  },
-  {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
