@@ -1,10 +1,10 @@
 import PageMetaData from "@/components/page-metadata";
 import { SectionCards } from "@/components/private/dashboard/section-cards";
 import Enroll from "@/components/private/enroll/enrol";
-import { USER_DASHBOARD_TITLE_DESCRIPTION } from "@/data";
+import { ENROLMENT_PAGE_FOR_STUDENT } from "@/data";
 
 export const Enrollment = () => {
-  const { title, description } = USER_DASHBOARD_TITLE_DESCRIPTION;
+  const { title, description } = ENROLMENT_PAGE_FOR_STUDENT;
 
   return (
     <>

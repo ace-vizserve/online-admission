@@ -134,7 +134,7 @@ export const columns: ColumnDef<Documents>[] = [
                 <User className="mr-1" /> View full profile
               </DropdownMenuItem>
             </Link>
-            <Link to={`/admission/student-file/${student.id}`}>
+            <Link to={`/admission/documents/student-file/${student.id}`}>
               <DropdownMenuItem className="text-xs">
                 <FileText className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
                 View documents
