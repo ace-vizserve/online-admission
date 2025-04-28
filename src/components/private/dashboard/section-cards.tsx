@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export function SectionCards() {
   return (
-    <div className="flex flex-col xl:flex-row justify-between gap-4">
+    <div className="flex flex-col xl:flex-row justify-between items-center gap-4">
       <div className="order-2 flex flex-col lg:flex-row gap-4 w-full">
         <Card className="w-full max-w-full xl:max-w-[370px]">
           <CardHeader className="relative flex flex-col gap-2">
