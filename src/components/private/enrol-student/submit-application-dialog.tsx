@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { CheckCircle2, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -36,8 +36,14 @@ function SubmitApplicationDialog() {
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-green-600 hover:bg-green-500">
-            <Link to={"/application-submitted"}>Continue</Link>
+          <AlertDialogAction asChild>
+            <Link
+              className={buttonVariants({
+                className: "!bg-green-600 hover:!bg-green-500",
+              })}
+              to={"/application-submitted"}>
+              Continue
+            </Link>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

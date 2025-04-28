@@ -36,9 +36,9 @@ function StudentUpload() {
       uploadRequirements: {
         studentUploadRequirements: values,
         parentGuardianUploadRequirements: {
-          pass: undefined as unknown as File,
+          pass: "",
           passExpiryDate: new Date(),
-          passport: undefined as unknown as File,
+          passport: "",
           passportExpiryDate: new Date(),
           passportNumber: "",
           passType: "",
