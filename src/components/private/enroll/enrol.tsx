@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, FileText, MoreHorizontal, User } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, User } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -23,97 +23,77 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { levelYear } from "@/types";
+import { StudentInfo } from "@/types";
 import { Link } from "react-router";
 
-const data: levelYear[] = [
+const data: StudentInfo[] = [
   {
     id: "stu001",
     studentName: "Ken Ramos",
-    academicYear: "AY2026",
-    level: "Primary 1",
-    status: "Enroled",
+    age: 8,
+    motherName: "Liza Ramos",
+    fatherName: "Jon Ramos",
   },
   {
     id: "stu002",
     studentName: "Abe Dela Cruz",
-    academicYear: "AY2024",
-    level: "Primary 3",
-    status: "Enroled",
+    age: 9,
+    motherName: "Maria Dela Cruz",
+    fatherName: "Jose Dela Cruz",
   },
   {
     id: "stu003",
     studentName: "Monserrat Reyes",
-    academicYear: "AY2025",
-    level: "Primary 2",
-    status: "Enroled",
+    age: 7,
+    motherName: "Celia Reyes",
+    fatherName: "Marco Reyes",
   },
   {
     id: "stu004",
     studentName: "Silas Tan",
-    academicYear: "AY2025",
-    level: "Primary 1",
-    status: "Enroled",
+    age: 10,
+    motherName: "Ana Tan",
+    fatherName: "Richard Tan",
   },
   {
     id: "stu005",
     studentName: "Carmella Garcia",
-    academicYear: "AY2026",
-    level: "Primary 2",
-    status: "Enroled",
+    age: 6,
+    motherName: "Grace Garcia",
+    fatherName: "Daniel Garcia",
   },
 ];
 
-export const columns: ColumnDef<levelYear>[] = [
+export const columns: ColumnDef<StudentInfo>[] = [
  {
      accessorKey: "studentName",
      header: "Student Name",
      cell: ({ row }) => <div className="capitalize text-xs">{row.getValue("studentName")}</div>,
    },
    {
-     accessorKey: "academicYear",
+     accessorKey: "age",
      header: ({ column }) => {
        return (
          <Button
            variant={"ghost"}
            className="cursor-pointer"
            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-           Academic Year
+           Age
            <ArrowUpDown />
          </Button>
        );
      },
-     cell: ({ row }) => <div className="text-xs pl-13 tabular-nums">{row.getValue("academicYear")}</div>,
+     cell: ({ row }) => <div className="text-xs tabular-nums">{row.getValue("age")} years old</div>,
    },
    {
-     accessorKey: "level",
-     header: ({ column }) => {
-       return (
-         <Button
-           variant={"ghost"}
-           className="cursor-pointer mr-5"
-           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-           Level
-           <ArrowUpDown />
-         </Button>
-       );
-     },
-     cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("level")}</div>,
+     accessorKey: "motherName",
+     header: () => "Mother's Name",
+     cell: ({ row }) => <div className="text-xs">{row.getValue("motherName")}</div>,
    },
    {
-     accessorKey: "status",
-     header: ({ column }) => {
-       return (
-         <Button
-           variant={"ghost"}
-           className="cursor-pointer ml-10"
-           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-           Status
-           <ArrowUpDown />
-         </Button>
-       );
-     },
-     cell: ({ row }) => <div className="text-xs pl-13 tabular-nums">{row.getValue("status")}</div>,
+     accessorKey: "fatherName",
+     header: () => "Father's Name",
+     cell: ({ row }) => <div className="text-xs">{row.getValue("fatherName")}</div>,
    },
   {
     id: "actions",
@@ -130,15 +110,9 @@ export const columns: ColumnDef<levelYear>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/students/${student.id}`}>
+            <Link to={`/admission/single-student/${student.id}`}>
               <DropdownMenuItem className="text-xs">
-                <User className="mr-1" /> Enrolment Information
-              </DropdownMenuItem>
-            </Link>
-            <Link to={`/admission/student-file/${student.id}`}>
-              <DropdownMenuItem className="text-xs">
-                <FileText className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
-                Documents Uploaded
+                <User className="mr-1" /> View Enrolments
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
