@@ -1,7 +1,19 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDaysIcon, MapPinIcon, User, UserCircleIcon, Users, UsersIcon } from "lucide-react";
+import {
+  Cake,
+  CalendarDaysIcon,
+  CalendarFold,
+  Eye,
+  FolderOpen,
+  MapPinIcon,
+  User,
+  UserCircleIcon,
+  Users,
+} from "lucide-react";
 
 type ProfileProps = {
   studentID: string;
@@ -17,6 +29,11 @@ const tabs = [
     name: "Family Information",
     value: "family-information",
     icon: Users,
+  },
+  {
+    name: "Student Documents",
+    value: "student-documents",
+    icon: FolderOpen,
   },
 ];
 
@@ -60,73 +77,19 @@ function Profile({ studentID }: ProfileProps) {
 }
 
 function InfoBox({ label, value }: { label: string; value: string }) {
-  if (value === "family-information") {
-    return (
-      <div className="space-y-8 py-6 xl:py-0">
-        <div className="space-y-2">
-          <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
-          <p className="text-sm text-muted-foreground">
-            This section includes details about the student's parents, guardian, and siblings.
-          </p>
-        </div>
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground font-medium">Father's Name</p>
-                <div className="rounded-md bg-primary p-2">
-                  <UsersIcon className="stroke-white size-4" />
-                </div>
-              </div>
-              <p className="text-base font-semibold mt-1">Michael Doe</p>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground font-medium">Mother's Name</p>
-                <div className="rounded-md bg-primary p-2">
-                  <UsersIcon className="stroke-white size-4" />
-                </div>
-              </div>
-              <p className="text-base font-semibold mt-1">Sarah Doe</p>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground font-medium">Guardian</p>
-                <div className="rounded-md bg-primary p-2">
-                  <UsersIcon className="stroke-white size-4" />
-                </div>
-              </div>
-              <p className="text-base font-semibold mt-1">Jane Smith</p>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground font-medium">Siblings</p>
-                <div className="rounded-md bg-primary p-2">
-                  <UsersIcon className="stroke-white size-4" />
-                </div>
-              </div>
-              <ul className="mt-4 text-sm">
-                <li>
-                  <p className="font-semibold mt-1">Emily Doe (Age 10)</p>
-                </li>
-                <li>
-                  <p className="font-semibold mt-1">Jacob Doe (Age 8)</p>
-                </li>
-              </ul>
-            </CardHeader>
-          </Card>
-        </div>
-      </div>
-    );
+  switch (value) {
+    case "family-information":
+      return <FamilyInformation label={label} />;
+    case "student-information":
+      return <StudentInformation label={label} />;
+    case "student-documents":
+      return <StudentDocuments label={label} />;
+    default:
+      break;
   }
+}
 
+function StudentInformation({ label }: { label: string }) {
   return (
     <div className="space-y-8 py-6 xl:py-0">
       <div className="space-y-2">
@@ -135,62 +98,141 @@ function InfoBox({ label, value }: { label: string; value: string }) {
           This section contains the student's personal details such as name, age, and current school year.
         </p>
       </div>
+
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground font-medium">Name</p>
-              <div className="rounded-md bg-primary p-2">
-                <UserCircleIcon className="stroke-white size-4" />
+        {[
+          { label: "Student's name", value: "John Doe", icon: <UserCircleIcon className="size-4" /> },
+          {
+            label: "Current School Year",
+            value: "2024–2025",
+            icon: <CalendarFold className="size-4" />,
+          },
+          { label: "Age", value: "12 years old", icon: <CalendarDaysIcon className="size-4" /> },
+          { label: "Birthdate", value: "July 7, 2012", icon: <Cake className="size-4" /> },
+          { label: "Nationality", value: "Filipino", icon: <MapPinIcon className="size-4" /> },
+        ].map((item, index) => (
+          <Card key={index} className="py-4">
+            <CardHeader className="px-4 !gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant={"outline"} className="rounded-full">
+                    {item.label}
+                  </Badge>
+                </div>
+                <Button size={"icon"} variant={"outline"}>
+                  {item.icon}
+                </Button>
               </div>
-            </div>
-            <p className="text-base font-semibold mt-1">John Doe</p>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground font-medium">Current School Year</p>
-              <div className="rounded-md bg-primary p-2">
-                <CalendarDaysIcon className="stroke-white size-4" />
+              <div className="text-sm font-semibold text-muted-foreground">{item.value}</div>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FamilyInformation({ label }: { label: string }) {
+  return (
+    <div className="space-y-8 py-6 xl:py-0">
+      <div className="space-y-2">
+        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
+        <p className="text-sm text-muted-foreground">
+          This section includes details about the student's parents, guardian, and siblings.
+        </p>
+      </div>
+
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[
+          { label: "Father's Name", value: "Michael Doe", created: new Date() },
+          { label: "Mother's Name", value: "Sarah Doe", created: new Date() },
+          { label: "Guardian's Name", value: "Jane Smith", created: new Date() },
+          {
+            label: "Siblings",
+            value: (
+              <ul className="space-y-2 text-sm font-semibold">
+                <li className="w-full flex items-center justify-between">
+                  <p>Emily Doe</p>
+                  <p> Age 10</p>
+                </li>
+                <li className="w-full flex items-center justify-between">
+                  <p>Jacob Doe</p>
+                  <p> Age 8</p>
+                </li>
+              </ul>
+            ),
+            created: new Date(), // You can adjust this if you want to display specific dates for siblings or any other data
+          },
+        ].map((item, index) => (
+          <Card key={index} className="py-4">
+            <CardHeader className="px-4 !gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant={"outline"} className="rounded-full">
+                    {item.label}
+                  </Badge>
+                </div>
+                <Button size={"icon"} variant={"outline"}>
+                  <Users className="size-4" />
+                </Button>
               </div>
-            </div>
-            <p className="text-base font-semibold mt-1">2024–2025</p>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground font-medium">Age</p>
-              <div className="rounded-md bg-primary p-2">
-                <CalendarDaysIcon className="stroke-white size-4" />
-              </div>
-            </div>
-            <p className="text-base font-semibold mt-1">12</p>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground font-medium">Birthdate</p>
-              <div className="rounded-md bg-primary p-2">
-                <CalendarDaysIcon className="stroke-white size-4" />
-              </div>
-            </div>
-            <p className="text-base font-semibold mt-1">July 7, 2012</p>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground font-medium">Nationality</p>
-              <div className="rounded-md bg-primary p-2">
-                <MapPinIcon className="stroke-white size-4" />
-              </div>
-            </div>
-            <p className="text-base font-semibold mt-1">Filipino</p>
-          </CardHeader>
-        </Card>
+
+              <div className=" text-sm font-semibold text-muted-foreground">{item.value}</div>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StudentDocuments({ label }: { label: string }) {
+  return (
+    <div className="space-y-8 py-6 xl:py-0">
+      <div className="space-y-2">
+        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
+        <p className="text-sm text-muted-foreground">
+          This section includes details about the student's documents for this current school year.
+        </p>
+      </div>
+
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {["Birth Certificate", "Transcript of Records", "Form 12", "Medical Exam", "Passport", "Pass"].map(
+          (doc, index) => (
+            <Card key={index} className="py-4">
+              <CardHeader className="px-4 !gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={"outline"} className="rounded-full text-">
+                      {doc}
+                    </Badge>
+                  </div>
+                  <Button size={"icon"} variant={"outline"}>
+                    <Eye className="size-4" />
+                  </Button>
+                </div>
+                <div className="w-full flex items-start justify-between">
+                  {doc === "Passport" || doc === "Pass" ? (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Created {new Date().toLocaleDateString()}
+                      </p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Expires {new Date().toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Created {new Date().toLocaleDateString()}
+                    </p>
+                  )}
+
+                  <p className="text-sm text-muted-foreground">3.2MB</p>
+                </div>
+              </CardHeader>
+            </Card>
+          )
+        )}
       </div>
     </div>
   );
