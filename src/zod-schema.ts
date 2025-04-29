@@ -12,7 +12,6 @@ export const forgotPasswordSchema = z.object({
 export const studentDetailsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
-    studentPhoto: z.string().min(1, { message: "Photo is required" }),
     firstName: z.string().min(1, {
       message: "First name is required",
     }),

@@ -29,7 +29,7 @@ function NewStudentSteps() {
   const { pathname } = useLocation();
 
   return (
-    <ol className="flex flex-col-reverse lg:flex-row gap-0.5 pb-6 lg:pb-0">
+    <ol className="flex flex-col lg:flex-row gap-0.5 pb-6 lg:pb-0">
       {STEPS.map((step, i) => {
         const isCurrent = pathname.endsWith(step.url);
         const isCompleted = STEPS.slice(i + 1).some((step) => pathname.endsWith(step.url));

@@ -25,7 +25,7 @@ function OldStudentLayout() {
 
       <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
         <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
-          <div className="order-last lg:order-first w-full overflow-x-auto">
+          <div className="w-full overflow-x-auto">
             <OldStudentSteps />
           </div>
           <Outlet />
