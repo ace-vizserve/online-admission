@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { SingleStudent } from "@/single-student";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -20,78 +19,103 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Contact, MoreHorizontal, User } from "lucide-react";
+import { ArrowUpDown, FileUser, MoreHorizontal } from "lucide-react";
 import * as React from "react";
+import { SingleStudent  } from "@/types";
 import { Link, useParams } from "react-router";
 
-const data: SingleStudent[] = [
+// Original student data with nested arrays
+const rawData = [
   {
     id: "stu001",
     studentName: "Ken Ramos",
-    status: "Enroled",
-    academicYear: "AY2026",
-    level: "Primary 1",
+    academicYear: ["AY2026", "AY2025", "AY2024"],
+    level: ["Primary 3", "Primary 2", "Primary 1"],
+    status: ["Enrolled", "Enrolled", "Enrolled"],
   },
   {
     id: "stu002",
     studentName: "Abe Dela Cruz",
-    status: "Not Enroled",
-    academicYear: "AY2024",
-    level: "Primary 3",
+    academicYear: ["AY2026", "AY2025", "AY2024"],
+    level: ["Primary 3", "Primary 2", "Primary 1"],
+    status: ["Not Enrolled", "Enrolled", "Enrolled"],
   },
   {
     id: "stu003",
     studentName: "Monserrat Reyes",
-    status: "Enroled",
-    academicYear: "AY2025",
-    level: "Primary 2",
+    academicYear: ["AY2026", "AY2025", "AY2024"],
+    level: ["Primary 3", "Primary 2", "Primary 1"],
+    status: ["Enrolled", "Enrolled", "Enrolled"],
   },
+  {
+    id: "stu004",
+    studentName: "Silas Tan",
+    academicYear: ["AY2026", "AY2025", "AY2024"],
+    level: ["Primary 3", "Primary 2", "Primary 1"],
+    status: ["Enrolled", "Enrolled", "Enrolled"],
+  },
+  {
+    id: "stu005",
+    studentName: "Carmella Garcia",
+    academicYear: ["AY2026", "AY2025", "AY2024"],
+    level: ["Primary 3", "Primary 2", "Primary 1"],
+    status: ["Enrolled", "Enrolled", "Enrolled"],
+  },
+  
 ];
 
-export const columns: ColumnDef<SingleStudent>[] = [
+const flattenedData: SingleStudent[] = rawData.flatMap((student) =>
+  student.academicYear.map((year, index) => ({
+    id: student.id,
+    studentName: student.studentName,
+    academicYear: year,
+    level: student.level[index],
+    status: student.status[index],
+  }))
+);
+
+
+const columns: ColumnDef<SingleStudent>[] = [
   {
     accessorKey: "academicYear",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant={"ghost"}
-          className="cursor-pointer"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Academic Year
-          <ArrowUpDown />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant={"ghost"}
+        className="cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Academic Year
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => <div className="capitalize text-xs ml-9">{row.getValue("academicYear")}</div>,
   },
   {
     accessorKey: "level",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant={"ghost"}
-          className="cursor-pointer mr-10"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Level
-          <ArrowUpDown />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant={"ghost"}
+        className="cursor-pointer mr-10"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Level
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("level")}</div>,
   },
   {
     accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant={"ghost"}
-          className="cursor-pointer"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Status
-          <ArrowUpDown />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant={"ghost"}
+        className="cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Status
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("status")}</div>,
   },
   {
@@ -105,19 +129,15 @@ export const columns: ColumnDef<SingleStudent>[] = [
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/students/${student.id}`}>
+            <Link to={`/admission/uploaded-file/${student.id}`}>
               <DropdownMenuItem className="text-xs">
-                <User className="mr-1" /> View full profile
+                <FileUser className="mr-1 h-4 w-4" /> View Enrolment Information
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem className="text-xs">
-              <Contact className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
-              View Family Profile
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -129,10 +149,12 @@ function SingleEnrol() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const { id } = useParams<{ id: string }>();
-  const student = data.find((s) => s.id === id);
+
+  const studentData = flattenedData.filter((record) => record.id === id);
+  const studentName = studentData.length > 0 ? studentData[0].studentName : null;
 
   const table = useReactTable({
-    data,
+    data: studentData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -140,7 +162,6 @@ function SingleEnrol() {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-
     state: {
       sorting,
       columnFilters,
@@ -150,13 +171,13 @@ function SingleEnrol() {
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">
-        {student ? `${student.studentName}'s Profile` : "Student not found"}
+        {studentName ? `${studentName}'s Profile` : "Student not found"}
       </h1>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter names..."
-          value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("studentName")?.setFilterValue(event.target.value)}
+          placeholder="Filter academic years..."
+          value={(table.getColumn("academicYear")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("academicYear")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
       </div>
@@ -165,13 +186,13 @@ function SingleEnrol() {
           <TableHeader className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -180,7 +201,9 @@ function SingleEnrol() {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -200,10 +223,16 @@ function SingleEnrol() {
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}>
+            disabled={!table.getCanPreviousPage()}
+          >
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
             Next
           </Button>
         </div>
