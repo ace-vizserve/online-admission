@@ -13,6 +13,20 @@ import { Navigate } from "react-router";
 
 const tabs = [
   {
+    name: "Mother Information",
+    skippable: false,
+    value: "mother-information",
+    icon: User,
+    component: MotherInformation,
+  },
+  {
+    name: "Father Information",
+    skippable: true,
+    value: "father-information",
+    icon: Users,
+    component: FatherInformation,
+  },
+  {
     name: "Guardian Information",
     skippable: true,
     value: "guardian-information",
@@ -25,21 +39,6 @@ const tabs = [
     value: "sibling-information",
     icon: Baby,
     component: SiblingInformation,
-  },
-  {
-    name: "Father Information",
-    skippable: true,
-    value: "father-information",
-    icon: Users,
-    component: FatherInformation,
-  },
-
-  {
-    name: "Mother Information",
-    skippable: false,
-    value: "mother-information",
-    icon: User,
-    component: MotherInformation,
   },
 ];
 

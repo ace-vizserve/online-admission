@@ -22,6 +22,7 @@ import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
 function MotherInformation() {
   const navigate = useNavigate();
   const [isPending, setTransition] = useTransition();
+  const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
@@ -39,7 +40,7 @@ function MotherInformation() {
       ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        motherInfo: { ...values },
+        motherInfo: { ...values, isValid: true },
       },
     });
     toast.success("Family information details saved!", {
@@ -158,29 +159,56 @@ function MotherInformation() {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="studentsMotherReligion"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Religion</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full lg:max-w-[240px]">
-                        <SelectValue placeholder="Select a religion" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {religions.map((religion) => (
-                        <SelectItem key={religion.value} value={religion.value}>
-                          {religion.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Enter the student's mother religion.</FormDescription>
-                  <FormMessage />
-                </FormItem>
+                <div className="flex flex-col gap-2">
+                  <FormItem>
+                    <FormLabel>Religion</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "other") {
+                          setIsOtherReligion(true);
+                        } else {
+                          setIsOtherReligion(false);
+                        }
+
+                        field.onChange(value);
+                      }}
+                      defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full lg:max-w-[240px]">
+                          <SelectValue placeholder="Select a religion" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {religions.map((religion) => (
+                          <SelectItem key={religion.value} value={religion.value}>
+                            {religion.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Enter mother's religion</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                  {(isOtherReligion || formState.familyInfo?.motherInfo?.studentsMotherOtherReligion) && (
+                    <FormField
+                      control={form.control}
+                      name="studentsMotherOtherReligion"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormControl>
+                            <Input placeholder="Please specify religion" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
               )}
             />
           </div>

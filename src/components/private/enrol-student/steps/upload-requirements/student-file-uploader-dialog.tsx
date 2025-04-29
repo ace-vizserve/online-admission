@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
@@ -27,11 +27,15 @@ import { passTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { StudentFileUploaderDialogProps } from "@/types";
 import { format } from "date-fns";
-import { CalendarIcon, CircleAlert, CloudUpload, Paperclip, Trash2, Upload } from "lucide-react";
+import { CalendarIcon, CircleAlert, CloudUpload, Download, Paperclip, Trash2, Upload } from "lucide-react";
 import { memo } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
+import { Link } from "react-router";
+
+const form12Url = import.meta.env.VITE_FORM_12_URL as string;
+const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 const StudentFileUploaderDialog = memo(function ({
   form,
@@ -87,23 +91,40 @@ const StudentFileUploaderDialog = memo(function ({
               </DialogDescription>
             </DialogHeader>
 
+            {name === "form12" && (
+              <Link
+                to={form12Url}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2",
+                })}>
+                Download Form 12 Form <Download />
+              </Link>
+            )}
+
+            {name === "medicalExam" && (
+              <Link
+                to={medicalExamurl}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2",
+                })}>
+                Download Medical Exam Form <Download />
+              </Link>
+            )}
+
             <FormField
               control={form.control}
               name={name}
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <FileUploader
                       value={value}
-                      onValueChange={(file) => {
-                        if (file) {
-                          form.setValue(name, file[0].name);
-                        }
-                        onValueChange(file);
-                      }}
+                      onValueChange={onValueChange}
                       dropzoneOptions={dropZoneConfig}
                       className="relative bg-background rounded-lg">
-                      <FileInput id="fileInput" className="bg-muted border-2 border-dashed">
+                      <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
                         <div className="flex items-center justify-center flex-col p-8 w-full">
                           <CloudUpload className="text-gray-500 w-10 h-10" />
                           <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
@@ -146,7 +167,7 @@ const StudentFileUploaderDialog = memo(function ({
                         {value &&
                           value.length > 0 &&
                           value.map((file, i) => (
-                            <FileUploaderItem key={i} index={i}>
+                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
                               <Paperclip className="h-4 w-4 stroke-current" />
                               <span>{file.name}</span>
                             </FileUploaderItem>
@@ -351,6 +372,28 @@ function StudentFileUploaderDrawer({
               Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
             </DrawerDescription>
           </DrawerHeader>
+
+          {name === "form12" && (
+            <Link
+              to={form12Url}
+              target="_blank"
+              className={buttonVariants({
+                className: "gap-2 mb-2",
+              })}>
+              Download Form 12 Form <Download />
+            </Link>
+          )}
+
+          {name === "medicalExam" && (
+            <Link
+              to={medicalExamurl}
+              target="_blank"
+              className={buttonVariants({
+                className: "gap-2 mb-2",
+              })}>
+              Download Medical Exam Form <Download />
+            </Link>
+          )}
 
           <FormField
             control={form.control}

@@ -36,12 +36,7 @@ function StudentUpload() {
       uploadRequirements: {
         studentUploadRequirements: values,
         parentGuardianUploadRequirements: {
-          pass: "",
-          passExpiryDate: new Date(),
-          passport: "",
-          passportExpiryDate: new Date(),
-          passportNumber: "",
-          passType: "",
+          ...formState.uploadRequirements!.parentGuardianUploadRequirements,
         },
       },
     });

@@ -12,18 +12,19 @@ import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
+import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function SiblingInformation() {
   const { formState, setFormState } = useEnrolNewStudentContext();
+  const [siblingOtherReligions, setSiblingOtherReligions] = useState<Record<number, boolean>>({});
   const form = useForm<SiblingInformationSchema>({
     resolver: zodResolver(siblingInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.siblingsInfo,
     },
   });
-
   const { append, fields, remove } = useFieldArray({
     control: form.control,
     name: "siblings" as never,
@@ -66,7 +67,7 @@ function SiblingInformation() {
                       control={form.control}
                       name={`siblings.${index}.siblingFullName`}
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col">
                           <FormLabel>Full name</FormLabel>
                           <FormControl>
                             <Input {...field} />
@@ -105,30 +106,55 @@ function SiblingInformation() {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name={`siblings.${index}.siblingReligion`}
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Religion</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select a religion" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {religions.map((religion) => (
-                                <SelectItem key={religion.value} value={religion.value}>
-                                  {religion.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>Enter the student's sibling religion.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
+                        <div className="flex flex-col gap-2">
+                          <FormItem>
+                            <FormLabel>Religion</FormLabel>
+                            <Select
+                              onValueChange={(value) => {
+                                setSiblingOtherReligions((prev) => ({
+                                  ...prev,
+                                  [index]: value === "other",
+                                }));
+
+                                field.onChange(value);
+                              }}
+                              defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="w-full lg:max-w-[240px]">
+                                  <SelectValue placeholder="Select a religion" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {religions.map((religion) => (
+                                  <SelectItem key={religion.value} value={religion.value}>
+                                    {religion.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>Enter father's religion</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                          {(siblingOtherReligions[index] ||
+                            formState.familyInfo?.siblingsInfo?.siblings[index].siblingOtherReligion) && (
+                            <FormField
+                              control={form.control}
+                              name={`siblings.${index}.siblingOtherReligion`}
+                              render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                  <FormControl>
+                                    <Input placeholder="Please specify religion" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                        </div>
                       )}
                     />
                   </div>

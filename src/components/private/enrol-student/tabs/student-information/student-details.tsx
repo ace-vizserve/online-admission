@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -8,12 +7,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { languages, religions } from "@/data";
+import { religions } from "@/data";
 import { cn } from "@/lib/utils";
-import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
+import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Check, ChevronsUpDown, CloudUpload, Paperclip, Save, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, CloudUpload, Paperclip, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useForm } from "react-hook-form";
@@ -21,6 +20,7 @@ import { toast } from "sonner";
 
 function StudentDetails() {
   const { formState, setFormState } = useEnrolOldStudentContext();
+  const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const [files, setFiles] = useState<File[] | null>(null);
 
   const dropZoneConfig: DropzoneOptions = {
@@ -54,9 +54,9 @@ function StudentDetails() {
 
     setFormState({
       studentInfo: {
-        studentDetails: values,
+        studentDetails: { ...values, isValid: true },
         addressContact: {
-          ...formState.studentInfo!.addressContact,
+          ...(formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema),
         },
       },
     });
@@ -263,25 +263,52 @@ function StudentDetails() {
               control={form.control}
               name="studentReligion"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Religion</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full lg:max-w-[240px]">
-                        <SelectValue placeholder="Select a religion" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {religions.map((religion) => (
-                        <SelectItem key={religion.value} value={religion.value}>
-                          {religion.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Your student's religion.</FormDescription>
-                  <FormMessage />
-                </FormItem>
+                <div className="flex flex-col gap-2">
+                  <FormItem>
+                    <FormLabel>Religion</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "other") {
+                          setIsOtherReligion(true);
+                        } else {
+                          setIsOtherReligion(false);
+                        }
+
+                        field.onChange(value);
+                      }}
+                      defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full lg:max-w-[240px]">
+                          <SelectValue placeholder="Select a religion" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {religions.map((religion) => (
+                          <SelectItem key={religion.value} value={religion.value}>
+                            {religion.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Your student's religion</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                  {isOtherReligion && (
+                    <FormField
+                      control={form.control}
+                      name="studentOtherReligion"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormControl>
+                            <Input placeholder="Please specify religion" {...field} />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
               )}
             />
 
@@ -290,52 +317,11 @@ function StudentDetails() {
               name="studentPrimaryLanguage"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Language</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "w-full lg:max-w-[240px] justify-between",
-                            !field.value && "text-muted-foreground"
-                          )}>
-                          {field.value
-                            ? languages.find((language) => language.value === field.value)?.label
-                            : "Select language"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[240px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search language..." />
-                        <CommandList>
-                          <CommandEmpty>No language found.</CommandEmpty>
-                          <CommandGroup>
-                            {languages.map((language) => (
-                              <CommandItem
-                                value={language.label}
-                                key={language.value}
-                                onSelect={() => {
-                                  form.setValue("studentPrimaryLanguage", language.value);
-                                }}>
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    language.value === field.value ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {language.label}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormDescription>This is the language the student speaking fluently.</FormDescription>
+                  <FormLabel>Primary language</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormDescription>Student speaks the language fluently</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

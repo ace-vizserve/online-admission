@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { studentUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
+import {
+  ParentGuardianUploadRequirementsSchema,
+  studentUploadRequirementsSchema,
+  StudentUploadRequirementsSchema,
+} from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save } from "lucide-react";
 import { useState } from "react";
@@ -26,6 +30,8 @@ function StudentUpload() {
     },
   });
 
+  console.log(form.getValues("idPicture"));
+
   function onSubmit(values: StudentUploadRequirementsSchema) {
     toast.success("Student documents saved!", {
       description: "You're now ready to upload the Parent/Guardian documents.",
@@ -34,15 +40,11 @@ function StudentUpload() {
     setFormState({
       ...formState,
       uploadRequirements: {
-        studentUploadRequirements: values,
         parentGuardianUploadRequirements: {
-          pass: "",
-          passExpiryDate: new Date(),
-          passport: "",
-          passportExpiryDate: new Date(),
-          passportNumber: "",
-          passType: "",
+          ...(formState.uploadRequirements
+            ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
         },
+        studentUploadRequirements: { ...values, isValid: true },
       },
     });
   }
