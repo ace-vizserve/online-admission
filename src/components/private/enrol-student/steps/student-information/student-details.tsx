@@ -1,5 +1,3 @@
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -9,13 +7,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
-import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { cn } from "@/lib/utils";
-import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
+import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -23,44 +20,12 @@ function StudentDetails() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
 
-  const props = useSupabaseUpload({
-    bucketName: "test",
-    path: "test",
-    allowedMimeTypes: ["image/*"],
-    maxFiles: 1,
-    maxFileSize: 1000 * 1000 * 4,
-    upsert: true,
-  });
-
   const form = useForm<StudentDetailsSchema>({
     resolver: zodResolver(studentDetailsSchema),
     defaultValues: {
       ...formState.studentInfo?.studentDetails,
     },
   });
-
-  useEffect(() => {
-    if (form.formState.errors.studentPhoto?.message != null) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [form.formState.errors.studentPhoto?.message]);
-
-  useEffect(() => {
-    if (props.isSuccess && props.successes[0]) {
-      form.setValue("studentPhoto", props.successes[0]);
-
-      setFormState({
-        studentInfo: {
-          studentDetails: {
-            ...(formState.studentInfo?.studentDetails as Omit<StudentDetailsSchema, "studentPhoto">),
-            studentPhoto: props.successes[0],
-          },
-          addressContact: formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema,
-        },
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.isSuccess, props.successes, setFormState]);
 
   function onSubmit(values: StudentDetailsSchema) {
     toast.success("Student details saved!", {
@@ -80,38 +45,6 @@ function StudentDetails() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
-        {formState.studentInfo?.studentDetails.studentPhoto != null ? (
-          <div className="border-2 border-gray-300 rounded-lg p-6 text-center bg-card transition-colors duration-300 text-foreground">
-            <Avatar className="h-20 w-20 mx-auto">
-              <AvatarImage
-                src={formState.studentInfo.studentDetails.studentPhoto}
-                alt="student photo"
-                className="object-cover"
-              />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <p className="mt-1 text-muted-foreground text-sm font-medium">Student photo</p>
-          </div>
-        ) : (
-          <FormField
-            control={form.control}
-            name="studentPhoto"
-            render={() => (
-              <FormItem>
-                <FormLabel>Select the Student's Photo</FormLabel>
-                <FormControl>
-                  <Dropzone {...props}>
-                    <DropzoneEmptyState />
-                    <DropzoneContent label="Student photo" />
-                  </Dropzone>
-                </FormControl>
-                <FormDescription>Select a file to upload</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}

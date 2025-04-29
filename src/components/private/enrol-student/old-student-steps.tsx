@@ -6,7 +6,7 @@ function OldStudentSteps() {
   const params = useParams();
 
   return (
-    <ol className="flex flex-col-reverse lg:flex-row gap-0.5 pb-6 lg:pb-0">
+    <ol className="flex flex-col lg:flex-row gap-0.5 pb-6 lg:pb-0">
       <NavLink
         to={`/enrol-student/${params.id}/student-info`}
         className={({ isActive }) =>
