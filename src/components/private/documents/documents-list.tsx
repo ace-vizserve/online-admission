@@ -64,7 +64,7 @@ const data: StudentInfo[] = [
 ];
 
 export const columns: ColumnDef<StudentInfo>[] = [
-  {
+{
     accessorKey: "studentName",
     header: ({ column }) => {
       return (
@@ -92,18 +92,38 @@ export const columns: ColumnDef<StudentInfo>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs tabular-nums">{row.getValue("age")} years old</div>,
+    cell: ({ row }) => <div className="text-xs pl-1 tabular-nums">{row.getValue("age")} years old</div>,
   },
   {
     accessorKey: "motherName",
-    header: () => "Mother's Name",
-    cell: ({ row }) => <div className="text-xs">{row.getValue("motherName")}</div>,
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Mother's Name
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("motherName")} years old</div>,
   },
   {
     accessorKey: "fatherName",
-    header: () => "Father's Name",
-    cell: ({ row }) => <div className="text-xs">{row.getValue("fatherName")}</div>,
-  },
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Father's Name
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("fatherName")} years old</div>,
+  },  
   {
     id: "actions",
     enableHiding: false,
