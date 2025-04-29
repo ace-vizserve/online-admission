@@ -24,6 +24,8 @@ import { Enrollment } from "@/pages/private/Enrollment";
 import { Files } from "@/pages/private/files";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
+import { Uploaded } from "@/pages/private/uploaded";
+
 import Homepage from "@/pages/public/home-page";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
@@ -140,6 +142,17 @@ function AppRoutes() {
               </AuthGuard>
             }
           />
+
+          <Route
+            index
+            path="uploaded-file/:id"
+            element={
+              <AuthGuard>
+                <Uploaded />
+              </AuthGuard>
+            }
+          />
+          
 
           <Route path="*" element={<NotFound />} />
         </Route>
