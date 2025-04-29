@@ -69,7 +69,17 @@ const data: StudentInfo[] = [
 export const columns: ColumnDef<StudentInfo>[] = [
   {
     accessorKey: "studentName",
-    header: "Student Name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer !px-0"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Student Name
+          <ArrowUpDown />
+        </Button>
+      );
+    },
     cell: ({ row }) => <div className="capitalize text-xs">{row.getValue("studentName")}</div>,
   },
   {
@@ -78,7 +88,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
       return (
         <Button
           variant={"ghost"}
-          className="cursor-pointer"
+          className="cursor-pointer !px-0"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Age
           <ArrowUpDown />
@@ -89,12 +99,32 @@ export const columns: ColumnDef<StudentInfo>[] = [
   },
   {
     accessorKey: "motherName",
-    header: () => "Mother's Name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer !px-0"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Mother's Name
+          <ArrowUpDown />
+        </Button>
+      );
+    },
     cell: ({ row }) => <div className="text-xs">{row.getValue("motherName")}</div>,
   },
   {
     accessorKey: "fatherName",
-    header: () => "Father's Name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer !px-0"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Father's Name
+          <ArrowUpDown />
+        </Button>
+      );
+    },
     cell: ({ row }) => <div className="text-xs">{row.getValue("fatherName")}</div>,
   },
   {
