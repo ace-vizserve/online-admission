@@ -9,7 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
-import { fatherInformationSchema, FatherInformationSchema } from "@/zod-schema";
+import {
+  fatherInformationSchema,
+  FatherInformationSchema,
+  ParentGuardianUploadRequirementsSchema,
+  StudentUploadRequirementsSchema,
+} from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
@@ -19,6 +24,7 @@ import { toast } from "sonner";
 
 function FatherInformation() {
   const { formState, setFormState } = useEnrolNewStudentContext();
+  const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
 
@@ -36,6 +42,16 @@ function FatherInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         fatherInfo: { ...values },
+      },
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          hasFatherInfo: true,
+          ...(formState.uploadRequirements
+            ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+        },
+        studentUploadRequirements: {
+          ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+        },
       },
     });
     toast.success("Father information details saved!", {
@@ -142,29 +158,56 @@ function FatherInformation() {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="studentsFatherReligion"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Religion</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full lg:max-w-[240px]">
-                        <SelectValue placeholder="Select a religion" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {religions.map((religion) => (
-                        <SelectItem key={religion.value} value={religion.value}>
-                          {religion.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Enter the student's mother religion.</FormDescription>
-                  <FormMessage />
-                </FormItem>
+                <div className="flex flex-col gap-2">
+                  <FormItem>
+                    <FormLabel>Religion</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "other") {
+                          setIsOtherReligion(true);
+                        } else {
+                          setIsOtherReligion(false);
+                        }
+
+                        field.onChange(value);
+                      }}
+                      defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full lg:max-w-[240px]">
+                          <SelectValue placeholder="Select a religion" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {religions.map((religion) => (
+                          <SelectItem key={religion.value} value={religion.value}>
+                            {religion.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Enter father's religion</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                  {(isOtherReligion || formState.familyInfo?.fatherInfo?.studentsFatherOtherReligion) && (
+                    <FormField
+                      control={form.control}
+                      name="studentsFatherOtherReligion"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormControl>
+                            <Input placeholder="Please specify religion" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
               )}
             />
           </div>

@@ -32,7 +32,13 @@ function StudentAddressContact() {
   function onSubmit(values: StudentAddressContactSchema) {
     console.log(countryName);
 
-    if (formState == null || formState.studentInfo?.studentDetails == null) {
+    if (!Object.keys(formState).length) {
+      toast.warning("Student Details is missing!", {
+        description: "Please fill out all required fields to move forward.",
+      });
+      return;
+    }
+    if (!formState.studentInfo?.studentDetails?.isValid) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
       });
@@ -41,7 +47,7 @@ function StudentAddressContact() {
     setFormState({
       studentInfo: {
         addressContact: values,
-        studentDetails: { ...formState.studentInfo?.studentDetails },
+        studentDetails: { ...formState.studentInfo!.studentDetails },
       },
     });
     toast.success("Student Address & Contact details saved!", {
@@ -73,7 +79,7 @@ function StudentAddressContact() {
               <FormControl>
                 <Input {...field} />
               </FormControl>
-              <FormDescription>This is your student's current address.</FormDescription>
+              <FormDescription>Student's current address.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -89,7 +95,7 @@ function StudentAddressContact() {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
-                <FormDescription>This is your student's address postal code.</FormDescription>
+                <FormDescription>Student's address postal code.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -146,7 +152,7 @@ function StudentAddressContact() {
                   <FormControl>
                     <Input type="" {...field} />
                   </FormControl>
-                  <FormDescription>This is your student's contact person.</FormDescription>
+                  <FormDescription>Student's contact person.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -160,7 +166,7 @@ function StudentAddressContact() {
                   <FormControl className="w-full">
                     <PhoneInput {...field} defaultCountry="TR" />
                   </FormControl>
-                  <FormDescription>Enter your student's contact person phone number.</FormDescription>
+                  <FormDescription>Student's contact person phone number.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

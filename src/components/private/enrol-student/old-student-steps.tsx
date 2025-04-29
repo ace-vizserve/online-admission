@@ -75,7 +75,7 @@ function OldStudentSteps() {
         }>
         <div className="space-y-1 text-center px-6 py-4">
           <p className="text-sm font-semibold">Your Documents</p>
-          <p className="text-xs text-muted-foreground">Check your documents</p>
+          <p className="text-xs text-muted-foreground">Review your documents</p>
         </div>
       </NavLink>
     </ol>

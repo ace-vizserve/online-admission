@@ -1,10 +1,10 @@
 import PageMetaData from "@/components/page-metadata";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -18,15 +18,25 @@ import {
 } from "@/data";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleCheckBigIcon, CircleHelp, Save } from "lucide-react";
+import { CircleHelp, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
+const discountList = [
+  { label: "AY250H01EN", value: "AY250H01EN" },
+  { label: "AY250H02EN", value: "AY250H02EN" },
+  { label: "AY250H03EN", value: "AY250H03EN" },
+  { label: "AY250H04EN", value: "AY250H04EN" },
+  { label: "AY250H05EN", value: "AY250H05EN" },
+];
+
 function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const { formState, setFormState } = useEnrolOldStudentContext();
+  const [isShowDiscount, setIsShowDiscount] = useState<boolean>(false);
+  const [isShowReferral, setIsShowReferral] = useState<boolean>(false);
   const [discountType, setDiscountType] = useState<string>("");
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
@@ -54,12 +64,6 @@ function OldEnrollmentInformation() {
             <CardTitle className="text-balance text-center text-2xl text-primary">
               Input the necessary enrollment information
             </CardTitle>
-
-            <Alert className="w-full max-w-full sm:max-w-sm sm:mx-auto border-emerald-600/50 text-emerald-600 [&>svg]:text-emerald-600 bg-green-50">
-              <CircleCheckBigIcon className="h-4 w-4" />
-              <AlertTitle>Promotion Eligible</AlertTitle>
-              <AlertDescription>Student is eligible to move up to the next grade level.</AlertDescription>
-            </Alert>
           </CardHeader>
           <CardContent className="px-0">
             <Form {...form}>
@@ -196,7 +200,7 @@ function OldEnrollmentInformation() {
                     name="schoolUniform"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>School Uniform</FormLabel>
+                        <FormLabel className="h-9">School Uniform</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -219,7 +223,7 @@ function OldEnrollmentInformation() {
                     name="studentCare"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Student Care</FormLabel>
+                        <FormLabel className="h-9">Student Care</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -305,37 +309,161 @@ function OldEnrollmentInformation() {
                   </div>
 
                   {discountType === "referred-by-someone" && (
-                    <FormField
-                      control={form.control}
-                      name="referralName"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-white">Referrer's Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter referrer's full name" className="bg-white" {...field} />
-                          </FormControl>
-                          <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="referralName"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <FormLabel className="text-white">Referrer's Name</FormLabel>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="w-full bg-white">
+                                    <SelectValue placeholder="Select referrer's name" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="referrer-1">Referrer 1</SelectItem>
+                                  <SelectItem value="referrer-2">Referrer 2</SelectItem>
+                                  <SelectItem value="referrer-3">Referrer 3</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {isShowDiscount ? (
+                        <FormField
+                          control={form.control}
+                          name="discount"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel className="text-white">Discount Code</FormLabel>
+                              <FormControl>
+                                <div>
+                                  <MultiSelect
+                                    key={0}
+                                    variant={"inverted"}
+                                    options={discountList}
+                                    onValueChange={field.onChange}
+                                    placeholder="Select discount codes"
+                                    maxCount={3}
+                                    className="hidden bg-white hover:bg-white lg:block"
+                                  />
+
+                                  <MultiSelect
+                                    key={1}
+                                    variant={"inverted"}
+                                    options={discountList}
+                                    onValueChange={field.onChange}
+                                    placeholder="Select discount codes"
+                                    maxCount={1}
+                                    className="block bg-white hover:bg-white lg:hidden"
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <div className="w-full flex justify-center items-center">
+                          <Button
+                            onClick={() => {
+                              setIsShowDiscount(true);
+                              setIsShowReferral(false);
+                            }}
+                            size={"lg"}
+                            type="button"
+                            className="bg-amber-500 hover:bg-amber-600">
+                            Add Discount Code
+                          </Button>
+                        </div>
                       )}
-                    />
+                    </>
                   )}
 
                   {discountType === "discount-code" && (
-                    <FormField
-                      control={form.control}
-                      name="discount"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-white">Discount Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder='Use code "AY250H01EN"' className="bg-white" {...field} />
-                          </FormControl>
-                          <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="discount"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <FormLabel className="text-white">Discount Code</FormLabel>
+                            <FormControl>
+                              <div>
+                                <MultiSelect
+                                  key={0}
+                                  variant={"inverted"}
+                                  options={discountList}
+                                  onValueChange={field.onChange}
+                                  placeholder="Select discount codes"
+                                  maxCount={3}
+                                  className="hidden bg-white hover:bg-white lg:block"
+                                />
+
+                                <MultiSelect
+                                  key={1}
+                                  variant={"inverted"}
+                                  options={discountList}
+                                  onValueChange={field.onChange}
+                                  placeholder="Select discount codes"
+                                  maxCount={1}
+                                  className="block bg-white hover:bg-white lg:hidden"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {isShowReferral ? (
+                        <FormField
+                          control={form.control}
+                          name="referralName"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel className="text-white">Referrer's Name</FormLabel>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="w-full bg-white">
+                                      <SelectValue placeholder="Select referrer's name" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="referrer-1">Referrer 1</SelectItem>
+                                    <SelectItem value="referrer-2">Referrer 2</SelectItem>
+                                    <SelectItem value="referrer-3">Referrer 3</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <div className="w-full flex justify-center items-center">
+                          <Button
+                            onClick={() => {
+                              setIsShowDiscount(false);
+                              setIsShowReferral(true);
+                            }}
+                            size={"lg"}
+                            type="button"
+                            className="bg-amber-500 hover:bg-amber-600">
+                            Apply Referral Discount
+                          </Button>
+                        </div>
                       )}
-                    />
+                    </>
                   )}
                 </div>
 

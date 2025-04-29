@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 
 import { Form } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { wait } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
@@ -18,8 +19,12 @@ type SubmitState = "idle" | "pending" | "success";
 function ParentGuardianUpload() {
   const { formState, setFormState } = useEnrolOldStudentContext();
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
-  const [passport, setPassport] = useState<File[] | null>(null);
-  const [pass, setPass] = useState<File[] | null>(null);
+  const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
+  const [motherPassport, setMotherPassport] = useState<File[] | null>(null);
+  const [guardianPassport, setGuardianPassport] = useState<File[] | null>(null);
+  const [fatherPass, setFatherPass] = useState<File[] | null>(null);
+  const [motherPass, setMotherPass] = useState<File[] | null>(null);
+  const [guardianPass, setGuardianPass] = useState<File[] | null>(null);
 
   const form = useForm<ParentGuardianUploadRequirementsSchema>({
     resolver: zodResolver(parentGuardianUploadRequirementsSchema),
@@ -68,9 +73,9 @@ function ParentGuardianUpload() {
             label="Passport Copy"
             description="Upload scanned passport copy"
             form={form}
-            name="passport"
-            value={passport}
-            onValueChange={setPassport}
+            name="motherPassport"
+            value={motherPassport}
+            onValueChange={setMotherPassport}
           />
 
           <ParentGuardianFileUploaderDialog
@@ -79,11 +84,71 @@ function ParentGuardianUpload() {
             label="Singapore Pass"
             description="Upload the type of Pass the student holds."
             form={form}
-            name="pass"
-            value={pass}
-            onValueChange={setPass}
+            name="motherPass"
+            value={motherPass}
+            onValueChange={setMotherPass}
           />
         </div>
+
+        {formState.familyInfo?.fatherInfo != null && (
+          <>
+            <Separator />
+            <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
+            <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
+              <ParentGuardianFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="Passport Copy"
+                description="Upload scanned passport copy"
+                form={form}
+                name="fatherPassport"
+                value={fatherPassport}
+                onValueChange={setFatherPassport}
+              />
+
+              <ParentGuardianFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="Singapore Pass"
+                description="Upload the type of Pass the father holds."
+                form={form}
+                name="fatherPass"
+                value={fatherPass}
+                onValueChange={setFatherPass}
+              />
+            </div>
+          </>
+        )}
+
+        {formState.familyInfo?.guardianInfo != null && (
+          <>
+            <Separator />
+            <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>
+            <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
+              <ParentGuardianFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="Passport Copy"
+                description="Upload scanned passport copy"
+                form={form}
+                name="guardianPassport"
+                value={guardianPassport}
+                onValueChange={setGuardianPassport}
+              />
+
+              <ParentGuardianFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="Singapore Pass"
+                description="Upload the type of Pass the guardian holds."
+                form={form}
+                name="guardianPass"
+                value={guardianPass}
+                onValueChange={setGuardianPass}
+              />
+            </div>
+          </>
+        )}
 
         <Button
           size="lg"

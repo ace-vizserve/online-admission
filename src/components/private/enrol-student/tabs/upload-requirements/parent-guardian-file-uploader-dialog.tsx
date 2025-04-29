@@ -90,7 +90,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             <FormField
               control={form.control}
               name={name}
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <FileUploader
@@ -98,7 +98,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                       onValueChange={onValueChange}
                       dropzoneOptions={dropZoneConfig}
                       className="relative bg-background rounded-lg">
-                      <FileInput id="fileInput" className="bg-muted border-2 border-dashed">
+                      <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
                         <div className="flex items-center justify-center flex-col p-8 w-full">
                           <CloudUpload className="text-gray-500 w-10 h-10" />
                           <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
@@ -141,7 +141,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         {value &&
                           value.length > 0 &&
                           value.map((file, i) => (
-                            <FileUploaderItem key={i} index={i}>
+                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
                               <Paperclip className="h-4 w-4 stroke-current" />
                               <span>{file.name}</span>
                             </FileUploaderItem>
@@ -154,11 +154,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               )}
             />
 
-            {name === "pass" && (
+            {name === "motherPass" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
                 <FormField
                   control={form.control}
-                  name="passType"
+                  name="motherPassType"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Pass Type</FormLabel>
@@ -183,7 +183,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 />
                 <FormField
                   control={form.control}
-                  name="passExpiryDate"
+                  name="motherPassExpiryDate"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -222,11 +222,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               </div>
             )}
 
-            {name === "passport" && (
+            {name === "motherPassport" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
                 <FormField
                   control={form.control}
-                  name="passportNumber"
+                  name="motherPassportNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
@@ -241,7 +241,259 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
                 <FormField
                   control={form.control}
-                  name="passportExpiryDate"
+                  name="motherPassportExpiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passport Expiry</FormLabel>
+                      <Popover modal>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}>
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            disabled={[
+                              {
+                                before: new Date(),
+                              },
+                            ]}
+                            selected={field.value}
+                            onSelect={field.onChange}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>Passport expiration date.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {name === "fatherPass" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+                <FormField
+                  control={form.control}
+                  name="fatherPassType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Pass Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a pass type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {passTypes.map((passType) => (
+                            <SelectItem key={passType.value} value={passType.value}>
+                              {passType.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>Your student's pass type.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherPassExpiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passport Expiry</FormLabel>
+                      <Popover modal>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}>
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            disabled={[
+                              {
+                                before: new Date(),
+                              },
+                            ]}
+                            selected={field.value}
+                            onSelect={field.onChange}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>Passport expiration date.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {name === "fatherPassport" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+                <FormField
+                  control={form.control}
+                  name="fatherPassportNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passport Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormDescription>Student’s passport number.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="fatherPassportExpiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passport Expiry</FormLabel>
+                      <Popover modal>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}>
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            disabled={[
+                              {
+                                before: new Date(),
+                              },
+                            ]}
+                            selected={field.value}
+                            onSelect={field.onChange}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>Passport expiration date.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {name === "guardianPass" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+                <FormField
+                  control={form.control}
+                  name="guardianPassType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Pass Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a pass type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {passTypes.map((passType) => (
+                            <SelectItem key={passType.value} value={passType.value}>
+                              {passType.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>Your student's pass type.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guardianPassExpiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passport Expiry</FormLabel>
+                      <Popover modal>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}>
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            disabled={[
+                              {
+                                before: new Date(),
+                              },
+                            ]}
+                            selected={field.value}
+                            onSelect={field.onChange}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>Passport expiration date.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {name === "guardianPassport" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+                <FormField
+                  control={form.control}
+                  name="guardianPassportNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passport Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormDescription>Student’s passport number.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="guardianPassportExpiryDate"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -350,7 +602,7 @@ function ParentGuardianFileUploaderDrawer({
           <FormField
             control={form.control}
             name={name}
-            render={() => (
+            render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <FileUploader
@@ -358,7 +610,7 @@ function ParentGuardianFileUploaderDrawer({
                     onValueChange={onValueChange}
                     dropzoneOptions={dropZoneConfig}
                     className="relative bg-background rounded-lg">
-                    <FileInput id="fileInput" className="bg-muted border-2 border-dashed">
+                    <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
                       <div className="flex items-center justify-center flex-col p-8 w-full">
                         <CloudUpload className="text-gray-500 w-10 h-10" />
                         <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
@@ -401,7 +653,7 @@ function ParentGuardianFileUploaderDrawer({
                       {value &&
                         value.length > 0 &&
                         value.map((file, i) => (
-                          <FileUploaderItem key={i} index={i}>
+                          <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
                             <Paperclip className="h-4 w-4 stroke-current" />
                             <span>{file.name}</span>
                           </FileUploaderItem>
@@ -414,11 +666,11 @@ function ParentGuardianFileUploaderDrawer({
             )}
           />
 
-          {name === "pass" && (
+          {name === "motherPass" && (
             <div className="grid grid-cols-1 gap-2 pt-4 w-full">
               <FormField
                 control={form.control}
-                name="passType"
+                name="motherPassType"
                 render={({ field }) => (
                   <FormItem>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -442,7 +694,7 @@ function ParentGuardianFileUploaderDrawer({
               />
               <FormField
                 control={form.control}
-                name="passExpiryDate"
+                name="motherPassExpiryDate"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -480,11 +732,11 @@ function ParentGuardianFileUploaderDrawer({
             </div>
           )}
 
-          {name === "passport" && (
+          {name === "motherPassport" && (
             <div className="grid grid-cols-1 gap-2 pt-4 w-full">
               <FormField
                 control={form.control}
-                name="passportNumber"
+                name="motherPassportNumber"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
@@ -498,7 +750,7 @@ function ParentGuardianFileUploaderDrawer({
 
               <FormField
                 control={form.control}
-                name="passportExpiryDate"
+                name="motherPassportExpiryDate"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -535,6 +787,259 @@ function ParentGuardianFileUploaderDrawer({
               />
             </div>
           )}
+
+          {name === "fatherPass" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <FormField
+                control={form.control}
+                name="fatherPassType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pass Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a pass type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {passTypes.map((passType) => (
+                          <SelectItem key={passType.value} value={passType.value}>
+                            {passType.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Your student's pass type.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="fatherPassExpiryDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passport Expiry</FormLabel>
+                    <Popover modal>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}>
+                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          disabled={[
+                            {
+                              before: new Date(),
+                            },
+                          ]}
+                          selected={field.value}
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>Passport expiration date.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {name === "fatherPassport" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <FormField
+                control={form.control}
+                name="fatherPassportNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passport Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>Student’s passport number.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="fatherPassportExpiryDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passport Expiry</FormLabel>
+                    <Popover modal>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}>
+                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          disabled={[
+                            {
+                              before: new Date(),
+                            },
+                          ]}
+                          selected={field.value}
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>Passport expiration date.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {name === "guardianPass" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <FormField
+                control={form.control}
+                name="guardianPassType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pass Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a pass type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {passTypes.map((passType) => (
+                          <SelectItem key={passType.value} value={passType.value}>
+                            {passType.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Your student's pass type.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="guardianPassExpiryDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passport Expiry</FormLabel>
+                    <Popover modal>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}>
+                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          disabled={[
+                            {
+                              before: new Date(),
+                            },
+                          ]}
+                          selected={field.value}
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>Passport expiration date.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {name === "guardianPassport" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <FormField
+                control={form.control}
+                name="guardianPassportNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passport Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>Student’s passport number.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="guardianPassportExpiryDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passport Expiry</FormLabel>
+                    <Popover modal>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}>
+                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          disabled={[
+                            {
+                              before: new Date(),
+                            },
+                          ]}
+                          selected={field.value}
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>Passport expiration date.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
           <DrawerFooter className="px-0">
             <DrawerClose asChild>
               <Button>Close</Button>
