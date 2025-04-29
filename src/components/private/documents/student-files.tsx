@@ -51,9 +51,12 @@ export type StudentFile = {
 
 export const columns: ColumnDef<StudentFile>[] = [
   {
-    accessorKey: "name",
-    header: "File Name",
-    cell: ({ row }) => <span className="text-xs">{row.getValue("name")}</span>,
+    accessorKey: "type",
+    header: "File Type",
+    cell: ({ row }) => {
+      const type = (row.getValue("type") as string).replace("_", " ");
+      return <span className="capitalize text-xs">{type}</span>;
+    },
   },
   {
     accessorKey: "status",
@@ -79,12 +82,9 @@ export const columns: ColumnDef<StudentFile>[] = [
     cell: ({ row }) => <span className="text-xs text-muted-foreground">{row.getValue("size")}</span>,
   },
   {
-    accessorKey: "type",
-    header: "File Type",
-    cell: ({ row }) => {
-      const type = (row.getValue("type") as string).replace("_", " ");
-      return <span className="capitalize text-xs">{type}</span>;
-    },
+    accessorKey: "name",
+    header: "File Name",
+    cell: ({ row }) => <span className="text-xs">{row.getValue("name")}</span>,
   },
   {
     id: "actions",

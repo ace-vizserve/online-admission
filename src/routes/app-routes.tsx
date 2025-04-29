@@ -22,6 +22,7 @@ import OldStudentInformation from "@/pages/private/enrol-student/old/old-student
 import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requiremts";
 import { Enrollment } from "@/pages/private/Enrollment";
 import { Files } from "@/pages/private/files";
+import { SchoolYear } from "@/pages/private/school-year";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
 import { Uploaded } from "@/pages/private/uploaded";
@@ -149,6 +150,16 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <Uploaded />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            index
+            path="documents/student-enrolment/:id"
+            element={
+              <AuthGuard>
+                <SchoolYear />
               </AuthGuard>
             }
           />
