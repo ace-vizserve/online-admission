@@ -9,7 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, FileText, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, FileUser, MoreHorizontal } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -139,10 +139,10 @@ export const columns: ColumnDef<StudentInfo>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/documents/student-file/${student.id}`}>
+            <Link to={`/admission/documents/student-enrolment/${student.id}`}>
               <DropdownMenuItem className="text-xs">
-                <FileText className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
-                View documents
+                <FileUser className="mr-1" onClick={() => navigator.clipboard.writeText(student.id)} />
+                View Enrolmemts
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
