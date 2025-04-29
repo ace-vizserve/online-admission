@@ -77,7 +77,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-4 tabular-nums">{row.getValue("studentName")} years old</div>,
+    cell: ({ row }) => <div className="text-xs pl-4 tabular-nums">{row.getValue("studentName")}</div>,
   },
   {
     accessorKey: "age",
@@ -107,7 +107,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("motherName")} years old</div>,
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("motherName")}</div>,
   },
   {
     accessorKey: "fatherName",
@@ -122,7 +122,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("fatherName")} years old</div>,
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("fatherName")}</div>,
   },  
   {
     id: "actions",
