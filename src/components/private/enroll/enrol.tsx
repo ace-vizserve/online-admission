@@ -233,7 +233,7 @@ function StudentsList() {
         </div>
       </div>
     </div>
-  );
+  );  
 }
 
 export default StudentsList;
