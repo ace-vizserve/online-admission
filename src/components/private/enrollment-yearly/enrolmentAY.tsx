@@ -135,7 +135,7 @@ const columns: ColumnDef<SingleStudent>[] = [
           <DropdownMenuContent className="mt-2">
             <Link to={`/admission/student-file/${student.id}`}>
               <DropdownMenuItem className="text-xs">
-                <FileUser className="mr-1 h-4 w-4" /> View Enrolment Information
+                <FileUser className="mr-1 h-4 w-4" /> View Documents
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
