@@ -15,7 +15,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Eye } from "lucide-react";
 import * as React from "react";
 
 const data: StudentFile[] = [
@@ -92,8 +91,8 @@ export const columns: ColumnDef<StudentFile>[] = [
     cell: ({ row }) => {
       const file = row.original;
       return (
-        <Button variant="outline" size="icon" onClick={() => window.open(file.previewUrl, "_blank")}>
-          <Eye />
+        <Button variant="default" onClick={() => window.open(file.previewUrl, "_blank")}>
+          View
         </Button>
       );
     },
