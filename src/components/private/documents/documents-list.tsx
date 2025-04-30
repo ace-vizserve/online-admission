@@ -174,7 +174,7 @@ function DocumentsList() {
 
   return (
     <div className="w-full py-7 md:py-14">
-      <h1 className="font-bold text-lg lg:text-2xl">Documents List</h1> 
+      <h1 className="font-bold text-lg lg:text-2xl">Students List</h1> 
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter names..."
