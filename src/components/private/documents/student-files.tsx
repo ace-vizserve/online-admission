@@ -16,10 +16,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import * as React from "react";
+import { useLocation } from "react-router-dom";
 
 const data: StudentFile[] = [
   {
     id: "file1",
+    studetName: "Ken Ramos",
     name: "Ken_Passport.pdf",
     status: "approved",
     uploadedAt: "2025-04-20",
@@ -29,6 +31,7 @@ const data: StudentFile[] = [
   },
   {
     id: "file2",
+    studetName: "Ken Ramos",
     name: "Ken_BirthCert.pdf",
     status: "pending",
     uploadedAt: "2025-04-19",
@@ -40,6 +43,7 @@ const data: StudentFile[] = [
 
 export type StudentFile = {
   id: string;
+  studetName: string;
   name: string;
   status: "pending" | "approved" | "rejected";
   uploadedAt: string;
@@ -100,8 +104,11 @@ export const columns: ColumnDef<StudentFile>[] = [
 ];
 
 function StudentFiles() {
+  const location = useLocation();
+  const academicYear = location.state?.academicYear || "Default Year";
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  
   const [rowSelection, setRowSelection] = React.useState({});
   const table = useReactTable({
     data,
@@ -121,8 +128,16 @@ function StudentFiles() {
       rowSelection,
     },
   });
+  
+  const studentName = data.length > 0 ? data[0].studetName : undefined;
+
   return (
     <div className="w-full">
+      <h1 className="font-bold text-lg lg:text-2xl">
+      {studentName
+        ? `${studentName}'s Uploaded Documents for ${academicYear}`
+        : "Student not found"}
+      </h1>
       <div className="flex items-center gap-2 py-4">
         <Input
           placeholder="Filter file names..."

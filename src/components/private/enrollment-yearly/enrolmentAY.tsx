@@ -133,7 +133,8 @@ const columns: ColumnDef<SingleStudent>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/student-file/${student.id}`}>
+            <Link to={`/admission/student-file/${student.id}`}
+            state={{ academicYear: student.academicYear }}>
               <DropdownMenuItem className="text-xs">
                 <FileUser className="mr-1 h-4 w-4" /> View Documents
               </DropdownMenuItem>
@@ -171,7 +172,7 @@ function EnrolmentAY() {
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">
-        {studentName ? `${studentName}'s Profile` : "Student not found"}
+        {studentName ? `${studentName}'s Enrolmens` : "Student not found"}
       </h1>
       <div className="flex items-center py-4">
         <Input

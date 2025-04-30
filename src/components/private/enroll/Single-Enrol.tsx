@@ -171,7 +171,7 @@ function SingleEnrol() {
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">
-        {studentName ? `${studentName}'s Profile` : "Student not found"}
+        {studentName ? `${studentName}'s Enrolment` : "Student not found"}
       </h1>
       <div className="flex items-center py-4">
         <Input
