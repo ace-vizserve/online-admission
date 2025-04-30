@@ -5,7 +5,7 @@ import { type LucideIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { NavLink } from "react-router";
-import { SearchForm } from "../../search-form";
+
 
 export function NavMain({
   items,
@@ -19,8 +19,6 @@ export function NavMain({
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
-        <SearchForm />
-
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
