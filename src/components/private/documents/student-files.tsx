@@ -22,7 +22,7 @@ const data: StudentFile[] = [
   {
     id: "file1",
     studetName: "Ken Ramos",
-    name: "Ken_Passport.pdf",
+    name: "Passport.pdf",
     status: "approved",
     uploadedAt: "2025-04-20",
     size: "120 KB",
@@ -32,7 +32,7 @@ const data: StudentFile[] = [
   {
     id: "file2",
     studetName: "Ken Ramos",
-    name: "Ken_BirthCert.pdf",
+    name: "BirthCert.pdf",
     status: "pending",
     uploadedAt: "2025-04-19",
     size: "95 KB",
