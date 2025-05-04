@@ -105,7 +105,7 @@ export const columns: ColumnDef<StudentFile>[] = [
 
 function StudentFiles() {
   const location = useLocation();
-  const academicYear = location.state?.academicYear || "Default Year";
+  const { academicYear, studentName } = location.state || {};
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   
@@ -129,14 +129,14 @@ function StudentFiles() {
     },
   });
   
-  const studentName = data.length > 0 ? data[0].studetName : undefined;
+  
 
   return (
     <div className="w-full">
       <h1 className="font-bold text-lg lg:text-2xl">
-      {studentName
-        ? `${studentName}'s Uploaded Documents for ${academicYear}`
-        : "Student not found"}
+        {studentName
+          ? `${studentName}'s Uploaded Documents for ${academicYear}`
+          : "Student not found"}
       </h1>
       <div className="flex items-center gap-2 py-4">
         <Input
