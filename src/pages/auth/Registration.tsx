@@ -2,42 +2,32 @@ import students2 from "@/assets/landing-page/Secondary-Students-Group-Children_3
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
+import { z } from "zod";
 
-const registrationSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string(),
-  role: z.enum(["mother", "father", "guardian"], {
-    message: "Please select a valid role",
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  path: ["confirmPassword"],
-  message: "Passwords do not match",
-});
+const registrationSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+    role: z.enum(["mother", "father", "guardian"], {
+      message: "Please select a valid role",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
 
 type RegistrationSchema = z.infer<typeof registrationSchema>;
 
@@ -113,10 +103,7 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Relationship to Student</FormLabel>
                           <FormControl>
-                            <Select
-                              onValueChange={(value) => field.onChange(value)}
-                              value={field.value}
-                            >
+                            <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
                               <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select a role" />
                               </SelectTrigger>
@@ -139,12 +126,7 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Email Address</FormLabel>
                           <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="Enter your email"
-                              autoComplete="email"
-                              {...field}
-                            />
+                            <Input type="email" placeholder="Enter your email" autoComplete="email" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -158,11 +140,7 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <PasswordInput
-                              placeholder="Enter your password"
-                              autoComplete="new-password"
-                              {...field}
-                            />
+                            <PasswordInput placeholder="Enter your password" autoComplete="new-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -195,7 +173,7 @@ function Registration() {
               </Form>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link to="#" className="underline">
+                <Link to="/login" className="underline">
                   Login
                 </Link>
               </div>
