@@ -1,3 +1,4 @@
+import { userLogin } from "@/actions/auth";
 import students from "@/assets/students-login.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
@@ -10,12 +11,17 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { LOGIN_PAGE_TITLE_DESCRIPTION } from "@/data";
 import { loginSchema, LoginSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
-import { toast } from "sonner";
 
 function Login() {
   const { title, description } = LOGIN_PAGE_TITLE_DESCRIPTION;
+  const { mutate, isPending } = useMutation({
+    mutationFn: userLogin,
+  });
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -26,13 +32,7 @@ function Login() {
   });
 
   async function onSubmit(values: LoginSchema) {
-    try {
-      console.log(values);
-      toast.success("Success!");
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
+    mutate(values);
   }
 
   return (
@@ -98,8 +98,15 @@ function Login() {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full">
-                        Login
+                      <Button disabled={isPending} type="submit" className="w-full gap-2">
+                        {isPending ? (
+                          <>
+                            Logging in
+                            <DotPulse size="30" speed="1.3" color="white" />
+                          </>
+                        ) : (
+                          "Login"
+                        )}
                       </Button>
                     </div>
                   </form>

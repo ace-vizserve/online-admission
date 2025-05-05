@@ -73,14 +73,14 @@ export const columns: ColumnDef<StudentInfo>[] = [
       return (
         <Button
           variant={"ghost"}
-          className="cursor-pointer !px-0"
+          className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Student Name
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs">{row.getValue("studentName")}</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("studentName")}</div>,
   },
   {
     accessorKey: "age",
@@ -88,14 +88,14 @@ export const columns: ColumnDef<StudentInfo>[] = [
       return (
         <Button
           variant={"ghost"}
-          className="cursor-pointer !px-0"
+          className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Age
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs tabular-nums">{row.getValue("age")} years old</div>,
+    cell: ({ row }) => <div className="text-xs tabular-nums pl-1">{row.getValue("age")} years old</div>,
   },
   {
     accessorKey: "motherName",
@@ -103,14 +103,14 @@ export const columns: ColumnDef<StudentInfo>[] = [
       return (
         <Button
           variant={"ghost"}
-          className="cursor-pointer !px-0"
+          className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Mother's Name
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs">{row.getValue("motherName")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("motherName")}</div>,
   },
   {
     accessorKey: "fatherName",
@@ -118,14 +118,14 @@ export const columns: ColumnDef<StudentInfo>[] = [
       return (
         <Button
           variant={"ghost"}
-          className="cursor-pointer !px-0"
+          className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Father's Name
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs">{row.getValue("fatherName")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("fatherName")}</div>,
   },
   {
     id: "actions",

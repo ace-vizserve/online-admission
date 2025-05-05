@@ -1,3 +1,4 @@
+import { userLogout } from "@/actions/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,7 +73,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => userLogout()}>
               <LogOut />
               Log out
             </DropdownMenuItem>
