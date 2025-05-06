@@ -2,6 +2,7 @@ import students from "@/assets/landing-page/students.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -18,26 +19,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { toast } from "sonner";
-
-const registrationSchema = z
-  .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Passwords do not match",
-  });
-
-type RegistrationSchema = z.infer<typeof registrationSchema>;
+import { registrationSchema, RegistrationSchema } from "@/zod-schema";
+import { Registration as registerUser } from "@/actions/auth";
 
 function Registration() {
   const form = useForm<RegistrationSchema>({
@@ -45,6 +32,7 @@ function Registration() {
     defaultValues: {
       firstName: "",
       lastName: "",
+      relationship: undefined,
       email: "",
       password: "",
       confirmPassword: "",
@@ -53,11 +41,11 @@ function Registration() {
 
   async function onSubmit(values: RegistrationSchema) {
     try {
-      console.log(values);
-      toast.success("Registered successfully!");
+      await registerUser(values);
+      toast.success("Registered successfully! Please check your email to confirm your account.");
     } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      const err = error as Error;
+      toast.error(err.message || "Failed to submit the form. Please try again.");
     }
   }
 
@@ -96,6 +84,30 @@ function Registration() {
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
                             <Input placeholder="Enter your last name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                      {/* Dropdown for Parent/Guardian Role */}
+                      <FormField
+                      control={form.control}
+                      name="relationship"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Relationship to Student</FormLabel>
+                          <FormControl>
+                            <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select a role" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="mother">Mother</SelectItem>
+                                <SelectItem value="father">Father</SelectItem>
+                                <SelectItem value="guardian">Guardian</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
