@@ -25,7 +25,6 @@ export const registrationSchema = z.object({
 });
 
 
-
 export const studentDetailsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
