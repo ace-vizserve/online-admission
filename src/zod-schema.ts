@@ -24,6 +24,8 @@ export const registrationSchema = z.object({
   message: "Passwords do not match",
 });
 
+
+
 export const studentDetailsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
