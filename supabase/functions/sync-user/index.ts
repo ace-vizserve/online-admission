@@ -16,8 +16,8 @@ interface PayloadProps {
 
 Deno.serve(async (req) => {
   try {
-    const SUPABASE_URL = Deno.env.get("CLIENT_URL");
-    const SUPABASE_ANON_KEY = Deno.env.get("CLIENT_ANON_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       throw new Error("Missing Supabase environment variables");
@@ -29,14 +29,10 @@ Deno.serve(async (req) => {
       throw new Error("Missing Authorization header");
     }
 
-    const authToken = authHeader.split(" ")[1].replace("\n", "");
-    const AUTHORIZATION_TOKEN = Deno.env.get("AUTHORIZATION_TOKEN");
-
-    if (authToken != AUTHORIZATION_TOKEN) {
-      throw new Error("Invalid Authorization token");
-    }
-
     const payload: PayloadProps = await req.json();
+
+    console.log("Payload received:", payload);
+    console.log(authHeader);
 
     if (payload.record.email_confirmed_at == null) {
       return new Response("User not verified, skipping.", { status: 200 });
@@ -55,9 +51,6 @@ Deno.serve(async (req) => {
     if (existingUser) {
       return new Response("User already exists.", { status: 400 });
     }
-
-    console.log("Payload received:", payload);
-    console.log(authHeader);
 
     const { error } = await supabase.from("pp_registered_users").insert({
       id: payload.record.id,
