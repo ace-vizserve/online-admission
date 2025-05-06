@@ -1,10 +1,11 @@
+import useSession from "@/hooks/use-session";
 import { ReactNode } from "react";
 import { Navigate } from "react-router";
 
 function AuthGuard({ children }: { children: ReactNode }) {
-  const user = true;
+  const { session } = useSession();
 
-  if (!user) {
+  if (!session) {
     return <Navigate to={"/login"} />;
   }
 

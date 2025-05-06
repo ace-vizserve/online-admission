@@ -1,4 +1,4 @@
-import students from "@/assets/landing-page/students.png";
+import students2 from "@/assets/landing-page/Secondary-Students-Group-Children_3.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ function Registration() {
           <Card className="border-none shadow-none w-full max-w-xl">
             <Logo className="mx-auto" />
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Parent Portal Registration</CardTitle>
+              <CardTitle className="text-2xl">Parent Portal Registration</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -90,8 +90,8 @@ function Registration() {
                       )}
                     />
 
-                      {/* Dropdown for Parent/Guardian Role */}
-                      <FormField
+                    {/* Dropdown for Parent/Guardian Role */}
+                    <FormField
                       control={form.control}
                       name="relationship"
                       render={({ field }) => (
@@ -121,12 +121,7 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Email Address</FormLabel>
                           <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="Enter your email"
-                              autoComplete="email"
-                              {...field}
-                            />
+                            <Input type="email" placeholder="Enter your email" autoComplete="email" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -140,11 +135,7 @@ function Registration() {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <PasswordInput
-                              placeholder="Enter your password"
-                              autoComplete="new-password"
-                              {...field}
-                            />
+                            <PasswordInput placeholder="Enter your password" autoComplete="new-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -177,7 +168,7 @@ function Registration() {
               </Form>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link to="#" className="underline">
+                <Link to="/login" className="underline">
                   Login
                 </Link>
               </div>
@@ -186,7 +177,7 @@ function Registration() {
         </MaxWidthWrapper>
         <div className="bg-muted hidden lg:flex lg:items-center lg:justify-center">
           <img
-            src={students}
+            src={students2}
             alt="HFSE International School Students"
             className="object-cover w-3/4 h-auto rounded-lg"
           />

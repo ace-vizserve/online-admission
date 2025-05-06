@@ -1,11 +1,12 @@
+import useSession from "@/hooks/use-session";
 import { ReactNode } from "react";
 import { Navigate } from "react-router";
 
 function UnauthenticatedGuard({ children }: { children: ReactNode }) {
-  const user = false;
+  const { session } = useSession();
 
-  if (user) {
-    return <Navigate to={"/dashboard"} />;
+  if (session) {
+    return <Navigate to={"/admission/dashboard"} />;
   }
 
   return <>{children}</>;
