@@ -6,15 +6,20 @@ import { createContext, ReactNode } from "react";
 type UserSessionContextProps = {
   session: Session | null;
   isLoading: boolean;
+  passwordResetState: boolean;
 };
 
-export const UserSessionContext = createContext<UserSessionContextProps>({ session: null, isLoading: false });
+export const UserSessionContext = createContext<UserSessionContextProps>({
+  session: null,
+  isLoading: false,
+  passwordResetState: false,
+});
 
 function UserSessionContextProvider({ children }: { children: ReactNode }) {
-  const { isLoading, session } = useSessionListener();
+  const { isLoading, session, passwordResetState } = useSessionListener();
 
   return (
-    <UserSessionContext.Provider value={{ isLoading, session }}>
+    <UserSessionContext.Provider value={{ isLoading, session, passwordResetState }}>
       {isLoading ? <SessionLoader /> : children}
     </UserSessionContext.Provider>
   );

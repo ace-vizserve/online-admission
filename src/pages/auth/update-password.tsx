@@ -6,17 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FORGOT_PASSWORD_TITLE_DESCRIPTION } from "@/data";
+import useSession from "@/hooks/use-session";
 import { UpdatePasswordSchema, updatePasswordSchema } from "@/zod-schema";
+import { usePasswordResetStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Navigate } from "react-router";
 
 function UpdatePassword() {
+  const { passwordResetState } = useSession();
+  const setPasswordResetState = usePasswordResetStore((state) => state.setPasswordResetState);
   const { mutate, isPending } = useMutation({
     mutationFn: updatePassword,
+    onSuccess() {
+      setPasswordResetState(false);
+    },
   });
 
   const { title, description } = FORGOT_PASSWORD_TITLE_DESCRIPTION;
@@ -29,6 +36,10 @@ function UpdatePassword() {
 
   function onSubmit(values: UpdatePasswordSchema) {
     mutate(values);
+  }
+
+  if (!passwordResetState) {
+    return <Navigate to={"/admission/dashboard"} replace />;
   }
 
   return (
@@ -72,11 +83,6 @@ function UpdatePassword() {
                 </div>
               </form>
             </Form>
-            <div className="mt-4 text-center text-sm">
-              <Link to={"/login"} className="underline">
-                Back to login
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>

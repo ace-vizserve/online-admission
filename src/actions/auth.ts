@@ -100,13 +100,13 @@ export async function updatePassword({ password }: { password: string }) {
       throw new Error(error.message);
     }
 
+    await supabase.auth.signOut();
+
     toast.success("Password has been reset", {
       description: "You can now log in with your new password.",
     });
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
-  } finally {
-    await supabase.auth.signOut();
   }
 }
