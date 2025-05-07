@@ -2,6 +2,23 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "./types";
 
+export type PasswordResetStore = {
+  passwordResetState: boolean;
+  setPasswordResetState: (state: boolean) => void;
+};
+
+export const usePasswordResetStore = create<PasswordResetStore>()(
+  persist(
+    (set) => ({
+      passwordResetState: false,
+      setPasswordResetState: (state) => set(() => ({ passwordResetState: state })),
+    }),
+    {
+      name: "password-recovery",
+    }
+  )
+);
+
 export type EnrolNewStudentStore = {
   formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
