@@ -55,7 +55,6 @@ Deno.serve(async (req) => {
       lastName: (payload.record.raw_user_meta_data as { lastName: string }).lastName,
       relationship: (payload.record.raw_user_meta_data as { relationship: string }).relationship,
       email: payload.record.email,
-      password: payload.record.encrypted_password,
     });
 
     if (error) {
