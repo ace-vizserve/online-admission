@@ -31,7 +31,7 @@ function Login() {
     },
   });
 
-  async function onSubmit(values: LoginSchema) {
+  function onSubmit(values: LoginSchema) {
     mutate(values);
   }
 
