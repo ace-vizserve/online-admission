@@ -1,32 +1,25 @@
+import { userRegister } from "@/actions/auth";
 import students from "@/assets/landing-page/students.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { registrationSchema, RegistrationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
-import { toast } from "sonner";
-import { registrationSchema, RegistrationSchema } from "@/zod-schema";
-import { Registration as registerUser } from "@/actions/auth";
 
 function Registration() {
+  const { mutate, isPending } = useMutation({
+    mutationFn: userRegister,
+  });
   const form = useForm<RegistrationSchema>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
@@ -39,14 +32,8 @@ function Registration() {
     },
   });
 
-  async function onSubmit(values: RegistrationSchema) {
-    try {
-      await registerUser(values);
-      toast.success("Registered successfully! Please check your email to confirm your account.");
-    } catch (error) {
-      const err = error as Error;
-      toast.error(err.message || "Failed to submit the form. Please try again.");
-    }
+  function onSubmit(values: RegistrationSchema) {
+    mutate({ ...values });
   }
 
   return (
@@ -90,8 +77,8 @@ function Registration() {
                       )}
                     />
 
-                      {/* Dropdown for Parent/Guardian Role */}
-                      <FormField
+                    {/* Dropdown for Parent/Guardian Role */}
+                    <FormField
                       control={form.control}
                       name="relationship"
                       render={({ field }) => (
@@ -160,8 +147,15 @@ function Registration() {
                       )}
                     />
 
-                    <Button type="submit" className="w-full">
-                      Register
+                    <Button disabled={isPending} type="submit" className="w-full gap-2">
+                      {isPending ? (
+                        <>
+                          Submitting
+                          <DotPulse size="30" speed="1.3" color="white" />
+                        </>
+                      ) : (
+                        "Register"
+                      )}
                     </Button>
                   </div>
                 </form>

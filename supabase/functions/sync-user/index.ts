@@ -31,9 +31,6 @@ Deno.serve(async (req) => {
 
     const payload: PayloadProps = await req.json();
 
-    console.log("Payload received:", payload);
-    console.log(authHeader);
-
     if (payload.record.email_confirmed_at == null) {
       return new Response("User not verified, skipping.", { status: 200 });
     }
