@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/client";
-import { LoginSchema, RegistrationSchema } from "@/zod-schema";
+import { LoginSchema, RegistrationSchema  } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
 import { toast } from "sonner";
 

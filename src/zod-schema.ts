@@ -13,6 +13,13 @@ export const updatePasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
+export const studentEnrolSchema = z.object({
+  id: z.string(),
+  studentName: z.string(),
+  age: z.string(),
+  motherName: z.string(),
+  fatherName: z.string()
+})
 export const registrationSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
