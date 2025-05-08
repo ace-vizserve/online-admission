@@ -11,10 +11,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Copy, MoreHorizontal, User } from "lucide-react";
+import { ArrowUpDown, Copy, MoreHorizontal, User, UserPlus } from "lucide-react";
 import * as React from "react";
 
-import { Button } from "@/components/ui/button";
+import { getStudentList } from "@/actions/private";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,51 +25,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StudentInfo } from "@/types";
+import { TStudent } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
+import "ldrs/react/Tailspin.css";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
-const data: StudentInfo[] = [
+export const columns: ColumnDef<TStudent>[] = [
   {
-    id: "stu001",
-    studentName: "Ken Ramos",
-    age: 8,
-    motherName: "Liza Ramos",
-    fatherName: "Jon Ramos",
-  },
-  {
-    id: "stu002",
-    studentName: "Abe Dela Cruz",
-    age: 9,
-    motherName: "Maria Dela Cruz",
-    fatherName: "Jose Dela Cruz",
-  },
-  {
-    id: "stu003",
-    studentName: "Monserrat Reyes",
-    age: 7,
-    motherName: "Celia Reyes",
-    fatherName: "Marco Reyes",
-  },
-  {
-    id: "stu004",
-    studentName: "Silas Tan",
-    age: 10,
-    motherName: "Ana Tan",
-    fatherName: "Richard Tan",
-  },
-  {
-    id: "stu005",
-    studentName: "Carmella Garcia",
-    age: 6,
-    motherName: "Grace Garcia",
-    fatherName: "Daniel Garcia",
-  },
-];
-
-export const columns: ColumnDef<StudentInfo>[] = [
-  {
-    accessorKey: "studentName",
+    accessorKey: "enroleeFullName",
     header: ({ column }) => {
       return (
         <Button
@@ -80,7 +46,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("studentName")}</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("enroleeFullName")}</div>,
   },
   {
     accessorKey: "age",
@@ -98,7 +64,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
     cell: ({ row }) => <div className="text-xs tabular-nums pl-1">{row.getValue("age")} years old</div>,
   },
   {
-    accessorKey: "motherName",
+    accessorKey: "motherFullName",
     header: ({ column }) => {
       return (
         <Button
@@ -110,10 +76,10 @@ export const columns: ColumnDef<StudentInfo>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("motherName")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("motherFullName")}</div>,
   },
   {
-    accessorKey: "fatherName",
+    accessorKey: "fatherFullName",
     header: ({ column }) => {
       return (
         <Button
@@ -125,7 +91,7 @@ export const columns: ColumnDef<StudentInfo>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("fatherName")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("fatherFullName")}</div>,
   },
   {
     id: "actions",
@@ -142,14 +108,14 @@ export const columns: ColumnDef<StudentInfo>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/students/${student.id}`}>
+            <Link to={`/admission/students/${student.studentNumber}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View full profile
               </DropdownMenuItem>
             </Link>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => copyStudentID(student.id)} className="text-xs">
+            <DropdownMenuItem onClick={() => copyStudentID(student.studentNumber)} className="text-xs">
               <Copy className="mr-1" />
               Copy Student ID
             </DropdownMenuItem>
@@ -169,11 +135,33 @@ function copyStudentID(studentID: string) {
 }
 
 function StudentsList() {
+  const { data, isPending } = useQuery({
+    queryKey: ["students-list"],
+    queryFn: getStudentList,
+  });
+
+  if (isPending) {
+    return (
+      <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+        <p className="text-sm text-muted-foreground animate-pulse">Fetching students...</p>
+        <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+      </div>
+    );
+  }
+
+  if (data?.studentsList == null || !data.studentsList.length) {
+    return <NoStudentsPanel />;
+  }
+
+  return <StudentsListTable studentsList={data.studentsList} />;
+}
+
+function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
-    data,
+    data: studentsList,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -194,8 +182,8 @@ function StudentsList() {
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter names..."
-          value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("studentName")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("enroleeFullName")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("enroleeFullName")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
       </div>
@@ -247,6 +235,27 @@ function StudentsList() {
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function NoStudentsPanel() {
+  return (
+    <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-3 my-7 md:my-14 text-center px-4">
+      <h2 className="text-lg font-semibold">No students to show</h2>
+      <p className="text-sm text-muted-foreground max-w-md">
+        You haven’t added any student records yet. Start by adding a student to see their enrollment information here.
+      </p>
+
+      <Link
+        to={"/enrol-student"}
+        className={buttonVariants({
+          size: "lg",
+          className: "gap-2 mt-2",
+        })}>
+        <UserPlus className="w-5 h-5" />
+        Add Student
+      </Link>
     </div>
   );
 }

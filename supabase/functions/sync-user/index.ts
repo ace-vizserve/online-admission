@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     });
 
     const { data: existingUser } = await supabase
-      .from("pp_registered_users")
+      .from("registered_users")
       .select("id")
       .eq("id", payload.record.id)
       .single();
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       return new Response("User already exists.", { status: 400 });
     }
 
-    const { error } = await supabase.from("pp_registered_users").insert({
+    const { error } = await supabase.from("registered_users").insert({
       id: payload.record.id,
       firstName: (payload.record.raw_user_meta_data as { firstName: string }).firstName,
       lastName: (payload.record.raw_user_meta_data as { lastName: string }).lastName,
