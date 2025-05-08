@@ -24,6 +24,14 @@ export const registrationSchema = z.object({
   message: "Passwords do not match",
 });
 
+export const studentEnrolSchema = z.object({
+  id: z.string(),
+  studentName: z.string(),
+  age: z.string(),
+  motherName: z.string(),
+  fatherName: z.string()
+})
+
 export const studentDetailsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),

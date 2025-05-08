@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -25,44 +23,9 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StudentInfo } from "@/types";
 import { Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/client";
 
-const data: StudentInfo[] = [
-  {
-    id: "stu001",
-    studentName: "Ken Ramos",
-    age: 8,
-    motherName: "Liza Ramos",
-    fatherName: "Jon Ramos",
-  },
-  {
-    id: "stu002",
-    studentName: "Abe Dela Cruz",
-    age: 9,
-    motherName: "Maria Dela Cruz",
-    fatherName: "Jose Dela Cruz",
-  },
-  {
-    id: "stu003",
-    studentName: "Monserrat Reyes",
-    age: 7,
-    motherName: "Celia Reyes",
-    fatherName: "Marco Reyes",
-  },
-  {
-    id: "stu004",
-    studentName: "Silas Tan",
-    age: 10,
-    motherName: "Ana Tan",
-    fatherName: "Richard Tan",
-  },
-  {
-    id: "stu005",
-    studentName: "Carmella Garcia",
-    age: 6,
-    motherName: "Grace Garcia",
-    fatherName: "Daniel Garcia",
-  },
-];
 
 export const columns: ColumnDef<StudentInfo>[] = [
 {
@@ -153,12 +116,52 @@ export const columns: ColumnDef<StudentInfo>[] = [
 ];
 
 
+async function fetchStudents(): Promise<StudentInfo[]> {
+  // Get the logged-in user (parent)
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Failed to retrieve authenticated user');
+  }
+
+  // Query the enrolment applications
+  const { data: applications, error } = await supabase
+    .from('ay2025_enrolment_applications')
+    .select('id, studentName:enroleeFullName, birthDay, motherName:motherFullName, fatherName:fatherFullName');
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  // Transform each record into StudentInfo, computing age from birthDay
+  return (applications || []).map(app => {
+    const birthDate = new Date(app.birthDay);
+    let age = new Date().getFullYear() - birthDate.getFullYear();
+    const m = new Date().getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && new Date().getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return {
+      id: app.id,
+      studentName: app.studentName,
+      age,
+      motherName: app.motherName,
+      fatherName: app.fatherName,
+    };
+  });
+}
+
+
 function StudentsList() {
+  const { data, isLoading, isError, error } = useQuery<StudentInfo[]>({
+    queryKey: ["ay2025_enrolment_applications"],
+    queryFn: fetchStudents,
+  });
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -173,9 +176,12 @@ function StudentsList() {
     },
   });
 
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error.message}</div>;
+
   return (
     <div className="w-full py-7 md:py-14">
-      <h1 className="font-bold text-lg lg:text-2xl">Students List </h1> 
+      <h1 className="font-bold text-lg lg:text-2xl">Students List</h1>
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter names..."
@@ -184,18 +190,17 @@ function StudentsList() {
           className="max-w-sm"
         />
       </div>
+
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -224,16 +229,22 @@ function StudentsList() {
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}>
+            disabled={!table.getCanPreviousPage()}
+          >
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
             Next
           </Button>
         </div>
       </div>
     </div>
-  );  
+  );
 }
 
 export default StudentsList;
