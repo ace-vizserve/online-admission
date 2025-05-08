@@ -11,12 +11,49 @@ import {
   StudentUploadRequirementsSchema,
 } from "./zod-schema";
 
-export type StudentInfo = {
-  id: string;
+export type Student = {
   studentName: string;
   age: number;
-  motherName: string;
-  fatherName: string;
+  birthDate: string;
+  nationality: string;
+  currentSchoolYear: string;
+};
+
+export type Sibling = {
+  fullName: string;
+  birthDay: string;
+  religion: string;
+  education: string;
+};
+
+export type Family = {
+  motherFullName: string;
+  fatherFullName: string;
+  guardianFullName: string;
+  siblings: Sibling[];
+};
+
+export type GroupedDocument = {
+  name: string;
+  file: string | null;
+  status: string | null;
+  expiry: string | null;
+  label: string;
+};
+
+export type StudentDetails = {
+  studentInformation: Student[];
+  familyInformation: Family[];
+  groupedDocuments: GroupedDocument[];
+};
+
+export type StudentInfo = {
+  enroleeFullName: string;
+  birthDay: string;
+  fatherFullName: string;
+  motherFullName: string;
+  studentNumber: string;
+  age: number;
 };
 
 export type levelYear = {
@@ -34,7 +71,6 @@ export type SingleStudent = {
   status: string;
   studentName: string;
 };
-
 
 export type EnrolNewStudentFormState = {
   studentInfo: {
