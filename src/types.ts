@@ -47,12 +47,20 @@ export type StudentDetails = {
   groupedDocuments: GroupedDocument[];
 };
 
-export type StudentInfo = {
+export type TStudent = {
   enroleeFullName: string;
   birthDay: string;
   fatherFullName: string;
   motherFullName: string;
   studentNumber: string;
+  age: number;
+};
+
+export type StudentInfo = {
+  id: string;
+  studentName: string;
+  fatherName: string;
+  motherName: string;
   age: number;
 };
 

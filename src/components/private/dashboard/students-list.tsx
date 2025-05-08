@@ -25,14 +25,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StudentInfo } from "@/types";
+import { TStudent } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
-export const columns: ColumnDef<StudentInfo>[] = [
+export const columns: ColumnDef<TStudent>[] = [
   {
     accessorKey: "enroleeFullName",
     header: ({ column }) => {
@@ -156,7 +156,7 @@ function StudentsList() {
   return <StudentsListTable studentsList={data.studentsList} />;
 }
 
-function StudentsListTable({ studentsList }: { studentsList: StudentInfo[] }) {
+function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
