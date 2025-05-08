@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/client";
-import { LoginSchema, RegistrationSchema  } from "@/zod-schema";
+import { LoginSchema, RegistrationSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
@@ -62,7 +62,7 @@ export async function userRegister({ firstName, lastName, relationship, email, p
 export async function sendPasswordResetLink({ email }: { email: string }) {
   try {
     const { data, error: fetchUserError } = await supabase
-      .from("pp_registered_users")
+      .from("registered_users")
       .select("email")
       .eq("email", email)
       .limit(1);
