@@ -2,6 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "./types";
 
+export type SecuritySettingsSheetStore = {
+  isOpen: boolean;
+  setIsOpen: (state: boolean) => void;
+};
+
+export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
+  isOpen: false,
+  setIsOpen: (state) => set(() => ({ isOpen: state })),
+}));
+
 export type PasswordResetStore = {
   passwordResetState: boolean;
   setPasswordResetState: (state: boolean) => void;

@@ -1,4 +1,4 @@
-import { updatePassword } from "@/actions/auth";
+import { authUpdatePassword } from "@/actions/auth";
 import Logo from "@/components/logo";
 import PageMetaData from "@/components/page-metadata";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ function UpdatePassword() {
   const { passwordResetState } = useSession();
   const setPasswordResetState = usePasswordResetStore((state) => state.setPasswordResetState);
   const { mutate, isPending } = useMutation({
-    mutationFn: updatePassword,
+    mutationFn: authUpdatePassword,
     onSuccess() {
       setPasswordResetState(false);
     },
