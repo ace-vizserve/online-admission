@@ -6,6 +6,7 @@ import OldStudentLayout from "@/components/layout/old-student-layout";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
+import UpdatePassword from "@/pages/auth/update-password";
 import NotFound from "@/pages/not-found";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
@@ -64,6 +65,14 @@ function AppRoutes() {
             <UnauthenticatedGuard>
               <ForgotPassword />
             </UnauthenticatedGuard>
+          }
+        />
+        <Route
+          path="/update-password"
+          element={
+            <AuthGuard>
+              <UpdatePassword />
+            </AuthGuard>
           }
         />
         <Route
@@ -163,7 +172,6 @@ function AppRoutes() {
               </AuthGuard>
             }
           />
-          
 
           <Route path="*" element={<NotFound />} />
         </Route>

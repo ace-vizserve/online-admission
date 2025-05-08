@@ -1,34 +1,45 @@
-import { sendPasswordResetLink } from "@/actions/auth";
+import { updatePassword } from "@/actions/auth";
 import Logo from "@/components/logo";
 import PageMetaData from "@/components/page-metadata";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { FORGOT_PASSWORD_TITLE_DESCRIPTION } from "@/data";
-import { forgotPasswordSchema, ForgotPasswordSchema } from "@/zod-schema";
+import useSession from "@/hooks/use-session";
+import { UpdatePasswordSchema, updatePasswordSchema } from "@/zod-schema";
+import { usePasswordResetStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Navigate } from "react-router";
 
-function ForgotPassword() {
+function UpdatePassword() {
+  const { passwordResetState } = useSession();
+  const setPasswordResetState = usePasswordResetStore((state) => state.setPasswordResetState);
   const { mutate, isPending } = useMutation({
-    mutationFn: sendPasswordResetLink,
+    mutationFn: updatePassword,
+    onSuccess() {
+      setPasswordResetState(false);
+    },
   });
 
   const { title, description } = FORGOT_PASSWORD_TITLE_DESCRIPTION;
-  const form = useForm<ForgotPasswordSchema>({
+  const form = useForm<UpdatePasswordSchema>({
     defaultValues: {
-      email: "",
+      password: "",
     },
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(updatePasswordSchema),
   });
 
-  function onSubmit(values: ForgotPasswordSchema) {
+  function onSubmit(values: UpdatePasswordSchema) {
     mutate(values);
+  }
+
+  if (!passwordResetState) {
+    return <Navigate to={"/admission/dashboard"} replace />;
   }
 
   return (
@@ -38,10 +49,8 @@ function ForgotPassword() {
         <Card className="w-full border-none shadow-none max-w-xl">
           <Logo className="mx-auto" />
           <CardHeader>
-            <CardTitle className="text-2xl">Forgot your password?</CardTitle>
-            <CardDescription>
-              Enter the email address associated with your account and we'll send you a link to reset your password.
-            </CardDescription>
+            <CardTitle className="text-2xl">Update your password</CardTitle>
+            <CardDescription>Enter your new password below to complete the reset process.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -49,19 +58,12 @@ function ForgotPassword() {
                 <div className="grid gap-4">
                   <FormField
                     control={form.control}
-                    name="email"
+                    name="password"
                     render={({ field }) => (
                       <FormItem className="grid gap-2">
-                        <FormLabel htmlFor="email">Email</FormLabel>
+                        <FormLabel id="new-password">New Password</FormLabel>
                         <FormControl>
-                          <Input
-                            id="email"
-                            placeholder="Enter your email here"
-                            type="email"
-                            autoComplete="email"
-                            autoFocus
-                            {...field}
-                          />
+                          <PasswordInput autoFocus id="new-password" placeholder="Enter your new password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -71,21 +73,16 @@ function ForgotPassword() {
                   <Button disabled={isPending} type="submit" className="w-full gap-2">
                     {isPending ? (
                       <>
-                        Sending
+                        Updating
                         <DotPulse size="30" speed="1.3" color="white" />
                       </>
                     ) : (
-                      "     Send reset password link"
+                      "Update password"
                     )}
                   </Button>
                 </div>
               </form>
             </Form>
-            <div className="mt-4 text-center text-sm">
-              <Link to={"/login"} className="underline">
-                Back to login
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -93,4 +90,4 @@ function ForgotPassword() {
   );
 }
 
-export default ForgotPassword;
+export default UpdatePassword;

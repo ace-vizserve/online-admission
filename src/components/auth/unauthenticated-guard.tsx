@@ -3,9 +3,9 @@ import { ReactNode } from "react";
 import { Navigate } from "react-router";
 
 function UnauthenticatedGuard({ children }: { children: ReactNode }) {
-  const { session } = useSession();
+  const { session, passwordResetState } = useSession();
 
-  if (session) {
+  if (session && !passwordResetState) {
     return <Navigate to={"/admission/dashboard"} />;
   }
 
