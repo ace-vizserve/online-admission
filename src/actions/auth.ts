@@ -90,7 +90,7 @@ export async function sendPasswordResetLink({ email }: { email: string }) {
   }
 }
 
-export async function updatePassword({ password }: { password: string }) {
+export async function authUpdatePassword({ password }: { password: string }) {
   try {
     const { error } = await supabase.auth.updateUser({
       password,
@@ -104,6 +104,25 @@ export async function updatePassword({ password }: { password: string }) {
 
     toast.success("Password has been reset", {
       description: "You can now log in with your new password.",
+    });
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
+export async function updatePassword({ password }: { password: string }) {
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    toast.success("Password updated!", {
+      description: "Your password has been changed successfully.",
     });
   } catch (error) {
     const err = error as AuthError;
