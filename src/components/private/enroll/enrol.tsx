@@ -25,6 +25,7 @@ import { StudentInfo } from "@/types";
 import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/client";
+import { differenceInYears, parseISO } from "date-fns";
 
 
 export const columns: ColumnDef<StudentInfo>[] = [
@@ -117,40 +118,46 @@ export const columns: ColumnDef<StudentInfo>[] = [
 
 
 async function fetchStudents(): Promise<StudentInfo[]> {
-  // Get the logged-in user (parent)
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Failed to retrieve authenticated user');
   }
 
-  // Query the enrolment applications
   const { data: applications, error } = await supabase
     .from('ay2025_enrolment_applications')
-    .select('id, studentName:enroleeFullName, birthDay, motherName:motherFullName, fatherName:fatherFullName');
+    .select('id, enroleeFullName, birthDay, motherFullName, fatherFullName, motherEmail')
+    .eq('motherEmail', 'marycrismas15@gmail.com');
 
   if (error) {
     throw new Error(error.message);
   }
 
-  // Transform each record into StudentInfo, computing age from birthDay
-  return (applications || []).map(app => {
-    const birthDate = new Date(app.birthDay);
-    let age = new Date().getFullYear() - birthDate.getFullYear();
-    const m = new Date().getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && new Date().getDate() < birthDate.getDate())) {
-      age--;
+  const uniqueApplications = [];
+  const seenNames = new Set();
+  for (const app of applications || []) {
+    const studentName = app.enroleeFullName;
+    if (!seenNames.has(studentName)) {
+      uniqueApplications.push({
+        ...app,
+        studentName,
+        motherName: app.motherFullName,
+        fatherName: app.fatherFullName,
+      });
+      seenNames.add(studentName);
     }
+  }
+
+  return uniqueApplications.map(student => {
+    const age = differenceInYears(new Date(), parseISO(student.birthDay));
     return {
-      id: app.id,
-      studentName: app.studentName,
+      id: student.id,
+      studentName: student.studentName,
       age,
-      motherName: app.motherName,
-      fatherName: app.fatherName,
+      motherName: student.motherName,
+      fatherName: student.fatherName,
     };
   });
 }
-
-
 function StudentsList() {
   const { data, isLoading, isError, error } = useQuery<StudentInfo[]>({
     queryKey: ["ay2025_enrolment_applications"],
