@@ -20,6 +20,15 @@ export const studentEnrolSchema = z.object({
   motherName: z.string(),
   fatherName: z.string()
 })
+
+export const studentEnrolments = z.object({
+  id: z.string(),
+  studentName: z.string(),
+  academicYear: z.string(),
+  level: z.string(),
+  status: z.string(),
+})
+
 export const registrationSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
@@ -437,3 +446,5 @@ export type EnrollmentInformationSchema = z.infer<typeof enrollmentInformationSc
 export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequirementsSchema>;
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
+export type StudentEnrolSchema = z.infer<typeof studentEnrolSchema>;
+export type StudentEnrolmentsSchema = z.infer<typeof studentEnrolments>;
