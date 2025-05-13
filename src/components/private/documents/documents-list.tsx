@@ -23,45 +23,9 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StudentInfo } from "@/types";
 import { Link } from "react-router";
-
-
-const data: StudentInfo[] = [
-  {
-    id: "stu001",
-    studentName: "Ken Ramos",
-    age: 8,
-    motherName: "Liza Ramos",
-    fatherName: "Jon Ramos",
-  },
-  {
-    id: "stu002",
-    studentName: "Abe Dela Cruz",
-    age: 9,
-    motherName: "Maria Dela Cruz",
-    fatherName: "Jose Dela Cruz",
-  },
-  {
-    id: "stu003",
-    studentName: "Monserrat Reyes",
-    age: 7,
-    motherName: "Celia Reyes",
-    fatherName: "Marco Reyes",
-  },
-  {
-    id: "stu004",
-    studentName: "Silas Tan",
-    age: 10,
-    motherName: "Ana Tan",
-    fatherName: "Richard Tan",
-  },
-  {
-    id: "stu005",
-    studentName: "Carmella Garcia",
-    age: 6,
-    motherName: "Grace Garcia",
-    fatherName: "Daniel Garcia",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/client";
+import { differenceInYears, parseISO } from "date-fns";
 
 export const columns: ColumnDef<StudentInfo>[] = [
 {
@@ -152,12 +116,58 @@ export const columns: ColumnDef<StudentInfo>[] = [
   },
 ];
 
+async function fetchStudents(): Promise<StudentInfo[]> {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Failed to retrieve authenticated user');
+  }
+
+  const { data: applications, error } = await supabase
+    .from('ay2025_enrolment_applications')
+    .select('id, enroleeFullName, birthDay, motherFullName, fatherFullName, motherEmail')
+    .eq('motherEmail', 'marycrismas15@gmail.com');
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const uniqueApplications = [];
+  const seenNames = new Set();
+  for (const app of applications || []) {
+    const studentName = app.enroleeFullName;
+    if (!seenNames.has(studentName)) {
+      uniqueApplications.push({
+        ...app,
+        studentName,
+        motherName: app.motherFullName,
+        fatherName: app.fatherFullName,
+      });
+      seenNames.add(studentName);
+    }
+  }
+
+  return uniqueApplications.map(student => {
+    const age = differenceInYears(new Date(), parseISO(student.birthDay));
+    return {
+      id: student.id,
+      studentName: student.studentName,
+      age,
+      motherName: student.motherName,
+      fatherName: student.fatherName,
+    };
+  });
+}
 function DocumentsList() {
+  const { data, isLoading, isError, error } = useQuery<StudentInfo[]>({
+    queryKey: ["ay2025_enrolment_applications"],
+    queryFn: fetchStudents,
+  });
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -171,6 +181,10 @@ function DocumentsList() {
       columnFilters,
     },
   });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error.message}</div>;
+
 
   return (
     <div className="w-full py-7 md:py-14">

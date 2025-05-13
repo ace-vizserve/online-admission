@@ -137,3 +137,104 @@ export type ParentGuardianFileUploaderDialogProps = {
   formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
 };
+
+
+export type StudentInformation = {
+  firstName: string;
+  lastName: string;
+  middleName: string;
+  preferredName: string;
+  birthDay: string;
+  gender: string;
+  religion: string;
+  nationality: string;
+  nric: string;
+  homeAddress: string;
+  postalCode: number
+  homePhone: number;
+  country: string;
+  contactPerson: string;
+  contactPersonNumber: number;
+  parentMaritalStatus: string;
+  livingWithWhom: string;
+  enroleePhoto: string;
+};
+
+export type MotherInformation = {
+  motherFirstName: string;
+  motherLastName: string;
+  motherMiddleName: string;
+  motherPreferredName: string;
+  motherBirthDay: string;
+  motherReligion: string;
+  motherCountry: string;
+  motherNric: string;
+  motherMobile: number;
+  motherEmail: string;
+  motherCompanyName: string;
+  motherPosition: string;
+};
+
+export type FatherInformation = {
+  fatherFirstName: string;
+  fatherLastName: string;
+  fatherMiddleName: string;
+  fatherPreferredName: string;
+  fatherBirthDay: string;
+  fatherReligion: string;
+  fatherCountry: string;
+  fatherNric: string;
+  fatherMobile: number;
+  fatherEmail: string;
+  fatherCompanyName: string;
+  fatherPosition: string;
+};
+
+export type GuardianInformation = {
+  guardianFirstName: string;
+  guardianLastName: string;
+  guardianMiddleName: string;
+  guardianPreferredName: string;
+  guardianBirthDay: string;
+  guardianReligion: string;
+  guardianCountry: string;
+  guardianNric: string;
+  guardianMobile: number;
+  guardianEmail: string;
+  guardianCompanyName: string;
+  guardianPosition: string;
+};
+
+export type SiblingInformation = {
+  siblingFullName: string;
+  siblingBirthDay: string;
+  siblingReligion: string;
+  siblingEducationOccupation: string;
+  siblingSchoolCompany: string;
+}
+
+export type EnrollmentInformation = {
+  levelApplied: string;
+  classType: string;
+  preferredSchedule: string;
+  availSchoolBus: string;
+  availUniform: string;
+  availStudentCare: string;
+  additionalLearningNeeds: string;
+  campusDevelopment: string;
+  discount1: string;
+  discount2: string;
+  discount3: string;
+  referrerName: string;
+};
+
+export type DocumentsInformation = {
+  idPicture: File | string;
+  birthCert: File | string;
+  transcript: File | string;
+  form12: File | string;
+  medical: File | string;
+  passport: File | string;
+  pass: File | string;
+};
+

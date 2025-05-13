@@ -126,7 +126,7 @@ async function fetchStudents(): Promise<StudentInfo[]> {
   const { data: applications, error } = await supabase
     .from('ay2025_enrolment_applications')
     .select('id, enroleeFullName, birthDay, motherFullName, fatherFullName, motherEmail')
-    .eq('motherEmail', 'marycrismas15@gmail.com');
+    .eq('motherEmail', 'cindzlovesyou@yahoo.com.sg');
 
   if (error) {
     throw new Error(error.message);

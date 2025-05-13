@@ -20,21 +20,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown, FileUser, MoreHorizontal } from "lucide-react";
-import * as React from "react";
-
+import * as React from "react"
 import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/client";
+import { SingleStudent } from "@/types";
 
-type EnrolmentRow = {
-  id: string;
-  studentName: string;
-  academicYear: string;
-  level: string;
-  status: string;
-};
-
-const columns: ColumnDef<EnrolmentRow>[] = [
+const columns: ColumnDef<SingleStudent>[] = [
   {
     accessorKey: "academicYear",
     header: ({ column }) => (
@@ -115,7 +107,7 @@ function SingleEnrol() {
     queryKey: ["ay2025_enrolment_applications", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("student_enrolments")
+        .from("student_enrolments_1")
         .select(`
           id,
           enroleeFullName,
@@ -124,15 +116,6 @@ function SingleEnrol() {
           status
         `)
         .eq("id", Number(id));
-
-      console.log("Debug Info:", {
-        id: id,
-        idType: typeof id,
-        convertedId: Number(id),
-        rawData: data,
-        error: error
-      });
-
       if (error) {
         throw new Error(error.message);
       }
@@ -142,10 +125,10 @@ function SingleEnrol() {
 
       return safeData.map((record) => ({
         id: record.id,
-        studentName: record.enroleeFullName,
         academicYear: `${record.academicYear}`,
         level: record.grade_level,
         status: record.status,
+        studentName: record.enroleeFullName,
       }));
     },
   });
@@ -180,7 +163,7 @@ function SingleEnrol() {
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">
-        {studentName ? `${studentName}'s Enrolment` : "Student not found"}
+        {studentName ? `${studentName} Enrolment` : "Student not found"}
       </h1>
       <div className="flex items-center py-4">
         <Input
