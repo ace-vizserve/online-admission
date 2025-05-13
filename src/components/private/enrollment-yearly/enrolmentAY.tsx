@@ -23,58 +23,8 @@ import { ArrowUpDown, FileUser, MoreHorizontal } from "lucide-react";
 import * as React from "react";
 import { SingleStudent  } from "@/types";
 import { Link, useParams } from "react-router";
-
-
-// Original student data with nested arrays
-const data = [
-  {
-    id: "stu001",
-    studentName: "Ken Ramos",
-    academicYear: ["AY2026", "AY2025", "AY2024"],
-    level: ["Primary 3", "Primary 2", "Primary 1"],
-    status: ["Enrolled", "Enrolled", "Enrolled"],
-  },
-  {
-    id: "stu002",
-    studentName: "Abe Dela Cruz",
-    academicYear: ["AY2026", "AY2025", "AY2024"],
-    level: ["Primary 3", "Primary 2", "Primary 1"],
-    status: ["Not Enrolled", "Enrolled", "Enrolled"],
-  },
-  {
-    id: "stu003",
-    studentName: "Monserrat Reyes",
-    academicYear: ["AY2026", "AY2025", "AY2024"],
-    level: ["Primary 3", "Primary 2", "Primary 1"],
-    status: ["Enrolled", "Enrolled", "Enrolled"],
-  },
-  {
-    id: "stu004",
-    studentName: "Silas Tan",
-    academicYear: ["AY2026", "AY2025", "AY2024"],
-    level: ["Primary 3", "Primary 2", "Primary 1"],
-    status: ["Enrolled", "Enrolled", "Enrolled"],
-  },
-  {
-    id: "stu005",
-    studentName: "Carmella Garcia",
-    academicYear: ["AY2026", "AY2025", "AY2024"],
-    level: ["Primary 3", "Primary 2", "Primary 1"],
-    status: ["Enrolled", "Enrolled", "Enrolled"],
-  },
-  
-];
-
-const flattenedData: SingleStudent[] = data.flatMap((student) =>
-  student.academicYear.map((year, index) => ({
-    id: student.id,
-    studentName: student.studentName,
-    academicYear: year,
-    level: student.level[index],
-    status: student.status[index],
-  }))
-);
-
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/client";
 
 const columns: ColumnDef<SingleStudent>[] = [
   {
@@ -154,11 +104,49 @@ function EnrolmentAY() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const { id } = useParams<{ id: string }>();
 
-  const studentData = flattenedData.filter((record) => record.id === id);
-  const studentName = studentData.length > 0 ? studentData[0].studentName : null;
+  console.log("ID from URL:", id);
+
+  const { data: studentData, isLoading } = useQuery({
+    queryKey: ["ay2025_enrolment_applications", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_enrolments")
+        .select(`
+          id,
+          enroleeFullName,
+          academicYear,
+          grade_level,
+          status
+        `)
+        .eq("id", Number(id));
+
+      console.log("Debug Info:", {
+        id: id,
+        idType: typeof id,
+        convertedId: Number(id),
+        rawData: data,
+        error: error
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const safeData = Array.isArray(data) ? data : [];
+      console.log("Safe Data:", safeData);
+
+      return safeData.map((record) => ({
+        id: record.id,
+        studentName: record.enroleeFullName,
+        academicYear: `${record.academicYear}`,
+        level: record.grade_level,
+        status: record.status,
+      }));
+    },
+  });
 
   const table = useReactTable({
-    data: studentData,
+    data: studentData || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -171,6 +159,18 @@ function EnrolmentAY() {
       columnFilters,
     },
   });
+
+  const studentName = studentData?.[0]?.studentName;
+
+  if (isLoading) {
+    return (
+      <div className="w-full py-7 md:py-14">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full py-7 md:py-14">
