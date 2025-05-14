@@ -169,7 +169,7 @@ export async function getStudentDetails({ studentID }: { studentID: string }) {
       .select("enrolmentNumber")
       .eq("academicYear", new Date().getFullYear())
       .eq("studentID", studentID)
-      .eq("status", "Enrolled")
+      .or("status.eq.Enrolled,status.eq.Submitted")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
       .single();
 

@@ -744,7 +744,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
         </>
       )}
 
-      {siblings != null && siblings.length && (
+      {siblings != null && siblings.length > 0 && (
         <>
           <Separator />
           <Card className="p-0 border-none shadow-none">
