@@ -866,23 +866,13 @@ function ParentGuardianFileUploaderDrawer({
     };
   }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
 
-  const errorKeys = Object.keys(errors);
-
-  const hasMotherError = errorKeys.some((key) => key.includes("mother"));
-  const hasFatherError = errorKeys.some((key) => key.includes("father"));
-  const hasGuardianError = errorKeys.some((key) => key.includes("guardian"));
-
   return (
     <div
       className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
-        "bg-red-50": hasMotherError || hasFatherError || hasGuardianError,
+        "bg-red-50": errors[name] != null,
       })}>
       <div className="flex items-center gap-4">
-        {hasMotherError || hasFatherError || hasGuardianError ? (
-          <CircleAlert className="size-6 text-destructive" />
-        ) : (
-          <Upload className="size-6" />
-        )}
+        {errors[name] != null ? <CircleAlert className="size-6 text-destructive" /> : <Upload className="size-6" />}
         <div className="flex flex-col gap-1">
           <span className="text-sm">{label}</span>
           <span className="text-muted-foreground text-xs text-balance">{description}</span>
@@ -890,9 +880,7 @@ function ParentGuardianFileUploaderDrawer({
       </div>
       <Drawer>
         <DrawerTrigger asChild>
-          <Button variant={hasMotherError || hasFatherError || hasGuardianError ? "destructive" : "outline"}>
-            Upload
-          </Button>
+          <Button variant={errors[name] != null ? "destructive" : "outline"}>Upload</Button>
         </DrawerTrigger>
 
         <DrawerContent className="px-4">

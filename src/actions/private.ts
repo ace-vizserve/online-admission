@@ -492,26 +492,32 @@ export async function getCurrentParentGuardianDocuments(studentID?: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    let query = supabase
+    let enrollmentQuery = supabase
       .from("student_enrolments")
       .select("enrolmentNumber")
+      .or("status.eq.Enrolled,status.eq.Submitted")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
       .eq("academicYear", new Date().getFullYear());
 
     if (studentID) {
-      query = query.eq("studentID", studentID);
+      enrollmentQuery = enrollmentQuery.eq("studentID", studentID);
     }
 
-    const { data: enrollments } = await query;
+    const { data: enrollments } = await enrollmentQuery;
 
     const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
 
-    const { data: parentGuardianDocuments } = await supabase
+    let parentDocumentsQuery = supabase
       .from("enrolment_documents")
       .select("*")
-      .eq("studentID", studentID)
       .neq("documentOwner", "student")
       .in("enrolmentNumber", enrolmentNumbers);
+
+    if (studentID) {
+      parentDocumentsQuery = parentDocumentsQuery.eq("studentID", studentID);
+    }
+
+    const { data: parentGuardianDocuments } = await parentDocumentsQuery;
 
     const motherPassDocument = parentGuardianDocuments
       ?.filter((document) => document.documentOwner === "mother" && document.documentType === "Pass")
@@ -765,6 +771,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         studentID: studentInformation[0].studentID,
         enrolmentNumber: studentEnrollment[0].enrolmentNumber,
         ...enrollmentInfo,
+        additionalLearningNeeds: enrollmentInfo.additionalLearningOrSpecialNeeds ?? "",
       })
       .select();
 
@@ -1041,6 +1048,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         studentID: studentID,
         enrolmentNumber: studentEnrollment[0].enrolmentNumber,
         ...enrollmentDetails.enrollmentInfo,
+        additionalLearningNeeds: enrollmentDetails.enrollmentInfo.additionalLearningOrSpecialNeeds ?? "",
       })
       .select();
 
