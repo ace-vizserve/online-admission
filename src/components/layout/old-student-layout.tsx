@@ -19,26 +19,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { OctagonAlert } from "lucide-react";
+import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function OldStudentLayout() {
   return (
-    <EnrolOldStudentContextProvider>
-      <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
-        <MaxWidthWrapper className="w-full max-w-screen-2xl flex items-center justify-between ">
-          <ExitApplicationDialog />
-          <SubmitApplicationDialog />
-        </MaxWidthWrapper>
-      </div>
-
-      <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
-        <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
-          <div className="w-full overflow-x-auto">
-            <OldStudentSteps />
-          </div>
-          <Outlet />
+    <>
+      <BeforeUnloadWarning />
+      <EnrolOldStudentContextProvider>
+        <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+          <MaxWidthWrapper className="w-full max-w-screen-2xl flex items-center justify-between ">
+            <ExitApplicationDialog />
+            <SubmitApplicationDialog />
+          </MaxWidthWrapper>
         </div>
-      </MaxWidthWrapper>
-    </EnrolOldStudentContextProvider>
+
+        <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
+          <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
+            <div className="w-full overflow-x-auto">
+              <OldStudentSteps />
+            </div>
+            <Outlet />
+          </div>
+        </MaxWidthWrapper>
+      </EnrolOldStudentContextProvider>
+    </>
   );
 }
 
@@ -48,7 +52,7 @@ function ExitApplicationDialog() {
 
   function exitApplication() {
     setFormState({});
-    localStorage.removeItem("enrolOldStudentFormState");
+    sessionStorage.removeItem("enrolOldStudentFormState");
     navigate("/admission/dashboard");
   }
 

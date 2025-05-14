@@ -65,16 +65,16 @@ function OldFamilyInformation() {
 function FamilyInformationTabs() {
   const { setFormState, formState } = useEnrolOldStudentContext();
   const { data, isPending, isSuccess } = useQuery({
-    queryKey: ["family-information"],
+    queryKey: ["old-family-information"],
     queryFn: getFamilyInformation,
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      setFormState({
-        familyInfo: { ...data! } as unknown as EnrolOldStudentFormState["familyInfo"],
-      });
-    }
+    if (!isSuccess || !data) return;
+
+    setFormState({
+      familyInfo: { ...data! } as unknown as EnrolOldStudentFormState["familyInfo"],
+    });
   }, [data, isSuccess, setFormState]);
 
   if (isPending) {

@@ -1,12 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Label } from "@/components/ui/label"
-import { useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/client";
 import type { StudentInformation } from "@/types";
-
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
 
 const StudentInformationComponent = () => {
   console.log("StudentInformationComponent mounted");
@@ -44,7 +43,7 @@ const StudentInformationComponent = () => {
         .single();
       console.log("Supabase result:", { data, error });
       if (error) throw error;
-      return { country: '', ...data } as StudentInformation;
+      return { country: "", ...data } as StudentInformation;
     },
   });
 
@@ -68,109 +67,109 @@ const StudentInformationComponent = () => {
               <div className="mb-2">
                 <Label htmlFor="firstName">First Name</Label>
               </div>
-              <Input id="firstName" value={data.firstName || ''} readOnly />
+              <Input id="firstName" value={data.firstName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="middleName">Middle Name</Label>
               </div>
-              <Input id="middleName" value={data.middleName || ''} readOnly />
+              <Input id="middleName" value={data.middleName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="lastName">Last Name</Label>
               </div>
-              <Input id="lastName" value={data.lastName || ''} readOnly />
+              <Input id="lastName" value={data.lastName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="preferredName">Preferred Name</Label>
               </div>
-              <Input id="preferredName" value={data.preferredName || ''} readOnly />
+              <Input id="preferredName" value={data.preferredName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="dob">Date of Birth</Label>
               </div>
-              <Input id="dob" value={data.birthDay || ''} readOnly />
+              <Input id="dob" value={data.birthDay || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="gender">Gender</Label>
               </div>
-              <Input id="gender" value={data.gender || ''} readOnly />
+              <Input id="gender" value={data.gender || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="religion">Religion</Label>
               </div>
-              <Input id="religion" value={data.religion || ''} readOnly />
+              <Input id="religion" value={data.religion || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="nationality">Nationality</Label>
               </div>
-              <Input id="nationality" value={data.nationality || ''} readOnly />
+              <Input id="nationality" value={data.nationality || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="nric">NRIC/FIN</Label>
               </div>
-              <Input id="nric" value={data.nric?.toString() || ''} readOnly />
+              <Input id="nric" value={data.nric?.toString() || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="address">Home Address</Label>
               </div>
-              <Input id="address" value={data.homeAddress || ''} readOnly />
+              <Input id="address" value={data.homeAddress || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="postalCode">Postal Code</Label>
               </div>
-              <Input id="postalCode" value={data.postalCode?.toString() || ''} readOnly />
+              <Input id="postalCode" value={data.postalCode?.toString() || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="country">Country</Label>
               </div>
-              <Input id="country" value={data.country || ''} readOnly />
+              <Input id="country" value={data.country || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="homePhone">Home Phone</Label>
               </div>
-              <Input id="homePhone" value={data.homePhone?.toString() || ''} readOnly />
+              <Input id="homePhone" value={data.homePhone?.toString() || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="contactPerson">Contact Person</Label>
               </div>
-              <Input id="contactPerson" value={data.contactPerson || ''} readOnly />
+              <Input id="contactPerson" value={data.contactPerson || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="contactNumber">Contact Person Number</Label>
               </div>
-              <Input id="contactNumber" value={data.contactPersonNumber?.toString() || ''} readOnly />
+              <Input id="contactNumber" value={data.contactPersonNumber?.toString() || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="maritalStatus">Parent's Marital Status</Label>
               </div>
-              <Input id="maritalStatus" value={data.parentMaritalStatus || ''} readOnly />
+              <Input id="maritalStatus" value={data.parentMaritalStatus || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label htmlFor="livingWith">Living With Whom?</Label>
               </div>
-              <Input id="livingWith" value={data.livingWithWhom || ''} readOnly />
+              <Input id="livingWith" value={data.livingWithWhom || ""} readOnly />
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default StudentInformationComponent
+export default StudentInformationComponent;

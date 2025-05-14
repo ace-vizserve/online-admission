@@ -732,7 +732,9 @@ function StudentFileUploaderDrawer({
               />
             </div>
           )}
-          <DrawerFooter className="px-0"></DrawerFooter>
+          <DrawerFooter className="px-0 py-4">
+            <div className="h-4" />
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     </div>

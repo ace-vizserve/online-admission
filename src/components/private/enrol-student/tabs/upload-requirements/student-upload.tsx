@@ -23,7 +23,9 @@ function StudentUpload() {
   const { formState, setFormState } = useEnrolOldStudentContext();
   const { data, isFetching, isSuccess } = useQuery({
     queryKey: ["student-documents", params.id],
-    queryFn: getCurrentStudentDocuments,
+    queryFn: async () => {
+      return await getCurrentStudentDocuments(params.id!, ["Form 12", "Medical Exam"]);
+    },
   });
 
   const [idPicture, setIdPicture] = useState<File[] | null>(null);
@@ -42,19 +44,21 @@ function StudentUpload() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      setFormState({
-        uploadRequirements: {
-          parentGuardianUploadRequirements: {
-            ...formState.uploadRequirements?.parentGuardianUploadRequirements,
-          } as ParentGuardianUploadRequirementsSchema,
-          studentUploadRequirements: {
-            ...(data?.studentUploadRequirements ?? {}),
-          } as unknown as StudentUploadRequirementsSchema,
-        },
-      });
-    }
-  }, [isSuccess, setFormState]);
+    if (!isSuccess || !data) return;
+
+    setFormState({
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements?.parentGuardianUploadRequirements,
+        } as ParentGuardianUploadRequirementsSchema,
+        studentUploadRequirements: {
+          ...(data?.studentUploadRequirements ?? {}),
+        } as unknown as StudentUploadRequirementsSchema,
+      },
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, setFormState, data]);
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     toast.success("Student documents saved!", {

@@ -6,7 +6,7 @@ import {
   generateDocuments,
   generateRequiredDocuments,
 } from "@/lib/utils";
-import { Document, EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
+import { Document, EnrolNewStudentFormState, EnrolOldStudentFormState, FamilyInfo, Student } from "@/types";
 import { AuthError } from "@supabase/supabase-js";
 import { differenceInYears, parseISO } from "date-fns";
 import { toast } from "sonner";
@@ -238,7 +238,7 @@ export async function uploadFileToBucket(file: File) {
   try {
     const { data: fileUpload, error: uploadError } = await supabase.storage
       .from("parent-portal")
-      .upload(`ay2026/documents/${file.name}`, file, {
+      .upload(`ay2026/documents/${file.name}_${Date.now()}`, file, {
         upsert: false,
       });
 
@@ -412,17 +412,23 @@ export async function getStudentDocuments() {
   }
 }
 
-export async function getCurrentStudentDocuments() {
+export async function getCurrentStudentDocuments(studentID: string, documentTypesToSkip?: string[]) {
   try {
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: enrollments } = await supabase
+    let query = supabase
       .from("student_enrolments")
       .select("enrolmentNumber")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
       .eq("academicYear", new Date().getFullYear());
+
+    if (studentID) {
+      query = query.eq("studentID", studentID);
+    }
+
+    const { data: enrollments } = await query;
 
     const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
 
@@ -430,9 +436,14 @@ export async function getCurrentStudentDocuments() {
       .from("enrolment_documents")
       .select("*")
       .eq("documentOwner", "student")
+      .eq("studentID", studentID)
       .in("enrolmentNumber", enrolmentNumbers);
 
-    const documents = generateDocuments(studentDocuments as Document[]);
+    const filteredDocuments = (studentDocuments ?? []).filter(
+      (doc) => !documentTypesToSkip?.includes(doc.documentType)
+    );
+
+    const documents = generateDocuments(filteredDocuments as Document[]);
 
     return { studentUploadRequirements: { ...documents } };
   } catch (error) {
@@ -467,23 +478,30 @@ export async function getParentGuardianDocuments() {
   }
 }
 
-export async function getCurrentParentGuardianDocuments() {
+export async function getCurrentParentGuardianDocuments(studentID?: string) {
   try {
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: enrollments } = await supabase
+    let query = supabase
       .from("student_enrolments")
       .select("enrolmentNumber")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
       .eq("academicYear", new Date().getFullYear());
+
+    if (studentID) {
+      query = query.eq("studentID", studentID);
+    }
+
+    const { data: enrollments } = await query;
 
     const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
 
     const { data: parentGuardianDocuments } = await supabase
       .from("enrolment_documents")
       .select("*")
+      .eq("studentID", studentID)
       .neq("documentOwner", "student")
       .in("enrolmentNumber", enrolmentNumbers);
 
@@ -540,8 +558,6 @@ export async function getCurrentParentGuardianDocuments() {
     const fatherDocuments = { ...fatherPassDocument, ...fatherPassportDocument };
 
     const guardianDocuments = { ...guardianPassDocument, ...guardianPassportDocument };
-
-    console.log(motherDocuments, fatherDocuments, guardianDocuments);
 
     return { parentGuardianUploadRequirements: { ...motherDocuments, ...fatherDocuments, ...guardianDocuments } };
   } catch (error) {
@@ -638,7 +654,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     const { data: studentEnrollment, error: studentEnrollmentError } = await supabase
       .from("student_enrolments")
       .insert({
-        enroleeFullName: `${studentInformation[0].lastName}, ${studentInformation[0].firstName} ${studentInformation[0]?.middleName}`,
+        enroleeFullName: `${studentInformation[0].lastName}, ${studentInformation[0].firstName}`,
         academicYear: new Date().getFullYear(),
         grade_level: enrollmentDetails.enrollmentInfo.levelApplied,
         studentID: studentInformation[0].studentID,
@@ -971,7 +987,279 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       }
     }
 
-    localStorage.removeItem("enrolNewStudentFormState");
+    sessionStorage.removeItem("enrolNewStudentFormState");
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
+export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStudentFormState, studentID: string) {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const currentUserRole = session?.user.user_metadata.relationship as string;
+
+    const { data: studentInfo } = await supabase
+      .from("student_information")
+      .select("*")
+      .eq("studentID", studentID)
+      .single();
+
+    const { data: studentEnrollment, error: studentEnrollmentError } = await supabase
+      .from("student_enrolments")
+      .insert({
+        enroleeFullName: `${studentInfo.lastName}, ${studentInfo.firstName}`,
+        academicYear: new Date().getFullYear(),
+        grade_level: enrollmentDetails.enrollmentInfo.levelApplied,
+        studentID: studentID,
+        parent1: session?.user.id,
+      })
+      .select();
+
+    if (studentEnrollmentError) {
+      throw new Error(studentEnrollmentError.message);
+    }
+
+    const { error: studentEnrollmentInformationError } = await supabase
+      .from("enrolment_information")
+      .insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        ...enrollmentDetails.enrollmentInfo,
+      })
+      .select();
+
+    if (studentEnrollmentInformationError) {
+      throw new Error(studentEnrollmentInformationError.message);
+    }
+
+    const {
+      birthCertificate,
+      form12,
+      idPicture,
+      medicalExam,
+      pass,
+      passExpiryDate,
+      passType,
+      passport,
+      passportExpiryDate,
+      passportNumber,
+      transcriptOfRecords,
+    } = {
+      ...enrollmentDetails.uploadRequirements.studentUploadRequirements,
+    };
+
+    const studentDocumentUploadResults = await Promise.all([
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "ID Picture",
+        fileUrl: idPicture,
+        documentOwnerID: studentID,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "Birth Certificate",
+        fileUrl: birthCertificate,
+        documentOwnerID: studentID,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "Transcript of Records",
+        fileUrl: transcriptOfRecords,
+        documentOwnerID: studentID,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "Form 12",
+        fileUrl: form12,
+        documentOwnerID: studentID,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "Medical Exam",
+        fileUrl: medicalExam,
+        documentOwnerID: studentID,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "Birth Certificate",
+        fileUrl: birthCertificate,
+        documentOwnerID: studentID,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "Pass",
+        fileUrl: pass,
+        passType,
+        passExpirationDate: passExpiryDate,
+        documentOwnerID: studentID,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "student",
+        documentType: "Passport",
+        fileUrl: passport,
+        passportNumber,
+        passportExpirationDate: passportExpiryDate,
+        documentOwnerID: studentID,
+      }),
+    ]);
+
+    const hasStudentUploadError = studentDocumentUploadResults.map((result) => {
+      if (result.error) {
+        toast.error(result.error.message);
+        return { message: result.error.message };
+      }
+    })[0];
+
+    if (hasStudentUploadError) {
+      throw new Error(hasStudentUploadError.message);
+    }
+
+    const motherEnrollmentDocuments = filterKeysBySubstring(
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
+      "mother"
+    );
+
+    const motherDocumentUploadResults = await Promise.all([
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "mother",
+        documentType: "Pass",
+        fileUrl: motherEnrollmentDocuments.motherPass,
+        passType: motherEnrollmentDocuments.motherPassType,
+        passExpirationDate: motherEnrollmentDocuments.motherPassExpiryDate,
+        documentOwnerID: currentUserRole === "mother" ? session?.user.id : null,
+      }),
+      supabase.from("enrolment_documents").insert({
+        studentID: studentID,
+        enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+        documentOwner: "mother",
+        documentType: "Passport",
+        fileUrl: motherEnrollmentDocuments.motherPassport,
+        passportNumber: motherEnrollmentDocuments.motherPassportNumber,
+        passportExpirationDate: motherEnrollmentDocuments.motherPassportExpiryDate,
+        documentOwnerID: currentUserRole === "mother" ? session?.user.id : null,
+      }),
+    ]);
+
+    const hasMotherUploadError = motherDocumentUploadResults.map((result) => {
+      if (result.error) {
+        toast.error(result.error.message);
+        return { message: result.error.message };
+      }
+    })[0];
+
+    if (hasMotherUploadError) {
+      throw new Error(hasMotherUploadError.message);
+    }
+
+    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
+
+    const fatherEnrollmentDocuments = filterKeysBySubstring(
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
+      "father"
+    );
+
+    if (Object.keys(fatherEnrollmentDocuments).length > 1) {
+      const fatherDocumentUploadResults = await Promise.all([
+        supabase.from("enrolment_documents").insert({
+          studentID: studentID,
+          enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+          documentOwner: "father",
+          documentType: "Pass",
+          fileUrl: fatherEnrollmentDocuments.fatherPass,
+          passType: fatherEnrollmentDocuments.fatherPassType,
+          passExpirationDate: fatherEnrollmentDocuments.fatherPassExpiryDate,
+          documentOwnerID: currentUserRole === "father" ? session?.user.id : null,
+        }),
+        supabase.from("enrolment_documents").insert({
+          studentID: studentID,
+          enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+          documentOwner: "father",
+          documentType: "Passport",
+          fileUrl: fatherEnrollmentDocuments.fatherPassport,
+          passportNumber: fatherEnrollmentDocuments.fatherPassportNumber,
+          passportExpirationDate: fatherEnrollmentDocuments.fatherPassportExpiryDate,
+          documentOwnerID: currentUserRole === "father" ? session?.user.id : null,
+        }),
+      ]);
+
+      const hasFatherUploadError = fatherDocumentUploadResults.map((result) => {
+        if (result.error) {
+          toast.error(result.error.message);
+          return { message: result.error.message };
+        }
+      })[0];
+
+      if (hasFatherUploadError) {
+        throw new Error(hasFatherUploadError.message);
+      }
+    }
+
+    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
+
+    const guardianEnrollmentDocuments = filterKeysBySubstring(
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
+      "guardian"
+    );
+
+    if (Object.keys(guardianEnrollmentDocuments).length > 1) {
+      const guardianDocumentUploadResults = await Promise.all([
+        supabase.from("enrolment_documents").insert({
+          studentID: studentID,
+          enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+          documentOwner: "guardian",
+          documentType: "Pass",
+          fileUrl: guardianEnrollmentDocuments.guardianPass,
+          passType: guardianEnrollmentDocuments.guardianPassType,
+          passExpirationDate: guardianEnrollmentDocuments.guardianPassExpiryDate,
+          documentOwnerID: currentUserRole === "guardian" ? session?.user.id : null,
+        }),
+        supabase.from("enrolment_documents").insert({
+          studentID: studentID,
+          enrolmentNumber: studentEnrollment[0].enrolmentNumber,
+          documentOwner: "guardian",
+          documentType: "Passport",
+          fileUrl: guardianEnrollmentDocuments.guardianPassport,
+          passportNumber: guardianEnrollmentDocuments.guardianPassportNumber,
+          passportExpirationDate: guardianEnrollmentDocuments.guardianPassportExpiryDate,
+          documentOwnerID: currentUserRole === "guardian" ? session?.user.id : null,
+        }),
+      ]);
+
+      const hasGuardianUploadError = guardianDocumentUploadResults.map((result) => {
+        if (result.error) {
+          toast.error(result.error.message);
+          return { message: result.error.message };
+        }
+      })[0];
+
+      if (hasGuardianUploadError) {
+        throw new Error(hasGuardianUploadError.message);
+      }
+    }
+
+    sessionStorage.removeItem("enrolOldStudentFormState");
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);

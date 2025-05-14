@@ -25,7 +25,9 @@ function ParentGuardianUpload() {
   const { formState, setFormState } = useEnrolOldStudentContext();
   const { data, isFetching, isSuccess } = useQuery({
     queryKey: ["parent-guardian-documents", params.id],
-    queryFn: getCurrentParentGuardianDocuments,
+    queryFn: async () => {
+      return await getCurrentParentGuardianDocuments(params.id!);
+    },
   });
 
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
@@ -43,19 +45,21 @@ function ParentGuardianUpload() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      setFormState({
-        uploadRequirements: {
-          studentUploadRequirements: {
-            ...(formState.uploadRequirements?.studentUploadRequirements as StudentUploadRequirementsSchema),
-          },
-          parentGuardianUploadRequirements: {
-            ...(data!.parentGuardianUploadRequirements as ParentGuardianUploadRequirementsSchema),
-          },
+    if (!isSuccess || !data) return;
+
+    setFormState({
+      uploadRequirements: {
+        studentUploadRequirements: {
+          ...(formState.uploadRequirements?.studentUploadRequirements as StudentUploadRequirementsSchema),
         },
-      });
-    }
-  }, [isSuccess, setFormState]);
+        parentGuardianUploadRequirements: {
+          ...(data!.parentGuardianUploadRequirements as ParentGuardianUploadRequirementsSchema),
+        },
+      },
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, setFormState, data]);
 
   function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     setFormState({
@@ -79,7 +83,7 @@ function ParentGuardianUpload() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full mx-auto">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 lg:space-y-8 w-full mx-auto">
         <h1 className="max-w-4xl mx-auto font-semibold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
           <ParentGuardianFileUploaderDialog
@@ -104,7 +108,10 @@ function ParentGuardianUpload() {
             onValueChange={setMotherPass}
           />
         </div>
-        {Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0 && (
+        {(Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0 ||
+          Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).filter((key) =>
+            key.includes("father")
+          ).length > 0) && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
@@ -133,7 +140,10 @@ function ParentGuardianUpload() {
             </div>
           </>
         )}
-        {Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0 && (
+        {(Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0 ||
+          Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).filter((key) =>
+            key.includes("guardian")
+          ).length > 0) && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>

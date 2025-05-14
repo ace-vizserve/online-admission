@@ -65,9 +65,9 @@ function OldEnrollmentInformation() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
-    }
+    if (!isSuccess || !data) return;
+
+    form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
   }, [data, form, isSuccess]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
@@ -100,11 +100,11 @@ function OldEnrollmentInformation() {
                 <span className="text-xs text-blue-900 ">
                   Based on previous level{" "}
                   <span className="font-semibold capitalize">
-                    {(data!.levelApplied as string).split("-").join(" ")}
+                    {(data?.levelApplied as string)?.split("-")?.join(" ")}
                   </span>{" "}
                   to{" "}
                   <span className="font-semibold capitalize">
-                    {getNextGradeLevel(data!.levelApplied)?.split("-").join(" ")}
+                    {getNextGradeLevel(data?.levelApplied)?.split("-")?.join(" ")}
                   </span>
                 </span>
               </div>
@@ -126,7 +126,7 @@ function OldEnrollmentInformation() {
 
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={getNextGradeLevel(data!.levelApplied) ?? field.value}>
+                          defaultValue={getNextGradeLevel(data?.levelApplied) ?? field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select a class level" />
