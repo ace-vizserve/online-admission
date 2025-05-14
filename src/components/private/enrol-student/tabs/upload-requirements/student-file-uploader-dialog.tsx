@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -30,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { StudentFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isBefore } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import {
@@ -43,7 +42,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
@@ -109,6 +108,51 @@ const StudentFileUploaderDialog = memo(function ({
     mutate(value[0]);
   }
 
+  function changeDocument() {
+    if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
+    form.setValue(name, "");
+
+    setFormState({
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements.parentGuardianUploadRequirements,
+        },
+        studentUploadRequirements: {
+          ...formState.uploadRequirements.studentUploadRequirements,
+          [name]: "",
+        },
+      },
+    });
+  }
+
+  useEffect(() => {
+    if (!formState.uploadRequirements?.studentUploadRequirements) return;
+
+    const { passExpiryDate, passportExpiryDate } = formState.uploadRequirements.studentUploadRequirements;
+
+    if (passExpiryDate && isBefore(passExpiryDate, new Date())) {
+      form.setError("pass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("passExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (passportExpiryDate && isBefore(passportExpiryDate, new Date())) {
+      form.setError("passport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("passportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    return () => {
+      form.clearErrors();
+    };
+  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
+
   if (isDesktop) {
     return (
       <div
@@ -160,7 +204,10 @@ const StudentFileUploaderDialog = memo(function ({
             )}
 
             {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-              <div className="w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+              <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+                <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                  Change document
+                </Button>
                 <div className="p-6 bg-white rounded-full">
                   <img src={fileSvg} className="size-14" />
                 </div>
@@ -416,7 +463,31 @@ function StudentFileUploaderDrawer({
   setFormState,
   value,
 }: StudentFileUploaderDialogProps) {
+  const { mutate, isPending } = useMutation({
+    mutationFn: uploadFileToBucket,
+    onSuccess(data) {
+      onValueChange(null);
+      if (!NOT_FILE_INPUTS.includes(name)) {
+        form.setValue(name, data!.imagePath);
+        setFormState({
+          uploadRequirements: {
+            parentGuardianUploadRequirements: {
+              ...(formState.uploadRequirements
+                ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+            },
+            studentUploadRequirements: {
+              ...(formState.uploadRequirements
+                ?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+              [name]: data!.imagePath,
+            },
+          },
+        });
+      }
+    },
+  });
+
   const { errors } = useFormState({ control: form.control });
+
   const dropZoneConfig: DropzoneOptions = {
     maxFiles: 1,
     disabled: false,
@@ -428,6 +499,56 @@ function StudentFileUploaderDrawer({
       "application/pdf": [],
     },
   };
+
+  function uploadFile() {
+    if (value == null || !value.length) return;
+    mutate(value[0]);
+  }
+
+  function changeDocument() {
+    if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
+    form.setValue(name, "");
+
+    setFormState({
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements.parentGuardianUploadRequirements,
+        },
+        studentUploadRequirements: {
+          ...formState.uploadRequirements.studentUploadRequirements,
+          [name]: "",
+        },
+      },
+    });
+  }
+
+  useEffect(() => {
+    if (!formState.uploadRequirements?.studentUploadRequirements) return;
+
+    const { passExpiryDate, passportExpiryDate } = formState.uploadRequirements.studentUploadRequirements;
+
+    if (passExpiryDate && isBefore(passExpiryDate, new Date())) {
+      form.setError("pass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("passExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (passportExpiryDate && isBefore(passportExpiryDate, new Date())) {
+      form.setError("passport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("passportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    return () => {
+      form.clearErrors();
+    };
+  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   return (
     <div
@@ -459,7 +580,9 @@ function StudentFileUploaderDrawer({
               to={form12Url}
               target="_blank"
               className={buttonVariants({
-                className: "gap-2",
+                className: "gap-2 w-max mx-auto text-xs",
+                variant: "outline",
+                size: "sm",
               })}>
               Download Form 12 Form <Download />
             </Link>
@@ -470,78 +593,119 @@ function StudentFileUploaderDrawer({
               to={medicalExamurl}
               target="_blank"
               className={buttonVariants({
-                className: "gap-2",
+                className: "gap-2 w-max mx-auto text-xs",
+                variant: "outline",
+                size: "sm",
               })}>
               Download Medical Exam Form <Download />
             </Link>
           )}
 
-          <FormField
-            control={form.control}
-            name={name}
-            render={() => (
-              <FormItem>
-                <FormControl>
-                  <FileUploader
-                    value={value}
-                    onValueChange={onValueChange}
-                    dropzoneOptions={dropZoneConfig}
-                    className="relative bg-background rounded-lg">
-                    <FileInput id="fileInput" className="bg-muted border-2 border-dashed">
-                      <div className="flex items-center justify-center flex-col p-8 w-full">
-                        <CloudUpload className="text-gray-500 w-10 h-10" />
-                        <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
-                      </div>
-                    </FileInput>
+          {formState.uploadRequirements?.studentUploadRequirements[name] ? (
+            <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+              <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                Change document
+              </Button>
+              <div className="p-6 bg-white rounded-full">
+                <img src={fileSvg} className="size-14" />
+              </div>
+              <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
-                    <FileUploaderContent>
-                      {value == null && formState.uploadRequirements?.studentUploadRequirements[name] && (
-                        <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
-                          <div className="flex items-center gap-1">
-                            <Paperclip className="h-4 w-4 stroke-current" />
-                            <span className="text-sm font-medium">
-                              {(formState.uploadRequirements.studentUploadRequirements[name] as string)
-                                .split("\\")
-                                .pop()}
-                            </span>
-                          </div>
-                          <Trash2
-                            className="h-4 w-4"
-                            onClick={() => {
-                              form.setValue(name, "");
-                              onValueChange(null);
-                              setFormState({
-                                ...formState,
-                                uploadRequirements: {
-                                  ...formState.uploadRequirements!,
-                                  studentUploadRequirements: {
-                                    ...formState.uploadRequirements!.studentUploadRequirements,
-                                    [name]: "",
-                                  },
-                                },
-                              });
-                            }}
-                          />
+              {!NOT_FILE_INPUTS.includes(name) && formState.uploadRequirements?.studentUploadRequirements[name] && (
+                <Link
+                  to={formState.uploadRequirements.studentUploadRequirements[name] as string}
+                  target="_blank"
+                  className={buttonVariants({
+                    className: "gap-2 text-xs hover:bg-white",
+                    size: "sm",
+                    variant: "outline",
+                  })}>
+                  View document <ExternalLink />
+                </Link>
+              )}
+            </div>
+          ) : (
+            <FormField
+              control={form.control}
+              name={name}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FileUploader
+                      value={value}
+                      onValueChange={onValueChange}
+                      dropzoneOptions={dropZoneConfig}
+                      className="relative bg-background rounded-lg">
+                      <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
+                        <div className="flex items-center justify-center flex-col p-8 w-full">
+                          <CloudUpload className="text-gray-500 w-10 h-10" />
+                          <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
                         </div>
-                      )}
-                      {value &&
-                        value.length > 0 &&
-                        value.map((file, i) => (
-                          <FileUploaderItem key={i} index={i}>
-                            <Paperclip className="h-4 w-4 stroke-current" />
-                            <span>{file.name}</span>
-                          </FileUploaderItem>
-                        ))}
-                    </FileUploaderContent>
-                  </FileUploader>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      </FileInput>
+
+                      <FileUploaderContent>
+                        {value == null && formState.uploadRequirements?.studentUploadRequirements[name] && (
+                          <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
+                            <div className="flex items-center gap-1">
+                              <Paperclip className="h-4 w-4 stroke-current" />
+                              <span className="text-sm font-medium">
+                                {(formState.uploadRequirements.studentUploadRequirements[name] as string)
+                                  .split("\\")
+                                  .pop()}
+                              </span>
+                            </div>
+                            <Trash2
+                              className="h-4 w-4"
+                              onClick={() => {
+                                form.setValue(name, "");
+                                onValueChange(null);
+                                setFormState({
+                                  ...formState,
+                                  uploadRequirements: {
+                                    ...formState.uploadRequirements!,
+                                    studentUploadRequirements: {
+                                      ...formState.uploadRequirements!.studentUploadRequirements,
+                                      [name]: "",
+                                    },
+                                  },
+                                });
+                              }}
+                            />
+                          </div>
+                        )}
+                        {value &&
+                          value.length > 0 &&
+                          value.map((file, i) => (
+                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                              <Paperclip className="h-4 w-4 stroke-current" />
+                              <span>{file.name}</span>
+                            </FileUploaderItem>
+                          ))}
+                      </FileUploaderContent>
+                    </FileUploader>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {value != null && value.length > 0 && (
+            <Button disabled={isPending} onClick={uploadFile} className="gap-2">
+              {isPending ? (
+                <>
+                  Uploading <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Upload file <Upload />
+                </>
+              )}
+            </Button>
+          )}
 
           {name === "pass" && (
             <div className="grid grid-cols-1 gap-2 pt-4 w-full">
@@ -664,10 +828,8 @@ function StudentFileUploaderDrawer({
               />
             </div>
           )}
-          <DrawerFooter className="px-0">
-            <DrawerClose asChild>
-              <Button>Close</Button>
-            </DrawerClose>
+          <DrawerFooter className="px-0 py-4">
+            <div className="h-4" />
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

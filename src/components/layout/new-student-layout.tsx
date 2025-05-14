@@ -18,24 +18,28 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { OctagonAlert } from "lucide-react";
+import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function NewStudentLayout() {
   return (
-    <EnrolNewStudentContextProvider>
-      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
-        <MaxWidthWrapper className="w-full max-w-screen-2xl">
-          <ExitApplicationDialog />
-        </MaxWidthWrapper>
-      </div>
-      <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
-        <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
-          <div className="w-full overflow-x-auto">
-            <NewStudentSteps />
-          </div>
-          <Outlet />
+    <>
+      <BeforeUnloadWarning />
+      <EnrolNewStudentContextProvider>
+        <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+          <MaxWidthWrapper className="w-full max-w-screen-2xl">
+            <ExitApplicationDialog />
+          </MaxWidthWrapper>
         </div>
-      </MaxWidthWrapper>
-    </EnrolNewStudentContextProvider>
+        <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
+          <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
+            <div className="w-full overflow-x-auto">
+              <NewStudentSteps />
+            </div>
+            <Outlet />
+          </div>
+        </MaxWidthWrapper>
+      </EnrolNewStudentContextProvider>
+    </>
   );
 }
 
@@ -45,7 +49,7 @@ function ExitApplicationDialog() {
 
   function exitApplication() {
     setFormState({});
-    localStorage.removeItem("enrolNewStudentFormState");
+    sessionStorage.removeItem("enrolNewStudentFormState");
     navigate("/admission/dashboard");
   }
 

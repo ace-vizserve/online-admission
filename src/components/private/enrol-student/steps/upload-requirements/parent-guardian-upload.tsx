@@ -27,7 +27,9 @@ function ParentGuardianUpload() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const { data, isFetching, isSuccess } = useQuery({
     queryKey: ["parent-guardian-documents"],
-    queryFn: getCurrentParentGuardianDocuments,
+    queryFn: async () => {
+      return await getCurrentParentGuardianDocuments();
+    },
     enabled:
       Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length < 1 ||
       Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).length < 1,
@@ -56,19 +58,21 @@ function ParentGuardianUpload() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      setFormState({
-        uploadRequirements: {
-          studentUploadRequirements: {} as StudentUploadRequirementsSchema,
-          parentGuardianUploadRequirements: {
-            ...data?.parentGuardianUploadRequirements,
-            hasFatherInfo: Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0,
-            hasGuardianInfo: Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0,
-          } as ParentGuardianUploadRequirementsSchema,
-        },
-      });
-    }
-  }, [isSuccess, setFormState]);
+    if (!isSuccess || !data) return;
+
+    setFormState({
+      uploadRequirements: {
+        studentUploadRequirements: {} as StudentUploadRequirementsSchema,
+        parentGuardianUploadRequirements: {
+          ...data?.parentGuardianUploadRequirements,
+          hasFatherInfo: Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0,
+          hasGuardianInfo: Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0,
+        } as ParentGuardianUploadRequirementsSchema,
+      },
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, setFormState, data]);
 
   useEffect(() => {
     if (form.formState.isSubmitSuccessful) {

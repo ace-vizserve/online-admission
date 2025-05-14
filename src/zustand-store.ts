@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "./types";
 
 export type SecuritySettingsSheetStore = {
@@ -48,6 +48,7 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
     }),
     {
       name: "enrolNewStudentFormState",
+      storage: createJSONStorage(() => sessionStorage),
     }
   )
 );
@@ -71,6 +72,7 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
     }),
     {
       name: "enrolOldStudentFormState",
+      storage: createJSONStorage(() => sessionStorage),
     }
   )
 );

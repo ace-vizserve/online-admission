@@ -44,11 +44,11 @@ function OldStudentInformation() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      setFormState({
-        studentInfo: data?.studentInfo as EnrolOldStudentFormState["studentInfo"],
-      });
-    }
+    if (!isSuccess || !data) return;
+
+    setFormState({
+      studentInfo: data?.studentInfo as EnrolOldStudentFormState["studentInfo"],
+    });
   }, [data, isSuccess, setFormState]);
 
   useEffect(() => {

@@ -29,11 +29,11 @@ import { cn } from "@/lib/utils";
 import { ParentGuardianFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isBefore } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CalendarIcon, CircleAlert, CloudUpload, ExternalLink, Paperclip, Trash2, Upload } from "lucide-react";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
@@ -109,6 +109,95 @@ const ParentGuardianFileUploaderDialog = memo(function ({
     mutate(value[0]);
   }
 
+  function changeDocument() {
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
+    form.setValue(name, "");
+
+    setFormState({
+      uploadRequirements: {
+        studentUploadRequirements: {
+          ...formState.uploadRequirements.studentUploadRequirements,
+        },
+
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements.parentGuardianUploadRequirements,
+          [name]: "",
+        },
+      },
+    });
+  }
+
+  useEffect(() => {
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements) return;
+
+    const {
+      motherPassExpiryDate,
+      motherPassportExpiryDate,
+      fatherPassExpiryDate,
+      fatherPassportExpiryDate,
+      guardianPassExpiryDate,
+      guardianPassportExpiryDate,
+    } = formState.uploadRequirements.parentGuardianUploadRequirements;
+
+    if (motherPassExpiryDate && isBefore(motherPassExpiryDate, new Date())) {
+      form.setError("motherPass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("motherPassExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (motherPassportExpiryDate && isBefore(motherPassportExpiryDate, new Date())) {
+      form.setError("motherPassport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("motherPassportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (fatherPassExpiryDate && isBefore(fatherPassExpiryDate, new Date())) {
+      form.setError("fatherPass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("fatherPassExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (fatherPassportExpiryDate && isBefore(fatherPassportExpiryDate, new Date())) {
+      form.setError("fatherPassport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("fatherPassportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (guardianPassExpiryDate && isBefore(guardianPassExpiryDate, new Date())) {
+      form.setError("guardianPass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("guardianPassExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (guardianPassportExpiryDate && isBefore(guardianPassportExpiryDate, new Date())) {
+      form.setError("guardianPassport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("guardianPassportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    return () => {
+      form.clearErrors();
+    };
+  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
+
   if (isDesktop) {
     return (
       <div
@@ -136,7 +225,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             </DialogHeader>
 
             {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
-              <div className="w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+              <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+                <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                  Change document
+                </Button>
                 <div className="p-6 bg-white rounded-full">
                   <img src={fileSvg} className="size-14" />
                 </div>
@@ -685,6 +777,95 @@ function ParentGuardianFileUploaderDrawer({
     mutate(value[0]);
   }
 
+  function changeDocument() {
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
+    form.setValue(name, "");
+
+    setFormState({
+      uploadRequirements: {
+        studentUploadRequirements: {
+          ...formState.uploadRequirements.studentUploadRequirements,
+        },
+
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements.parentGuardianUploadRequirements,
+          [name]: "",
+        },
+      },
+    });
+  }
+
+  useEffect(() => {
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements) return;
+
+    const {
+      motherPassExpiryDate,
+      motherPassportExpiryDate,
+      fatherPassExpiryDate,
+      fatherPassportExpiryDate,
+      guardianPassExpiryDate,
+      guardianPassportExpiryDate,
+    } = formState.uploadRequirements.parentGuardianUploadRequirements;
+
+    if (motherPassExpiryDate && isBefore(motherPassExpiryDate, new Date())) {
+      form.setError("motherPass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("motherPassExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (motherPassportExpiryDate && isBefore(motherPassportExpiryDate, new Date())) {
+      form.setError("motherPassport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("motherPassportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (fatherPassExpiryDate && isBefore(fatherPassExpiryDate, new Date())) {
+      form.setError("fatherPass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("fatherPassExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (fatherPassportExpiryDate && isBefore(fatherPassportExpiryDate, new Date())) {
+      form.setError("fatherPassport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("fatherPassportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (guardianPassExpiryDate && isBefore(guardianPassExpiryDate, new Date())) {
+      form.setError("guardianPass", {
+        message: "Please upload a new, update pass.",
+      });
+      form.setError("guardianPassExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    if (guardianPassportExpiryDate && isBefore(guardianPassportExpiryDate, new Date())) {
+      form.setError("guardianPassport", {
+        message: "Please upload a new, update passport.",
+      });
+      form.setError("guardianPassportExpiryDate", {
+        message: "Document is expired",
+      });
+    }
+
+    return () => {
+      form.clearErrors();
+    };
+  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
+
   const errorKeys = Object.keys(errors);
 
   const hasMotherError = errorKeys.some((key) => key.includes("mother"));
@@ -724,6 +905,9 @@ function ParentGuardianFileUploaderDrawer({
 
           {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
             <div className="w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+              <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                Change document
+              </Button>
               <div className="p-6 bg-white rounded-full">
                 <img src={fileSvg} className="size-14" />
               </div>
