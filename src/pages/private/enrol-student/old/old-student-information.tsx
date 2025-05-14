@@ -1,11 +1,19 @@
+import { getStudentInformation } from "@/actions/private";
 import PageMetaData from "@/components/page-metadata";
 import StudentAddressContact from "@/components/private/enrol-student/tabs/student-information/student-address-contact";
 import StudentDetails from "@/components/private/enrol-student/tabs/student-information/student-details";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
+import { EnrolOldStudentFormState } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
+import "ldrs/react/Tailspin.css";
 import { MapPin, User } from "lucide-react";
+import { useEffect } from "react";
+import { useParams } from "react-router";
 
 const tabs = [
   {
@@ -24,6 +32,38 @@ const tabs = [
 
 function OldStudentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION;
+  const params = useParams();
+
+  const { formState, setFormState } = useEnrolOldStudentContext();
+
+  const { data, isSuccess, isPending } = useQuery({
+    queryKey: ["student-information", params.id],
+    queryFn: async () => {
+      return await getStudentInformation(params.id!);
+    },
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      setFormState({
+        studentInfo: data?.studentInfo as EnrolOldStudentFormState["studentInfo"],
+      });
+    }
+  }, [data, isSuccess, setFormState]);
+
+  useEffect(() => {
+    return () => {
+      formState.studentInfo = {} as EnrolOldStudentFormState["studentInfo"];
+    };
+  }, [formState, setFormState]);
+
+  if (isPending) {
+    return <Loader />;
+  }
+
+  if (!Object.keys(formState.studentInfo ?? {}).length) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -63,6 +103,15 @@ function StudentInformationTabs() {
         ))}
       </div>
     </Tabs>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <p className="text-sm text-muted-foreground animate-pulse">Fetching family details...</p>
+      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+    </div>
   );
 }
 

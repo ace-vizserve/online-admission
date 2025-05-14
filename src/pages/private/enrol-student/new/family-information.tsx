@@ -1,3 +1,4 @@
+import { getFamilyInformation } from "@/actions/private";
 import PageMetaData from "@/components/page-metadata";
 import FatherInformation from "@/components/private/enrol-student/steps/family-information/father-information";
 import GuardianInformation from "@/components/private/enrol-student/steps/family-information/guardian-information";
@@ -8,7 +9,12 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
+import { EnrolNewStudentFormState } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
+import "ldrs/react/Tailspin.css";
 import { Baby, ShieldUser, User, Users } from "lucide-react";
+import { useEffect } from "react";
 import { Navigate } from "react-router";
 
 const tabs = [
@@ -58,10 +64,27 @@ function FamilyInformation() {
 }
 
 function FamilyInformationTabs() {
-  const { formState } = useEnrolNewStudentContext();
+  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { data, isPending, isSuccess } = useQuery({
+    queryKey: ["family-information"],
+    queryFn: getFamilyInformation,
+    enabled: formState.studentInfo?.addressContact != null && formState.studentInfo.studentDetails != null,
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      setFormState({
+        familyInfo: { ...data! } as unknown as EnrolNewStudentFormState["familyInfo"],
+      });
+    }
+  }, [data, isSuccess, setFormState]);
 
   if (formState.studentInfo?.addressContact == null || formState.studentInfo.studentDetails == null) {
     return <Navigate to={"/enrol-student/new/student-info"} />;
+  }
+
+  if (isPending) {
+    return <Loader />;
   }
 
   return (
@@ -91,6 +114,15 @@ function FamilyInformationTabs() {
         ))}
       </div>
     </Tabs>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <p className="text-sm text-muted-foreground animate-pulse">Fetching family details...</p>
+      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+    </div>
   );
 }
 

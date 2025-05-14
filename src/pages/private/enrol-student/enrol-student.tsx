@@ -1,3 +1,4 @@
+import { getEnrolledStudents } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,55 +7,24 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
+import { cn } from "@/lib/utils";
+import { EnrolledStudent } from "@/types";
 import { Field, Radio, RadioGroup } from "@headlessui/react";
-import { ArrowLeft, ArrowRight, UserPlus2, UserRoundPlus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
+import { ArrowLeft, ChevronRight, UserPlus2, UserRoundPlus } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { Link } from "react-router";
 
-const studentList = [
-  {
-    id: "std001",
-    name: "Jane Cruz",
-    yearLevel: "Grade 3",
-    avatar: "https://i.pravatar.cc/100?img=12",
-  },
-  {
-    id: "std002",
-    name: "Luke Reyes",
-    yearLevel: "Grade 5",
-    avatar: "https://i.pravatar.cc/100?img=5",
-  },
-  {
-    id: "std003",
-    name: "Mia Santos",
-    yearLevel: "Grade 6",
-    avatar: "https://i.pravatar.cc/100?img=8",
-  },
-  {
-    id: "std004",
-    name: "Ethan Lim",
-    yearLevel: "Grade 4",
-    avatar: "https://i.pravatar.cc/100?img=14",
-  },
-  {
-    id: "std005",
-    name: "Sofia Dela Cruz",
-    yearLevel: "Grade 2",
-    avatar: "https://i.pravatar.cc/100?img=20",
-  },
-  {
-    id: "std006",
-    name: "Noah Garcia",
-    yearLevel: "Grade 1",
-    avatar: "https://i.pravatar.cc/100?img=33",
-  },
-];
-
 function EnrolStudent() {
   const { title, description } = ENROL_NEW_STUDENT_TITLE_DESCRIPTION;
-  const [selected, setSelected] = useState<(typeof studentList)[number]>(studentList[0]);
+  const { data, isPending } = useQuery({
+    queryKey: ["enrolled-students"],
+    queryFn: getEnrolledStudents,
+  });
+  const [selected, setSelected] = useState<EnrolledStudent | null>(data?.studentsList[0] ?? null);
 
-  const selectStudent = useCallback((student: (typeof studentList)[number]) => {
+  const selectStudent = useCallback((student: EnrolledStudent) => {
     setSelected(student);
   }, []);
 
@@ -85,22 +55,29 @@ function EnrolStudent() {
           <Separator />
           <CardContent className="px-2">
             <ScrollArea className="h-60">
-              {studentList.length > 0 ? (
-                <StudentsList selected={selected} setSelected={selectStudent} />
+              {isPending ? (
+                <div className="flex h-72 w-full flex-col gap-2 items-center justify-center rounded-md border border-dashed bg-muted text-muted-foreground">
+                  <p className="text-xs text-muted-foreground animate-pulse">Fetching students...</p>
+                  <Tailspin size="20" stroke="3" speed="0.9" color="#262E40" />
+                </div>
+              ) : data?.studentsList != null && data.studentsList.length > 0 ? (
+                <StudentsList selected={selected} setSelected={selectStudent} studentList={data.studentsList} />
               ) : (
                 <NoStudents />
               )}
             </ScrollArea>
           </CardContent>
-          <CardFooter className="flex flex-col gap-2 px-4">
+          <CardFooter className="flex items-center flex-col gap-2 px-4">
             <Link
-              to={`/enrol-student/${selected.id}/student-info`}
+              to={`/enrol-student/${selected?.studentID}/student-info`}
               className={buttonVariants({
-                size: "lg",
                 variant: "outline",
-                className: "gap-2 w-full",
+                size: "lg",
+                className: cn("gap-2 w-full", {
+                  "opacity-70 pointer-events-none": selected == null,
+                }),
               })}>
-              Enrol Student <ArrowRight />
+              Enrol student <ChevronRight />
             </Link>
             <Link
               to={"/enrol-student/new/student-info"}
@@ -118,29 +95,35 @@ function EnrolStudent() {
 }
 
 type StudentsListProps = {
-  selected: (typeof studentList)[number];
-  setSelected: (student: (typeof studentList)[number]) => void;
+  selected: EnrolledStudent | null;
+  setSelected: (student: EnrolledStudent) => void;
+  studentList: EnrolledStudent[];
 };
 
-const StudentsList = memo(function ({ selected, setSelected }: StudentsListProps) {
+const StudentsList = memo(function ({ selected, setSelected, studentList }: StudentsListProps) {
   return (
     <RadioGroup
       value={selected}
-      onChange={(value) => setSelected(value)}
+      onChange={(value) => {
+        if (!value) return;
+        setSelected(value);
+      }}
       className="flex flex-col gap-2 w-full p-2 pr-4">
       {studentList.map((student) => (
-        <Field key={student.name}>
+        <Field key={student.studentID}>
           <Radio
             value={student}
-            className="border border-muted-foreground/30 w-full group relative flex cursor-pointer rounded-lg p-3 transition data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg">
+            className="border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-lg p-3 transition data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg">
             <div className="flex gap-3">
               <Avatar className="size-11">
                 <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-1">
-                <span className="font-semibold text-sm">{student.name}</span>
-                <span className="text-xs text-muted-foreground">{student.yearLevel}</span>
+                <span className="font-semibold text-sm capitalize">{student.enroleeFullName}</span>
+                <span className="text-xs text-muted-foreground font-medium capitalize">
+                  {student.grade_level.split("-").join(" ")}
+                </span>
               </div>
             </div>
           </Radio>

@@ -7,21 +7,25 @@ const STEPS = [
     name: "Student Information",
     description: "Student details",
     url: "/enrol-student/new/student-info",
+    label: "studentInfo",
   },
   {
     name: "Family Information",
     description: "Family & guardian",
     url: "/enrol-student/new/family-info",
+    label: "familyInfo",
   },
   {
     name: "Enrollment Information",
     description: "Student Enrollment Details",
     url: "/enrol-student/new/enrollment-info",
+    label: "enrollmentInfo",
   },
   {
     name: "Upload Requirements",
     description: "Submit documents",
     url: "/enrol-student/new/upload-requirements",
+    label: "uploadRequirements",
   },
 ];
 

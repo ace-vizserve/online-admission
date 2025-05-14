@@ -1,24 +1,33 @@
 import { Button } from "@/components/ui/button";
 
+import { getCurrentParentGuardianDocuments } from "@/actions/private";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { wait } from "@/lib/utils";
-import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
+import {
+  parentGuardianUploadRequirementsSchema,
+  ParentGuardianUploadRequirementsSchema,
+  StudentUploadRequirementsSchema,
+} from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
+import "ldrs/react/Tailspin.css";
 import { Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate } from "react-router";
-import { toast } from "sonner";
+import { useParams } from "react-router";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
 
-type SubmitState = "idle" | "pending" | "success";
-
 function ParentGuardianUpload() {
+  const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const { data, isFetching, isSuccess } = useQuery({
+    queryKey: ["parent-guardian-documents", params.id],
+    queryFn: getCurrentParentGuardianDocuments,
+  });
+
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
   const [motherPassport, setMotherPassport] = useState<File[] | null>(null);
   const [guardianPassport, setGuardianPassport] = useState<File[] | null>(null);
@@ -33,39 +42,45 @@ function ParentGuardianUpload() {
     },
   });
 
-  async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
-    if (formState.uploadRequirements?.studentUploadRequirements == null) {
-      toast.warning("Student Documents is missing!", {
-        description: "Please fill out all required fields to proceed.",
+  useEffect(() => {
+    if (isSuccess) {
+      setFormState({
+        uploadRequirements: {
+          studentUploadRequirements: {
+            ...(formState.uploadRequirements?.studentUploadRequirements as StudentUploadRequirementsSchema),
+          },
+          parentGuardianUploadRequirements: {
+            ...(data!.parentGuardianUploadRequirements as ParentGuardianUploadRequirementsSchema),
+          },
+        },
       });
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-      return;
     }
+  }, [isSuccess, setFormState]);
+
+  function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     setFormState({
       ...formState,
       uploadRequirements: {
-        parentGuardianUploadRequirements: values,
         studentUploadRequirements: {
-          ...formState.uploadRequirements.studentUploadRequirements,
+          ...formState.uploadRequirements!.studentUploadRequirements,
         },
+        parentGuardianUploadRequirements: { ...values },
       },
     });
-    setSubmitState("pending");
-    await wait(2000);
-    setSubmitState("success");
-    setFormState({});
   }
 
-  if (submitState == "success") {
-    return <Navigate to={"/application-submitted"} replace />;
+  if (isFetching) {
+    return <Loader />;
+  }
+
+  if (Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).length < 1) {
+    return <Loader />;
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full mx-auto">
+        <h1 className="max-w-4xl mx-auto font-semibold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
           <ParentGuardianFileUploaderDialog
             formState={formState}
@@ -89,8 +104,7 @@ function ParentGuardianUpload() {
             onValueChange={setMotherPass}
           />
         </div>
-
-        {formState.familyInfo?.fatherInfo != null && (
+        {Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0 && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
@@ -119,8 +133,7 @@ function ParentGuardianUpload() {
             </div>
           </>
         )}
-
-        {formState.familyInfo?.guardianInfo != null && (
+        {Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0 && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>
@@ -149,7 +162,6 @@ function ParentGuardianUpload() {
             </div>
           </>
         )}
-
         <Button
           size="lg"
           className="mt-8 mb-0 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase"
@@ -157,13 +169,21 @@ function ParentGuardianUpload() {
           Save
           <Save />
         </Button>
-
         <Button className="mt-8 mb-0 flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
           Save
           <Save />
         </Button>
       </form>
     </Form>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <p className="text-sm text-muted-foreground animate-pulse">Fetching documents...</p>
+      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+    </div>
   );
 }
 

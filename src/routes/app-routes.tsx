@@ -20,7 +20,7 @@ import UploadRequirements from "@/pages/private/enrol-student/new/upload-require
 import OldEnrollmentInformation from "@/pages/private/enrol-student/old/old-enrollment-information";
 import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-information";
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
-import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requiremts";
+import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requirements";
 import { Enrollment } from "@/pages/private/Enrollment";
 import { Files } from "@/pages/private/files";
 import { SchoolYear } from "@/pages/private/school-year";

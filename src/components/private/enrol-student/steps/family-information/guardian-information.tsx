@@ -20,13 +20,12 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { toast } from "sonner";
 
 function GuardianInformation() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
-  const [countryName, setCountryName] = useState<string>("");
-  const [stateName, setStateName] = useState<string>("");
 
   const form = useForm<GuardianInformationSchema>({
     resolver: zodResolver(guardianInformationSchema),
@@ -36,7 +35,13 @@ function GuardianInformation() {
   });
 
   function onSubmit(values: GuardianInformationSchema) {
-    console.log(countryName);
+    if (!isValidPhoneNumber(values.guardianMobilePhone)) {
+      form.setError("guardianMobilePhone", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       familyInfo: {
@@ -65,7 +70,7 @@ function GuardianInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsGuardianFirstName"
+            name="guardianFirstName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>First name</FormLabel>
@@ -80,7 +85,7 @@ function GuardianInformation() {
 
           <FormField
             control={form.control}
-            name="studentsGuardianMiddleName"
+            name="guardianMiddleName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
@@ -99,7 +104,7 @@ function GuardianInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsGuardianLastName"
+            name="guardianLastName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Last name</FormLabel>
@@ -114,7 +119,7 @@ function GuardianInformation() {
 
           <FormField
             control={form.control}
-            name="studentsGuardianPreferredName"
+            name="guardianPreferredName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Preferred name</FormLabel>
@@ -131,7 +136,7 @@ function GuardianInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsGuardianDateOfBirth"
+              name="guardianDateOfBirth"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date of birth</FormLabel>
@@ -160,7 +165,7 @@ function GuardianInformation() {
             />
             <FormField
               control={form.control}
-              name="studentsGuardianReligion"
+              name="guardianReligion"
               render={({ field }) => (
                 <div className="flex flex-col gap-2">
                   <FormItem>
@@ -192,10 +197,10 @@ function GuardianInformation() {
                     <FormDescription>Enter father's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(isOtherReligion || formState.familyInfo?.guardianInfo?.studentsGuardianOtherReligion) && (
+                  {(isOtherReligion || formState.familyInfo?.guardianInfo?.guardianOtherReligion) && (
                     <FormField
                       control={form.control}
-                      name="studentsGuardianOtherReligion"
+                      name="guardianOtherReligion"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
@@ -210,27 +215,21 @@ function GuardianInformation() {
               )}
             />
           </div>
-
           <FormField
             control={form.control}
-            name="studentsGuardianCountry"
+            name="guardianNationality"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select Country</FormLabel>
+                <FormLabel>Select Nationality</FormLabel>
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    onCountryChange={(country) => {
-                      setCountryName(country?.name || "");
-                      form.setValue(field.name, [country?.name || "", stateName || ""]);
-                    }}
-                    onStateChange={(state) => {
-                      setStateName(state?.name || "");
-                      form.setValue(field.name, [form.getValues(field.name)[0] || "", state?.name || ""]);
-                    }}
+                    selectedNationality={formState.familyInfo?.guardianInfo?.guardianNationality}
+                    onCountryChange={(value) => field.onChange(value?.nationality)}
                   />
                 </FormControl>
-                <FormDescription>Select the country where the student's guardian lives.</FormDescription>
+                <FormDescription>Select the country that best represents the guardian's nationality.</FormDescription>
+                <FormMessage />
                 <FormMessage />
               </FormItem>
             )}
@@ -240,7 +239,7 @@ function GuardianInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsGuardianNRICFIN"
+            name="guardianNricFin"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
@@ -255,12 +254,12 @@ function GuardianInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsGuardianMobilePhone"
+              name="guardianMobilePhone"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput {...field} defaultCountry="SG" international />
                   </FormControl>
                   <FormDescription>Enter the student's guardian mobile phone.</FormDescription>
                   <FormMessage />
@@ -270,7 +269,7 @@ function GuardianInformation() {
 
             <FormField
               control={form.control}
-              name="studentsGuardianEmailAddress"
+              name="guardianEmail"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
@@ -288,7 +287,7 @@ function GuardianInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsGuardianWorkCompany"
+            name="guardianWorkCompany"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
@@ -303,7 +302,7 @@ function GuardianInformation() {
 
           <FormField
             control={form.control}
-            name="studentsGuardianWorkPosition"
+            name="guardianWorkPosition"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Position</FormLabel>

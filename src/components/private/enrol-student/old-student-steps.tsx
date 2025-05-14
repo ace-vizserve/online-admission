@@ -21,7 +21,7 @@ function OldStudentSteps() {
         }>
         <div className="space-y-1 text-center px-6 py-4">
           <p className="text-sm font-semibold">Student Information</p>
-          <p className="text-xs text-muted-foreground">Student details</p>
+          <p className="text-xs text-muted-foreground">Review Student details</p>
         </div>
       </NavLink>
 
@@ -39,7 +39,7 @@ function OldStudentSteps() {
         }>
         <div className="space-y-1 text-center px-6 py-4">
           <p className="text-sm font-semibold">Family Information</p>
-          <p className="text-xs text-muted-foreground">Family & guardian</p>
+          <p className="text-xs text-muted-foreground">Review Family & guardian</p>
         </div>
       </NavLink>
 
@@ -57,7 +57,7 @@ function OldStudentSteps() {
         }>
         <div className="space-y-1 text-center px-6 py-4">
           <p className="text-sm font-semibold">Enrollment Information</p>
-          <p className="text-xs text-muted-foreground">Student Enrollment Details</p>
+          <p className="text-xs text-muted-foreground">Review Student Enrollment Details</p>
         </div>
       </NavLink>
 

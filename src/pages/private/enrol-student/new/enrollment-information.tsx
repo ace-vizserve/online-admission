@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import {
   campusDevelopmentFee,
@@ -98,7 +99,7 @@ function EnrollmentInformation() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
-                    name="classLevel"
+                    name="levelApplied"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Class Level</FormLabel>
@@ -197,7 +198,7 @@ function EnrollmentInformation() {
 
                   <FormField
                     control={form.control}
-                    name="busService"
+                    name="availSchoolBus"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Bus Service</FormLabel>
@@ -222,7 +223,7 @@ function EnrollmentInformation() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
-                    name="schoolUniform"
+                    name="availUniform"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="h-9">School Uniform</FormLabel>
@@ -245,7 +246,7 @@ function EnrollmentInformation() {
 
                   <FormField
                     control={form.control}
-                    name="studentCare"
+                    name="availStudentCare"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="h-9">Student Care</FormLabel>
@@ -268,7 +269,7 @@ function EnrollmentInformation() {
 
                   <FormField
                     control={form.control}
-                    name="campusDevelopmentFee"
+                    name="paymentOption"
                     render={({ field }) => (
                       <FormItem>
                         <div className="relative flex justify-between items-center">
@@ -317,7 +318,7 @@ function EnrollmentInformation() {
                     <>
                       <FormField
                         control={form.control}
-                        name="referralName"
+                        name="referrerName"
                         render={({ field }) => (
                           <FormItem className="space-y-1">
                             <FormLabel className="text-white">Referrer's Name</FormLabel>
@@ -431,7 +432,7 @@ function EnrollmentInformation() {
                       {isShowReferral ? (
                         <FormField
                           control={form.control}
-                          name="referralName"
+                          name="referrerName"
                           render={({ field }) => (
                             <FormItem className="space-y-1">
                               <FormLabel className="text-white">Referrer's Name</FormLabel>
@@ -497,9 +498,18 @@ function CDFDetailsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size={"icon"} variant={"ghost"}>
-          <CircleHelp className="stroke-blue-600 stroke-2" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size={"icon"} variant={"ghost"} type="button">
+                <CircleHelp className="stroke-blue-600 stroke-2" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Click here to see CDF details</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </DialogTrigger>
       <DialogContent className="!max-w-3xl">
         <DialogHeader>

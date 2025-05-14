@@ -1,3 +1,4 @@
+import { getFamilyInformation } from "@/actions/private";
 import PageMetaData from "@/components/page-metadata";
 import FatherInformation from "@/components/private/enrol-student/tabs/family-information/father-information";
 import GuardianInformation from "@/components/private/enrol-student/tabs/family-information/guardian-information";
@@ -6,8 +7,14 @@ import SiblingInformation from "@/components/private/enrol-student/tabs/family-i
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
+import { EnrolOldStudentFormState } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
+import "ldrs/react/Tailspin.css";
 import { Baby, ShieldUser, User, Users } from "lucide-react";
+import { useEffect } from "react";
 
 const tabs = [
   {
@@ -56,6 +63,28 @@ function OldFamilyInformation() {
 }
 
 function FamilyInformationTabs() {
+  const { setFormState, formState } = useEnrolOldStudentContext();
+  const { data, isPending, isSuccess } = useQuery({
+    queryKey: ["family-information"],
+    queryFn: getFamilyInformation,
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      setFormState({
+        familyInfo: { ...data! } as unknown as EnrolOldStudentFormState["familyInfo"],
+      });
+    }
+  }, [data, isSuccess, setFormState]);
+
+  if (isPending) {
+    return <Loader />;
+  }
+
+  if (!Object.keys(formState.familyInfo ?? {}).length) {
+    return <Loader />;
+  }
+
   return (
     <Tabs
       orientation="vertical"
@@ -83,6 +112,15 @@ function FamilyInformationTabs() {
         ))}
       </div>
     </Tabs>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <p className="text-sm text-muted-foreground animate-pulse">Fetching family details...</p>
+      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+    </div>
   );
 }
 

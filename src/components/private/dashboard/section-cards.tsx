@@ -26,7 +26,7 @@ export function SectionCards() {
                   <div className="rounded-md bg-primary p-2">
                     <Users className="stroke-white size-5" />
                   </div>
-                  <CardDescription className="font-medium">Total Children Enrolled</CardDescription>
+                  <CardDescription className="font-medium">My Children</CardDescription>
                 </div>
                 <Link
                   className={buttonVariants({
@@ -39,7 +39,7 @@ export function SectionCards() {
                 </Link>
               </div>
 
-              <CardTitle className="text-4xl font-bold tabular-nums text-primary">{data?.totalEnrolled}</CardTitle>
+              <CardTitle className="text-4xl font-bold tabular-nums text-primary">{data?.totalChildren}</CardTitle>
             </CardHeader>
           </Card>
 
