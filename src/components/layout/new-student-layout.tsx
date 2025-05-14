@@ -1,23 +1,30 @@
-import EnrolNewStudentContextProvider from "@/context/enrol-new-student-context";
+import EnrolNewStudentContextProvider, { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ArrowLeft } from "lucide-react";
-import { Link, Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import MaxWidthWrapper from "../max-width-wrapper";
 import NewStudentSteps from "../private/enrol-student/new-student-steps";
 import { buttonVariants } from "../ui/button";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { OctagonAlert } from "lucide-react";
 
 function NewStudentLayout() {
   return (
     <EnrolNewStudentContextProvider>
       <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl">
-          <Link
-            to={"/admission/dashboard"}
-            className={buttonVariants({
-              variant: "link",
-              className: "gap-2",
-            })}>
-            <ArrowLeft /> Go back
-          </Link>
+          <ExitApplicationDialog />
         </MaxWidthWrapper>
       </div>
       <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
@@ -29,6 +36,48 @@ function NewStudentLayout() {
         </div>
       </MaxWidthWrapper>
     </EnrolNewStudentContextProvider>
+  );
+}
+
+function ExitApplicationDialog() {
+  const { setFormState } = useEnrolNewStudentContext();
+  const navigate = useNavigate();
+
+  function exitApplication() {
+    setFormState({});
+    localStorage.removeItem("enrolNewStudentFormState");
+    navigate("/admission/dashboard");
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="link" className="gap-2">
+          <ArrowLeft />
+          Go back
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader className="items-center">
+          <AlertDialogTitle>
+            <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+              <OctagonAlert className="h-7 w-7 text-destructive" />
+            </div>
+            Exit Application?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-[15px] text-center">
+            Are you sure you want to exit this page? Both saved and unsaved information will be removed and cannot be
+            recovered.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="mt-2 sm:justify-center">
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={exitApplication} className={buttonVariants({ variant: "destructive" })}>
+            Exit Anyway
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

@@ -9,8 +9,9 @@ import { maritalStatuses } from "@/data";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
@@ -19,8 +20,6 @@ function StudentAddressContact() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const navigate = useNavigate();
   const [isPending, setTransition] = useTransition();
-  const [countryName, setCountryName] = useState<string>("");
-  const [stateName, setStateName] = useState<string>("");
 
   const form = useForm<StudentAddressContactSchema>({
     resolver: zodResolver(studentAddressContactSchema),
@@ -30,8 +29,6 @@ function StudentAddressContact() {
   });
 
   function onSubmit(values: StudentAddressContactSchema) {
-    console.log(countryName);
-
     if (!Object.keys(formState).length) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
@@ -41,6 +38,19 @@ function StudentAddressContact() {
     if (!formState.studentInfo?.studentDetails?.isValid) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
+      });
+      return;
+    }
+    if (form.getValues("homePhone") && !isValidPhoneNumber(form.getValues("homePhone"))) {
+      form.setError("homePhone", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
+    if (form.getValues("contactPersonNumber") && !isValidPhoneNumber(form.getValues("contactPersonNumber"))) {
+      form.setError("contactPersonNumber", {
+        message: "Invalid phone number",
       });
       return;
     }
@@ -72,7 +82,7 @@ function StudentAddressContact() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
         <FormField
           control={form.control}
-          name="studentHomeAddress"
+          name="homeAddress"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Home Address</FormLabel>
@@ -88,7 +98,7 @@ function StudentAddressContact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentPostalCode"
+            name="postalCode"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Postal code</FormLabel>
@@ -103,24 +113,18 @@ function StudentAddressContact() {
 
           <FormField
             control={form.control}
-            name="countryCode"
+            name="nationality"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select Country</FormLabel>
+                <FormLabel>Student Nationality</FormLabel>
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    onCountryChange={(country) => {
-                      setCountryName(country?.name || "");
-                      form.setValue(field.name, [country?.name || "", stateName || ""]);
-                    }}
-                    onStateChange={(state) => {
-                      setStateName(state?.name || "");
-                      form.setValue(field.name, [form.getValues(field.name)[0] || "", state?.name || ""]);
-                    }}
+                    selectedNationality={formState.studentInfo?.addressContact.nationality}
+                    onCountryChange={(value) => field.onChange(value?.nationality)}
                   />
                 </FormControl>
-                <FormDescription>Select the country where the student lives.</FormDescription>
+                <FormDescription>Select the country that best represents the student's nationality.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -135,7 +139,7 @@ function StudentAddressContact() {
               <FormItem className="flex flex-col items-start">
                 <FormLabel>Home phone</FormLabel>
                 <FormControl className="w-full">
-                  <PhoneInput {...field} defaultCountry="TR" />
+                  <PhoneInput {...field} defaultCountry="SG" international />
                 </FormControl>
                 <FormDescription>Enter your home phone number.</FormDescription>
                 <FormMessage />
@@ -164,7 +168,7 @@ function StudentAddressContact() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Contact Person Number</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput {...field} defaultCountry="SG" international />
                   </FormControl>
                   <FormDescription>Student's contact person phone number.</FormDescription>
                   <FormMessage />
@@ -177,7 +181,7 @@ function StudentAddressContact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="parentsMaritalStatus"
+            name="parentMaritalStatus"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Parent's Marital Status</FormLabel>

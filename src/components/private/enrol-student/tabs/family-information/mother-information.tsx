@@ -1,3 +1,4 @@
+import { updateFamilyInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -9,19 +10,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
+import { FamilyInfo } from "@/types";
 import { motherInformationSchema, MotherInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 function MotherInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const [countryName, setCountryName] = useState<string>("");
-  const [stateName, setStateName] = useState<string>("");
-
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (familyInformation: Partial<FamilyInfo>) => {
+      return await updateFamilyInformation(familyInformation);
+    },
+  });
+  const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const form = useForm<MotherInformationSchema>({
     resolver: zodResolver(motherInformationSchema),
     defaultValues: {
@@ -30,17 +37,14 @@ function MotherInformation() {
   });
 
   function onSubmit(values: MotherInformationSchema) {
-    console.log(countryName);
     setFormState({
-      ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        motherInfo: { ...values },
+        motherInfo: { ...values, isValid: true },
       },
     });
-    toast.success("Mother information details saved!", {
-      description: "Make sure to double check everything",
-    });
+
+    mutate({ ...values, motherDateOfBirth: values.motherDateOfBirth as unknown as string });
   }
 
   return (
@@ -49,7 +53,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherFirstName"
+            name="motherFirstName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>First name</FormLabel>
@@ -64,7 +68,7 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsMotherMiddleName"
+            name="motherMiddleName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
@@ -83,7 +87,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherLastName"
+            name="motherLastName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Last name</FormLabel>
@@ -98,7 +102,7 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsMotherPreferredName"
+            name="motherPreferredName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Preferred name</FormLabel>
@@ -115,7 +119,7 @@ function MotherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsMotherDateOfBirth"
+              name="motherDateOfBirth"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date of birth</FormLabel>
@@ -144,51 +148,71 @@ function MotherInformation() {
             />
             <FormField
               control={form.control}
-              name="studentsMotherReligion"
+              name="motherReligion"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Religion</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full lg:max-w-[240px]">
-                        <SelectValue placeholder="Select a religion" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {religions.map((religion) => (
-                        <SelectItem key={religion.value} value={religion.value}>
-                          {religion.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Enter the student's mother religion.</FormDescription>
-                  <FormMessage />
-                </FormItem>
+                <div className="flex flex-col gap-2">
+                  <FormItem>
+                    <FormLabel>Religion</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "other") {
+                          setIsOtherReligion(true);
+                        } else {
+                          setIsOtherReligion(false);
+                        }
+
+                        field.onChange(value);
+                      }}
+                      defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full lg:max-w-[240px]">
+                          <SelectValue placeholder="Select a religion" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {religions.map((religion) => (
+                          <SelectItem key={religion.value} value={religion.value}>
+                            {religion.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Enter mother's religion</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                  {(isOtherReligion || formState.familyInfo?.motherInfo?.motherOtherReligion) && (
+                    <FormField
+                      control={form.control}
+                      name="motherOtherReligion"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormControl>
+                            <Input placeholder="Please specify religion" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
               )}
             />
           </div>
 
           <FormField
             control={form.control}
-            name="studentsMotherCountry"
+            name="motherNationality"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Select Country</FormLabel>
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    onCountryChange={(country) => {
-                      setCountryName(country?.name || "");
-                      form.setValue(field.name, [country?.name || "", stateName || ""]);
-                    }}
-                    onStateChange={(state) => {
-                      setStateName(state?.name || "");
-                      form.setValue(field.name, [form.getValues(field.name)[0] || "", state?.name || ""]);
-                    }}
+                    selectedNationality={formState.familyInfo?.motherInfo?.motherNationality}
+                    onCountryChange={(value) => field.onChange(value?.nationality)}
                   />
                 </FormControl>
-                <FormDescription>Select the country where the student's mother lives.</FormDescription>
+                <FormDescription>Select the country to determine the nationality.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -198,7 +222,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherNRICFIN"
+            name="motherNricFin"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
@@ -213,7 +237,7 @@ function MotherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsMotherMobilePhone"
+              name="motherMobilePhone"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
@@ -228,7 +252,7 @@ function MotherInformation() {
 
             <FormField
               control={form.control}
-              name="studentsMotherEmailAddress"
+              name="motherEmail"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
@@ -246,7 +270,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherWorkCompany"
+            name="motherWorkCompany"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
@@ -261,7 +285,7 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsMotherWorkPosition"
+            name="motherWorkPosition"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Position</FormLabel>
@@ -275,14 +299,32 @@ function MotherInformation() {
           />
         </div>
 
-        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          Save
-          <Save />
+        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          {isPending ? (
+            <>
+              Saving
+              <DotPulse size="30" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Save
+              <Save />
+            </>
+          )}
         </Button>
 
-        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Save
-          <Save />
+        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          {isPending ? (
+            <>
+              Saving
+              <DotPulse size="20" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Save
+              <Save />
+            </>
+          )}
         </Button>
       </form>
     </Form>

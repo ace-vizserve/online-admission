@@ -18,17 +18,8 @@ export const studentEnrolSchema = z.object({
   studentName: z.string(),
   age: z.string(),
   motherName: z.string(),
-  fatherName: z.string()
-})
-
-export const studentEnrolments = z.object({
-  id: z.string(),
-  studentName: z.string(),
-  academicYear: z.string(),
-  level: z.string(),
-  status: z.string(),
-})
-
+  fatherName: z.string(),
+});
 export const registrationSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
@@ -63,27 +54,27 @@ export const studentDetailsSchema = z
     preferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    studentBirthDate: z.coerce.date({
+    dateOfBirth: z.coerce.date({
       required_error: "Birth date is required",
       invalid_type_error: "Please enter a valid date",
     }),
-    studentGender: z.string().min(1, {
+    gender: z.string().min(1, {
       message: "Please select a gender",
     }),
-    studentPrimaryLanguage: z.string().min(1, {
+    primaryLanguage: z.string().min(1, {
       message: "Primary language is required",
     }),
-    studentReligion: z.string().min(1, {
+    religion: z.string().min(1, {
       message: "Religion is required",
     }),
-    studentOtherReligion: z.string().optional(),
+    otherReligion: z.string().optional(),
     nricFin: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
   })
   .superRefine((schema, ctx) => {
-    if (schema.studentReligion === "other") {
-      if (!schema.studentOtherReligion) {
+    if (schema.religion === "other") {
+      if (!schema.otherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify religion",
@@ -95,14 +86,14 @@ export const studentDetailsSchema = z
 
 export const studentAddressContactSchema = z.object({
   isValid: z.boolean().default(false).optional(),
-  studentHomeAddress: z.string().min(1, {
+  homeAddress: z.string().min(1, {
     message: "Home address is required",
   }),
-  studentPostalCode: z
+  postalCode: z
     .string()
     .min(6, { message: "Postal code must be exactly 6 digits" })
     .max(6, { message: "Postal code must be exactly 6 digits" }),
-  countryCode: z.tuple([z.string(), z.string().optional()]),
+  nationality: z.string(),
   homePhone: z.string().min(1, {
     message: "Home phone number is required",
   }),
@@ -115,55 +106,55 @@ export const studentAddressContactSchema = z.object({
   livingWithWhom: z.string().min(1, {
     message: "Please indicate who the student is living with",
   }),
-  parentsMaritalStatus: z.string().min(1, {
+  parentMaritalStatus: z.string().min(1, {
     message: "Please select the parents' marital status",
   }),
 });
 
 export const guardianInformationSchema = z
   .object({
-    studentsGuardianFirstName: z.string().min(1, {
+    guardianFirstName: z.string().min(1, {
       message: "Guardian's first name is required",
     }),
-    studentsGuardianMiddleName: z.string().optional(),
-    studentsGuardianLastName: z.string().min(1, {
+    guardianMiddleName: z.string().optional(),
+    guardianLastName: z.string().min(1, {
       message: "Guardian's last name is required",
     }),
-    studentsGuardianPreferredName: z.string().min(1, {
+    guardianPreferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    studentsGuardianDateOfBirth: z.coerce.date({
+    guardianDateOfBirth: z.coerce.date({
       required_error: "Guardian's date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
-    studentsGuardianCountry: z.tuple([z.string(), z.string().optional()]),
-    studentsGuardianReligion: z.string().min(1, {
+    guardianNationality: z.string(),
+    guardianReligion: z.string().min(1, {
       message: "Religion is required",
     }),
-    studentsGuardianOtherReligion: z.string().optional(),
-    studentsGuardianNRICFIN: z.string().min(1, {
+    guardianOtherReligion: z.string().optional(),
+    guardianNricFin: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
-    studentsGuardianMobilePhone: z.string().min(1, {
+    guardianMobilePhone: z.string().min(1, {
       message: "Mobile phone number is required",
     }),
-    studentsGuardianEmailAddress: z.string().email({
+    guardianEmail: z.string().email({
       message: "Please enter a valid email address",
     }),
-    studentsGuardianWorkCompany: z.string().min(1, {
+    guardianWorkCompany: z.string().min(1, {
       message: "Company name is required",
     }),
-    studentsGuardianWorkPosition: z.string().min(1, {
+    guardianWorkPosition: z.string().min(1, {
       message: "Position at work is required",
     }),
   })
   .superRefine((schema, ctx) => {
-    if (schema.studentsGuardianReligion === "other") {
-      if (!schema.studentsGuardianOtherReligion) {
+    if (schema.guardianReligion === "other") {
+      if (!schema.guardianOtherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify religion",
-          path: ["studentsGuardianOtherReligion"],
+          path: ["guardianOtherReligion"],
         });
       }
     }
@@ -171,48 +162,48 @@ export const guardianInformationSchema = z
 
 export const fatherInformationSchema = z
   .object({
-    studentsFatherFirstName: z.string().min(1, {
+    fatherFirstName: z.string().min(1, {
       message: "Father's first name is required",
     }),
-    studentsFatherMiddleName: z.string().optional(),
-    studentsFatherLastName: z.string().min(1, {
+    fatherMiddleName: z.string().optional(),
+    fatherLastName: z.string().min(1, {
       message: "Father's last name is required",
     }),
-    studentsFatherPreferredName: z.string().min(1, {
+    fatherPreferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    studentsFatherDateOfBirth: z.coerce.date({
+    fatherDateOfBirth: z.coerce.date({
       required_error: "Father's date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
-    studentsFatherCountry: z.tuple([z.string(), z.string().optional()]),
-    studentsFatherReligion: z.string().min(1, {
+    fatherNationality: z.string(),
+    fatherReligion: z.string().min(1, {
       message: "Religion is required",
     }),
-    studentsFatherOtherReligion: z.string().optional(),
-    studentsFatherNRICFIN: z.string().min(1, {
+    fatherOtherReligion: z.string().optional(),
+    fatherNricFin: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
-    studentsFatherMobilePhone: z.string().min(1, {
+    fatherMobilePhone: z.string().min(1, {
       message: "Mobile phone number is required",
     }),
-    studentsFatherEmailAddress: z.string().email({
+    fatherEmail: z.string().email({
       message: "Please enter a valid email address",
     }),
-    studentsFatherWorkCompany: z.string().min(1, {
+    fatherWorkCompany: z.string().min(1, {
       message: "Company name is required",
     }),
-    studentsFatherWorkPosition: z.string().min(1, {
+    fatherWorkPosition: z.string().min(1, {
       message: "Position at work is required",
     }),
   })
   .superRefine((schema, ctx) => {
-    if (schema.studentsFatherReligion === "other") {
-      if (!schema.studentsFatherOtherReligion) {
+    if (schema.fatherReligion === "other") {
+      if (!schema.fatherOtherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify religion",
-          path: ["studentsFatherOtherReligion"],
+          path: ["fatherOtherReligion"],
         });
       }
     }
@@ -221,48 +212,48 @@ export const fatherInformationSchema = z
 export const motherInformationSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
-    studentsMotherFirstName: z.string().min(1, {
+    motherFirstName: z.string().min(1, {
       message: "Mother's first name is required",
     }),
-    studentsMotherMiddleName: z.string().optional(),
-    studentsMotherLastName: z.string().min(1, {
+    motherMiddleName: z.string().optional(),
+    motherLastName: z.string().min(1, {
       message: "Mother's last name is required",
     }),
-    studentsMotherPreferredName: z.string().min(1, {
+    motherPreferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    studentsMotherDateOfBirth: z.coerce.date({
+    motherDateOfBirth: z.coerce.date({
       required_error: "Mother's date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
-    studentsMotherCountry: z.tuple([z.string(), z.string().optional()]),
-    studentsMotherReligion: z.string().min(1, {
+    motherNationality: z.string(),
+    motherReligion: z.string().min(1, {
       message: "Religion is required",
     }),
-    studentsMotherOtherReligion: z.string().optional(),
-    studentsMotherNRICFIN: z.string().min(1, {
+    motherOtherReligion: z.string().optional(),
+    motherNricFin: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
-    studentsMotherMobilePhone: z.string().min(1, {
+    motherMobilePhone: z.string().min(1, {
       message: "Mobile phone number is required",
     }),
-    studentsMotherEmailAddress: z.string().email({
+    motherEmail: z.string().email({
       message: "Please enter a valid email address",
     }),
-    studentsMotherWorkCompany: z.string().min(1, {
+    motherWorkCompany: z.string().min(1, {
       message: "Company name is required",
     }),
-    studentsMotherWorkPosition: z.string().min(1, {
+    motherWorkPosition: z.string().min(1, {
       message: "Position at work is required",
     }),
   })
   .superRefine((schema, ctx) => {
-    if (schema.studentsMotherReligion === "other") {
-      if (!schema.studentsMotherOtherReligion) {
+    if (schema.motherReligion === "other") {
+      if (!schema.motherOtherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify religion",
-          path: ["studentsMotherOtherReligion"],
+          path: ["motherOtherReligion"],
         });
       }
     }
@@ -307,7 +298,7 @@ export const siblingInformationSchema = z
 
 export const enrollmentInformationSchema = z.object({
   isValid: z.boolean().default(false).optional(),
-  classLevel: z.string().min(1, {
+  levelApplied: z.string().min(1, {
     message: "Class level is required",
   }),
   classType: z.string().min(1, {
@@ -317,37 +308,75 @@ export const enrollmentInformationSchema = z.object({
     message: "Preferred schedule is required",
   }),
   additionalLearningOrSpecialNeeds: z.string().optional(),
-  busService: z.string().min(1, {
+  availSchoolBus: z.string().min(1, {
     message: "Bus service selection is required",
   }),
-  schoolUniform: z.string().min(1, {
+  availUniform: z.string().min(1, {
     message: "School uniform selection is required",
   }),
-  studentCare: z.string().min(1, {
+  availStudentCare: z.string().min(1, {
     message: "Student care selection is required",
   }),
-  campusDevelopmentFee: z.string().min(1, {
+  paymentOption: z.string().min(1, {
     message: "Campus development fee selection is required",
   }),
   discount: z.array(z.string().optional()).optional(),
-  referralName: z.string().optional(),
+  referrerName: z.string().optional(),
 });
 
 z.instanceof(File, { message: "Photo is required" });
 
 export const studentUploadRequirementsSchema = z.object({
   isValid: z.boolean().default(false).optional(),
-  idPicture: z.string().min(1, { message: "ID picture is required" }),
-  birthCertificate: z.string().min(1, { message: "Birth certificate is required" }),
-  transcriptOfRecords: z.string().min(1, { message: "Transcript of record is required" }),
-  form12: z.string().min(1, { message: "Form 12 is required" }),
-  medicalExam: z.string().min(1, { message: "Medical exam result is required" }),
-  passport: z.string().min(1, { message: "Student's passport copy is required" }),
+  idPicture: z
+    .string()
+    .url("Please upload the file to continue")
+    .refine((val) => val.startsWith("http"), {
+      message: "Please upload the file to continue",
+    }),
+  birthCertificate: z
+    .string()
+    .url("Please upload the file to continue")
+    .min(1, { message: "Birth certificate is required" })
+    .refine((val) => val.startsWith("http"), {
+      message: "Please upload the file to continue",
+    }),
+  transcriptOfRecords: z
+    .string()
+    .url("Please upload the file to continue")
+    .min(1, { message: "Transcript of record is required" })
+    .refine((val) => val.startsWith("http"), {
+      message: "Please upload the file to continue",
+    }),
+  form12: z
+    .string()
+    .url({ message: "Upload the file to continue" })
+    .min(1, { message: "Form 12 is required" })
+    .refine((val) => val.startsWith("http"), {
+      message: "Please upload the file to continue",
+    }),
+  medicalExam: z
+    .string()
+    .url("Please upload the file to continue")
+    .refine((val) => val.startsWith("http"), {
+      message: "Please upload the file to continue",
+    }),
+  passport: z
+    .string({ message: "Upload the file to continue" })
+    .url("Please upload the file to continue")
+    .refine((val) => val.startsWith("http"), {
+      message: "Please upload the file to continue",
+    }),
   passportNumber: z.string().min(1, "Passport number is required"),
   passportExpiryDate: z.coerce.date({
     errorMap: () => ({ message: "Enter a valid passport expiry date" }),
   }),
-  pass: z.string().min(1, { message: "Student's pass copy is required" }),
+  pass: z
+    .string()
+    .url("Please upload the file to continue")
+    .refine((val) => val.startsWith("http"), {
+      message: "Please upload the file to continue",
+    }),
   passType: z.string().min(1, "Pass type is required"),
   passExpiryDate: z.coerce.date({
     errorMap: () => ({ message: "Enter a valid pass expiry date" }),
@@ -358,38 +387,72 @@ export const parentGuardianUploadRequirementsSchema = z
   .object({
     hasFatherInfo: z.boolean().optional(),
     hasGuardianInfo: z.boolean().optional(),
-    motherPassport: z.string().min(1, { message: "Student's passport copy is required" }),
+    motherPassport: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
     motherPassportNumber: z.string().min(1, "Passport number is required"),
     motherPassportExpiryDate: z.coerce.date({
       errorMap: () => ({ message: "Enter a valid passport expiry date" }),
     }),
-    motherPass: z.string().min(1, { message: "Student's pass copy is required" }),
+    motherPass: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
     motherPassType: z.string().min(1, "Pass type is required"),
     motherPassExpiryDate: z.coerce.date({
       errorMap: () => ({ message: "Enter a valid pass expiry date" }),
     }),
-    fatherPassport: z.string().min(1, { message: "Student's passport copy is required" }).optional(),
+    fatherPassport: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      })
+      .optional(),
     fatherPassportNumber: z.string().min(1, "Passport number is required").optional(),
     fatherPassportExpiryDate: z.coerce
       .date({
         errorMap: () => ({ message: "Enter a valid passport expiry date" }),
       })
       .optional(),
-    fatherPass: z.string().min(1, { message: "Student's pass copy is required" }).optional(),
+    fatherPass: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      })
+      .optional(),
     fatherPassType: z.string().min(1, "Pass type is required").optional(),
     fatherPassExpiryDate: z.coerce
       .date({
         errorMap: () => ({ message: "Enter a valid pass expiry date" }),
       })
       .optional(),
-    guardianPassport: z.string().min(1, { message: "Student's passport copy is required" }).optional(),
+    guardianPassport: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      })
+      .optional(),
     guardianPassportNumber: z.string().min(1, "Passport number is required").optional(),
     guardianPassportExpiryDate: z.coerce
       .date({
         errorMap: () => ({ message: "Enter a valid passport expiry date" }),
       })
       .optional(),
-    guardianPass: z.string().min(1, { message: "Student's pass copy is required" }).optional(),
+    guardianPass: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      })
+      .optional(),
     guardianPassType: z.string().min(1, "Pass type is required").optional(),
     guardianPassExpiryDate: z.coerce
       .date({
@@ -447,4 +510,3 @@ export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequir
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
 export type StudentEnrolSchema = z.infer<typeof studentEnrolSchema>;
-export type StudentEnrolmentsSchema = z.infer<typeof studentEnrolments>;

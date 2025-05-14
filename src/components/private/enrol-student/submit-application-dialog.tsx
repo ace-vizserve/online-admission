@@ -1,3 +1,4 @@
+import { submitEnrollment } from "@/actions/private";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,11 +10,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { EnrolOldStudentFormState } from "@/types";
+import { useMutation } from "@tanstack/react-query";
 import { CheckCircle2, Send } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function SubmitApplicationDialog() {
+  const navigate = useNavigate();
+  const { formState } = useEnrolOldStudentContext();
+  const { mutate, isPending } = useMutation({
+    mutationFn: submitEnrollment,
+    onSuccess() {
+      navigate("/application-submitted", {
+        replace: true,
+      });
+    },
+  });
+
+  console.log(formState);
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -36,14 +53,11 @@ function SubmitApplicationDialog() {
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Link
-              className={buttonVariants({
-                className: "!bg-green-600 hover:!bg-green-500",
-              })}
-              to={"/application-submitted"}>
-              Continue
-            </Link>
+          <AlertDialogAction
+            disabled={isPending}
+            className="!bg-green-600 hover:!bg-green-500"
+            onClick={() => mutate(formState as EnrolOldStudentFormState)}>
+            Continue
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -140,7 +140,7 @@ function SiblingInformation() {
                             <FormMessage />
                           </FormItem>
                           {(siblingOtherReligions[index] ||
-                            formState.familyInfo?.siblingsInfo?.siblings[index].siblingOtherReligion) && (
+                            formState.familyInfo?.siblingsInfo?.siblings[index]?.siblingOtherReligion) && (
                             <FormField
                               control={form.control}
                               name={`siblings.${index}.siblingOtherReligion`}
@@ -214,6 +214,7 @@ function SiblingInformation() {
       )}
 
       <Button
+        disabled={fields.length >= 5}
         size={"lg"}
         className="hidden lg:flex w-full p-8 gap-2 uppercase mx-auto max-w-5xl"
         onClick={() =>

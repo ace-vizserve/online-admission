@@ -1,25 +1,46 @@
 import { Button } from "@/components/ui/button";
 
+import { getCurrentParentGuardianDocuments, submitEnrollment } from "@/actions/private";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { wait } from "@/lib/utils";
-import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
+import { EnrolNewStudentFormState } from "@/types";
+import {
+  parentGuardianUploadRequirementsSchema,
+  ParentGuardianUploadRequirementsSchema,
+  StudentUploadRequirementsSchema,
+} from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DotPulse } from "ldrs/react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { DotPulse, Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
+import "ldrs/react/Tailspin.css";
 import { Send } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
 
-type SubmitState = "idle" | "pending" | "success";
-
 function ParentGuardianUpload() {
+  const navigate = useNavigate();
   const { formState, setFormState } = useEnrolNewStudentContext();
-  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const { data, isFetching, isSuccess } = useQuery({
+    queryKey: ["parent-guardian-documents"],
+    queryFn: getCurrentParentGuardianDocuments,
+    enabled:
+      Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length < 1 ||
+      Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).length < 1,
+  });
+  const { mutate, isPending } = useMutation({
+    mutationFn: submitEnrollment,
+    onSuccess() {
+      navigate("/application-submitted", {
+        replace: true,
+      });
+    },
+  });
+
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
   const [motherPassport, setMotherPassport] = useState<File[] | null>(null);
   const [guardianPassport, setGuardianPassport] = useState<File[] | null>(null);
@@ -34,7 +55,28 @@ function ParentGuardianUpload() {
     },
   });
 
-  async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
+  useEffect(() => {
+    if (isSuccess) {
+      setFormState({
+        uploadRequirements: {
+          studentUploadRequirements: {} as StudentUploadRequirementsSchema,
+          parentGuardianUploadRequirements: {
+            ...data?.parentGuardianUploadRequirements,
+            hasFatherInfo: Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0,
+            hasGuardianInfo: Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0,
+          } as ParentGuardianUploadRequirementsSchema,
+        },
+      });
+    }
+  }, [isSuccess, setFormState]);
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      mutate(formState as EnrolNewStudentFormState);
+    }
+  }, [form.formState.isSubmitSuccessful, formState, mutate]);
+
+  function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
       !Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length &&
       !formState.uploadRequirements!.studentUploadRequirements.isValid
@@ -48,26 +90,21 @@ function ParentGuardianUpload() {
       });
       return;
     }
+
     setFormState({
       ...formState,
       uploadRequirements: {
         studentUploadRequirements: {
           ...formState.uploadRequirements!.studentUploadRequirements,
         },
-        parentGuardianUploadRequirements: values,
+        parentGuardianUploadRequirements: { ...values },
       },
     });
-    setSubmitState("pending");
-    await wait(2000);
-    setSubmitState("success");
-    localStorage.removeItem("enrolNewStudentFormState");
   }
 
-  if (submitState == "success") {
-    return <Navigate to={"/application-submitted"} replace />;
+  if (isFetching) {
+    return <Loader />;
   }
-
-  console.log(form.formState.errors);
 
   return (
     <Form {...form}>
@@ -97,7 +134,7 @@ function ParentGuardianUpload() {
           />
         </div>
 
-        {formState.familyInfo?.fatherInfo != null && (
+        {formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
@@ -127,7 +164,7 @@ function ParentGuardianUpload() {
           </>
         )}
 
-        {formState.familyInfo?.guardianInfo != null && (
+        {formState.uploadRequirements?.parentGuardianUploadRequirements.hasGuardianInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>
@@ -158,23 +195,50 @@ function ParentGuardianUpload() {
         )}
 
         <Button
-          disabled={submitState == "pending"}
+          disabled={isPending}
           size="lg"
           className="bg-green-500 hover:bg-green-600 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase mt-8"
           type="submit">
-          {submitState == "pending" ? "Submitting" : "Submit Application"}
-          {submitState == "pending" ? <DotPulse size="30" speed="1.3" color="white" /> : <Send className="w-6 h-6" />}
+          {isPending ? (
+            <>
+              Submitting
+              <DotPulse size="30" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Submit Application
+              <Send className="w-6 h-6" />
+            </>
+          )}
         </Button>
 
         <Button
-          disabled={submitState == "pending"}
+          disabled={isPending}
           className="bg-green-500 hover:bg-green-600 flex lg:hidden w-full p-6 gap-2 uppercase mt-8"
           type="submit">
-          {submitState == "pending" ? "Submitting" : "Submit Application"}
-          {submitState == "pending" ? <DotPulse size="20" speed="1.3" color="white" /> : <Send className="w-6 h-6" />}
+          {isPending ? (
+            <>
+              Submitting
+              <DotPulse size="30" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Submit Application
+              <Send className="w-6 h-6" />
+            </>
+          )}
         </Button>
       </form>
     </Form>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <p className="text-sm text-muted-foreground animate-pulse">Fetching documents...</p>
+      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+    </div>
   );
 }
 

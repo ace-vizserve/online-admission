@@ -7,8 +7,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
+import { supabase } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
+import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
@@ -27,19 +28,40 @@ function StudentDetails() {
     },
   });
 
-  function onSubmit(values: StudentDetailsSchema) {
-    toast.success("Student details saved!", {
-      description: "You're now ready to fill out the Address & Contact tab.",
-    });
+  async function onSubmit(values: StudentDetailsSchema) {
+    try {
+      const { count } = await supabase
+        .from("student_information")
+        .select("nricFin", { count: "exact" })
+        .eq("nricFin", values.nricFin)
+        .single();
 
-    setFormState({
-      studentInfo: {
-        addressContact: {
-          ...formState.studentInfo!.addressContact,
+      if (count != null && count > 0) {
+        toast.warning("A student with this NRIC/FIN already exists!", {
+          description: "Please verify before submitting",
+        });
+        form.setError("nricFin", {
+          type: "manual",
+          message: "This NRIC/FIN is already registered.",
+        });
+        return;
+      }
+
+      toast.success("Student details saved!", {
+        description: "You're now ready to fill out the Address & Contact tab.",
+      });
+
+      setFormState({
+        studentInfo: {
+          addressContact: {
+            ...(formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema),
+          },
+          studentDetails: { ...values, isValid: true },
         },
-        studentDetails: { ...values, isValid: true },
-      },
-    });
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -114,7 +136,7 @@ function StudentDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentBirthDate"
+            name="dateOfBirth"
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Date of birth</FormLabel>
@@ -144,12 +166,15 @@ function StudentDetails() {
 
           <FormField
             control={form.control}
-            name="studentGender"
+            name="gender"
             render={({ field }) => (
               <FormItem className="space-y-3">
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
-                  <RadioGroup onValueChange={field.onChange} className="flex gap-2">
+                  <RadioGroup
+                    defaultValue={formState.studentInfo?.studentDetails.gender}
+                    onValueChange={field.onChange}
+                    className="flex gap-2">
                     {[
                       ["Male", "male"],
                       ["Female", "female"],
@@ -174,7 +199,7 @@ function StudentDetails() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentReligion"
+              name="religion"
               render={({ field }) => (
                 <div className="flex flex-col gap-2">
                   <FormItem>
@@ -206,10 +231,10 @@ function StudentDetails() {
                     <FormDescription>Your student's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(formState.studentInfo?.studentDetails.studentOtherReligion || isOtherReligion) && (
+                  {(formState.studentInfo?.studentDetails.otherReligion || isOtherReligion) && (
                     <FormField
                       control={form.control}
-                      name="studentOtherReligion"
+                      name="otherReligion"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
@@ -226,7 +251,7 @@ function StudentDetails() {
 
             <FormField
               control={form.control}
-              name="studentPrimaryLanguage"
+              name="primaryLanguage"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Primary language</FormLabel>

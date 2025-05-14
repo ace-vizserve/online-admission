@@ -1,3 +1,4 @@
+import { updateStudentInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -8,16 +9,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
+import { Student } from "@/types";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { useParams } from "react-router";
 
 function StudentDetails() {
   const { formState, setFormState } = useEnrolOldStudentContext();
+  const params = useParams();
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (studentInformation: Partial<Student>) => {
+      return await updateStudentInformation(studentInformation, params.id!);
+    },
+  });
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
 
   const form = useForm<StudentDetailsSchema>({
@@ -28,18 +39,16 @@ function StudentDetails() {
   });
 
   function onSubmit(values: StudentDetailsSchema) {
-    toast.success("Student details saved!", {
-      description: "Don't forget to check the other details",
-    });
-
     setFormState({
       studentInfo: {
-        studentDetails: { ...values, isValid: true },
         addressContact: {
-          ...(formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema),
+          ...(formState.studentInfo?.addressContact ?? ({} as unknown as StudentAddressContactSchema)),
         },
+        studentDetails: { ...values, isValid: true },
       },
     });
+
+    mutate({ ...values, dateOfBirth: values.dateOfBirth as unknown as string });
   }
 
   return (
@@ -114,7 +123,7 @@ function StudentDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentBirthDate"
+            name="dateOfBirth"
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Date of birth</FormLabel>
@@ -144,12 +153,15 @@ function StudentDetails() {
 
           <FormField
             control={form.control}
-            name="studentGender"
+            name="gender"
             render={({ field }) => (
               <FormItem className="space-y-3">
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
-                  <RadioGroup onValueChange={field.onChange} className="flex gap-2">
+                  <RadioGroup
+                    defaultValue={formState.studentInfo?.studentDetails.gender}
+                    onValueChange={field.onChange}
+                    className="flex gap-2">
                     {[
                       ["Male", "male"],
                       ["Female", "female"],
@@ -174,7 +186,7 @@ function StudentDetails() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentReligion"
+              name="religion"
               render={({ field }) => (
                 <div className="flex flex-col gap-2">
                   <FormItem>
@@ -209,7 +221,7 @@ function StudentDetails() {
                   {isOtherReligion && (
                     <FormField
                       control={form.control}
-                      name="studentOtherReligion"
+                      name="otherReligion"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
@@ -227,7 +239,7 @@ function StudentDetails() {
 
             <FormField
               control={form.control}
-              name="studentPrimaryLanguage"
+              name="primaryLanguage"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Primary language</FormLabel>
@@ -257,14 +269,32 @@ function StudentDetails() {
           />
         </div>
 
-        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          Save
-          <Save />
+        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          {isPending ? (
+            <>
+              Saving
+              <DotPulse size="30" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Save
+              <Save />
+            </>
+          )}
         </Button>
 
-        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Save
-          <Save />
+        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          {isPending ? (
+            <>
+              Saving
+              <DotPulse size="20" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Save
+              <Save />
+            </>
+          )}
         </Button>
       </form>
     </Form>

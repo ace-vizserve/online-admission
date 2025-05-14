@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Import JSON data directly
 import countries from "@/data/countries.json";
@@ -61,17 +61,35 @@ interface LocationSelectorProps {
   disabled?: boolean;
   onCountryChange?: (country: CountryProps | null) => void;
   onStateChange?: (state: StateProps | null) => void;
+  selectedNationality?: string;
 }
 
-const LocationSelector = ({ disabled, onCountryChange, onStateChange, showStates }: LocationSelectorProps) => {
+const LocationSelector = ({
+  disabled,
+  onCountryChange,
+  onStateChange,
+  showStates,
+  selectedNationality,
+}: LocationSelectorProps) => {
   const [selectedCountry, setSelectedCountry] = useState<CountryProps | null>(null);
   const [selectedState, setSelectedState] = useState<StateProps | null>(null);
   const [openCountryDropdown, setOpenCountryDropdown] = useState(false);
   const [openStateDropdown, setOpenStateDropdown] = useState(false);
 
-  // Cast imported JSON data to their respective types
   const countriesData = countries as CountryProps[];
   const statesData = states as StateProps[];
+
+  useEffect(() => {
+    if (selectedNationality && !selectedCountry) {
+      const matched = countriesData.find((c) => c.nationality.toLowerCase() === selectedNationality.toLowerCase());
+      if (matched) {
+        setSelectedCountry(matched);
+        onCountryChange?.(matched);
+      }
+    }
+  }, [selectedNationality, countriesData, selectedCountry, onCountryChange]);
+
+  // Cast imported JSON data to their respective types
 
   // Filter states for selected country
   const availableStates = statesData.filter((state) => state.country_id === selectedCountry?.id);

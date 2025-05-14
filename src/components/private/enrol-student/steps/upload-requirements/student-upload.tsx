@@ -30,12 +30,13 @@ function StudentUpload() {
     },
   });
 
-  console.log(form.getValues("idPicture"));
-
   function onSubmit(values: StudentUploadRequirementsSchema) {
     toast.success("Student documents saved!", {
       description: "You're now ready to upload the Parent/Guardian documents.",
     });
+
+    const { idPicture, form12, medicalExam, pass, birthCertificate, passport, transcriptOfRecords } =
+      formState.uploadRequirements!.studentUploadRequirements;
 
     setFormState({
       ...formState,
@@ -44,7 +45,20 @@ function StudentUpload() {
           ...(formState.uploadRequirements
             ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
         },
-        studentUploadRequirements: { ...values, isValid: true },
+        studentUploadRequirements: {
+          idPicture,
+          form12,
+          medicalExam,
+          pass,
+          birthCertificate,
+          passport,
+          transcriptOfRecords,
+          passType: values.passType,
+          passExpiryDate: values.passExpiryDate,
+          passportNumber: values.passportNumber,
+          passportExpiryDate: values.passportExpiryDate,
+          isValid: true,
+        },
       },
     });
   }
@@ -127,7 +141,7 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Singapore Pass"
-            description="Upload the type of Pass the student holds."
+            description="Upload the type of Pass the student holds"
             form={form}
             name="pass"
             value={pass}

@@ -20,13 +20,12 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { toast } from "sonner";
 
 function FatherInformation() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
-  const [countryName, setCountryName] = useState<string>("");
-  const [stateName, setStateName] = useState<string>("");
 
   const form = useForm<FatherInformationSchema>({
     resolver: zodResolver(fatherInformationSchema),
@@ -36,7 +35,13 @@ function FatherInformation() {
   });
 
   function onSubmit(values: FatherInformationSchema) {
-    console.log(countryName);
+    if (!isValidPhoneNumber(values.fatherMobilePhone)) {
+      form.setError("fatherMobilePhone", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       familyInfo: {
@@ -65,7 +70,7 @@ function FatherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsFatherFirstName"
+            name="fatherFirstName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>First name</FormLabel>
@@ -80,7 +85,7 @@ function FatherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsFatherMiddleName"
+            name="fatherMiddleName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
@@ -99,7 +104,7 @@ function FatherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsFatherLastName"
+            name="fatherLastName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Last name</FormLabel>
@@ -114,7 +119,7 @@ function FatherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsFatherPreferredName"
+            name="fatherPreferredName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Preferred name</FormLabel>
@@ -131,7 +136,7 @@ function FatherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsFatherDateOfBirth"
+              name="fatherDateOfBirth"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date of birth</FormLabel>
@@ -161,7 +166,7 @@ function FatherInformation() {
 
             <FormField
               control={form.control}
-              name="studentsFatherReligion"
+              name="fatherReligion"
               render={({ field }) => (
                 <div className="flex flex-col gap-2">
                   <FormItem>
@@ -193,10 +198,10 @@ function FatherInformation() {
                     <FormDescription>Enter father's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(isOtherReligion || formState.familyInfo?.fatherInfo?.studentsFatherOtherReligion) && (
+                  {(isOtherReligion || formState.familyInfo?.fatherInfo?.fatherOtherReligion) && (
                     <FormField
                       control={form.control}
-                      name="studentsFatherOtherReligion"
+                      name="fatherOtherReligion"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
@@ -211,27 +216,21 @@ function FatherInformation() {
               )}
             />
           </div>
-
           <FormField
             control={form.control}
-            name="studentsFatherCountry"
+            name="fatherNationality"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select Country</FormLabel>
+                <FormLabel>Select Nationality</FormLabel>
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    onCountryChange={(country) => {
-                      setCountryName(country?.name || "");
-                      form.setValue(field.name, [country?.name || "", stateName || ""]);
-                    }}
-                    onStateChange={(state) => {
-                      setStateName(state?.name || "");
-                      form.setValue(field.name, [form.getValues(field.name)[0] || "", state?.name || ""]);
-                    }}
+                    selectedNationality={formState.familyInfo?.fatherInfo?.fatherNationality}
+                    onCountryChange={(value) => field.onChange(value?.nationality)}
                   />
                 </FormControl>
-                <FormDescription>Select the country where the student's father lives.</FormDescription>
+                <FormDescription>Select the country that best represents the father's nationality.</FormDescription>
+                <FormMessage />
                 <FormMessage />
               </FormItem>
             )}
@@ -241,7 +240,7 @@ function FatherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsFatherNRICFIN"
+            name="fatherNricFin"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
@@ -256,12 +255,12 @@ function FatherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsFatherMobilePhone"
+              name="fatherMobilePhone"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput {...field} defaultCountry="SG" international />
                   </FormControl>
                   <FormDescription>Enter the student's father mobile phone.</FormDescription>
                   <FormMessage />
@@ -271,7 +270,7 @@ function FatherInformation() {
 
             <FormField
               control={form.control}
-              name="studentsFatherEmailAddress"
+              name="fatherEmail"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
@@ -289,7 +288,7 @@ function FatherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsFatherWorkCompany"
+            name="fatherWorkCompany"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
@@ -304,7 +303,7 @@ function FatherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsFatherWorkPosition"
+            name="fatherWorkPosition"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Position</FormLabel>

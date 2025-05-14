@@ -1,3 +1,4 @@
+import { updateFamilyInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,16 +8,24 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
-import { cn } from "@/lib/utils";
+import { cn, flattenSiblings } from "@/lib/utils";
+import { FamilyInfo } from "@/types";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 function SiblingInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (familyInformation: Partial<FamilyInfo>) => {
+      return await updateFamilyInformation(familyInformation);
+    },
+  });
   const form = useForm<SiblingInformationSchema>({
     resolver: zodResolver(siblingInformationSchema),
     defaultValues: {
@@ -29,17 +38,18 @@ function SiblingInformation() {
     name: "siblings" as never,
   });
 
-  const onSubmit = (values: SiblingInformationSchema) => {
-    toast.success("Sibling information saved!", {
-      description: "Make sure to double check everything",
-    });
+  function onSubmit(values: SiblingInformationSchema) {
     setFormState({
       familyInfo: {
         ...formState.familyInfo!,
         siblingsInfo: values,
       },
     });
-  };
+
+    const flattenedSiblings = flattenSiblings(values.siblings);
+
+    mutate({ ...flattenedSiblings });
+  }
 
   return (
     <>
@@ -172,22 +182,47 @@ function SiblingInformation() {
 
             <Button
               variant={"secondary"}
+              disabled={isPending}
               size={"lg"}
-              className="mb-4 hidden lg:flex w-full p-8 gap-2 uppercase"
+              className="hidden lg:flex w-full p-8 gap-2 uppercase my-4"
               type="submit">
-              Save
-              <Save />
+              {isPending ? (
+                <>
+                  Saving
+                  <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Save
+                  <Save />
+                </>
+              )}
             </Button>
 
-            <Button variant={"secondary"} className="mb-4 flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-              Save
-              <Save />
+            <Button
+              variant={"secondary"}
+              size={"lg"}
+              disabled={isPending}
+              className="flex lg:hidden w-full p-6 gap-2 uppercase my-4"
+              type="submit">
+              {isPending ? (
+                <>
+                  Saving
+                  <DotPulse size="20" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Save
+                  <Save />
+                </>
+              )}
             </Button>
           </form>
         </Form>
       )}
 
       <Button
+        disabled={fields.length >= 5}
         size={"lg"}
         className="hidden lg:flex w-full p-8 gap-2 uppercase mx-auto max-w-5xl"
         onClick={() =>
@@ -204,7 +239,7 @@ function SiblingInformation() {
       </Button>
 
       <Button
-        className="flex lg:hidden w-full p-8 gap-2 uppercase mx-auto max-w-5xl"
+        className="flex lg:hidden w-full p-6 gap-2 uppercase mx-auto max-w-5xl"
         onClick={() =>
           append({
             siblingDateOfBirth: new Date(),

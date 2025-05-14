@@ -57,13 +57,20 @@ export type EnrolOldStudentStore = {
   setFormState: (data: Partial<EnrolOldStudentFormState>) => void;
 };
 
-export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()((set) => ({
-  formState: {},
-  setFormState: (data: Partial<EnrolOldStudentFormState>) =>
-    set((state) => ({
-      formState: {
-        ...state.formState,
-        ...data,
-      },
-    })),
-}));
+export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
+  persist(
+    (set) => ({
+      formState: {},
+      setFormState: (data: Partial<EnrolOldStudentFormState>) =>
+        set((state) => ({
+          formState: {
+            ...state.formState,
+            ...data,
+          },
+        })),
+    }),
+    {
+      name: "enrolOldStudentFormState",
+    }
+  )
+);

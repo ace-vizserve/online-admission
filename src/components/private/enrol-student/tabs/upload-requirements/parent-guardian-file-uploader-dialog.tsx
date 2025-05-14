@@ -1,4 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { uploadFileToBucket } from "@/actions/private";
+import fileSvg from "@/assets/file.svg";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
@@ -10,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -26,12 +27,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { passTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { ParentGuardianFileUploaderDialogProps } from "@/types";
+import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
+import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarIcon, CircleAlert, CloudUpload, Paperclip, Trash2, Upload } from "lucide-react";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
+import { CalendarIcon, CircleAlert, CloudUpload, ExternalLink, Paperclip, Trash2, Upload } from "lucide-react";
 import { memo } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
+import { Link } from "react-router";
+
+const NOT_FILE_INPUTS = [
+  "motherPassExpiryDate",
+  "motherPassType",
+  "motherPassportExpiryDate",
+  "motherPassportNumber",
+  "fatherPassExpiryDate",
+  "fatherPassType",
+  "fatherPassportExpiryDate",
+  "fatherPassportNumber",
+  "guardianPassExpiryDate",
+  "guardianPassType",
+  "guardianPassportExpiryDate",
+  "guardianPassportNumber",
+];
 
 const ParentGuardianFileUploaderDialog = memo(function ({
   form,
@@ -43,6 +64,28 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   formState,
   setFormState,
 }: ParentGuardianFileUploaderDialogProps) {
+  const { mutate, isPending } = useMutation({
+    mutationFn: uploadFileToBucket,
+    onSuccess(data) {
+      onValueChange(null);
+      if (!NOT_FILE_INPUTS.includes(name)) {
+        form.setValue(name, data!.imagePath);
+        setFormState({
+          uploadRequirements: {
+            studentUploadRequirements: {
+              ...(formState.uploadRequirements?.studentUploadRequirements ?? ({} as StudentUploadRequirementsSchema)),
+            },
+            parentGuardianUploadRequirements: {
+              ...((formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                {}) as ParentGuardianUploadRequirementsSchema),
+              [name]: data!.imagePath,
+            },
+          },
+        });
+      }
+    },
+  });
+
   const { errors } = useFormState({ control: form.control });
 
   const dropZoneConfig: DropzoneOptions = {
@@ -60,6 +103,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   const isDesktop = useMediaQuery({
     query: "(min-width: 786px)",
   });
+
+  function uploadFile() {
+    if (value == null || !value.length) return;
+    mutate(value[0]);
+  }
 
   if (isDesktop) {
     return (
@@ -87,72 +135,108 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               </DialogDescription>
             </DialogHeader>
 
-            <FormField
-              control={form.control}
-              name={name}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <FileUploader
-                      value={value}
-                      onValueChange={onValueChange}
-                      dropzoneOptions={dropZoneConfig}
-                      className="relative bg-background rounded-lg">
-                      <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
-                        <div className="flex items-center justify-center flex-col p-8 w-full">
-                          <CloudUpload className="text-gray-500 w-10 h-10" />
-                          <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                            <span className="font-semibold">Click to upload</span> or drag and drop
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
-                        </div>
-                      </FileInput>
+            {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+              <div className="w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+                <div className="p-6 bg-white rounded-full">
+                  <img src={fileSvg} className="size-14" />
+                </div>
+                <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
-                      <FileUploaderContent>
-                        {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
-                          <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
-                            <div className="flex items-center gap-1">
-                              <Paperclip className="h-4 w-4 stroke-current" />
-                              <span className="text-sm font-medium">
-                                {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
-                                  .split("\\")
-                                  .pop()}
-                              </span>
-                            </div>
-                            <Trash2
-                              className="h-4 w-4"
-                              onClick={() => {
-                                form.setValue(name, "");
-                                onValueChange(null);
-                                setFormState({
-                                  ...formState,
-                                  uploadRequirements: {
-                                    ...formState.uploadRequirements!,
-                                    parentGuardianUploadRequirements: {
-                                      ...formState.uploadRequirements!.parentGuardianUploadRequirements,
-                                      [name]: "",
-                                    },
-                                  },
-                                });
-                              }}
-                            />
+                {!NOT_FILE_INPUTS.includes(name) &&
+                  formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                    <Link
+                      to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
+                      target="_blank"
+                      className={buttonVariants({
+                        className: "gap-2 text-xs hover:bg-white",
+                        variant: "outline",
+                      })}>
+                      View document <ExternalLink />
+                    </Link>
+                  )}
+              </div>
+            ) : (
+              <FormField
+                control={form.control}
+                name={name}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <FileUploader
+                        value={value}
+                        onValueChange={onValueChange}
+                        dropzoneOptions={dropZoneConfig}
+                        className="relative bg-background rounded-lg">
+                        <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
+                          <div className="flex items-center justify-center flex-col p-8 w-full">
+                            <CloudUpload className="text-gray-500 w-10 h-10" />
+                            <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="font-semibold">Click to upload</span> or drag and drop
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
                           </div>
-                        )}
-                        {value &&
-                          value.length > 0 &&
-                          value.map((file, i) => (
-                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
-                              <Paperclip className="h-4 w-4 stroke-current" />
-                              <span>{file.name}</span>
-                            </FileUploaderItem>
-                          ))}
-                      </FileUploaderContent>
-                    </FileUploader>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        </FileInput>
+
+                        <FileUploaderContent>
+                          {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                            <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
+                              <div className="flex items-center gap-1">
+                                <Paperclip className="h-4 w-4 stroke-current" />
+                                <span className="text-sm font-medium">
+                                  {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
+                                    .split("\\")
+                                    .pop()}
+                                </span>
+                              </div>
+                              <Trash2
+                                className="h-4 w-4"
+                                onClick={() => {
+                                  form.setValue(name, "");
+                                  onValueChange(null);
+                                  setFormState({
+                                    ...formState,
+                                    uploadRequirements: {
+                                      ...formState.uploadRequirements!,
+                                      studentUploadRequirements: {
+                                        ...formState.uploadRequirements!.studentUploadRequirements,
+                                        [name]: "",
+                                      },
+                                    },
+                                  });
+                                }}
+                              />
+                            </div>
+                          )}
+                          {value &&
+                            value.length > 0 &&
+                            value.map((file, i) => (
+                              <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                                <Paperclip className="h-4 w-4 stroke-current" />
+                                <span>{file.name}</span>
+                              </FileUploaderItem>
+                            ))}
+                        </FileUploaderContent>
+                      </FileUploader>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {value != null && value.length > 0 && (
+              <Button disabled={isPending} onClick={uploadFile} className="gap-2">
+                {isPending ? (
+                  <>
+                    Uploading <DotPulse size="30" speed="1.3" color="white" />
+                  </>
+                ) : (
+                  <>
+                    Upload file <Upload />
+                  </>
+                )}
+              </Button>
+            )}
 
             {name === "motherPass" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
@@ -561,6 +645,28 @@ function ParentGuardianFileUploaderDrawer({
   setFormState,
   value,
 }: ParentGuardianFileUploaderDialogProps) {
+  const { mutate, isPending } = useMutation({
+    mutationFn: uploadFileToBucket,
+    onSuccess(data) {
+      onValueChange(null);
+      if (!NOT_FILE_INPUTS.includes(name)) {
+        form.setValue(name, data!.imagePath);
+        setFormState({
+          uploadRequirements: {
+            studentUploadRequirements: {
+              ...(formState.uploadRequirements?.studentUploadRequirements ?? ({} as StudentUploadRequirementsSchema)),
+            },
+            parentGuardianUploadRequirements: {
+              ...((formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                {}) as ParentGuardianUploadRequirementsSchema),
+              [name]: data!.imagePath,
+            },
+          },
+        });
+      }
+    },
+  });
+
   const { errors } = useFormState({ control: form.control });
   const dropZoneConfig: DropzoneOptions = {
     maxFiles: 1,
@@ -574,13 +680,28 @@ function ParentGuardianFileUploaderDrawer({
     },
   };
 
+  function uploadFile() {
+    if (value == null || !value.length) return;
+    mutate(value[0]);
+  }
+
+  const errorKeys = Object.keys(errors);
+
+  const hasMotherError = errorKeys.some((key) => key.includes("mother"));
+  const hasFatherError = errorKeys.some((key) => key.includes("father"));
+  const hasGuardianError = errorKeys.some((key) => key.includes("guardian"));
+
   return (
     <div
       className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
-        "bg-red-50": errors[name] != null,
+        "bg-red-50": hasMotherError || hasFatherError || hasGuardianError,
       })}>
       <div className="flex items-center gap-4">
-        {errors[name] != null ? <CircleAlert className="size-6 text-destructive" /> : <Upload className="size-6" />}
+        {hasMotherError || hasFatherError || hasGuardianError ? (
+          <CircleAlert className="size-6 text-destructive" />
+        ) : (
+          <Upload className="size-6" />
+        )}
         <div className="flex flex-col gap-1">
           <span className="text-sm">{label}</span>
           <span className="text-muted-foreground text-xs text-balance">{description}</span>
@@ -588,7 +709,9 @@ function ParentGuardianFileUploaderDrawer({
       </div>
       <Drawer>
         <DrawerTrigger asChild>
-          <Button variant={errors[name] != null ? "destructive" : "outline"}>Upload</Button>
+          <Button variant={hasMotherError || hasFatherError || hasGuardianError ? "destructive" : "outline"}>
+            Upload
+          </Button>
         </DrawerTrigger>
 
         <DrawerContent className="px-4">
@@ -599,72 +722,108 @@ function ParentGuardianFileUploaderDrawer({
             </DrawerDescription>
           </DrawerHeader>
 
-          <FormField
-            control={form.control}
-            name={name}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <FileUploader
-                    value={value}
-                    onValueChange={onValueChange}
-                    dropzoneOptions={dropZoneConfig}
-                    className="relative bg-background rounded-lg">
-                    <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
-                      <div className="flex items-center justify-center flex-col p-8 w-full">
-                        <CloudUpload className="text-gray-500 w-10 h-10" />
-                        <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
-                      </div>
-                    </FileInput>
+          {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+            <div className="w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+              <div className="p-6 bg-white rounded-full">
+                <img src={fileSvg} className="size-14" />
+              </div>
+              <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
-                    <FileUploaderContent>
-                      {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
-                        <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
-                          <div className="flex items-center gap-1">
-                            <Paperclip className="h-4 w-4 stroke-current" />
-                            <span className="text-sm font-medium">
-                              {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
-                                .split("\\")
-                                .pop()}
-                            </span>
-                          </div>
-                          <Trash2
-                            className="h-4 w-4"
-                            onClick={() => {
-                              form.setValue(name, "");
-                              onValueChange(null);
-                              setFormState({
-                                ...formState,
-                                uploadRequirements: {
-                                  ...formState.uploadRequirements!,
-                                  parentGuardianUploadRequirements: {
-                                    ...formState.uploadRequirements!.parentGuardianUploadRequirements,
-                                    [name]: "",
-                                  },
-                                },
-                              });
-                            }}
-                          />
+              {!NOT_FILE_INPUTS.includes(name) &&
+                formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                  <Link
+                    to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
+                    target="_blank"
+                    className={buttonVariants({
+                      className: "gap-2 text-xs hover:bg-white",
+                      variant: "outline",
+                    })}>
+                    View document <ExternalLink />
+                  </Link>
+                )}
+            </div>
+          ) : (
+            <FormField
+              control={form.control}
+              name={name}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FileUploader
+                      value={value}
+                      onValueChange={onValueChange}
+                      dropzoneOptions={dropZoneConfig}
+                      className="relative bg-background rounded-lg">
+                      <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
+                        <div className="flex items-center justify-center flex-col p-8 w-full">
+                          <CloudUpload className="text-gray-500 w-10 h-10" />
+                          <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
                         </div>
-                      )}
-                      {value &&
-                        value.length > 0 &&
-                        value.map((file, i) => (
-                          <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
-                            <Paperclip className="h-4 w-4 stroke-current" />
-                            <span>{file.name}</span>
-                          </FileUploaderItem>
-                        ))}
-                    </FileUploaderContent>
-                  </FileUploader>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      </FileInput>
+
+                      <FileUploaderContent>
+                        {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                          <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
+                            <div className="flex items-center gap-1">
+                              <Paperclip className="h-4 w-4 stroke-current" />
+                              <span className="text-sm font-medium">
+                                {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
+                                  .split("\\")
+                                  .pop()}
+                              </span>
+                            </div>
+                            <Trash2
+                              className="h-4 w-4"
+                              onClick={() => {
+                                form.setValue(name, "");
+                                onValueChange(null);
+                                setFormState({
+                                  ...formState,
+                                  uploadRequirements: {
+                                    ...formState.uploadRequirements!,
+                                    studentUploadRequirements: {
+                                      ...formState.uploadRequirements!.studentUploadRequirements,
+                                      [name]: "",
+                                    },
+                                  },
+                                });
+                              }}
+                            />
+                          </div>
+                        )}
+                        {value &&
+                          value.length > 0 &&
+                          value.map((file, i) => (
+                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                              <Paperclip className="h-4 w-4 stroke-current" />
+                              <span>{file.name}</span>
+                            </FileUploaderItem>
+                          ))}
+                      </FileUploaderContent>
+                    </FileUploader>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {value != null && value.length > 0 && (
+            <Button disabled={isPending} onClick={uploadFile} className="gap-2">
+              {isPending ? (
+                <>
+                  Uploading <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Upload file <Upload />
+                </>
+              )}
+            </Button>
+          )}
 
           {name === "motherPass" && (
             <div className="grid grid-cols-1 gap-2 pt-4 w-full">
@@ -740,14 +899,13 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input className="placeholder:text-sm" placeholder="Enter your passport number" {...field} />
+                      <Input className="placeholder:text-sm" placeholder="Enter passport number" {...field} />
                     </FormControl>
 
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="motherPassportExpiryDate"
@@ -789,13 +947,12 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "fatherPass" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
               <FormField
                 control={form.control}
                 name="fatherPassType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Pass Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -810,17 +967,17 @@ function ParentGuardianFileUploaderDrawer({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>Your student's pass type.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="fatherPassExpiryDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passport Expiry</FormLabel>
                     <Popover modal>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -830,7 +987,7 @@ function ParentGuardianFileUploaderDrawer({
                               "w-full pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
                             )}>
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            {field.value ? format(field.value, "PPP") : <span>Pass expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -848,7 +1005,7 @@ function ParentGuardianFileUploaderDrawer({
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormDescription>Passport expiration date.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -857,17 +1014,16 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "fatherPassport" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
               <FormField
                 control={form.control}
                 name="fatherPassportNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passport Number</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input className="placeholder:text-sm" placeholder="Enter passport number" {...field} />
                     </FormControl>
-                    <FormDescription>Student’s passport number.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -878,7 +1034,6 @@ function ParentGuardianFileUploaderDrawer({
                 name="fatherPassportExpiryDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passport Expiry</FormLabel>
                     <Popover modal>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -888,7 +1043,7 @@ function ParentGuardianFileUploaderDrawer({
                               "w-full pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
                             )}>
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            {field.value ? format(field.value, "PPP") : <span>Passport expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -906,7 +1061,7 @@ function ParentGuardianFileUploaderDrawer({
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormDescription>Passport expiration date.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -915,13 +1070,12 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "guardianPass" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
               <FormField
                 control={form.control}
                 name="guardianPassType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Pass Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -936,17 +1090,17 @@ function ParentGuardianFileUploaderDrawer({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>Your student's pass type.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="guardianPassExpiryDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passport Expiry</FormLabel>
                     <Popover modal>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -956,7 +1110,7 @@ function ParentGuardianFileUploaderDrawer({
                               "w-full pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
                             )}>
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            {field.value ? format(field.value, "PPP") : <span>Pass expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -974,7 +1128,7 @@ function ParentGuardianFileUploaderDrawer({
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormDescription>Passport expiration date.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -983,17 +1137,16 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "guardianPassport" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
               <FormField
                 control={form.control}
                 name="guardianPassportNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passport Number</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input className="placeholder:text-sm" placeholder="Enter passport number" {...field} />
                     </FormControl>
-                    <FormDescription>Student’s passport number.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1004,7 +1157,6 @@ function ParentGuardianFileUploaderDrawer({
                 name="guardianPassportExpiryDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passport Expiry</FormLabel>
                     <Popover modal>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -1014,7 +1166,7 @@ function ParentGuardianFileUploaderDrawer({
                               "w-full pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
                             )}>
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            {field.value ? format(field.value, "PPP") : <span>Passport expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -1032,19 +1184,14 @@ function ParentGuardianFileUploaderDrawer({
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormDescription>Passport expiration date.</FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
           )}
-
-          <DrawerFooter className="px-0">
-            <DrawerClose asChild>
-              <Button>Close</Button>
-            </DrawerClose>
-          </DrawerFooter>
+          <DrawerFooter className="px-0"></DrawerFooter>
         </DrawerContent>
       </Drawer>
     </div>

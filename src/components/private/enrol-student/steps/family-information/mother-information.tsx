@@ -12,9 +12,10 @@ import { cn } from "@/lib/utils";
 import { motherInformationSchema, MotherInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { ArrowRight, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
@@ -24,8 +25,6 @@ function MotherInformation() {
   const [isPending, setTransition] = useTransition();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const { formState, setFormState } = useEnrolNewStudentContext();
-  const [countryName, setCountryName] = useState<string>("");
-  const [stateName, setStateName] = useState<string>("");
 
   const form = useForm<MotherInformationSchema>({
     resolver: zodResolver(motherInformationSchema),
@@ -35,7 +34,13 @@ function MotherInformation() {
   });
 
   function onSubmit(values: MotherInformationSchema) {
-    console.log(countryName);
+    if (!isValidPhoneNumber(values.motherMobilePhone)) {
+      form.setError("motherMobilePhone", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       familyInfo: {
@@ -45,6 +50,32 @@ function MotherInformation() {
     });
     toast.success("Family information details saved!", {
       description: "Proceeding to the next step...",
+    });
+  }
+
+  function saveDetails() {
+    if (form.getValues("motherMobilePhone") && !isValidPhoneNumber(form.getValues("motherMobilePhone"))) {
+      form.setError("motherMobilePhone", {
+        message: "Invalid phone number",
+      });
+
+      return;
+    }
+
+    form.trigger();
+
+    if (!form.formState.isValid) return;
+
+    setFormState({
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo!,
+        motherInfo: { ...form.getValues(), isValid: true },
+      },
+    });
+
+    toast.success("Mother's information has been saved!", {
+      description: "You can continue filling out the other family details.",
     });
   }
 
@@ -66,7 +97,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherFirstName"
+            name="motherFirstName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>First name</FormLabel>
@@ -81,7 +112,7 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsMotherMiddleName"
+            name="motherMiddleName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
@@ -100,7 +131,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherLastName"
+            name="motherLastName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Last name</FormLabel>
@@ -115,7 +146,7 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsMotherPreferredName"
+            name="motherPreferredName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Preferred name</FormLabel>
@@ -132,7 +163,7 @@ function MotherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsMotherDateOfBirth"
+              name="motherDateOfBirth"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date of birth</FormLabel>
@@ -162,7 +193,7 @@ function MotherInformation() {
 
             <FormField
               control={form.control}
-              name="studentsMotherReligion"
+              name="motherReligion"
               render={({ field }) => (
                 <div className="flex flex-col gap-2">
                   <FormItem>
@@ -194,10 +225,10 @@ function MotherInformation() {
                     <FormDescription>Enter mother's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(isOtherReligion || formState.familyInfo?.motherInfo?.studentsMotherOtherReligion) && (
+                  {(isOtherReligion || formState.familyInfo?.motherInfo?.motherOtherReligion) && (
                     <FormField
                       control={form.control}
-                      name="studentsMotherOtherReligion"
+                      name="motherOtherReligion"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
@@ -215,24 +246,19 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsMotherCountry"
+            name="motherNationality"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select Country</FormLabel>
+                <FormLabel>Select Nationality</FormLabel>
                 <FormControl>
                   <LocationSelector
+                    selectedNationality={formState.familyInfo?.motherInfo?.motherNationality}
                     showStates={false}
-                    onCountryChange={(country) => {
-                      setCountryName(country?.name || "");
-                      form.setValue(field.name, [country?.name || "", stateName || ""]);
-                    }}
-                    onStateChange={(state) => {
-                      setStateName(state?.name || "");
-                      form.setValue(field.name, [form.getValues(field.name)[0] || "", state?.name || ""]);
-                    }}
+                    onCountryChange={(value) => field.onChange(value?.nationality)}
                   />
                 </FormControl>
-                <FormDescription>Select the country where the student's mother lives.</FormDescription>
+                <FormDescription>Select the country that best represents the mother's nationality.</FormDescription>
+                <FormMessage />
                 <FormMessage />
               </FormItem>
             )}
@@ -242,7 +268,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherNRICFIN"
+            name="motherNricFin"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
@@ -257,12 +283,12 @@ function MotherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="studentsMotherMobilePhone"
+              name="motherMobilePhone"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput {...field} defaultCountry="SG" international />
                   </FormControl>
                   <FormDescription>Enter the student's mother mobile phone.</FormDescription>
                   <FormMessage />
@@ -272,7 +298,7 @@ function MotherInformation() {
 
             <FormField
               control={form.control}
-              name="studentsMotherEmailAddress"
+              name="motherEmail"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
@@ -290,7 +316,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentsMotherWorkCompany"
+            name="motherWorkCompany"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
@@ -305,7 +331,7 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="studentsMotherWorkPosition"
+            name="motherWorkPosition"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Position</FormLabel>
@@ -319,15 +345,36 @@ function MotherInformation() {
           />
         </div>
 
-        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          Proceed to Next Step
-          <ArrowRight />
-        </Button>
+        <div className="flex flex-col gap-4">
+          <Button
+            onClick={saveDetails}
+            size={"lg"}
+            variant={"secondary"}
+            className="hidden lg:flex w-full p-8 gap-2 uppercase"
+            type="button">
+            Save
+            <Save />
+          </Button>
 
-        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Proceed to Next Step
-          <ArrowRight />
-        </Button>
+          <Button
+            onClick={saveDetails}
+            variant={"secondary"}
+            className="flex lg:hidden w-full p-6 gap-2 uppercase"
+            type="button">
+            Save
+            <Save />
+          </Button>
+
+          <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+            Proceed to Next Step
+            <ArrowRight />
+          </Button>
+
+          <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+            Proceed to Next Step
+            <ArrowRight />
+          </Button>
+        </div>
       </form>
     </Form>
   );

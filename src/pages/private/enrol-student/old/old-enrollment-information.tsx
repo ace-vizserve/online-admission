@@ -1,6 +1,17 @@
+import { getStudentEnrollmentInformation } from "@/actions/private";
+import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +27,16 @@ import {
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
   preferredSchedule,
 } from "@/data";
+import { getNextGradeLevel } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleHelp, Save } from "lucide-react";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
+import "ldrs/react/Tailspin.css";
+import { CircleFadingArrowUpIcon, CircleHelp, Save } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { useParams } from "react-router";
 import { toast } from "sonner";
 
 const discountList = [
@@ -34,25 +49,39 @@ const discountList = [
 
 function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
+  const params = useParams();
+  const { data, isPending, isSuccess } = useQuery({
+    queryKey: ["enrollment-information", params.id],
+    queryFn: async () => {
+      return await getStudentEnrollmentInformation(params.id!);
+    },
+  });
   const { formState, setFormState } = useEnrolOldStudentContext();
   const [isShowDiscount, setIsShowDiscount] = useState<boolean>(false);
   const [isShowReferral, setIsShowReferral] = useState<boolean>(false);
   const [discountType, setDiscountType] = useState<string>("");
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
-    defaultValues: {
-      ...formState.enrollmentInfo,
-    },
   });
+
+  useEffect(() => {
+    if (isSuccess) {
+      form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
+    }
+  }, [data, form, isSuccess]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
     setFormState({
       ...formState,
-      enrollmentInfo: values,
+      enrollmentInfo: { ...values, isValid: true },
     });
     toast.success("Enrollment information details saved!", {
-      description: "Proceeding to the next step...",
+      description: "Make sure to double check everything",
     });
+  }
+
+  if (isPending) {
+    return <Loader />;
   }
 
   return (
@@ -64,7 +93,24 @@ function OldEnrollmentInformation() {
             <CardTitle className="text-balance text-center text-2xl text-primary">
               Input the necessary enrollment information
             </CardTitle>
+            <Alert className="bg-blue-500/10 border-none w-max mx-auto">
+              <CircleFadingArrowUpIcon className="h-4 w-4 !text-blue-500" />
+              <div className="space-y-1 text-pretty">
+                <AlertTitle className="text-xs text-blue-700 ">Next Grade Auto-Detected</AlertTitle>
+                <span className="text-xs text-blue-900 ">
+                  Based on previous level{" "}
+                  <span className="font-semibold capitalize">
+                    {(data!.levelApplied as string).split("-").join(" ")}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-semibold capitalize">
+                    {getNextGradeLevel(data!.levelApplied)?.split("-").join(" ")}
+                  </span>
+                </span>
+              </div>
+            </Alert>
           </CardHeader>
+
           <CardContent className="px-0">
             <Form {...form}>
               <form
@@ -73,11 +119,14 @@ function OldEnrollmentInformation() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
-                    name="classLevel"
+                    name="levelApplied"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Class Level</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={getNextGradeLevel(data!.levelApplied) ?? field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select a class level" />
@@ -93,6 +142,7 @@ function OldEnrollmentInformation() {
                             </ScrollArea>
                           </SelectContent>
                         </Select>
+
                         <FormDescription>Select the appropriate class level for the student.</FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -172,7 +222,7 @@ function OldEnrollmentInformation() {
 
                   <FormField
                     control={form.control}
-                    name="busService"
+                    name="availSchoolBus"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Bus Service</FormLabel>
@@ -197,7 +247,7 @@ function OldEnrollmentInformation() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
-                    name="schoolUniform"
+                    name="availUniform"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="h-9">School Uniform</FormLabel>
@@ -220,7 +270,7 @@ function OldEnrollmentInformation() {
 
                   <FormField
                     control={form.control}
-                    name="studentCare"
+                    name="availStudentCare"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="h-9">Student Care</FormLabel>
@@ -243,33 +293,13 @@ function OldEnrollmentInformation() {
 
                   <FormField
                     control={form.control}
-                    name="campusDevelopmentFee"
+                    name="paymentOption"
                     render={({ field }) => (
                       <FormItem>
                         <div className="relative flex justify-between items-center">
                           <FormLabel>Campus Development Fee</FormLabel>
 
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Link
-                                  className={buttonVariants({
-                                    variant: "ghost",
-                                    size: "icon",
-                                    className: "absolute right-0 -top-4",
-                                  })}
-                                  target="_blank"
-                                  to={
-                                    "https://hgochparbrqtgeigvnzx.supabase.co/storage/v1/object/public/users/cdfdetails.PNG"
-                                  }>
-                                  <CircleHelp className="stroke-blue-600 stroke-2" />
-                                </Link>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Click here to see CDF details.</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <CDFDetailsDialog />
                         </div>
 
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -312,7 +342,7 @@ function OldEnrollmentInformation() {
                     <>
                       <FormField
                         control={form.control}
-                        name="referralName"
+                        name="referrerName"
                         render={({ field }) => (
                           <FormItem className="space-y-1">
                             <FormLabel className="text-white">Referrer's Name</FormLabel>
@@ -426,7 +456,7 @@ function OldEnrollmentInformation() {
                       {isShowReferral ? (
                         <FormField
                           control={form.control}
-                          name="referralName"
+                          name="referrerName"
                           render={({ field }) => (
                             <FormItem className="space-y-1">
                               <FormLabel className="text-white">Referrer's Name</FormLabel>
@@ -482,6 +512,43 @@ function OldEnrollmentInformation() {
         </Card>
       </div>
     </>
+  );
+}
+
+function CDFDetailsDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size={"icon"} variant={"ghost"} type="button">
+                <CircleHelp className="stroke-blue-600 stroke-2" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Click here to see CDF details</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </DialogTrigger>
+      <DialogContent className="!max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Campus Development Fees</DialogTitle>
+          <DialogDescription>Kindly choose your preferred payment option below.</DialogDescription>
+        </DialogHeader>
+        <img src={cdfDetails} alt="CDF Details" className="object-cover aspect-video rounded-lg" />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <p className="text-sm text-muted-foreground animate-pulse">Fetching enrolment details...</p>
+      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+    </div>
   );
 }
 

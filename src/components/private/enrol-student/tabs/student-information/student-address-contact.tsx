@@ -1,3 +1,4 @@
+import { updateStudentInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -6,19 +7,24 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { maritalStatuses } from "@/data";
-import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
+import { Student } from "@/types";
+import { studentAddressContactSchema, StudentAddressContactSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { Save } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { useParams } from "react-router";
 
 function StudentAddressContact() {
   const { formState, setFormState } = useEnrolOldStudentContext();
-
-  const [countryName, setCountryName] = useState<string>("");
-  const [stateName, setStateName] = useState<string>("");
-
+  const params = useParams();
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (studentInformation: Partial<Student>) => {
+      return await updateStudentInformation(studentInformation, params.id!);
+    },
+  });
   const form = useForm<StudentAddressContactSchema>({
     resolver: zodResolver(studentAddressContactSchema),
     defaultValues: {
@@ -27,17 +33,16 @@ function StudentAddressContact() {
   });
 
   function onSubmit(values: StudentAddressContactSchema) {
-    console.log(countryName);
-
     setFormState({
       studentInfo: {
-        addressContact: values,
-        studentDetails: { ...formState.studentInfo!.studentDetails },
+        studentDetails: { ...(formState.studentInfo?.studentDetails ?? ({} as unknown as StudentDetailsSchema)) },
+        addressContact: {
+          ...values,
+        },
       },
     });
-    toast.success("Student Address & Contact details saved!", {
-      description: "Don't forget to check the other details",
-    });
+
+    mutate({ ...values });
   }
 
   return (
@@ -45,7 +50,7 @@ function StudentAddressContact() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
         <FormField
           control={form.control}
-          name="studentHomeAddress"
+          name="homeAddress"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Home Address</FormLabel>
@@ -61,7 +66,7 @@ function StudentAddressContact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="studentPostalCode"
+            name="postalCode"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Postal code</FormLabel>
@@ -76,24 +81,18 @@ function StudentAddressContact() {
 
           <FormField
             control={form.control}
-            name="countryCode"
+            name="nationality"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select Country</FormLabel>
+                <FormLabel>Student Nationality</FormLabel>
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    onCountryChange={(country) => {
-                      setCountryName(country?.name || "");
-                      form.setValue(field.name, [country?.name || "", stateName || ""]);
-                    }}
-                    onStateChange={(state) => {
-                      setStateName(state?.name || "");
-                      form.setValue(field.name, [form.getValues(field.name)[0] || "", state?.name || ""]);
-                    }}
+                    selectedNationality={formState.studentInfo?.addressContact.nationality}
+                    onCountryChange={(value) => field.onChange(value?.nationality)}
                   />
                 </FormControl>
-                <FormDescription>Select the country where the student lives.</FormDescription>
+                <FormDescription>Select the country that best represents the student's nationality.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -150,7 +149,7 @@ function StudentAddressContact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="parentsMaritalStatus"
+            name="parentMaritalStatus"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Parent's Marital Status</FormLabel>
@@ -190,14 +189,32 @@ function StudentAddressContact() {
           />
         </div>
 
-        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          Save
-          <Save />
+        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          {isPending ? (
+            <>
+              Saving
+              <DotPulse size="30" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Save
+              <Save />
+            </>
+          )}
         </Button>
 
-        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Save
-          <Save />
+        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          {isPending ? (
+            <>
+              Saving
+              <DotPulse size="20" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Save
+              <Save />
+            </>
+          )}
         </Button>
       </form>
     </Form>
