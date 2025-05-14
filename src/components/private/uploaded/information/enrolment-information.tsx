@@ -113,7 +113,7 @@ const EnrolmentInformation = () => {
                         </div>
                         {data.campusDevelopment ? (
                           <Select value={data.campusDevelopment} disabled>
-                            <SelectTrigger className="w-[527px]">
+                            <SelectTrigger className="w-[505px]">
                               <SelectValue placeholder="Select" />
                             </SelectTrigger>
                             <SelectContent>
@@ -124,7 +124,7 @@ const EnrolmentInformation = () => {
                           </Select>
                         ) : (
                           <Select disabled value="">
-                            <SelectTrigger className="w-[527px]">
+                            <SelectTrigger className="w-[505px]">
                               <SelectValue placeholder="No campus development" />
                             </SelectTrigger>
                           </Select>
