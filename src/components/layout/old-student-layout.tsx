@@ -72,7 +72,7 @@ function ExitApplicationDialog() {
             </div>
             Exit Application?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-[15px] text-center">
+          <AlertDialogDescription className="text-xs md:text-sm text-center">
             Are you sure you want to exit this page? Both saved and unsaved information will be removed and cannot be
             recovered.
           </AlertDialogDescription>
