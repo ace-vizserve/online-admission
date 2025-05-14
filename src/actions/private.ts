@@ -29,6 +29,82 @@ export async function getSectionCardsDetails() {
   }
 }
 
+export async function getFullStudentDetails(studentNumber: string) {
+  try {
+    const { data, error } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select(`
+        firstName,
+        lastName,
+        middleName,
+        preferredName,
+        birthDay,
+        gender,
+        religion,
+        nationality,
+        nric,
+        homeAddress,
+        postalCode,
+        homePhone,
+        contactPerson,
+        contactPersonNumber,
+        parentMaritalStatus,
+        livingWithWhom
+      `)
+      .eq("studentNumber", studentNumber)
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    
+    const { data: docData } = await supabase
+      .from("ay2025_enrolment_documents")
+      .select("idPicture")
+      .eq("studentNumber", studentNumber)
+      .single();
+
+    const age = data && data.birthDay ? differenceInYears(new Date(), parseISO(String(data.birthDay))) : null;
+
+    return {
+      ...data,
+      age,
+      idPicture: docData?.idPicture ?? null,
+      studentNumber: studentNumber ?? "",
+      studentName: `${data.firstName} ${data.lastName}`,
+      birthDate: data.birthDay,
+      currentSchoolYear: "2024–2025",
+    };
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+    return null;
+  }
+}
+export async function getEnrolledInfo() {
+  try {
+    const { data, error } = await supabase
+      .from("student_enrolments_1")
+      .select("studentNumber, academicYear, grade_level, status, enroleeFullName")
+      .eq("motherEmail", "dcyanie16@gmail.com");
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    const studentsList = (data || []).map((row) => ({
+      studentNumber: row.studentNumber,
+      academicYear: row.academicYear,
+      level: row.grade_level,
+      status: row.status,
+      studentName: row.enroleeFullName,
+    }));
+
+    return { studentsList };
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
 export async function getStudentList() {
   try {
     const { data, error } = await supabase
@@ -112,6 +188,11 @@ export async function getStudentDetails({ studentNumber }: { studentNumber: stri
         birthDate: details.birthDay,
         nationality: details.nationality,
         currentSchoolYear: "2024–2025",
+        firstName: details.firstName ?? "",
+        lastName: details.lastName ?? "",
+        middleName: details.middleName ?? "",
+        preferredName: details.preferredName ?? "",
+        birthDay: details.birthDay ?? "",
       };
     });
 

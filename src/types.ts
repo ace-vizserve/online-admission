@@ -47,6 +47,12 @@ export type StudentDetails = {
   groupedDocuments: GroupedDocument[];
 };
 
+export type StudentData = {
+  studentInformation: StudentInformation[];
+  familyInformation: Family[];
+  groupedDocuments: GroupedDocument[];
+};
+
 export type TStudent = {
   enroleeFullName: string;
   birthDay: string;
@@ -65,11 +71,11 @@ export type StudentInfo = {
 };
 
 export type levelYear = {
-  id: string;
+  studentNumber: string;
   studentName: string;
-  academicYear: string;
-  level: string;
-  status: string;
+  academicYear?: string;
+  level?: string;
+  status?: string;
 };
 
 export type SingleStudent = {
@@ -140,24 +146,28 @@ export type ParentGuardianFileUploaderDialogProps = {
 
 
 export type StudentInformation = {
+  studentNumber: string;
+  studentName: string;
   firstName: string;
   lastName: string;
   middleName: string;
   preferredName: string;
+  age: number;
+  birthDate: string;
   birthDay: string;
-  gender: string;
-  religion: string;
   nationality: string;
-  nric: string;
-  homeAddress: string;
-  postalCode: number
-  homePhone: number;
-  country: string;
-  contactPerson: string;
-  contactPersonNumber: number;
-  parentMaritalStatus: string;
-  livingWithWhom: string;
-  enroleePhoto: string;
+  gender?: string;
+  religion?: string;
+  nric?: string;
+  homePhone?: string;
+  homeAddress?: string;
+  postalCode?: string;
+  contactNumber?: string;
+  contactPerson?: string;
+  contactPersonNumber?: string;
+  parentMaritalStatus?: string;
+  livingWithWhom?: string;
+  currentSchoolYear: string;
 };
 
 export type MotherInformation = {

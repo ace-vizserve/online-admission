@@ -1,10 +1,20 @@
-import UploadFiles from "@/components/private/uploaded/upload-files"
+import UploadFiles from "@/components/private/uploaded/upload-files";
+import { useParams } from "react-router";
 
+function UploadedPage() {
+  const params = useParams();
 
-export const Uploaded = () => {
+  if (!params.id) {
+    return <h1>Student number is not defined!</h1>;
+  }
+
   return (
-    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
-    <UploadFiles />
-  </div>
-  )
+    <>
+      <div className="py-7 md:py-14 px-4 md:px-6">
+        <UploadFiles studentNumber={params.id} />
+      </div>
+    </>
+  );
 }
+
+export default UploadedPage;

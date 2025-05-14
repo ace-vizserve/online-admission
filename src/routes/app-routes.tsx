@@ -26,7 +26,7 @@ import { Files } from "@/pages/private/files";
 import { SchoolYear } from "@/pages/private/school-year";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
-import { Uploaded } from "@/pages/private/uploaded";
+import Uploaded from "@/pages/private/uploaded";
 
 import Homepage from "@/pages/public/home-page";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
@@ -155,7 +155,7 @@ function AppRoutes() {
 
           <Route
             index
-            path="uploaded-file/:id"
+            path="uploaded/:id"
             element={
               <AuthGuard>
                 <Uploaded />

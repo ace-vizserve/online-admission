@@ -447,4 +447,5 @@ export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequir
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
 export type StudentEnrolSchema = z.infer<typeof studentEnrolSchema>;
-export type StudentEnrolmentsSchema = z.infer<typeof studentEnrolments>;
+
+export type StudentInformation = z.infer<typeof studentDetailsSchema> & z.infer<typeof studentAddressContactSchema>;

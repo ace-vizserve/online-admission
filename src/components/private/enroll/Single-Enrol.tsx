@@ -1,13 +1,5 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -19,54 +11,69 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, FileUser, MoreHorizontal } from "lucide-react";
-import * as React from "react"
-import { Link, useParams } from "react-router";
+import { ArrowUpDown, MoreHorizontal, User, UserPlus } from "lucide-react";
+import * as React from "react";
+import { getEnrolledInfo } from "@/actions/private";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { levelYear } from "@/types";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/client";
-import { SingleStudent } from "@/types";
+import { Tailspin } from "ldrs/react";
+import "ldrs/react/Tailspin.css";
+import { Link } from "react-router";
 
-const columns: ColumnDef<SingleStudent>[] = [
+
+export const columns: ColumnDef<levelYear>[] = [
   {
     accessorKey: "academicYear",
-    header: ({ column }) => (
-      <Button
-        variant={"ghost"}
-        className="cursor-pointer"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Academic Year
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div className="capitalize text-xs ml-9">{row.getValue("academicYear")}</div>,
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Academic Year
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("academicYear")}</div>,
   },
   {
     accessorKey: "level",
-    header: ({ column }) => (
-      <Button
-        variant={"ghost"}
-        className="cursor-pointer mr-10"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Level
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("level")}</div>,
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Level
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-xs tabular-nums pl-1">{row.getValue("level")}</div>,
   },
   {
     accessorKey: "status",
-    header: ({ column }) => (
-      <Button
-        variant={"ghost"}
-        className="cursor-pointer"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Status
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Status
+          <ArrowUpDown />
+        </Button>
+      );
+    },
     cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("status")}</div>,
   },
   {
@@ -80,13 +87,13 @@ const columns: ColumnDef<SingleStudent>[] = [
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/uploaded-file/${student.id}`}>
+            <Link to={`/admission/students/${student.studentNumber}`}>
               <DropdownMenuItem className="text-xs">
-                <FileUser className="mr-1 h-4 w-4" /> View Enrolment Information
+                <User className="mr-1" /> View Enrolment Information
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
@@ -97,44 +104,45 @@ const columns: ColumnDef<SingleStudent>[] = [
 ];
 
 function SingleEnrol() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const { id } = useParams<{ id: string }>();
-
-  console.log("ID from URL:", id);
-
-  const { data: studentData, isLoading } = useQuery({
-    queryKey: ["ay2025_enrolment_applications", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("student_enrolments_1")
-        .select(`
-          id,
-          enroleeFullName,
-          academicYear,
-          grade_level,
-          status
-        `)
-        .eq("id", Number(id));
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      const safeData = Array.isArray(data) ? data : [];
-      console.log("Safe Data:", safeData);
-
-      return safeData.map((record) => ({
-        id: record.id,
-        academicYear: `${record.academicYear}`,
-        level: record.grade_level,
-        status: record.status,
-        studentName: record.enroleeFullName,
-      }));
-    },
+  const { data, isPending } = useQuery({
+    queryKey: ["enrolment-list"],
+    queryFn: getEnrolledInfo,
   });
 
+  if (isPending) {
+    return (
+      <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+        <p className="text-sm text-muted-foreground animate-pulse">Fetching students...</p>
+        <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+      </div>
+    );
+  }
+
+  if (data?.studentsList == null || !data.studentsList.length) {
+    return <NoStudentsPanel />;
+  }
+
+  return (
+    <StudentsListTable
+      studentsList={data.studentsList.map((s) => ({
+        studentNumber: s.studentNumber,
+        studentName: s.studentName,
+        academicYear: s.academicYear ?? "",
+        level: s.level ?? "",
+        status: s.status ?? "",
+      }))}
+    />
+  );
+}
+
+function StudentsListTable({ studentsList }: { studentsList: levelYear[] }) {
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+
+  const studentName = studentsList[0]?.studentName;
+
   const table = useReactTable({
-    data: studentData || [],
+    data: studentsList,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -142,23 +150,12 @@ function SingleEnrol() {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+
     state: {
       sorting,
       columnFilters,
     },
   });
-
-  const studentName = studentData?.[0]?.studentName;
-
-  if (isLoading) {
-    return (
-      <div className="w-full py-7 md:py-14">
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full py-7 md:py-14">
@@ -167,7 +164,7 @@ function SingleEnrol() {
       </h1>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter academic years..."
+          placeholder="Filter academic year..."
           value={(table.getColumn("academicYear")?.getFilterValue() as string) ?? ""}
           onChange={(event) => table.getColumn("academicYear")?.setFilterValue(event.target.value)}
           className="max-w-sm"
@@ -178,13 +175,13 @@ function SingleEnrol() {
           <TableHeader className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -193,9 +190,7 @@ function SingleEnrol() {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))
@@ -215,20 +210,35 @@ function SingleEnrol() {
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
+            disabled={!table.getCanPreviousPage()}>
             Previous
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
+          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
             Next
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function NoStudentsPanel() {
+  return (
+    <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-3 my-7 md:my-14 text-center px-4">
+      <h2 className="text-lg font-semibold">No students to show</h2>
+      <p className="text-sm text-muted-foreground max-w-md">
+        You haven't added any student records yet. Start by adding a student to see their enrollment information here.
+      </p>
+
+      <Link
+        to={"/enrol-student"}
+        className={buttonVariants({
+          size: "lg",
+          className: "gap-2 mt-2",
+        })}>
+        <UserPlus className="w-5 h-5" />
+        Add Student
+      </Link>
     </div>
   );
 }
