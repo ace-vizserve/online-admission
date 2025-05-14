@@ -11,7 +11,7 @@ import { supabase } from "@/lib/client";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+import { differenceInYears, format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -43,6 +43,17 @@ function StudentDetails() {
         form.setError("nricFin", {
           type: "manual",
           message: "This NRIC/FIN is already registered.",
+        });
+        return;
+      }
+
+      const age = differenceInYears(new Date(), values.dateOfBirth);
+
+      if (age < 6) {
+        toast.info("Child must be at least 6 years old to enroll");
+        form.setError("dateOfBirth", {
+          type: "manual",
+          message: "Child must be at least 6 years old",
         });
         return;
       }

@@ -164,10 +164,20 @@ export async function getStudentDetails({ studentID }: { studentID: string }) {
       throw new Error(familyInformationError.message);
     }
 
+    const { data } = await supabase
+      .from("student_enrolments")
+      .select("enrolmentNumber")
+      .eq("academicYear", new Date().getFullYear())
+      .eq("studentID", studentID)
+      .eq("status", "Enrolled")
+      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
+      .single();
+
     const { data: studentDocuments, error: studentDocumentsError } = await supabase
       .from("enrolment_documents")
       .select("*")
-      .eq("documentOwnerID", studentID);
+      .eq("documentOwnerID", studentID)
+      .eq("enrolmentNumber", data?.enrolmentNumber);
 
     if (studentDocumentsError) {
       throw new Error(studentDocumentsError.message);
@@ -418,26 +428,24 @@ export async function getCurrentStudentDocuments(studentID: string, documentType
       data: { session },
     } = await supabase.auth.getSession();
 
-    let query = supabase
+    const { data } = await supabase
       .from("student_enrolments")
       .select("enrolmentNumber")
+      .eq("academicYear", new Date().getFullYear())
+      .eq("studentID", studentID)
+      .eq("status", "Enrolled")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
-      .eq("academicYear", new Date().getFullYear());
+      .single();
 
-    if (studentID) {
-      query = query.eq("studentID", studentID);
-    }
-
-    const { data: enrollments } = await query;
-
-    const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
-
-    const { data: studentDocuments } = await supabase
+    const { data: studentDocuments, error: studentDocumentsError } = await supabase
       .from("enrolment_documents")
       .select("*")
-      .eq("documentOwner", "student")
-      .eq("studentID", studentID)
-      .in("enrolmentNumber", enrolmentNumbers);
+      .eq("documentOwnerID", studentID)
+      .eq("enrolmentNumber", data?.enrolmentNumber);
+
+    if (studentDocumentsError) {
+      throw new Error(studentDocumentsError.message);
+    }
 
     const filteredDocuments = (studentDocuments ?? []).filter(
       (doc) => !documentTypesToSkip?.includes(doc.documentType)
@@ -999,6 +1007,10 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     const {
       data: { session },
     } = await supabase.auth.getSession();
+
+    delete enrollmentDetails.enrollmentInfo.isValid;
+
+    delete enrollmentDetails.uploadRequirements.studentUploadRequirements.isValid;
 
     const currentUserRole = session?.user.user_metadata.relationship as string;
 

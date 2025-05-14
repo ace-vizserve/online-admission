@@ -33,6 +33,12 @@ function MotherInformation() {
     },
   });
 
+  useEffect(() => {
+    if (!formState.familyInfo?.motherInfo) return;
+
+    form.reset(formState.familyInfo.motherInfo);
+  }, [form, formState.familyInfo?.motherInfo]);
+
   function onSubmit(values: MotherInformationSchema) {
     if (!isValidPhoneNumber(values.motherMobilePhone)) {
       form.setError("motherMobilePhone", {

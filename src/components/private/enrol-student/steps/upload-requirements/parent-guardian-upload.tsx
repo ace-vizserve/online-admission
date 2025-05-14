@@ -75,6 +75,12 @@ function ParentGuardianUpload() {
   }, [isSuccess, setFormState, data]);
 
   useEffect(() => {
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements) return;
+
+    form.reset(formState.uploadRequirements.parentGuardianUploadRequirements);
+  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
+
+  useEffect(() => {
     if (form.formState.isSubmitSuccessful) {
       mutate(formState as EnrolNewStudentFormState);
     }

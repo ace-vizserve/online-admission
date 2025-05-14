@@ -61,6 +61,12 @@ function ParentGuardianUpload() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess, setFormState, data]);
 
+  useEffect(() => {
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements) return;
+
+    form.reset(formState.uploadRequirements.parentGuardianUploadRequirements);
+  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
+
   function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     setFormState({
       ...formState,

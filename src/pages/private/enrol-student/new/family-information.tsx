@@ -68,14 +68,13 @@ function FamilyInformationTabs() {
   const { data, isPending, isSuccess } = useQuery({
     queryKey: ["new-family-information"],
     queryFn: getFamilyInformation,
-    enabled: formState.studentInfo?.addressContact != null && formState.studentInfo.studentDetails != null,
   });
 
   useEffect(() => {
     if (!isSuccess || !data) return;
 
     setFormState({
-      familyInfo: { ...data! } as unknown as EnrolNewStudentFormState["familyInfo"],
+      familyInfo: { ...data } as unknown as EnrolNewStudentFormState["familyInfo"],
     });
   }, [data, isSuccess, setFormState]);
 
