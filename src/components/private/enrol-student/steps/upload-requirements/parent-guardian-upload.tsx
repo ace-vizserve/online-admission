@@ -98,6 +98,7 @@ function ParentGuardianUpload() {
         top: 0,
         behavior: "smooth",
       });
+      form.setError("root", {});
       return;
     }
 

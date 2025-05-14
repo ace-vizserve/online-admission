@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { TStudent } from "@/types";
-import { QueryObserverResult, RefetchOptions, useQuery } from "@tanstack/react-query";
+import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Link } from "react-router";
@@ -179,6 +179,7 @@ type StudentsListTableProps = {
 };
 
 function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsListTableProps) {
+  const queryClient = useQueryClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
@@ -198,6 +199,11 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
     },
   });
 
+  function updateDashboardDetails() {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["section-cards"] });
+  }
+
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">Students List</h1>
@@ -208,7 +214,7 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
           onChange={(event) => table.getColumn("studentName")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
-        <Button disabled={isRefetching} onClick={() => refetch()} size={"icon"} variant={"outline"}>
+        <Button disabled={isRefetching} onClick={updateDashboardDetails} size={"icon"} variant={"outline"}>
           <RefreshCcw
             className={cn({
               "animate-spin": isRefetching,
