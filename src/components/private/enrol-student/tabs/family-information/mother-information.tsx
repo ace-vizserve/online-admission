@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 function MotherInformation() {
@@ -35,6 +35,12 @@ function MotherInformation() {
       ...formState.familyInfo?.motherInfo,
     },
   });
+
+  useEffect(() => {
+    if (!formState.familyInfo?.motherInfo) return;
+
+    form.reset(formState.familyInfo.motherInfo);
+  }, [form, formState.familyInfo?.motherInfo]);
 
   function onSubmit(values: MotherInformationSchema) {
     setFormState({

@@ -24,7 +24,7 @@ function StudentUpload() {
   const { data, isFetching, isSuccess } = useQuery({
     queryKey: ["student-documents", params.id],
     queryFn: async () => {
-      return await getCurrentStudentDocuments(params.id!, ["Form 12", "Medical Exam"]);
+      return await getCurrentStudentDocuments(params.id!, ["Form 12", "Medical Exam", "ID Picture"]);
     },
   });
 
@@ -59,6 +59,12 @@ function StudentUpload() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess, setFormState, data]);
+
+  useEffect(() => {
+    if (!formState.uploadRequirements?.studentUploadRequirements) return;
+
+    form.reset(formState.uploadRequirements.studentUploadRequirements);
+  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     toast.success("Student documents saved!", {

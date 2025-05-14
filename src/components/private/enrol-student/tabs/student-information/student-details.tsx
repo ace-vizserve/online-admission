@@ -13,13 +13,14 @@ import { Student } from "@/types";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { differenceInYears, format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
+import { toast } from "sonner";
 
 function StudentDetails() {
   const { formState, setFormState } = useEnrolOldStudentContext();
@@ -39,6 +40,17 @@ function StudentDetails() {
   });
 
   function onSubmit(values: StudentDetailsSchema) {
+    const age = differenceInYears(new Date(), values.dateOfBirth);
+
+    if (age < 6) {
+      toast.info("Child must be at least 6 years old to enroll");
+      form.setError("dateOfBirth", {
+        type: "manual",
+        message: "Child must be at least 6 years old",
+      });
+      return;
+    }
+
     setFormState({
       studentInfo: {
         addressContact: {
