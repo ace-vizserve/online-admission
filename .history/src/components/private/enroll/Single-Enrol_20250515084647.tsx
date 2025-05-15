@@ -11,10 +11,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, User, UserPlus } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, RefreshCcw, User, UserPlus } from "lucide-react";
 import * as React from "react";
 
-import { getStudentList } from "@/actions/private";
+import { getStudentEnrollmentList } from "@/actions/private";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,72 +24,59 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TStudent } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import { levelYear } from "@/types";
+import { QueryObserverResult, RefetchOptions, useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Link } from "react-router";
 
-export const columns: ColumnDef<TStudent>[] = [
+
+export const columns: ColumnDef<levelYear>[] = [
   {
-    accessorKey: "studentName",
+    accessorKey: "academicYear",
     header: ({ column }) => {
       return (
         <Button
           variant={"ghost"}
           className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Student Name
+          Academic Year
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("studentName")}</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("academicYear")}</div>,
   },
   {
-    accessorKey: "age",
+    accessorKey: "grade_level",
     header: ({ column }) => {
       return (
         <Button
           variant={"ghost"}
           className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Age
+          Grade Level
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs tabular-nums pl-1">{row.getValue("age")} years old</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("grade_level")}</div>,
   },
   {
-    accessorKey: "mothersName",
+    accessorKey: "status",
     header: ({ column }) => {
       return (
         <Button
           variant={"ghost"}
           className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Mother's Name
+          Stattus
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("mothersName")}</div>,
-  },
-  {
-    accessorKey: "fathersName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant={"ghost"}
-          className="cursor-pointer"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Father's Name
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("fathersName")}</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("status")}</div>,
   },
   {
     id: "actions",
@@ -106,9 +93,9 @@ export const columns: ColumnDef<TStudent>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/single-student/${student.studentID}`}>
+            <Link to={`/admission/students/${student.studentID}`}>
               <DropdownMenuItem className="text-xs">
-                <User className="mr-1" /> View Enrolments
+                <User className="mr-1" /> View Enrolment Information
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
@@ -118,11 +105,10 @@ export const columns: ColumnDef<TStudent>[] = [
   },
 ];
 
-
-function Enrol() {
-  const { data, isPending } = useQuery({
-    queryKey: ["enrolments-list"],
-    queryFn: getStudentList,
+function SingleEnrol() {
+  const { data, isPending, refetch, isRefetching } = useQuery({
+    queryKey: ["students-enrolments-list"],
+    queryFn: getStudentEnrollmentList,
   });
 
   if (isPending) {
@@ -134,14 +120,29 @@ function Enrol() {
     );
   }
 
-  if (data?.studentsList == null || !data.studentsList.length) {
+  if (!data?.studentsList) {
     return <NoStudentsPanel />;
   }
 
-  return <StudentsListTable studentsList={data.studentsList} />;
+  const students = data.studentsList.map(student => ({
+    studentID: student.studentID || "",
+    academicYear: student.academicYear,
+    grade_level: student.grade_level,
+    status: student.status,
+    enroleeFullName: student.enroleeFullName || "",
+  }));
+
+  return <StudentsListTable refetch={refetch} isRefetching={isRefetching} studentsList={students} />;
 }
 
-function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
+type StudentsListTableProps = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  refetch: (options?: RefetchOptions | undefined) => Promise<QueryObserverResult<any, Error>>;
+  isRefetching: boolean;
+  studentsList: levelYear[];
+};
+
+function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsListTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
@@ -154,23 +155,33 @@ function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-
     state: {
       sorting,
       columnFilters,
     },
   });
 
+  const studentName = studentsList[0]?.enroleeFullName;
+
   return (
     <div className="w-full py-7 md:py-14">
-      <h1 className="font-bold text-lg lg:text-2xl">Students List</h1>
-      <div className="flex items-center py-4">
+      <h1 className="font-bold text-lg lg:text-2xl">
+        {studentName ? `${studentName} Enrolment List` : "Student not found"}
+      </h1>
+      <div className="flex items-center gap-4 py-4">
         <Input
-          placeholder="Filter names..."
-          value={(table.getColumn("enroleeFullName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("enroleeFullName")?.setFilterValue(event.target.value)}
+          placeholder="Filter grade level..."
+          value={(table.getColumn("level")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("level")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
+        <Button disabled={isRefetching} onClick={() => refetch()} size={"icon"} variant={"outline"}>
+          <RefreshCcw
+            className={cn({
+              "animate-spin": isRefetching,
+            })}
+          />
+        </Button>
       </div>
       <div className="rounded-md border overflow-hidden">
         <Table>
@@ -226,10 +237,10 @@ function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
 
 function NoStudentsPanel() {
   return (
-    <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-3 my-7 md:my-14 text-center px-4">
-      <h2 className="text-lg font-semibold">No students to show</h2>
-      <p className="text-sm text-muted-foreground max-w-md">
-        You haven’t added any student records yet. Start by adding a student to see their enrollment information here.
+    <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-1.5 md:gap-3 my-7 md:my-14 text-center px-4">
+      <h2 className="text-lg md:text-xl font-semibold">No students to show</h2>
+      <p className="text-xs md:text-sm text-muted-foreground max-w-prose text-balance">
+        You haven't added any student records yet. Start by adding a student to see their enrollment information here.
       </p>
 
       <Link
@@ -245,4 +256,4 @@ function NoStudentsPanel() {
   );
 }
 
-export default Enrol;
+export default SingleEnrol;

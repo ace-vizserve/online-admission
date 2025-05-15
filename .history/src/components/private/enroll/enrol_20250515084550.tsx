@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,11 +9,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, User, UserPlus } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, User } from "lucide-react";
 import * as React from "react";
 
-import { getStudentList } from "@/actions/private";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,14 +21,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TStudent } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import { Tailspin } from "ldrs/react";
-import "ldrs/react/Tailspin.css";
+import { StudentInfo } from "@/types";
 import { Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/client";
+import { differenceInYears, parseISO } from "date-fns";
 
-export const columns: ColumnDef<TStudent>[] = [
-  {
+
+export const columns: ColumnDef<StudentInfo>[] = [
+{
     accessorKey: "studentName",
     header: ({ column }) => {
       return (
@@ -44,7 +42,7 @@ export const columns: ColumnDef<TStudent>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("studentName")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-4 tabular-nums">{row.getValue("studentName")}</div>,
   },
   {
     accessorKey: "age",
@@ -59,10 +57,10 @@ export const columns: ColumnDef<TStudent>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs tabular-nums pl-1">{row.getValue("age")} years old</div>,
+    cell: ({ row }) => <div className="text-xs pl-1 tabular-nums">{row.getValue("age")} years old</div>,
   },
   {
-    accessorKey: "mothersName",
+    accessorKey: "motherName",
     header: ({ column }) => {
       return (
         <Button
@@ -74,10 +72,10 @@ export const columns: ColumnDef<TStudent>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("mothersName")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("motherName")}</div>,
   },
   {
-    accessorKey: "fathersName",
+    accessorKey: "fatherName",
     header: ({ column }) => {
       return (
         <Button
@@ -89,7 +87,7 @@ export const columns: ColumnDef<TStudent>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("fathersName")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("fatherName")}</div>,
   },
   {
     id: "actions",
@@ -106,7 +104,7 @@ export const columns: ColumnDef<TStudent>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/single-student/${student.studentID}`}>
+            <Link to={`/admission/single-student/${student.id}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View Enrolments
               </DropdownMenuItem>
@@ -119,34 +117,58 @@ export const columns: ColumnDef<TStudent>[] = [
 ];
 
 
-function Enrol() {
-  const { data, isPending } = useQuery({
-    queryKey: ["enrolments-list"],
-    queryFn: getStudentList,
+async function fetchStudents(): Promise<StudentInfo[]> {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Failed to retrieve authenticated user');
+  }
+
+  const { data: applications, error } = await supabase
+    .from('ay2025_enrolment_applications')
+    .select('id, enroleeFullName, birthDay, motherFullName, fatherFullName, motherEmail')
+    .eq('motherEmail', 'cindzlovesyou@yahoo.com.sg');
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const uniqueApplications = [];
+  const seenNames = new Set();
+  for (const app of applications || []) {
+    const studentName = app.enroleeFullName;
+    if (!seenNames.has(studentName)) {
+      uniqueApplications.push({
+        ...app,
+        studentName,
+        motherName: app.motherFullName,
+        fatherName: app.fatherFullName,
+      });
+      seenNames.add(studentName);
+    }
+  }
+
+  return uniqueApplications.map(student => {
+    const age = differenceInYears(new Date(), parseISO(student.birthDay));
+    return {
+      id: student.id,
+      studentName: student.studentName,
+      age,
+      motherName: student.motherName,
+      fatherName: student.fatherName,
+    };
+  });
+}
+function StudentsList() {
+  const { data, isLoading, isError, error } = useQuery<StudentInfo[]>({
+    queryKey: ["ay2025_enrolment_applications"],
+    queryFn: fetchStudents,
   });
 
-  if (isPending) {
-    return (
-      <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-        <p className="text-sm text-muted-foreground animate-pulse">Fetching students...</p>
-        <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
-      </div>
-    );
-  }
-
-  if (data?.studentsList == null || !data.studentsList.length) {
-    return <NoStudentsPanel />;
-  }
-
-  return <StudentsListTable studentsList={data.studentsList} />;
-}
-
-function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
-    data: studentsList,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -161,29 +183,31 @@ function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
     },
   });
 
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error.message}</div>;
+
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">Students List</h1>
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter names..."
-          value={(table.getColumn("enroleeFullName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("enroleeFullName")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("studentName")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
       </div>
+
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -212,10 +236,16 @@ function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}>
+            disabled={!table.getCanPreviousPage()}
+          >
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
             Next
           </Button>
         </div>
@@ -224,25 +254,4 @@ function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
   );
 }
 
-function NoStudentsPanel() {
-  return (
-    <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-3 my-7 md:my-14 text-center px-4">
-      <h2 className="text-lg font-semibold">No students to show</h2>
-      <p className="text-sm text-muted-foreground max-w-md">
-        You haven’t added any student records yet. Start by adding a student to see their enrollment information here.
-      </p>
-
-      <Link
-        to={"/enrol-student"}
-        className={buttonVariants({
-          size: "lg",
-          className: "gap-2 mt-2",
-        })}>
-        <UserPlus className="w-5 h-5" />
-        Add Student
-      </Link>
-    </div>
-  );
-}
-
-export default Enrol;
+export default StudentsList;

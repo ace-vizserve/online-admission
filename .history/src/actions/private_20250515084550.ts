@@ -140,28 +140,6 @@ export async function getStudentEnrollmentInformation(studentID: string) {
   }
 }
 
-export async function getStudentEnrollmentList() {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const { data, error } = await supabase
-      .from("student_enrolments")
-      .select("academicYear, grade_level, status, studentID, enroleeFullName")
-      .or(`parent1.eq.${session?.user.id}, parent2.eq.${session?.user.id}`);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return { studentsList: data };
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
-}
-
 export async function getStudentDetails({ studentID }: { studentID: string }) {
   try {
     const {
@@ -186,10 +164,20 @@ export async function getStudentDetails({ studentID }: { studentID: string }) {
       throw new Error(familyInformationError.message);
     }
 
+    const { data } = await supabase
+      .from("student_enrolments")
+      .select("enrolmentNumber")
+      .eq("academicYear", new Date().getFullYear())
+      .eq("studentID", studentID)
+      .or("status.eq.Enrolled,status.eq.Submitted")
+      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
+      .single();
+
     const { data: studentDocuments, error: studentDocumentsError } = await supabase
       .from("enrolment_documents")
       .select("*")
-      .eq("documentOwnerID", studentID);
+      .eq("documentOwnerID", studentID)
+      .eq("enrolmentNumber", data?.enrolmentNumber);
 
     if (studentDocumentsError) {
       throw new Error(studentDocumentsError.message);
@@ -440,26 +428,24 @@ export async function getCurrentStudentDocuments(studentID: string, documentType
       data: { session },
     } = await supabase.auth.getSession();
 
-    let query = supabase
+    const { data } = await supabase
       .from("student_enrolments")
       .select("enrolmentNumber")
+      .eq("academicYear", new Date().getFullYear())
+      .eq("studentID", studentID)
+      .eq("status", "Enrolled")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
-      .eq("academicYear", new Date().getFullYear());
+      .single();
 
-    if (studentID) {
-      query = query.eq("studentID", studentID);
-    }
-
-    const { data: enrollments } = await query;
-
-    const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
-
-    const { data: studentDocuments } = await supabase
+    const { data: studentDocuments, error: studentDocumentsError } = await supabase
       .from("enrolment_documents")
       .select("*")
-      .eq("documentOwner", "student")
-      .eq("studentID", studentID)
-      .in("enrolmentNumber", enrolmentNumbers);
+      .eq("documentOwnerID", studentID)
+      .eq("enrolmentNumber", data?.enrolmentNumber);
+
+    if (studentDocumentsError) {
+      throw new Error(studentDocumentsError.message);
+    }
 
     const filteredDocuments = (studentDocuments ?? []).filter(
       (doc) => !documentTypesToSkip?.includes(doc.documentType)
@@ -506,26 +492,32 @@ export async function getCurrentParentGuardianDocuments(studentID?: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    let query = supabase
+    let enrollmentQuery = supabase
       .from("student_enrolments")
       .select("enrolmentNumber")
+      .or("status.eq.Enrolled,status.eq.Submitted")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
       .eq("academicYear", new Date().getFullYear());
 
     if (studentID) {
-      query = query.eq("studentID", studentID);
+      enrollmentQuery = enrollmentQuery.eq("studentID", studentID);
     }
 
-    const { data: enrollments } = await query;
+    const { data: enrollments } = await enrollmentQuery;
 
     const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
 
-    const { data: parentGuardianDocuments } = await supabase
+    let parentDocumentsQuery = supabase
       .from("enrolment_documents")
       .select("*")
-      .eq("studentID", studentID)
       .neq("documentOwner", "student")
       .in("enrolmentNumber", enrolmentNumbers);
+
+    if (studentID) {
+      parentDocumentsQuery = parentDocumentsQuery.eq("studentID", studentID);
+    }
+
+    const { data: parentGuardianDocuments } = await parentDocumentsQuery;
 
     const motherPassDocument = parentGuardianDocuments
       ?.filter((document) => document.documentOwner === "mother" && document.documentType === "Pass")
@@ -779,6 +771,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         studentID: studentInformation[0].studentID,
         enrolmentNumber: studentEnrollment[0].enrolmentNumber,
         ...enrollmentInfo,
+        additionalLearningNeeds: enrollmentInfo.additionalLearningOrSpecialNeeds ?? "",
       })
       .select();
 
@@ -1022,6 +1015,10 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       data: { session },
     } = await supabase.auth.getSession();
 
+    delete enrollmentDetails.enrollmentInfo.isValid;
+
+    delete enrollmentDetails.uploadRequirements.studentUploadRequirements.isValid;
+
     const currentUserRole = session?.user.user_metadata.relationship as string;
 
     const { data: studentInfo } = await supabase
@@ -1051,6 +1048,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         studentID: studentID,
         enrolmentNumber: studentEnrollment[0].enrolmentNumber,
         ...enrollmentDetails.enrollmentInfo,
+        additionalLearningNeeds: enrollmentDetails.enrollmentInfo.additionalLearningOrSpecialNeeds ?? "",
       })
       .select();
 
