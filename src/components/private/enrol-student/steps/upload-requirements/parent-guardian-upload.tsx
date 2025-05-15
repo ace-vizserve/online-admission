@@ -77,7 +77,12 @@ function ParentGuardianUpload() {
   useEffect(() => {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements) return;
 
-    form.reset(formState.uploadRequirements.parentGuardianUploadRequirements);
+    Object.entries(formState.uploadRequirements.parentGuardianUploadRequirements).forEach(([key, value]) => {
+      form.setValue(key as keyof ParentGuardianUploadRequirementsSchema, value, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    });
   }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
 
   useEffect(() => {

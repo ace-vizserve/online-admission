@@ -1,3 +1,4 @@
+import { isBefore } from "date-fns";
 import { z } from "zod";
 
 export const loginSchema = z.object({
@@ -326,62 +327,94 @@ export const enrollmentInformationSchema = z.object({
 
 z.instanceof(File, { message: "Photo is required" });
 
-export const studentUploadRequirementsSchema = z.object({
-  isValid: z.boolean().default(false).optional(),
-  idPicture: z
-    .string()
-    .url("Please upload the file to continue")
-    .refine((val) => val.startsWith("http"), {
-      message: "Please upload the file to continue",
+export const studentUploadRequirementsSchema = z
+  .object({
+    isValid: z.boolean().default(false).optional(),
+    idPicture: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
+    birthCertificate: z
+      .string()
+      .url("Please upload the file to continue")
+      .min(1, { message: "Birth certificate is required" })
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
+    transcriptOfRecords: z
+      .string()
+      .url("Please upload the file to continue")
+      .min(1, { message: "Transcript of record is required" })
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
+    form12: z
+      .string()
+      .url({ message: "Upload the file to continue" })
+      .min(1, { message: "Form 12 is required" })
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
+    medicalExam: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
+    passport: z
+      .string({ message: "Upload the file to continue" })
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
+    passportNumber: z.string().min(1, "Passport number is required"),
+    passportExpiryDate: z.coerce.date({
+      errorMap: () => ({ message: "Enter a valid passport expiry date" }),
     }),
-  birthCertificate: z
-    .string()
-    .url("Please upload the file to continue")
-    .min(1, { message: "Birth certificate is required" })
-    .refine((val) => val.startsWith("http"), {
-      message: "Please upload the file to continue",
+    pass: z
+      .string()
+      .url("Please upload the file to continue")
+      .refine((val) => val.startsWith("http"), {
+        message: "Please upload the file to continue",
+      }),
+    passType: z.string().min(1, "Pass type is required"),
+    passExpiryDate: z.coerce.date({
+      errorMap: () => ({ message: "Enter a valid pass expiry date" }),
     }),
-  transcriptOfRecords: z
-    .string()
-    .url("Please upload the file to continue")
-    .min(1, { message: "Transcript of record is required" })
-    .refine((val) => val.startsWith("http"), {
-      message: "Please upload the file to continue",
-    }),
-  form12: z
-    .string()
-    .url({ message: "Upload the file to continue" })
-    .min(1, { message: "Form 12 is required" })
-    .refine((val) => val.startsWith("http"), {
-      message: "Please upload the file to continue",
-    }),
-  medicalExam: z
-    .string()
-    .url("Please upload the file to continue")
-    .refine((val) => val.startsWith("http"), {
-      message: "Please upload the file to continue",
-    }),
-  passport: z
-    .string({ message: "Upload the file to continue" })
-    .url("Please upload the file to continue")
-    .refine((val) => val.startsWith("http"), {
-      message: "Please upload the file to continue",
-    }),
-  passportNumber: z.string().min(1, "Passport number is required"),
-  passportExpiryDate: z.coerce.date({
-    errorMap: () => ({ message: "Enter a valid passport expiry date" }),
-  }),
-  pass: z
-    .string()
-    .url("Please upload the file to continue")
-    .refine((val) => val.startsWith("http"), {
-      message: "Please upload the file to continue",
-    }),
-  passType: z.string().min(1, "Pass type is required"),
-  passExpiryDate: z.coerce.date({
-    errorMap: () => ({ message: "Enter a valid pass expiry date" }),
-  }),
-});
+  })
+  .superRefine((data, ctx) => {
+    const now = new Date();
+
+    if (data.passportExpiryDate && isBefore(data.passportExpiryDate, now)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Passport is expired",
+        path: ["passportExpiryDate"],
+      });
+
+      ctx.addIssue({
+        code: "custom",
+        message: "Please upload a new, updated passport.",
+        path: ["passport"],
+      });
+    }
+
+    if (data.passExpiryDate && isBefore(data.passExpiryDate, now)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Pass is expired",
+        path: ["passExpiryDate"],
+      });
+
+      ctx.addIssue({
+        code: "custom",
+        message: "Please upload a new, updated pass.",
+        path: ["pass"],
+      });
+    }
+  });
 
 export const parentGuardianUploadRequirementsSchema = z
   .object({
@@ -493,6 +526,90 @@ export const parentGuardianUploadRequirementsSchema = z
         { key: "guardianPassType", message: "Pass type is required" },
         { key: "guardianPassExpiryDate", message: "Enter a valid pass expiry date" },
       ]);
+    }
+
+    const now = new Date();
+
+    if (schema.motherPassportExpiryDate && isBefore(schema.motherPassportExpiryDate, now)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Mother's passport is expired",
+        path: ["motherPassportExpiryDate"],
+      });
+      ctx.addIssue({
+        code: "custom",
+        message: "Please upload a new, updated passport.",
+        path: ["motherPassport"],
+      });
+    }
+
+    if (schema.motherPassExpiryDate && isBefore(schema.motherPassExpiryDate, now)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Mother's pass is expired",
+        path: ["motherPassExpiryDate"],
+      });
+      ctx.addIssue({
+        code: "custom",
+        message: "Please upload a new, updated pass.",
+        path: ["motherPass"],
+      });
+    }
+
+    if (schema.hasFatherInfo) {
+      if (schema.fatherPassportExpiryDate && isBefore(schema.fatherPassportExpiryDate, now)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Father's passport is expired",
+          path: ["fatherPassportExpiryDate"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "Please upload a new, updated passport.",
+          path: ["fatherPassport"],
+        });
+      }
+
+      if (schema.fatherPassExpiryDate && isBefore(schema.fatherPassExpiryDate, now)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Father's pass is expired",
+          path: ["fatherPassExpiryDate"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "Please upload a new, updated pass.",
+          path: ["fatherPass"],
+        });
+      }
+    }
+
+    if (schema.hasGuardianInfo) {
+      if (schema.guardianPassportExpiryDate && isBefore(schema.guardianPassportExpiryDate, now)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Guardian's passport is expired",
+          path: ["guardianPassportExpiryDate"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "Please upload a new, updated passport.",
+          path: ["guardianPassport"],
+        });
+      }
+
+      if (schema.guardianPassExpiryDate && isBefore(schema.guardianPassExpiryDate, now)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Guardian's pass is expired",
+          path: ["guardianPassExpiryDate"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "Please upload a new, updated pass.",
+          path: ["guardianPass"],
+        });
+      }
     }
   });
 

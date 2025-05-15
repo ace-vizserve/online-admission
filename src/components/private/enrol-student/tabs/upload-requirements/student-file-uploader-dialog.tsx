@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { StudentFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { useMutation } from "@tanstack/react-query";
-import { format, isBefore } from "date-fns";
+import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import {
@@ -42,7 +42,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
@@ -124,34 +124,6 @@ const StudentFileUploaderDialog = memo(function ({
       },
     });
   }
-
-  useEffect(() => {
-    if (!formState.uploadRequirements?.studentUploadRequirements) return;
-
-    const { passExpiryDate, passportExpiryDate } = formState.uploadRequirements.studentUploadRequirements;
-
-    if (passExpiryDate && isBefore(passExpiryDate, new Date())) {
-      form.setError("pass", {
-        message: "Please upload a new, update pass.",
-      });
-      form.setError("passExpiryDate", {
-        message: "Document is expired",
-      });
-    }
-
-    if (passportExpiryDate && isBefore(passportExpiryDate, new Date())) {
-      form.setError("passport", {
-        message: "Please upload a new, update passport.",
-      });
-      form.setError("passportExpiryDate", {
-        message: "Document is expired",
-      });
-    }
-
-    return () => {
-      form.clearErrors();
-    };
-  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   if (isDesktop) {
     return (
@@ -340,7 +312,7 @@ const StudentFileUploaderDialog = memo(function ({
                   name="passExpiryDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Passport Expiry</FormLabel>
+                      <FormLabel>Pass Expiry</FormLabel>
                       <Popover modal>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -368,7 +340,7 @@ const StudentFileUploaderDialog = memo(function ({
                           />
                         </PopoverContent>
                       </Popover>
-                      <FormDescription>Passport expiration date.</FormDescription>
+                      <FormDescription>Pass expiration date.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -521,34 +493,6 @@ function StudentFileUploaderDrawer({
       },
     });
   }
-
-  useEffect(() => {
-    if (!formState.uploadRequirements?.studentUploadRequirements) return;
-
-    const { passExpiryDate, passportExpiryDate } = formState.uploadRequirements.studentUploadRequirements;
-
-    if (passExpiryDate && isBefore(passExpiryDate, new Date())) {
-      form.setError("pass", {
-        message: "Please upload a new, update pass.",
-      });
-      form.setError("passExpiryDate", {
-        message: "Document is expired",
-      });
-    }
-
-    if (passportExpiryDate && isBefore(passportExpiryDate, new Date())) {
-      form.setError("passport", {
-        message: "Please upload a new, update passport.",
-      });
-      form.setError("passportExpiryDate", {
-        message: "Document is expired",
-      });
-    }
-
-    return () => {
-      form.clearErrors();
-    };
-  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   return (
     <div
