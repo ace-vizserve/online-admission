@@ -18,6 +18,7 @@ import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
+import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
 
 function ParentGuardianUpload() {
@@ -64,7 +65,12 @@ function ParentGuardianUpload() {
   useEffect(() => {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements) return;
 
-    form.reset(formState.uploadRequirements.parentGuardianUploadRequirements);
+    Object.entries(formState.uploadRequirements.parentGuardianUploadRequirements).forEach(([key, value]) => {
+      form.setValue(key as keyof ParentGuardianUploadRequirementsSchema, value, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    });
   }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
 
   function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
@@ -76,6 +82,10 @@ function ParentGuardianUpload() {
         },
         parentGuardianUploadRequirements: { ...values },
       },
+    });
+
+    toast.success("Parent/Guardian documents saved!", {
+      description: "Make sure to double check everything",
     });
   }
 

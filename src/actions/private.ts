@@ -581,7 +581,15 @@ export async function getCurrentParentGuardianDocuments(studentID?: string) {
 
     const guardianDocuments = { ...guardianPassDocument, ...guardianPassportDocument };
 
-    return { parentGuardianUploadRequirements: { ...motherDocuments, ...fatherDocuments, ...guardianDocuments } };
+    return {
+      parentGuardianUploadRequirements: {
+        ...motherDocuments,
+        ...fatherDocuments,
+        ...guardianDocuments,
+        hasFatherInfo: Object.keys(fatherDocuments).length > 0,
+        hasGuardianInfo: Object.keys(guardianDocuments).length > 0,
+      },
+    };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);

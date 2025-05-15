@@ -63,14 +63,15 @@ function StudentUpload() {
   useEffect(() => {
     if (!formState.uploadRequirements?.studentUploadRequirements) return;
 
-    form.reset(formState.uploadRequirements.studentUploadRequirements);
+    Object.entries(formState.uploadRequirements.studentUploadRequirements).forEach(([key, value]) => {
+      form.setValue(key as keyof StudentUploadRequirementsSchema, value, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    });
   }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
-    toast.success("Student documents saved!", {
-      description: "You're now ready to upload the Parent/Guardian documents.",
-    });
-
     setFormState({
       ...formState,
       uploadRequirements: {
@@ -79,6 +80,10 @@ function StudentUpload() {
           ...formState.uploadRequirements!.parentGuardianUploadRequirements,
         },
       },
+    });
+
+    toast.success("Student documents saved!", {
+      description: "Make sure to double check everything",
     });
   }
 
