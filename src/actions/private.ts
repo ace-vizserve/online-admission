@@ -1,3 +1,4 @@
+import { supabaseAdmin } from "@/lib/admin-client";
 import { supabase } from "@/lib/client";
 import {
   extractSiblings,
@@ -10,6 +11,25 @@ import { Document, EnrolNewStudentFormState, EnrolOldStudentFormState, FamilyInf
 import { AuthError } from "@supabase/supabase-js";
 import { differenceInYears, parseISO } from "date-fns";
 import { toast } from "sonner";
+
+export async function createUser() {
+  try {
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email: "user@email.com",
+      password: "",
+      app_metadata: {},
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    console.log(data);
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
 
 export async function getSectionCardsDetails() {
   try {

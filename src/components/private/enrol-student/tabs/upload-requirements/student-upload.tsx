@@ -24,7 +24,7 @@ function StudentUpload() {
   const { data, isFetching, isSuccess } = useQuery({
     queryKey: ["student-documents", params.id],
     queryFn: async () => {
-      return await getCurrentStudentDocuments(params.id!, ["Form 12", "Medical Exam", "ID Picture"]);
+      return await getCurrentStudentDocuments(params.id!, ["Form 12", "ID Picture"]);
     },
   });
 

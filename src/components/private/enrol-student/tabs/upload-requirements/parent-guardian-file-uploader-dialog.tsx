@@ -417,7 +417,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                   name="fatherPassExpiryDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Passport Expiry</FormLabel>
+                      <FormLabel>Pass Expiry</FormLabel>
                       <Popover modal>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -464,7 +464,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
-                      <FormDescription>Student’s passport number.</FormDescription>
+                      <FormDescription>Father passport number.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
