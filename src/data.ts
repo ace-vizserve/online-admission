@@ -114,7 +114,6 @@ export const ENROLMENT_PAGE_FOR_STUDENT = {
     "Explore the comprehensive list of students enrolled at HFSE International School over the past years. This archive provides insights into our diverse and growing student community.",
 };
 
-
 export const faq = [
   {
     question: "How do I start the admission process?",
@@ -210,16 +209,16 @@ export const religions = [
 
 export const classLevels = [
   { label: "Young Starters", value: "young-starters" },
-  { label: "Primary 1", value: "primary-1" },
-  { label: "Primary 2", value: "primary-2" },
-  { label: "Primary 3", value: "primary-3" },
-  { label: "Primary 4", value: "primary-4" },
-  { label: "Primary 5", value: "primary-5" },
-  { label: "Primary 6", value: "primary-6" },
-  { label: "Secondary 1", value: "secondary-1" },
-  { label: "Secondary 2", value: "secondary-2" },
-  { label: "Secondary 3", value: "secondary-3" },
-  { label: "Secondary 4", value: "secondary-4" },
+  { label: "Primary One", value: "primary-1" },
+  { label: "Primary Two", value: "primary-2" },
+  { label: "Primary Three", value: "primary-3" },
+  { label: "Primary Four", value: "primary-4" },
+  { label: "Primary Five", value: "primary-5" },
+  { label: "Primary Six", value: "primary-6" },
+  { label: "Secondary One", value: "secondary-1" },
+  { label: "Secondary Two", value: "secondary-2" },
+  { label: "Secondary Three", value: "secondary-3" },
+  { label: "Secondary Four", value: "secondary-4" },
 ] as const;
 
 export const classTypes = [
