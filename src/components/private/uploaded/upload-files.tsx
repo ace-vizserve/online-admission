@@ -1,30 +1,19 @@
-import DocumentsInformation from "./information/document-information";
-import EnrolmentInformation from "./information/enrolment-information";
-import FatherInformation from "./information/father-information";
-import GuardianInformation from "./information/guardian-information";
-import MotherInformation from "./information/mother-information";
-import StudentInformation from "./information/student-information";
+import { useParams } from "react-router";
+import StudentFiles from "@/components/private/documents/student-files";
 
-const UploadFiles = () => (
-  <div>
-    {/* Student information */}
-    <StudentInformation />
+const UploadFiles = () => {
+  const params = useParams();
+  const studentID = params.id;
 
-    {/* Mother's information */}
-    <MotherInformation />
+  if (!studentID) {
+    return <h1>Student number is not defined!</h1>;
+  }
 
-    {/* Father's information */}
-    <FatherInformation />
-
-    {/* Guardian information */}
-    <GuardianInformation />
-
-    {/* Enrolment information */}
-    <EnrolmentInformation />
-
-    {/* Documents information */}
-    <DocumentsInformation />
-  </div>
-);
+  return (
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
+      <StudentFiles studentID={studentID} />
+    </div>
+  );
+};
 
 export default UploadFiles;

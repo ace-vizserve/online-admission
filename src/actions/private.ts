@@ -186,6 +186,21 @@ export async function getStudentEnrollmentList() {
   }
 }
 
+export async function getStudentDocumentsList(studentID: string) {
+  if (!studentID) return [];
+  try {
+    const { data } = await supabase
+      .from("enrolment_documents")
+      .select("*")
+      .eq("documentOwner", "student")
+      .eq("studentID", studentID);
+
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getStudentDetails({ studentID }: { studentID: string }) {
   try {
     const {
@@ -1322,5 +1337,81 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
+  }
+}
+
+export async function getFamilyDocuments(studentID: string) {
+  if (!studentID) return [];
+  try {
+    // 1. Get names from applications table
+    const { data: appData } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("motherFullName, fatherFullName, guardianFullName")
+      .eq("studentID", studentID)
+      .single();
+
+    // 2. Get document URLs from documents table
+    const { data: docData } = await supabase
+      .from("ay2025_enrolment_documents")
+      .select("motherPassport, motherPass, fatherPassport, fatherPass, guardianPassport, guardianPass")
+      .eq("studentID", studentID)
+      .single();
+
+    if (!appData || !docData) return [];
+
+    const docs = [];
+
+    if (docData.motherPassport) {
+      docs.push({
+        owner: "mother",
+        fullName: appData.motherFullName,
+        documentType: "Passport",
+        fileUrl: docData.motherPassport,
+      });
+    }
+    if (docData.motherPass) {
+      docs.push({
+        owner: "mother",
+        fullName: appData.motherFullName,
+        documentType: "Pass",
+        fileUrl: docData.motherPass,
+      });
+    }
+    if (docData.fatherPassport) {
+      docs.push({
+        owner: "father",
+        fullName: appData.fatherFullName,
+        documentType: "Passport",
+        fileUrl: docData.fatherPassport,
+      });
+    }
+    if (docData.fatherPass) {
+      docs.push({
+        owner: "father",
+        fullName: appData.fatherFullName,
+        documentType: "Pass",
+        fileUrl: docData.fatherPass,
+      });
+    }
+    if (docData.guardianPassport) {
+      docs.push({
+        owner: "guardian",
+        fullName: appData.guardianFullName,
+        documentType: "Passport",
+        fileUrl: docData.guardianPassport,
+      });
+    }
+    if (docData.guardianPass) {
+      docs.push({
+        owner: "guardian",
+        fullName: appData.guardianFullName,
+        documentType: "Pass",
+        fileUrl: docData.guardianPass,
+      });
+    }
+
+    return docs;
+  } catch {
+    return [];
   }
 }

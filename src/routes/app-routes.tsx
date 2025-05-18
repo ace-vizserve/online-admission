@@ -3,6 +3,7 @@ import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
+import UploadFiles from "@/components/private/uploaded/upload-files";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
@@ -22,12 +23,10 @@ import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-i
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
 import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requirements";
 import { Enrollment } from "@/pages/private/Enrollment";
-import { Files } from "@/pages/private/files";
 import { SchoolYear } from "@/pages/private/school-year";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
-import { Uploaded } from "@/pages/private/uploaded";
-
+import Uploaded from "@/pages/private/uploaded";
 import Homepage from "@/pages/public/home-page";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
@@ -145,17 +144,27 @@ function AppRoutes() {
 
           <Route
             index
-            path="student-file/:id"
+            path="student-list/:id"
             element={
               <AuthGuard>
-                <Files />
+                <Uploaded />
               </AuthGuard>
             }
           />
 
           <Route
             index
-            path="uploaded-file/:id"
+            path="student-file/:id"
+            element={
+              <AuthGuard>
+                <UploadFiles/>
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            index
+            path="document-file/:id"
             element={
               <AuthGuard>
                 <Uploaded />
