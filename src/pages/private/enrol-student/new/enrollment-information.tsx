@@ -134,7 +134,7 @@ function EnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a class level" />
+                              <SelectValue placeholder="Select a class type" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -160,7 +160,7 @@ function EnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a class level" />
+                              <SelectValue placeholder="Select a schedule" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -281,7 +281,7 @@ function EnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a class level" />
+                              <SelectValue placeholder="Select a payment option" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

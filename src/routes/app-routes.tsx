@@ -16,7 +16,7 @@ import EnrolStudent from "@/pages/private/enrol-student/enrol-student";
 import EnrollmentInformation from "@/pages/private/enrol-student/new/enrollment-information";
 import FamilyInformation from "@/pages/private/enrol-student/new/family-information";
 import StudentInformation from "@/pages/private/enrol-student/new/student-information";
-import UploadRequirements from "@/pages/private/enrol-student/new/upload-requiremts";
+import UploadRequirements from "@/pages/private/enrol-student/new/upload-requirements";
 import OldEnrollmentInformation from "@/pages/private/enrol-student/old/old-enrollment-information";
 import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-information";
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";

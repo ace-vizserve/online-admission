@@ -123,7 +123,6 @@ function OldEnrollmentInformation() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Class Level</FormLabel>
-
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={getNextGradeLevel(data?.levelApplied) ?? field.value}>
@@ -158,7 +157,7 @@ function OldEnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a class level" />
+                              <SelectValue placeholder="Select a class type" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -184,7 +183,7 @@ function OldEnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a class level" />
+                              <SelectValue placeholder="Select a schedule" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -305,7 +304,7 @@ function OldEnrollmentInformation() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a class level" />
+                              <SelectValue placeholder="Select a payment option" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

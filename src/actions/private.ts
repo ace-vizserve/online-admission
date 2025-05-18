@@ -15,9 +15,13 @@ import { toast } from "sonner";
 export async function createUser() {
   try {
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email: "user@email.com",
-      password: "",
-      app_metadata: {},
+      email: "AINAREOLA@YAHOO.COM",
+      password: "test123123213",
+      app_metadata: {
+        firstName: "AIN KAREL",
+        lastName: "AREOLA",
+        relationship: "father",
+      },
     });
 
     if (error) {
@@ -526,26 +530,31 @@ export async function getCurrentParentGuardianDocuments(studentID?: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    let query = supabase
+    let enrollmentsQuery = supabase
       .from("student_enrolments")
       .select("enrolmentNumber")
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
       .eq("academicYear", new Date().getFullYear());
 
     if (studentID) {
-      query = query.eq("studentID", studentID);
+      enrollmentsQuery = enrollmentsQuery.eq("studentID", studentID);
     }
 
-    const { data: enrollments } = await query;
+    const { data: enrollments } = await enrollmentsQuery;
 
     const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
 
-    const { data: parentGuardianDocuments } = await supabase
+    let parentGuardianDocumentsQuery = supabase
       .from("enrolment_documents")
       .select("*")
-      .eq("studentID", studentID)
       .neq("documentOwner", "student")
       .in("enrolmentNumber", enrolmentNumbers);
+
+    if (studentID) {
+      parentGuardianDocumentsQuery = parentGuardianDocumentsQuery.eq("studentID", studentID);
+    }
+
+    const { data: parentGuardianDocuments } = await parentGuardianDocumentsQuery;
 
     const motherPassDocument = parentGuardianDocuments
       ?.filter((document) => document.documentOwner === "mother" && document.documentType === "Pass")
