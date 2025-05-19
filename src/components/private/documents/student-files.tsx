@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Document, FamilyDocument } from "@/types";
-import type { StudentFiles } from "@/types";
+import type { Student } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { formatDate } from "date-fns";
 import { Tailspin } from "ldrs/react";
@@ -24,6 +24,35 @@ import { Link } from "react-router";
 
 type ProfileProps = {
   studentID: string;
+};
+
+type ParentGuardianUploadRequirements = {
+  motherPass?: string;
+  motherPassType?: string;
+  motherPassExpiryDate?: string;
+  motherPassport?: string;
+  motherPassportNumber?: string;
+  motherPassportExpiryDate?: string;
+  fatherPass?: string;
+  fatherPassType?: string;
+  fatherPassExpiryDate?: string;
+  fatherPassport?: string;
+  fatherPassportNumber?: string;
+  fatherPassportExpiryDate?: string;
+  guardianPass?: string;
+  guardianPassType?: string;
+  guardianPassExpiryDate?: string;
+  guardianPassport?: string;
+  guardianPassportNumber?: string;
+  guardianPassportExpiryDate?: string;
+};
+
+type StudentFiles = {
+  studentInformation: Student[];
+  familyInformation: any[];
+  studentDocuments: Document[];
+  studentIDPicture: { fileUrl: string } | null;
+  familyDocuments: FamilyDocument[];
 };
 
 const tabs = [
@@ -49,7 +78,7 @@ function StudentFiles({ studentID }: ProfileProps) {
       ]);
       // Transform parentGuardianDocs to FamilyDocument[]
       const docs: FamilyDocument[] = [];
-      const reqs = parentGuardianDocs?.parentGuardianUploadRequirements ?? {};
+      const reqs = (parentGuardianDocs?.parentGuardianUploadRequirements ?? {}) as ParentGuardianUploadRequirements;
       function pushDoc(
         owner: "mother" | "father" | "guardian",
         type: "Pass" | "Passport",
@@ -87,7 +116,7 @@ function StudentFiles({ studentID }: ProfileProps) {
         studentInformation: studentDetails?.studentInformation ?? [],
         familyInformation: studentDetails?.familyInformation ?? [],
         studentDocuments: studentDetails?.studentDocuments ?? [],
-        studentIDPicture: studentDetails?.studentIDPicture,
+        studentIDPicture: studentDetails?.studentIDPicture ?? null,
         familyDocuments: docs
       };
     },
