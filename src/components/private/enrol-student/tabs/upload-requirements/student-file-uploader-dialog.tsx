@@ -92,11 +92,15 @@ const StudentFileUploaderDialog = memo(function ({
     disabled: false,
     maxSize: 1024 * 1024 * 4, // 4MB max
     multiple: false,
-    accept: {
-      "image/jpeg": [],
-      "image/png": [],
-      "application/pdf": [],
-    },
+    accept:
+      name === "idPicture"
+        ? {
+            "image/*": [],
+          }
+        : {
+            "image/*": [],
+            "application/pdf": [],
+          },
   };
 
   const isDesktop = useMediaQuery({
