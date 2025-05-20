@@ -10,29 +10,39 @@ import {
 import { Document, EnrolNewStudentFormState, EnrolOldStudentFormState, FamilyInfo, Student } from "@/types";
 import { AuthError } from "@supabase/supabase-js";
 import { differenceInYears, parseISO } from "date-fns";
+import generate from "secure-password-gen";
 import { toast } from "sonner";
 
-export async function createUser() {
-  try {
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email: "AINAREOLA@YAHOO.COM",
-      password: "test123123213",
-      app_metadata: {
-        firstName: "AIN KAREL",
-        lastName: "AREOLA",
-        relationship: "father",
-      },
-    });
+import fatherAccounts from "../../father-accounts.json";
 
-    if (error) {
-      throw new Error(error.message);
+export function createUser() {
+  fatherAccounts.slice(0, 3).map(async (account) => {
+    const { fatherEmail, fatherFullName, password_changed } = account;
+
+    const password = generate(10, true, true, false, false);
+
+    try {
+      const { data, error } = await supabaseAdmin.auth.admin.createUser({
+        email: fatherEmail,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          fullName: fatherFullName,
+          password_changed: password_changed,
+          temporary_password: password,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log(data);
+    } catch (error) {
+      const err = error as AuthError;
+      toast.error(err.message);
     }
-
-    console.log(data);
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
+  });
 }
 
 export async function getSectionCardsDetails() {
@@ -41,27 +51,34 @@ export async function getSectionCardsDetails() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { error: enrolledCountError, count: childrenCount } = await supabase
-      .from("student_information")
-      .select("*", { count: "exact" })
-      .or(`parent1.eq.${session?.user.id}, parent2.eq.${session?.user.id}`);
+    const {
+      error: enrolledCountError,
+      count: childrenCount,
+      data,
+    } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("enroleeFullName", { count: "exact" })
+      .or(
+        `fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}, guardianEmail.eq.${session?.user.email}`
+      );
 
     if (enrolledCountError) {
       throw new Error(enrolledCountError.message);
     }
 
     const { error: currentEnrolledCountError, count: currentEnrolledCount } = await supabase
-      .from("student_enrolments")
-      .select("*", { count: "exact" })
-      .eq("academicYear", new Date().getFullYear())
-      .eq("status", "Enrolled")
-      .or(`parent1.eq.${session?.user.id}, parent2.eq.${session?.user.id}`);
+      .from("ay2025_enrolment_applications")
+      .select("enroleeFullName", { count: "exact" })
+      .eq("applicationStatus", "Submitted")
+      .or(
+        `fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}, guardianEmail.eq.${session?.user.email}`
+      );
 
     if (currentEnrolledCountError) {
       throw new Error(currentEnrolledCountError.message);
     }
 
-    return { totalChildren: childrenCount, currentEnrolledStudents: currentEnrolledCount };
+    return { totalChildren: data.slice(0, childrenCount! / 2).length, currentEnrolledStudents: currentEnrolledCount };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -74,37 +91,29 @@ export async function getStudentList() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: studentInformation, error: studentInformationError } = await supabase
-      .from("student_information")
-      .select("firstName, lastName, dateOfBirth, studentID")
-      .or(`parent1.eq.${session?.user.id}, parent2.eq.${session?.user.id}`);
+    const {
+      data: studentInformation,
+      error: studentInformationError,
+      count,
+    } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("enroleeFullName, birthDay, studentNumber, fatherFullName, motherFullName", { count: "exact" })
+      .or(
+        `fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}, guardianEmail.eq.${session?.user.email}`
+      );
 
     if (studentInformationError) {
       throw new Error(studentInformationError.message);
     }
 
-    const { data: familyInformation, error: familyInformationError } = await supabase
-      .from("family_information")
-      .select("motherFirstName, motherLastName, fatherFirstName, fatherLastName")
-      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`);
-
-    if (familyInformationError) {
-      throw new Error(familyInformationError.message);
-    }
-
-    const mothersName = `${familyInformation[0]?.motherFirstName} ${familyInformation[0]?.motherLastName}`;
-    const fathersName = `${familyInformation[0]?.fatherFirstName ?? "--"} ${
-      familyInformation[0]?.fatherLastName ?? "--"
-    }`;
-
-    const studentsList = studentInformation.map((info) => {
-      const age = differenceInYears(new Date(), parseISO(info.dateOfBirth));
+    const studentsList = studentInformation.slice(0, count! / 2).map((info) => {
+      const age = differenceInYears(new Date(), parseISO(info.birthDay));
       return {
-        studentID: info.studentID,
-        studentName: `${info.firstName} ${info.lastName}`,
+        studentID: info.studentNumber,
+        studentName: info.enroleeFullName,
         age,
-        mothersName,
-        fathersName,
+        mothersName: info.motherFullName ?? "--",
+        fathersName: info.fatherFullName ?? "--",
       };
     });
 
