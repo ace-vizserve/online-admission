@@ -1,4 +1,4 @@
-import { submitExistingEnrollment } from "@/actions/private";
+import { lookupNewEnrolledStudent, submitExistingEnrollment } from "@/actions/private";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,8 +41,15 @@ function SubmitApplicationDialog() {
     },
   });
 
-  function verifyEnrollmentDetails() {
+  async function verifyEnrollmentDetails() {
     try {
+      if (formState.familyInfo == null) {
+        toast.info("Review Family Information", {
+          description: "Please double-check all family details before submitting.",
+        });
+        return;
+      }
+
       if (formState.enrollmentInfo == null) {
         toast.warning("Fill up the enrollment information tab", {
           description: "Kindly double check every details before submitting",
@@ -57,47 +64,68 @@ function SubmitApplicationDialog() {
         return;
       }
 
+      if (formState.enrollmentInfo.levelApplied === "Secondary 4") {
+        toast.info("Enrollment not allowed!", {
+          description: "The student has completed Secondary 4, the final year of secondary school.",
+        });
+        return;
+      }
+
       if (formState.uploadRequirements?.studentUploadRequirements == null) {
         toast.warning("Please upload the required documents in documents tab");
         return;
       }
 
-      const { form12, medicalExam, passExpiryDate, passportExpiryDate } =
-        formState.uploadRequirements.studentUploadRequirements;
+      const { form12, medical, passExpiry, passportExpiry } = formState.uploadRequirements.studentUploadRequirements;
 
       if (!form12) {
         throw new Error("Form 12 is required!");
       }
 
-      if (!medicalExam) {
+      if (!medical) {
         throw new Error("Medical Exam result is required!");
       }
 
-      if (!passExpiryDate || isBefore(passExpiryDate, new Date())) {
+      if (!passExpiry || isBefore(passExpiry, new Date())) {
         throw new Error("Student's pass has expired!");
       }
 
-      if (!passportExpiryDate || isBefore(passportExpiryDate, new Date())) {
+      if (!passportExpiry || isBefore(passportExpiry, new Date())) {
         throw new Error("Student's passport has expired!");
       }
 
       if (formState.uploadRequirements?.parentGuardianUploadRequirements == null) return;
 
       const {
-        motherPassExpiryDate,
-        motherPassportExpiryDate,
-        fatherPassExpiryDate,
-        fatherPassportExpiryDate,
-        guardianPassExpiryDate,
-        guardianPassportExpiryDate,
+        motherPassExpiry,
+        motherPassportExpiry,
+        fatherPassExpiry,
+        fatherPassportExpiry,
+        guardianPassExpiry,
+        guardianPassportExpiry,
       } = formState.uploadRequirements.parentGuardianUploadRequirements;
 
-      checkExpiry("Mother", motherPassExpiryDate, "pass");
-      checkExpiry("Mother", motherPassportExpiryDate, "passport");
-      checkExpiry("Father", fatherPassExpiryDate, "pass");
-      checkExpiry("Father", fatherPassportExpiryDate, "passport");
-      checkExpiry("Guardian", guardianPassExpiryDate, "pass");
-      checkExpiry("Guardian", guardianPassportExpiryDate, "passport");
+      checkExpiry("Mother", motherPassExpiry, "pass");
+      checkExpiry("Mother", motherPassportExpiry, "passport");
+      checkExpiry("Father", fatherPassExpiry, "pass");
+      checkExpiry("Father", fatherPassportExpiry, "passport");
+      checkExpiry("Guardian", guardianPassExpiry, "pass");
+      checkExpiry("Guardian", guardianPassportExpiry, "passport");
+
+      const enroleeFullName = `${formState.studentInfo?.studentDetails.lastName}, ${
+        formState.studentInfo?.studentDetails.firstName
+      }, ${formState.studentInfo?.studentDetails.middleName ?? ""}`;
+      const birthDay = formState.studentInfo!.studentDetails.birthDay;
+      const motherEmail = formState.familyInfo.motherInfo.motherEmail;
+      const fatherEmail = formState.familyInfo?.fatherInfo.fatherEmail;
+      const result = await lookupNewEnrolledStudent({ enroleeFullName, birthDay, motherEmail, fatherEmail });
+
+      if (result) {
+        toast.error("Enrollment Already Exists!", {
+          description: "A matching student and parent record is already enrolled",
+        });
+        return;
+      }
 
       mutate();
     } catch (error) {

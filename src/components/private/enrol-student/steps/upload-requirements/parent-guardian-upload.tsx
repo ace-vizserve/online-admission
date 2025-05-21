@@ -1,18 +1,14 @@
 import { Button } from "@/components/ui/button";
 
-import { getCurrentParentGuardianDocuments, submitEnrollment } from "@/actions/private";
+import { lookupNewEnrolledStudent, submitEnrollment } from "@/actions/private";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { EnrolNewStudentFormState } from "@/types";
-import {
-  parentGuardianUploadRequirementsSchema,
-  ParentGuardianUploadRequirementsSchema,
-  StudentUploadRequirementsSchema,
-} from "@/zod-schema";
+import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { DotPulse, Tailspin } from "ldrs/react";
+import { useMutation } from "@tanstack/react-query";
+import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
 import { Send } from "lucide-react";
@@ -25,15 +21,7 @@ import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-di
 function ParentGuardianUpload() {
   const navigate = useNavigate();
   const { formState, setFormState } = useEnrolNewStudentContext();
-  const { data, isFetching, isSuccess } = useQuery({
-    queryKey: ["parent-guardian-documents"],
-    queryFn: async () => {
-      return await getCurrentParentGuardianDocuments();
-    },
-    enabled:
-      Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length < 1 ||
-      Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).length < 1,
-  });
+
   const { mutate, isPending } = useMutation({
     mutationFn: submitEnrollment,
     onSuccess() {
@@ -58,40 +46,12 @@ function ParentGuardianUpload() {
   });
 
   useEffect(() => {
-    if (!isSuccess || !data) return;
-
-    setFormState({
-      uploadRequirements: {
-        studentUploadRequirements: {} as StudentUploadRequirementsSchema,
-        parentGuardianUploadRequirements: {
-          ...data?.parentGuardianUploadRequirements,
-          hasFatherInfo: Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0,
-          hasGuardianInfo: Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0,
-        } as ParentGuardianUploadRequirementsSchema,
-      },
-    });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, setFormState, data]);
-
-  useEffect(() => {
-    if (!formState.uploadRequirements?.parentGuardianUploadRequirements) return;
-
-    Object.entries(formState.uploadRequirements.parentGuardianUploadRequirements).forEach(([key, value]) => {
-      form.setValue(key as keyof ParentGuardianUploadRequirementsSchema, value, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-    });
-  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
-
-  useEffect(() => {
     if (form.formState.isSubmitSuccessful) {
       mutate(formState as EnrolNewStudentFormState);
     }
   }, [form.formState.isSubmitSuccessful, formState, mutate]);
 
-  function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
+  async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
       !Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length &&
       !formState.uploadRequirements!.studentUploadRequirements.isValid
@@ -107,6 +67,21 @@ function ParentGuardianUpload() {
       return;
     }
 
+    const enroleeFullName = `${formState.studentInfo?.studentDetails.lastName}, ${
+      formState.studentInfo?.studentDetails.firstName
+    }, ${formState.studentInfo?.studentDetails.middleName ?? ""}`;
+    const birthDay = formState.studentInfo!.studentDetails.birthDay;
+    const motherEmail = formState.familyInfo!.motherInfo.motherEmail;
+    const fatherEmail = formState.familyInfo?.fatherInfo.fatherEmail;
+    const result = await lookupNewEnrolledStudent({ enroleeFullName, birthDay, motherEmail, fatherEmail });
+
+    if (result) {
+      toast.error("Enrollment Already Exists!", {
+        description: "A matching student and parent record is already enrolled",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       uploadRequirements: {
@@ -116,10 +91,6 @@ function ParentGuardianUpload() {
         parentGuardianUploadRequirements: { ...values },
       },
     });
-  }
-
-  if (isFetching) {
-    return <Loader />;
   }
 
   return (
@@ -246,15 +217,6 @@ function ParentGuardianUpload() {
         </Button>
       </form>
     </Form>
-  );
-}
-
-function Loader() {
-  return (
-    <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-      <p className="text-sm text-muted-foreground animate-pulse">Fetching documents...</p>
-      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
-    </div>
   );
 }
 

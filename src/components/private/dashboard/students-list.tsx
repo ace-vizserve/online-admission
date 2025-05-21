@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Copy, MoreHorizontal, RefreshCcw, User, UserPlus } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, RefreshCcw, User, UserPlus } from "lucide-react";
 import * as React from "react";
 
 import { getStudentList } from "@/actions/private";
@@ -20,7 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,6 @@ import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Link } from "react-router";
-import { toast } from "sonner";
 
 export const columns: ColumnDef<TStudent>[] = [
   {
@@ -109,31 +107,17 @@ export const columns: ColumnDef<TStudent>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/students/${student.studentID}`}>
+            <Link to={`/admission/students/${student.enroleeNumber}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View full profile
               </DropdownMenuItem>
             </Link>
-
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => copyStudentID(student.studentID)} className="text-xs">
-              <Copy className="mr-1" />
-              Copy Student ID
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
 ];
-
-function copyStudentID(studentID: string) {
-  navigator.clipboard.writeText(studentID);
-  toast.info("Copied!", {
-    description: "Student ID has been copied to your clipboard.",
-  });
-  toast.dismiss();
-}
 
 function StudentsList() {
   const { data, isPending, refetch, isRefetching } = useQuery({
@@ -163,7 +147,7 @@ type StudentsListTableProps = {
       | {
           studentsList: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            studentID: any;
+            enroleeNumber: any;
             studentName: string;
             age: number;
             mothersName: string;

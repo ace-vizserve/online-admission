@@ -15,6 +15,7 @@ import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Baby, ShieldUser, User, Users } from "lucide-react";
 import { useEffect } from "react";
+import { useParams } from "react-router";
 
 const tabs = [
   {
@@ -63,10 +64,13 @@ function OldFamilyInformation() {
 }
 
 function FamilyInformationTabs() {
+  const params = useParams();
   const { setFormState, formState } = useEnrolOldStudentContext();
   const { data, isPending, isSuccess } = useQuery({
     queryKey: ["old-family-information"],
-    queryFn: getFamilyInformation,
+    queryFn: async () => {
+      return await getFamilyInformation(params.id);
+    },
   });
 
   useEffect(() => {

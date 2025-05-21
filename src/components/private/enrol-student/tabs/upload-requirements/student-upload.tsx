@@ -1,4 +1,4 @@
-import { getCurrentStudentDocuments } from "@/actions/private";
+import { getPreviousStudentDocuments } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
@@ -24,7 +24,7 @@ function StudentUpload() {
   const { data, isFetching, isSuccess } = useQuery({
     queryKey: ["student-documents", params.id],
     queryFn: async () => {
-      return await getCurrentStudentDocuments(params.id!, ["Form 12", "ID Picture"]);
+      return await getPreviousStudentDocuments(params.id!);
     },
   });
 
@@ -112,7 +112,7 @@ function StudentUpload() {
             label="Student Birth Certificate"
             description="Upload a recent copy of birth certificate"
             form={form}
-            name="birthCertificate"
+            name="birthCert"
             value={birthCertificate}
             onValueChange={setBirthCertificate}
           />
@@ -123,7 +123,7 @@ function StudentUpload() {
             label="Transcript of Records"
             description="Upload the student's copy of TOR"
             form={form}
-            name="transcriptOfRecords"
+            name="educCert"
             value={transcriptOfRecords}
             onValueChange={setTranscriptOfRecords}
           />
@@ -147,7 +147,7 @@ function StudentUpload() {
             label="Medical Examination"
             description="Upload recent medical result of student"
             form={form}
-            name="medicalExam"
+            name="medical"
             value={medicalExam}
             onValueChange={setMedicalExam}
           />

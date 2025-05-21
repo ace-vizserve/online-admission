@@ -11,35 +11,37 @@ import {
   StudentUploadRequirementsSchema,
 } from "./zod-schema";
 
-export type EnrolledStudent = {
-  academicYear: string;
-  created_at: string;
-  enroleeFullName: string;
-  enrolmentNumber: string;
-  grade_level: string;
+export type DiscountCode = {
   id: number;
-  parent1: string;
-  parent2?: string;
-  status: string;
-  studentID: string;
+  discountCode: string;
+  details: string;
+  enroleeType: "Current" | "New" | "Both";
+  startDate: string;
+  endDate: string;
+  created_at: string;
+};
+
+export type EnrolledStudent = {
+  enroleeNumber: string;
+  studentName: string;
+  levelApplied: string;
+  enroleePhoto: string;
 };
 
 export type Student = {
   id: number;
-  studentID: string;
+  enroleeNumber: string;
   studentNumber: string | null;
   firstName: string;
   middleName: string | null;
   lastName: string;
   preferredName: string;
-  dateOfBirth: string;
+  birthDay: string;
   gender: string;
   nationality: string;
-  nricFin: string;
+  nric: string;
   primaryLanguage: string;
   religion: string;
-  parent1: string;
-  parent2: string | null;
   parentMaritalStatus: string;
   livingWithWhom: string;
   contactPerson: string;
@@ -51,14 +53,14 @@ export type Student = {
 };
 
 export type Mother = {
-  motherDateOfBirth: string | null;
+  motherBirthDay: string | null;
   motherEmail: string | null;
   motherFirstName: string | null;
   motherLastName: string | null;
   motherMiddleName: string | null;
   motherMobilePhone: string | null;
   motherNationality: string | null;
-  motherNricFin: string | null;
+  motherNric: string | null;
   motherPreferredName: string | null;
   motherReligion: string | null;
   motherWorkCompany: string | null;
@@ -66,14 +68,14 @@ export type Mother = {
 };
 
 export type Father = {
-  fatherDateOfBirth: string | null;
+  fatherBirthDay: string | null;
   fatherEmail: string | null;
   fatherFirstName: string | null;
   fatherLastName: string | null;
   fatherMiddleName: string | null;
   fatherMobilePhone: string | null;
   fatherNationality: string | null;
-  fatherNricFin: string | null;
+  fatherNric: string | null;
   fatherPreferredName: string | null;
   fatherReligion: string | null;
   fatherWorkCompany: string | null;
@@ -81,14 +83,14 @@ export type Father = {
 };
 
 export type Guardian = {
-  guardianDateOfBirth: string | null;
+  guardianBirthDay: string | null;
   guardianEmail: string | null;
   guardianFirstName: string | null;
   guardianLastName: string | null;
   guardianMiddleName: string | null;
   guardianMobilePhone: string | null;
   guardianNationality: string | null;
-  guardianNricFin: string | null;
+  guardianNric: string | null;
   guardianPreferredName: string | null;
   guardianReligion: string | null;
   guardianWorkCompany: string | null;
@@ -127,30 +129,48 @@ export type Siblings = {
   siblingEducationOccupation5: string | null;
 };
 
-export type FamilyInfo = {
-  id: number;
-  parent1: string;
-  parent2: string | null;
-  created_at: string;
-} & Mother &
-  Father &
-  Guardian &
-  Siblings;
+export type FamilyInfo = Mother & Father & Guardian & Siblings;
 
 export type Document = {
   id: number;
   created_at: string;
-  documentOwner: "student" | "mother" | "father" | "guardian";
-  documentOwnerID: string;
-  documentType: string;
-  enrolmentNumber: string;
-  fileUrl: string;
-  passExpirationDate: string | null;
-  passType: string | null;
-  passportExpirationDate: string | null;
-  passportNumber: string | null;
-  status: string;
-  studentID: string;
+  studentNumber: string | null;
+  enroleeNumber: string | null;
+  form12: string | null;
+  form12Status: string | null;
+  medical: string | null;
+  medicalStatus: string | null;
+  passport: string | null;
+  passportStatus: string | null;
+  passportExpiry: string | null;
+  birthCert: string | null;
+  birthCertStatus: string | null;
+  pass: string | null;
+  passStatus: string | null;
+  passExpiry: string | null;
+  educCert: string | null;
+  educCertStatus: string | null;
+  motherPassport: string | null;
+  motherPassportStatus: string | null;
+  motherPassportExpiry: string | null;
+  motherPass: string | null;
+  motherPassStatus: string | null;
+  motherPassExpiry: string | null;
+  fatherPassport: string | null;
+  fatherPassportStatus: string | null;
+  fatherPassportExpiry: string | null;
+  fatherPass: string | null;
+  fatherPassStatus: string | null;
+  fatherPassExpiry: string | null;
+  guardianPassport: string | null;
+  guardianPassportStatus: string | null;
+  guardianPassportExpiry: string | null;
+  guardianPass: string | null;
+  guardianPassStatus: string | null;
+  guardianPassExpiry: string | null;
+  idPicture: string | null;
+  idPictureStatus: string | null;
+  idPictureUploadedDate: string | null;
 };
 
 export type FamilyDocument = {
@@ -165,7 +185,7 @@ export type FamilyDocument = {
   passportExpirationDate: string | null;
   passportNumber: string | null;
   status: string;
-  studentID: string;
+  enroleeNumber: string;
 };
 
 export type StudentDocuments = {
@@ -173,7 +193,7 @@ export type StudentDocuments = {
     enroleeFullName: string;
     academicYear: string;
   };
-  studentID: string;
+  enroleeNumber: string;
   documentType: string;
   fileUrl: string;
   status: string;
@@ -181,18 +201,53 @@ export type StudentDocuments = {
 };
 
 export type StudentDetails = {
-  studentInformation: Student[];
-  familyInformation: FamilyInfo[];
-  studentDocuments: Document[];
+  studentInformation: Student;
+  familyInformation: FamilyInfo;
+  studentDocuments: StudentDocument;
+};
+
+export type StudentDocument = {
+  documentsThatExpire: [
+    {
+      passport: string | null;
+      passportNumber: string | null;
+      passportStatus: string | null;
+      passportExpiry: string | Date | null;
+    },
+    {
+      pass: string | null;
+      passType: string | null;
+      passStatus: string | null;
+      passExpiry: string | Date | null;
+    }
+  ];
+  permanentDocuments: [
+    {
+      form12: string | null;
+      form12Status: string | null;
+    },
+    {
+      medical: string | null;
+      medicalStatus: string | null;
+    },
+    {
+      birthCert: string | null;
+      birthCertStatus: string | null;
+    },
+    {
+      educCert: string | null;
+      educCertStatus: string | null;
+    }
+  ];
 };
 
 export type StudentFiles = {
   studentDocuments: Document[];
   familyDocuments: FamilyDocument[];
-}
+};
 
 export type TStudent = {
-  studentID: string;
+  enroleeNumber: string;
   studentName: string;
   age: number;
   mothersName: string;
@@ -292,7 +347,7 @@ export type StudentInformation = {
   nationality: string;
   nric: string;
   homeAddress: string;
-  postalCode: number
+  postalCode: number;
   homePhone: number;
   country: string;
   contactPerson: string;
@@ -353,7 +408,7 @@ export type SiblingInformation = {
   siblingReligion: string;
   siblingEducationOccupation: string;
   siblingSchoolCompany: string;
-}
+};
 
 export type EnrollmentInformation = {
   levelApplied: string;
@@ -368,6 +423,7 @@ export type EnrollmentInformation = {
   discount2: string;
   discount3: string;
   referrerName: string;
+  paymentOption: string;
 };
 
 export type DocumentsInformation = {
@@ -379,4 +435,3 @@ export type DocumentsInformation = {
   passport: File | string;
   pass: File | string;
 };
-

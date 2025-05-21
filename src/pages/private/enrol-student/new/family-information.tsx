@@ -67,7 +67,9 @@ function FamilyInformationTabs() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const { data, isPending, isSuccess } = useQuery({
     queryKey: ["new-family-information"],
-    queryFn: getFamilyInformation,
+    queryFn: async () => {
+      return await getFamilyInformation();
+    },
   });
 
   useEffect(() => {

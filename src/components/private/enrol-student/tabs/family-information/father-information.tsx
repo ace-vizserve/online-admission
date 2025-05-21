@@ -20,6 +20,7 @@ import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { parsePhoneNumber } from "react-phone-number-input";
 
 function FatherInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
@@ -45,7 +46,7 @@ function FatherInformation() {
       },
     });
 
-    mutate({ ...values, fatherDateOfBirth: values.fatherDateOfBirth as unknown as string });
+    mutate({ ...values, fatherBirthDay: values.fatherBirthDay as unknown as string });
   }
 
   return (
@@ -120,7 +121,7 @@ function FatherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="fatherDateOfBirth"
+              name="fatherBirthDay"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date of birth</FormLabel>
@@ -224,7 +225,7 @@ function FatherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="fatherNricFin"
+            name="fatherNric"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
@@ -239,12 +240,17 @@ function FatherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="fatherMobilePhone"
+              name="fatherMobile"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput
+                      {...field}
+                      value={parsePhoneNumber(String(field.value), "SG")?.number}
+                      international
+                      defaultCountry="SG"
+                    />
                   </FormControl>
                   <FormDescription>Enter the student's father mobile phone.</FormDescription>
                   <FormMessage />
@@ -272,7 +278,7 @@ function FatherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="fatherWorkCompany"
+            name="fatherCompanyName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
@@ -287,7 +293,7 @@ function FatherInformation() {
 
           <FormField
             control={form.control}
-            name="fatherWorkPosition"
+            name="fatherPosition"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Position</FormLabel>

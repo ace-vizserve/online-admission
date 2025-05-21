@@ -15,7 +15,7 @@ function StudentProfile() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="py-7 md:py-14 px-4 md:px-6">
-        <Profile studentID={params.id} />
+        <Profile enroleeNumber={params.id} />
       </div>
     </>
   );

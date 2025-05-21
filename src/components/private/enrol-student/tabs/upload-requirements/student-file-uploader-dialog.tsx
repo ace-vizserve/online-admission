@@ -24,7 +24,7 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { passTypes } from "@/data";
+import { studentPassTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { StudentFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
@@ -51,7 +51,7 @@ import { Link } from "react-router";
 const form12Url = import.meta.env.VITE_FORM_12_URL as string;
 const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
-const NOT_FILE_INPUTS = ["passExpiryDate", "passType", "passportExpiryDate", "passportNumber"];
+const NOT_FILE_INPUTS = ["passExpiry", "passType", "passportExpiry", "passportNumber"];
 
 const StudentFileUploaderDialog = memo(function ({
   form,
@@ -167,7 +167,7 @@ const StudentFileUploaderDialog = memo(function ({
               </Link>
             )}
 
-            {name === "medicalExam" && (
+            {name === "medical" && (
               <Link
                 to={medicalExamurl}
                 target="_blank"
@@ -299,7 +299,7 @@ const StudentFileUploaderDialog = memo(function ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {passTypes.map((passType) => (
+                          {studentPassTypes.map((passType) => (
                             <SelectItem key={passType.value} value={passType.value}>
                               {passType.label}
                             </SelectItem>
@@ -313,7 +313,7 @@ const StudentFileUploaderDialog = memo(function ({
                 />
                 <FormField
                   control={form.control}
-                  name="passExpiryDate"
+                  name="passExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Pass Expiry</FormLabel>
@@ -371,7 +371,7 @@ const StudentFileUploaderDialog = memo(function ({
 
                 <FormField
                   control={form.control}
-                  name="passportExpiryDate"
+                  name="passportExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -536,7 +536,7 @@ function StudentFileUploaderDrawer({
             </Link>
           )}
 
-          {name === "medicalExam" && (
+          {name === "medical" && (
             <Link
               to={medicalExamurl}
               target="_blank"
@@ -669,7 +669,7 @@ function StudentFileUploaderDrawer({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {passTypes.map((passType) => (
+                        {studentPassTypes.map((passType) => (
                           <SelectItem key={passType.value} value={passType.value}>
                             {passType.label}
                           </SelectItem>
@@ -683,7 +683,7 @@ function StudentFileUploaderDrawer({
               />
               <FormField
                 control={form.control}
-                name="passExpiryDate"
+                name="passExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -739,7 +739,7 @@ function StudentFileUploaderDrawer({
 
               <FormField
                 control={form.control}
-                name="passportExpiryDate"
+                name="passportExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>

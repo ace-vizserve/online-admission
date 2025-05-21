@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
@@ -40,8 +40,8 @@ function MotherInformation() {
   }, [form, formState.familyInfo?.motherInfo]);
 
   function onSubmit(values: MotherInformationSchema) {
-    if (!isValidPhoneNumber(values.motherMobilePhone)) {
-      form.setError("motherMobilePhone", {
+    if (!isValidPhoneNumber(values.motherMobile)) {
+      form.setError("motherMobile", {
         message: "Invalid phone number",
       });
       return;
@@ -60,8 +60,8 @@ function MotherInformation() {
   }
 
   function saveDetails() {
-    if (form.getValues("motherMobilePhone") && !isValidPhoneNumber(form.getValues("motherMobilePhone"))) {
-      form.setError("motherMobilePhone", {
+    if (form.getValues("motherMobile") && !isValidPhoneNumber(form.getValues("motherMobile"))) {
+      form.setError("motherMobile", {
         message: "Invalid phone number",
       });
 
@@ -169,7 +169,7 @@ function MotherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="motherDateOfBirth"
+              name="motherBirthDay"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date of birth</FormLabel>
@@ -274,7 +274,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="motherNricFin"
+            name="motherNric"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
@@ -289,12 +289,17 @@ function MotherInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="motherMobilePhone"
+              name="motherMobile"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="SG" international />
+                    <PhoneInput
+                      {...field}
+                      value={parsePhoneNumber(String(field.value), "SG")?.number}
+                      defaultCountry="SG"
+                      international
+                    />
                   </FormControl>
                   <FormDescription>Enter the student's mother mobile phone.</FormDescription>
                   <FormMessage />
@@ -322,7 +327,7 @@ function MotherInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="motherWorkCompany"
+            name="motherCompanyName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
@@ -337,7 +342,7 @@ function MotherInformation() {
 
           <FormField
             control={form.control}
-            name="motherWorkPosition"
+            name="motherPosition"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Position</FormLabel>

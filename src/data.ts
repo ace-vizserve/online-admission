@@ -182,62 +182,70 @@ export const features = [
 ];
 
 export const maritalStatuses = [
-  { label: "Single", value: "single" },
-  { label: "Married", value: "married" },
-  { label: "Separated", value: "separated" },
-  { label: "Divorced", value: "divorced" },
-  { label: "Widowed", value: "widowed" },
+  { label: "Single", value: "Single" },
+  { label: "Married", value: "Married" },
+  { label: "Separated", value: "Separated" },
+  { label: "Divorced", value: "Divorced" },
+  { label: "Widowed", value: "Widowed" },
 ] as const;
 
-export const passTypes = [
-  { label: "Singaporean", value: "singaporean" },
-  { label: "Singaporean PR", value: "singapore_pr" },
-  { label: "Dependant Pass", value: "dependant_pass" },
-  { label: "Student Pass", value: "student_pass" },
-  { label: "Long Term Visit Pass", value: "ltv_pass" },
+export const studentPassTypes = [
+  { label: "Singaporean", value: "Singaporean" },
+  { label: "Singaporean PR", value: "Singaporean PR" },
+  { label: "Dependent Pass", value: "Dependent Pass" },
+  { label: "Student Pass", value: "Student Pass" },
+  { label: "Long Term Visit Pass", value: "Long Term Visit Pass" },
+] as const;
+
+export const parentGuardianPassTypes = [
+  { label: "E-PASS", value: "E-PASS" },
+  { label: "S-PASS", value: "S-PASS" },
+  { label: "Dependent Pass", value: "Dependent Pass" },
+  { label: "Permanent Resident", value: "Permanent Resident" },
+  { label: "Other", value: "Other" },
 ] as const;
 
 export const religions = [
-  { label: "Christianity", value: "christianity" },
-  { label: "Roman Catholic", value: "romanCatholic" },
-  { label: "Islam", value: "islam" },
-  { label: "Hinduism", value: "hinduism" },
-  { label: "Buddhism", value: "buddhism" },
-  { label: "Judaism", value: "judaism" },
+  { label: "Christianity", value: "Christianity" },
+  { label: "Roman Catholic", value: "Roman Catholic" },
+  { label: "Islam", value: "Islam" },
+  { label: "Hinduism", value: "Hinduism" },
+  { label: "Buddhism", value: "Buddhism" },
+  { label: "Judaism", value: "Judaism" },
   { label: "Other", value: "other" },
 ] as const;
 
 export const classLevels = [
-  { label: "Young Starters", value: "young-starters" },
-  { label: "Primary One", value: "primary-1" },
-  { label: "Primary Two", value: "primary-2" },
-  { label: "Primary Three", value: "primary-3" },
-  { label: "Primary Four", value: "primary-4" },
-  { label: "Primary Five", value: "primary-5" },
-  { label: "Primary Six", value: "primary-6" },
-  { label: "Secondary One", value: "secondary-1" },
-  { label: "Secondary Two", value: "secondary-2" },
-  { label: "Secondary Three", value: "secondary-3" },
-  { label: "Secondary Four", value: "secondary-4" },
+  { label: "Young Starters", value: "Young Starters" },
+  { label: "Primary One", value: "Primary 1" },
+  { label: "Primary Two", value: "Primary 2" },
+  { label: "Primary Three", value: "Primary 3" },
+  { label: "Primary Four", value: "Primary 4" },
+  { label: "Primary Five", value: "Primary 5" },
+  { label: "Primary Six", value: "Primary 6" },
+  { label: "Secondary One", value: "Secondary 1" },
+  { label: "Secondary Two", value: "Secondary 2" },
+  { label: "Secondary Three", value: "Secondary 3" },
+  { label: "Secondary Four", value: "Secondary 4" },
 ] as const;
 
 export const classTypes = [
-  { label: "Enrichment Class", value: "enrichment-class" },
-  { label: "Global Class 3 (ENGLISH + FRENCH)", value: "global-class-3-en-fr" },
-  { label: "Global Class 2 (ENGLISH + TAMIL)", value: "global-class-2-en-ta" },
-  { label: "Global Class 1 (ENGLISH + MANDARIN)", value: "global-class-1-en-zh" },
-  { label: "Standard Class (ENGLISH + TAGALOG)", value: "standard-class-en-fil" },
+  { label: "Enrichment Class", value: "Enrichment Class" },
+  { label: "Global Class 3 (ENGLISH + FRENCH)", value: "Global Class 3 (ENGLISH + FRENCH)" },
+  { label: "Global Class 2 (ENGLISH + TAMIL)", value: "Global Class 2 (ENGLISH + TAMIL)" },
+  { label: "Global Class 1 (ENGLISH + MANDARIN)", value: "Global Class 1 (ENGLISH + MANDARIN)" },
+  { label: "Standard Class (ENGLISH + TAGALOG)", value: "Standard Class (ENGLISH + TAGALOG)" },
 ] as const;
 
 export const preferredSchedule = [
-  { label: "Afternoon", value: "afternoon" },
-  { label: "Morning", value: "morning" },
+  { label: "Afternoon", value: "Afternoon" },
+  { label: "Morning", value: "Morning" },
 ] as const;
 
 export const campusDevelopmentFee = [
-  { label: "Option 1", value: "option-1" },
-  { label: "Option 2", value: "option-2" },
-  { label: "Option 3", value: "option-3" },
+  { label: "Option 1", value: "Option 1" },
+  { label: "Option 2", value: "Option 2" },
+  { label: "Option 3", value: "Option 3" },
 ] as const;
 
 export const languages = [

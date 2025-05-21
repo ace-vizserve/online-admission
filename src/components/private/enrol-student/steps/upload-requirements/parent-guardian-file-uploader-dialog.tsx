@@ -24,7 +24,7 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { passTypes } from "@/data";
+import { parentGuardianPassTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { ParentGuardianFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
@@ -40,17 +40,17 @@ import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router";
 
 const NOT_FILE_INPUTS = [
-  "motherPassExpiryDate",
+  "motherPassExpiry",
   "motherPassType",
-  "motherPassportExpiryDate",
+  "motherPassportExpiry",
   "motherPassportNumber",
-  "fatherPassExpiryDate",
+  "fatherPassExpiry",
   "fatherPassType",
-  "fatherPassportExpiryDate",
+  "fatherPassportExpiry",
   "fatherPassportNumber",
-  "guardianPassExpiryDate",
+  "guardianPassExpiry",
   "guardianPassType",
-  "guardianPassportExpiryDate",
+  "guardianPassportExpiry",
   "guardianPassportNumber",
 ];
 
@@ -274,7 +274,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {passTypes.map((passType) => (
+                          {parentGuardianPassTypes.map((passType) => (
                             <SelectItem key={passType.value} value={passType.value}>
                               {passType.label}
                             </SelectItem>
@@ -288,7 +288,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 />
                 <FormField
                   control={form.control}
-                  name="motherPassExpiryDate"
+                  name="motherPassExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -346,7 +346,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
                 <FormField
                   control={form.control}
-                  name="motherPassportExpiryDate"
+                  name="motherPassportExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -400,7 +400,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {passTypes.map((passType) => (
+                          {parentGuardianPassTypes.map((passType) => (
                             <SelectItem key={passType.value} value={passType.value}>
                               {passType.label}
                             </SelectItem>
@@ -414,7 +414,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 />
                 <FormField
                   control={form.control}
-                  name="fatherPassExpiryDate"
+                  name="fatherPassExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -472,7 +472,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
                 <FormField
                   control={form.control}
-                  name="fatherPassportExpiryDate"
+                  name="fatherPassportExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -526,7 +526,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {passTypes.map((passType) => (
+                          {parentGuardianPassTypes.map((passType) => (
                             <SelectItem key={passType.value} value={passType.value}>
                               {passType.label}
                             </SelectItem>
@@ -540,7 +540,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 />
                 <FormField
                   control={form.control}
-                  name="guardianPassExpiryDate"
+                  name="guardianPassExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -598,7 +598,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
                 <FormField
                   control={form.control}
-                  name="guardianPassportExpiryDate"
+                  name="guardianPassportExpiry"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Passport Expiry</FormLabel>
@@ -869,7 +869,7 @@ function ParentGuardianFileUploaderDrawer({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {passTypes.map((passType) => (
+                        {parentGuardianPassTypes.map((passType) => (
                           <SelectItem key={passType.value} value={passType.value}>
                             {passType.label}
                           </SelectItem>
@@ -883,7 +883,7 @@ function ParentGuardianFileUploaderDrawer({
               />
               <FormField
                 control={form.control}
-                name="motherPassExpiryDate"
+                name="motherPassExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -938,7 +938,7 @@ function ParentGuardianFileUploaderDrawer({
               />
               <FormField
                 control={form.control}
-                name="motherPassportExpiryDate"
+                name="motherPassportExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -990,7 +990,7 @@ function ParentGuardianFileUploaderDrawer({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {passTypes.map((passType) => (
+                        {parentGuardianPassTypes.map((passType) => (
                           <SelectItem key={passType.value} value={passType.value}>
                             {passType.label}
                           </SelectItem>
@@ -1005,7 +1005,7 @@ function ParentGuardianFileUploaderDrawer({
 
               <FormField
                 control={form.control}
-                name="fatherPassExpiryDate"
+                name="fatherPassExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -1061,7 +1061,7 @@ function ParentGuardianFileUploaderDrawer({
 
               <FormField
                 control={form.control}
-                name="fatherPassportExpiryDate"
+                name="fatherPassportExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -1113,7 +1113,7 @@ function ParentGuardianFileUploaderDrawer({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {passTypes.map((passType) => (
+                        {parentGuardianPassTypes.map((passType) => (
                           <SelectItem key={passType.value} value={passType.value}>
                             {passType.label}
                           </SelectItem>
@@ -1128,7 +1128,7 @@ function ParentGuardianFileUploaderDrawer({
 
               <FormField
                 control={form.control}
-                name="guardianPassExpiryDate"
+                name="guardianPassExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>
@@ -1184,7 +1184,7 @@ function ParentGuardianFileUploaderDrawer({
 
               <FormField
                 control={form.control}
-                name="guardianPassportExpiryDate"
+                name="guardianPassportExpiry"
                 render={({ field }) => (
                   <FormItem>
                     <Popover modal>

@@ -51,12 +51,6 @@ function OldStudentInformation() {
     });
   }, [data, isSuccess, setFormState]);
 
-  useEffect(() => {
-    return () => {
-      formState.studentInfo = {} as EnrolOldStudentFormState["studentInfo"];
-    };
-  }, [formState, setFormState]);
-
   if (isPending) {
     return <Loader />;
   }

@@ -193,7 +193,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         className={cn(isAnimating ? "animate-bounce" : "", multiSelectVariants({ variant }))}
                         style={{ animationDuration: `${animation}s` }}>
                         {IconComponent && <IconComponent className="h-4 w-4 mr-2" />}
-                        {option?.label}
+                        {option?.value}
                         <XCircle
                           className="ml-2 h-4 w-4 cursor-pointer"
                           onClick={(event) => {
@@ -276,7 +276,8 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         <CheckIcon className="h-4 w-4" />
                       </div>
                       {option.icon && <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />}
-                      <span>{option.label}</span>
+                      <span className="font-medium"> {option.value}</span>
+                      <span className="text-xs">({option.label})</span>
                     </CommandItem>
                   );
                 })}
