@@ -1,4 +1,3 @@
-import { updateStudentInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -9,27 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
-import { Student } from "@/types";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { differenceInYears, format } from "date-fns";
-import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router";
 import { toast } from "sonner";
 
 function StudentDetails() {
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const params = useParams();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (studentInformation: Partial<Student>) => {
-      return await updateStudentInformation(studentInformation, params.id!);
-    },
-  });
+
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
 
   const form = useForm<StudentDetailsSchema>({
@@ -40,11 +30,11 @@ function StudentDetails() {
   });
 
   function onSubmit(values: StudentDetailsSchema) {
-    const age = differenceInYears(new Date(), values.dateOfBirth);
+    const age = differenceInYears(new Date(), values.birthDay);
 
     if (age < 3) {
       toast.info("Child must be at least 3 years old to enroll");
-      form.setError("dateOfBirth", {
+      form.setError("birthDay", {
         type: "manual",
         message: "Child must be at least 3 years old",
       });
@@ -60,7 +50,9 @@ function StudentDetails() {
       },
     });
 
-    mutate({ ...values, dateOfBirth: values.dateOfBirth as unknown as string });
+    toast.success("Student information saved!", {
+      description: "Make sure to double check everything",
+    });
   }
 
   return (
@@ -135,7 +127,7 @@ function StudentDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="dateOfBirth"
+            name="birthDay"
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Date of birth</FormLabel>
@@ -175,8 +167,8 @@ function StudentDetails() {
                     onValueChange={field.onChange}
                     className="flex gap-2">
                     {[
-                      ["Male", "male"],
-                      ["Female", "female"],
+                      ["Male", "Male"],
+                      ["Female", "Female"],
                     ].map((option, index) => (
                       <FormItem className="flex items-center space-x-3 space-y-0" key={index}>
                         <FormControl>
@@ -267,7 +259,7 @@ function StudentDetails() {
 
           <FormField
             control={form.control}
-            name="nricFin"
+            name="nric"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC / FIN</FormLabel>
@@ -281,32 +273,14 @@ function StudentDetails() {
           />
         </div>
 
-        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="30" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
-          )}
+        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
 
-        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="20" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
-          )}
+        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
       </form>
     </Form>

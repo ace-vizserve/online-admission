@@ -69,7 +69,7 @@ function EnrolStudent() {
           </CardContent>
           <CardFooter className="flex items-center flex-col gap-2 px-4">
             <Link
-              to={`/enrol-student/${selected?.studentID}/student-info`}
+              to={`/enrol-student/${selected?.enroleeNumber}/student-info`}
               className={buttonVariants({
                 variant: "outline",
                 size: "lg",
@@ -110,20 +110,22 @@ const StudentsList = memo(function ({ selected, setSelected, studentList }: Stud
       }}
       className="flex flex-col gap-2 w-full p-2 pr-4">
       {studentList.map((student) => (
-        <Field key={student.studentID}>
+        <Field key={student.enroleeNumber}>
           <Radio
             value={student}
             className="border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-lg p-3 transition data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg">
             <div className="flex gap-3">
               <Avatar className="size-11">
-                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                <AvatarImage
+                  className="object-cover"
+                  src={student.enroleePhoto ?? "https://github.com/shadcn.png"}
+                  alt="@shadcn"
+                />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-1">
-                <span className="font-semibold text-sm capitalize">{student.enroleeFullName}</span>
-                <span className="text-xs text-muted-foreground font-medium capitalize">
-                  {student.grade_level.split("-").join(" ")}
-                </span>
+                <span className="font-semibold text-sm capitalize">{student.studentName}</span>
+                <span className="text-xs text-muted-foreground font-medium capitalize">{student.levelApplied}</span>
               </div>
             </div>
           </Radio>

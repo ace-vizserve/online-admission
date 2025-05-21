@@ -31,27 +31,27 @@ function StudentDetails() {
   async function onSubmit(values: StudentDetailsSchema) {
     try {
       const { count } = await supabase
-        .from("student_information")
-        .select("nricFin", { count: "exact" })
-        .eq("nricFin", values.nricFin)
+        .from("ay2026_enrolment_applications")
+        .select("nric", { count: "exact" })
+        .eq("nric", values.nric)
         .single();
 
       if (count != null && count > 0) {
         toast.warning("A student with this NRIC/FIN already exists!", {
           description: "Please verify before submitting",
         });
-        form.setError("nricFin", {
+        form.setError("nric", {
           type: "manual",
           message: "This NRIC/FIN is already registered.",
         });
         return;
       }
 
-      const age = differenceInYears(new Date(), values.dateOfBirth);
+      const age = differenceInYears(new Date(), values.birthDay);
 
       if (age < 3) {
         toast.info("Child must be at least 3 years old to enroll");
-        form.setError("dateOfBirth", {
+        form.setError("birthDay", {
           type: "manual",
           message: "Child must be at least 3 years old",
         });
@@ -147,7 +147,7 @@ function StudentDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="dateOfBirth"
+            name="birthDay"
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Date of birth</FormLabel>
@@ -278,7 +278,7 @@ function StudentDetails() {
 
           <FormField
             control={form.control}
-            name="nricFin"
+            name="nric"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC / FIN</FormLabel>

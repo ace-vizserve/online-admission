@@ -1,4 +1,4 @@
-import { getStudentEnrollmentInformation } from "@/actions/private";
+import { getCurrentStudentDiscounts, getStudentEnrollmentInformation } from "@/actions/private";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
 import { Alert, AlertTitle } from "@/components/ui/alert";
@@ -39,17 +39,13 @@ import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 
-const discountList = [
-  { label: "AY250H01EN", value: "AY250H01EN" },
-  { label: "AY250H02EN", value: "AY250H02EN" },
-  { label: "AY250H03EN", value: "AY250H03EN" },
-  { label: "AY250H04EN", value: "AY250H04EN" },
-  { label: "AY250H05EN", value: "AY250H05EN" },
-];
-
 function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const params = useParams();
+  const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
+    queryKey: ["current-discounts"],
+    queryFn: getCurrentStudentDiscounts,
+  });
   const { data, isPending, isSuccess } = useQuery({
     queryKey: ["enrollment-information", params.id],
     queryFn: async () => {
@@ -62,17 +58,18 @@ function OldEnrollmentInformation() {
   const [discountType, setDiscountType] = useState<string>("");
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
+    defaultValues: {
+      ...formState.enrollmentInfo,
+    },
   });
 
   useEffect(() => {
     if (!isSuccess || !data) return;
-
     form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
   }, [data, form, isSuccess]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
     setFormState({
-      ...formState,
       enrollmentInfo: { ...values, isValid: true },
     });
     toast.success("Enrollment information details saved!", {
@@ -88,24 +85,36 @@ function OldEnrollmentInformation() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="w-full flex-1">
-        <Card className="w-full mx-auto border-none shadow-none">
+        <Card className="w-full mx-auto border-None shadow-None">
           <CardHeader className="gap-8 p-0">
             <CardTitle className="text-balance text-center text-2xl text-primary">
               Input the necessary enrollment information
             </CardTitle>
-            <Alert className="bg-blue-500/10 border-none w-max mx-auto">
+            <Alert className="bg-blue-500/10 border-None w-max max-w-[400px] mx-auto">
               <CircleFadingArrowUpIcon className="h-4 w-4 !text-blue-500" />
               <div className="space-y-1 text-pretty">
-                <AlertTitle className="text-xs text-blue-700 ">Next Grade Auto-Detected</AlertTitle>
-                <span className="text-xs text-blue-900 ">
-                  Based on previous level{" "}
-                  <span className="font-semibold capitalize">
-                    {(data?.levelApplied as string)?.split("-")?.join(" ")}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-semibold capitalize">
-                    {getNextGradeLevel(data?.levelApplied)?.split("-")?.join(" ")}
-                  </span>
+                <AlertTitle className="text-xs text-blue-700">
+                  {data?.levelApplied === "Secondary 4" ? "Level Completion" : "Next Grade Auto-Detected"}
+                </AlertTitle>
+                <span className="text-xs text-blue-900">
+                  {data?.levelApplied === "Secondary 4" ? (
+                    <>
+                      The student has completed{" "}
+                      <span className="font-semibold capitalize">{data?.levelApplied?.split("-")?.join(" ")}</span>.
+                      This is the final year of secondary school.
+                    </>
+                  ) : (
+                    <>
+                      Based on previous level{" "}
+                      <span className="font-semibold capitalize">
+                        {(data?.levelApplied as string)?.split("-")?.join(" ")}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-semibold capitalize">
+                        {getNextGradeLevel(data?.levelApplied)?.split("-")?.join(" ")}
+                      </span>
+                    </>
+                  )}
                 </span>
               </div>
             </Alert>
@@ -232,8 +241,8 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
+                            <SelectItem value="Yes">Yes</SelectItem>
+                            <SelectItem value="No">No</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>Will the student be using the school's bus service?</FormDescription>
@@ -257,8 +266,8 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
+                            <SelectItem value="Yes">Yes</SelectItem>
+                            <SelectItem value="No">No</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>Will you avail a school uniform?</FormDescription>
@@ -280,8 +289,8 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
+                            <SelectItem value="Yes">Yes</SelectItem>
+                            <SelectItem value="No">No</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>Will you avail student care service?</FormDescription>
@@ -326,13 +335,23 @@ function OldEnrollmentInformation() {
                 <div className="max-w-2xl mx-auto space-y-4 bg-emerald-400 p-6 rounded-2xl border border-muted shadow-sm">
                   <div className="space-y-4">
                     <Label className="text-xl text-white font-semibold">Apply a Discount</Label>
+                    {isPendingCurrentStudentDiscounts && (
+                      <div className="w-full flex items-center justify-center">
+                        <Tailspin size="30" stroke="3" speed="0.9" color="white" />
+                      </div>
+                    )}
+
                     <Select onValueChange={setDiscountType} value={discountType}>
                       <SelectTrigger className="w-full bg-white">
                         <SelectValue placeholder="Select a discount option" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-muted shadow-lg rounded-lg">
-                        <SelectItem value="referred-by-someone">🎯 Referred by someone</SelectItem>
-                        <SelectItem value="discount-code">🏷️ Discount code</SelectItem>
+                        {currentStudentDiscounts?.hasReferredBySomeoneDiscounts && (
+                          <SelectItem value="referred-by-someone">🎯 Referred by someone</SelectItem>
+                        )}
+                        {currentStudentDiscounts?.hasDiscountCodes && (
+                          <SelectItem value="discount-code">🏷️ Discount code</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -346,18 +365,7 @@ function OldEnrollmentInformation() {
                           <FormItem className="space-y-1">
                             <FormLabel className="text-white">Referrer's Name</FormLabel>
                             <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="w-full bg-white">
-                                    <SelectValue placeholder="Select referrer's name" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="referrer-1">Referrer 1</SelectItem>
-                                  <SelectItem value="referrer-2">Referrer 2</SelectItem>
-                                  <SelectItem value="referrer-3">Referrer 3</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <Input className="bg-white" type="" {...field} />
                             </FormControl>
                             <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
                             <FormMessage />
@@ -376,7 +384,7 @@ function OldEnrollmentInformation() {
                                   <MultiSelect
                                     key={0}
                                     variant={"inverted"}
-                                    options={discountList}
+                                    options={currentStudentDiscounts?.discountCodes ?? []}
                                     onValueChange={field.onChange}
                                     placeholder="Select discount codes"
                                     maxCount={3}
@@ -386,7 +394,7 @@ function OldEnrollmentInformation() {
                                   <MultiSelect
                                     key={1}
                                     variant={"inverted"}
-                                    options={discountList}
+                                    options={currentStudentDiscounts?.discountCodes ?? []}
                                     onValueChange={field.onChange}
                                     placeholder="Select discount codes"
                                     maxCount={1}
@@ -394,7 +402,6 @@ function OldEnrollmentInformation() {
                                   />
                                 </div>
                               </FormControl>
-                              <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -402,6 +409,7 @@ function OldEnrollmentInformation() {
                       ) : (
                         <div className="w-full flex justify-center items-center">
                           <Button
+                            disabled={!currentStudentDiscounts?.hasDiscountCodes}
                             onClick={() => {
                               setIsShowDiscount(true);
                               setIsShowReferral(false);
@@ -429,7 +437,7 @@ function OldEnrollmentInformation() {
                                 <MultiSelect
                                   key={0}
                                   variant={"inverted"}
-                                  options={discountList}
+                                  options={currentStudentDiscounts?.discountCodes ?? []}
                                   onValueChange={field.onChange}
                                   placeholder="Select discount codes"
                                   maxCount={3}
@@ -439,7 +447,7 @@ function OldEnrollmentInformation() {
                                 <MultiSelect
                                   key={1}
                                   variant={"inverted"}
-                                  options={discountList}
+                                  options={currentStudentDiscounts?.discountCodes ?? []}
                                   onValueChange={field.onChange}
                                   placeholder="Select discount codes"
                                   maxCount={1}
@@ -447,7 +455,6 @@ function OldEnrollmentInformation() {
                                 />
                               </div>
                             </FormControl>
-                            <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -460,18 +467,7 @@ function OldEnrollmentInformation() {
                             <FormItem className="space-y-1">
                               <FormLabel className="text-white">Referrer's Name</FormLabel>
                               <FormControl>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="w-full bg-white">
-                                      <SelectValue placeholder="Select referrer's name" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="referrer-1">Referrer 1</SelectItem>
-                                    <SelectItem value="referrer-2">Referrer 2</SelectItem>
-                                    <SelectItem value="referrer-3">Referrer 3</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <Input className="bg-white" {...field} />
                               </FormControl>
                               <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
                               <FormMessage />
@@ -481,6 +477,7 @@ function OldEnrollmentInformation() {
                       ) : (
                         <div className="w-full flex justify-center items-center">
                           <Button
+                            disabled={!currentStudentDiscounts?.hasReferredBySomeoneDiscounts}
                             onClick={() => {
                               setIsShowDiscount(false);
                               setIsShowReferral(true);

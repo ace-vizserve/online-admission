@@ -81,7 +81,7 @@ const LocationSelector = ({
 
   useEffect(() => {
     if (selectedNationality && !selectedCountry) {
-      const matched = countriesData.find((c) => c.nationality.toLowerCase() === selectedNationality.toLowerCase());
+      const matched = countriesData.find((c) => c.name.toLowerCase() === selectedNationality.toLowerCase());
       if (matched) {
         setSelectedCountry(matched);
         onCountryChange?.(matched);

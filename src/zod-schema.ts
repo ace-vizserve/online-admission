@@ -55,7 +55,7 @@ export const studentDetailsSchema = z
     preferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    dateOfBirth: z.coerce.date({
+    birthDay: z.coerce.date({
       required_error: "Birth date is required",
       invalid_type_error: "Please enter a valid date",
     }),
@@ -69,7 +69,7 @@ export const studentDetailsSchema = z
       message: "Religion is required",
     }),
     otherReligion: z.string().optional(),
-    nricFin: z.string().min(1, {
+    nric: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
   })
@@ -124,7 +124,7 @@ export const guardianInformationSchema = z
     guardianPreferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    guardianDateOfBirth: z.coerce.date({
+    guardianBirthDay: z.coerce.date({
       required_error: "Guardian's date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
@@ -133,19 +133,19 @@ export const guardianInformationSchema = z
       message: "Religion is required",
     }),
     guardianOtherReligion: z.string().optional(),
-    guardianNricFin: z.string().min(1, {
+    guardianNric: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
-    guardianMobilePhone: z.string().min(1, {
+    guardianMobile: z.string().min(1, {
       message: "Mobile phone number is required",
     }),
     guardianEmail: z.string().email({
       message: "Please enter a valid email address",
     }),
-    guardianWorkCompany: z.string().min(1, {
+    guardianCompanyName: z.string().min(1, {
       message: "Company name is required",
     }),
-    guardianWorkPosition: z.string().min(1, {
+    guardianPosition: z.string().min(1, {
       message: "Position at work is required",
     }),
   })
@@ -173,7 +173,7 @@ export const fatherInformationSchema = z
     fatherPreferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    fatherDateOfBirth: z.coerce.date({
+    fatherBirthDay: z.coerce.date({
       required_error: "Father's date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
@@ -182,19 +182,19 @@ export const fatherInformationSchema = z
       message: "Religion is required",
     }),
     fatherOtherReligion: z.string().optional(),
-    fatherNricFin: z.string().min(1, {
+    fatherNric: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
-    fatherMobilePhone: z.string().min(1, {
+    fatherMobile: z.string().min(1, {
       message: "Mobile phone number is required",
     }),
     fatherEmail: z.string().email({
       message: "Please enter a valid email address",
     }),
-    fatherWorkCompany: z.string().min(1, {
+    fatherCompanyName: z.string().min(1, {
       message: "Company name is required",
     }),
-    fatherWorkPosition: z.string().min(1, {
+    fatherPosition: z.string().min(1, {
       message: "Position at work is required",
     }),
   })
@@ -223,7 +223,7 @@ export const motherInformationSchema = z
     motherPreferredName: z.string().min(1, {
       message: "Preferred name is required",
     }),
-    motherDateOfBirth: z.coerce.date({
+    motherBirthDay: z.coerce.date({
       required_error: "Mother's date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
@@ -232,19 +232,19 @@ export const motherInformationSchema = z
       message: "Religion is required",
     }),
     motherOtherReligion: z.string().optional(),
-    motherNricFin: z.string().min(1, {
+    motherNric: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
-    motherMobilePhone: z.string().min(1, {
+    motherMobile: z.string().min(1, {
       message: "Mobile phone number is required",
     }),
     motherEmail: z.string().email({
       message: "Please enter a valid email address",
     }),
-    motherWorkCompany: z.string().min(1, {
+    motherCompanyName: z.string().min(1, {
       message: "Company name is required",
     }),
-    motherWorkPosition: z.string().min(1, {
+    motherPosition: z.string().min(1, {
       message: "Position at work is required",
     }),
   })
@@ -268,7 +268,7 @@ export const siblingInformationSchema = z
         siblingFullName: z.string().min(1, {
           message: "Sibling's full name is required",
         }),
-        siblingDateOfBirth: z.coerce.date({
+        siblingBirthDay: z.coerce.date({
           required_error: "Sibling's date of birth is required",
           invalid_type_error: "Please enter a valid date",
         }),
@@ -276,10 +276,10 @@ export const siblingInformationSchema = z
           message: "Sibling's religion is required",
         }),
 
-        siblingSchoolOrCompanyName: z.string().min(1, {
+        siblingSchoolCompany: z.string().min(1, {
           message: "School or company name is required",
         }),
-        siblingSchoolLevelOrCompanyPosition: z.string().min(1, {
+        siblingEducationOccupation: z.string().min(1, {
           message: "School level or position is required",
         }),
       })
@@ -336,14 +336,14 @@ export const studentUploadRequirementsSchema = z
       .refine((val) => val.startsWith("http"), {
         message: "Please upload the file to continue",
       }),
-    birthCertificate: z
+    birthCert: z
       .string()
       .url("Please upload the file to continue")
       .min(1, { message: "Birth certificate is required" })
       .refine((val) => val.startsWith("http"), {
         message: "Please upload the file to continue",
       }),
-    transcriptOfRecords: z
+    educCert: z
       .string()
       .url("Please upload the file to continue")
       .min(1, { message: "Transcript of record is required" })
@@ -357,7 +357,7 @@ export const studentUploadRequirementsSchema = z
       .refine((val) => val.startsWith("http"), {
         message: "Please upload the file to continue",
       }),
-    medicalExam: z
+    medical: z
       .string()
       .url("Please upload the file to continue")
       .refine((val) => val.startsWith("http"), {
@@ -370,7 +370,7 @@ export const studentUploadRequirementsSchema = z
         message: "Please upload the file to continue",
       }),
     passportNumber: z.string().min(1, "Passport number is required"),
-    passportExpiryDate: z.coerce.date({
+    passportExpiry: z.coerce.date({
       errorMap: () => ({ message: "Enter a valid passport expiry date" }),
     }),
     pass: z
@@ -380,18 +380,18 @@ export const studentUploadRequirementsSchema = z
         message: "Please upload the file to continue",
       }),
     passType: z.string().min(1, "Pass type is required"),
-    passExpiryDate: z.coerce.date({
+    passExpiry: z.coerce.date({
       errorMap: () => ({ message: "Enter a valid pass expiry date" }),
     }),
   })
   .superRefine((data, ctx) => {
     const now = new Date();
 
-    if (data.passportExpiryDate && isBefore(data.passportExpiryDate, now)) {
+    if (data.passportExpiry && isBefore(data.passportExpiry, now)) {
       ctx.addIssue({
         code: "custom",
         message: "Passport is expired",
-        path: ["passportExpiryDate"],
+        path: ["passportExpiry"],
       });
 
       ctx.addIssue({
@@ -401,11 +401,11 @@ export const studentUploadRequirementsSchema = z
       });
     }
 
-    if (data.passExpiryDate && isBefore(data.passExpiryDate, now)) {
+    if (data.passExpiry && isBefore(data.passExpiry, now)) {
       ctx.addIssue({
         code: "custom",
         message: "Pass is expired",
-        path: ["passExpiryDate"],
+        path: ["passExpiry"],
       });
 
       ctx.addIssue({
@@ -427,7 +427,7 @@ export const parentGuardianUploadRequirementsSchema = z
         message: "Please upload the file to continue",
       }),
     motherPassportNumber: z.string().min(1, "Passport number is required"),
-    motherPassportExpiryDate: z.coerce.date({
+    motherPassportExpiry: z.coerce.date({
       errorMap: () => ({ message: "Enter a valid passport expiry date" }),
     }),
     motherPass: z
@@ -437,7 +437,7 @@ export const parentGuardianUploadRequirementsSchema = z
         message: "Please upload the file to continue",
       }),
     motherPassType: z.string().min(1, "Pass type is required"),
-    motherPassExpiryDate: z.coerce.date({
+    motherPassExpiry: z.coerce.date({
       errorMap: () => ({ message: "Enter a valid pass expiry date" }),
     }),
     fatherPassport: z
@@ -448,7 +448,7 @@ export const parentGuardianUploadRequirementsSchema = z
       })
       .optional(),
     fatherPassportNumber: z.string().min(1, "Passport number is required").optional(),
-    fatherPassportExpiryDate: z.coerce
+    fatherPassportExpiry: z.coerce
       .date({
         errorMap: () => ({ message: "Enter a valid passport expiry date" }),
       })
@@ -461,7 +461,7 @@ export const parentGuardianUploadRequirementsSchema = z
       })
       .optional(),
     fatherPassType: z.string().min(1, "Pass type is required").optional(),
-    fatherPassExpiryDate: z.coerce
+    fatherPassExpiry: z.coerce
       .date({
         errorMap: () => ({ message: "Enter a valid pass expiry date" }),
       })
@@ -474,7 +474,7 @@ export const parentGuardianUploadRequirementsSchema = z
       })
       .optional(),
     guardianPassportNumber: z.string().min(1, "Passport number is required").optional(),
-    guardianPassportExpiryDate: z.coerce
+    guardianPassportExpiry: z.coerce
       .date({
         errorMap: () => ({ message: "Enter a valid passport expiry date" }),
       })
@@ -487,7 +487,7 @@ export const parentGuardianUploadRequirementsSchema = z
       })
       .optional(),
     guardianPassType: z.string().min(1, "Pass type is required").optional(),
-    guardianPassExpiryDate: z.coerce
+    guardianPassExpiry: z.coerce
       .date({
         errorMap: () => ({ message: "Enter a valid pass expiry date" }),
       })
@@ -510,10 +510,10 @@ export const parentGuardianUploadRequirementsSchema = z
       validateFields([
         { key: "fatherPassport", message: "Father's passport copy is required" },
         { key: "fatherPassportNumber", message: "Passport number is required" },
-        { key: "fatherPassportExpiryDate", message: "Enter a valid passport expiry date" },
+        { key: "fatherPassportExpiry", message: "Enter a valid passport expiry date" },
         { key: "fatherPass", message: "Father's pass copy is required" },
         { key: "fatherPassType", message: "Pass type is required" },
-        { key: "fatherPassExpiryDate", message: "Enter a valid pass expiry date" },
+        { key: "fatherPassExpiry", message: "Enter a valid pass expiry date" },
       ]);
     }
 
@@ -521,20 +521,20 @@ export const parentGuardianUploadRequirementsSchema = z
       validateFields([
         { key: "guardianPassport", message: "Guardian's passport copy is required" },
         { key: "guardianPassportNumber", message: "Passport number is required" },
-        { key: "guardianPassportExpiryDate", message: "Enter a valid passport expiry date" },
+        { key: "guardianPassportExpiry", message: "Enter a valid passport expiry date" },
         { key: "guardianPass", message: "Guardian's pass copy is required" },
         { key: "guardianPassType", message: "Pass type is required" },
-        { key: "guardianPassExpiryDate", message: "Enter a valid pass expiry date" },
+        { key: "guardianPassExpiry", message: "Enter a valid pass expiry date" },
       ]);
     }
 
     const now = new Date();
 
-    if (schema.motherPassportExpiryDate && isBefore(schema.motherPassportExpiryDate, now)) {
+    if (schema.motherPassportExpiry && isBefore(schema.motherPassportExpiry, now)) {
       ctx.addIssue({
         code: "custom",
         message: "Mother's passport is expired",
-        path: ["motherPassportExpiryDate"],
+        path: ["motherPassportExpiry"],
       });
       ctx.addIssue({
         code: "custom",
@@ -543,11 +543,11 @@ export const parentGuardianUploadRequirementsSchema = z
       });
     }
 
-    if (schema.motherPassExpiryDate && isBefore(schema.motherPassExpiryDate, now)) {
+    if (schema.motherPassExpiry && isBefore(schema.motherPassExpiry, now)) {
       ctx.addIssue({
         code: "custom",
         message: "Mother's pass is expired",
-        path: ["motherPassExpiryDate"],
+        path: ["motherPassExpiry"],
       });
       ctx.addIssue({
         code: "custom",
@@ -557,11 +557,11 @@ export const parentGuardianUploadRequirementsSchema = z
     }
 
     if (schema.hasFatherInfo) {
-      if (schema.fatherPassportExpiryDate && isBefore(schema.fatherPassportExpiryDate, now)) {
+      if (schema.fatherPassportExpiry && isBefore(schema.fatherPassportExpiry, now)) {
         ctx.addIssue({
           code: "custom",
           message: "Father's passport is expired",
-          path: ["fatherPassportExpiryDate"],
+          path: ["fatherPassportExpiry"],
         });
         ctx.addIssue({
           code: "custom",
@@ -570,11 +570,11 @@ export const parentGuardianUploadRequirementsSchema = z
         });
       }
 
-      if (schema.fatherPassExpiryDate && isBefore(schema.fatherPassExpiryDate, now)) {
+      if (schema.fatherPassExpiry && isBefore(schema.fatherPassExpiry, now)) {
         ctx.addIssue({
           code: "custom",
           message: "Father's pass is expired",
-          path: ["fatherPassExpiryDate"],
+          path: ["fatherPassExpiry"],
         });
         ctx.addIssue({
           code: "custom",
@@ -585,11 +585,11 @@ export const parentGuardianUploadRequirementsSchema = z
     }
 
     if (schema.hasGuardianInfo) {
-      if (schema.guardianPassportExpiryDate && isBefore(schema.guardianPassportExpiryDate, now)) {
+      if (schema.guardianPassportExpiry && isBefore(schema.guardianPassportExpiry, now)) {
         ctx.addIssue({
           code: "custom",
           message: "Guardian's passport is expired",
-          path: ["guardianPassportExpiryDate"],
+          path: ["guardianPassportExpiry"],
         });
         ctx.addIssue({
           code: "custom",
@@ -598,11 +598,11 @@ export const parentGuardianUploadRequirementsSchema = z
         });
       }
 
-      if (schema.guardianPassExpiryDate && isBefore(schema.guardianPassExpiryDate, now)) {
+      if (schema.guardianPassExpiry && isBefore(schema.guardianPassExpiry, now)) {
         ctx.addIssue({
           code: "custom",
           message: "Guardian's pass is expired",
-          path: ["guardianPassExpiryDate"],
+          path: ["guardianPassExpiry"],
         });
         ctx.addIssue({
           code: "custom",

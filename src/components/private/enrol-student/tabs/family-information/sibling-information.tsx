@@ -1,4 +1,3 @@
-import { updateFamilyInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,24 +7,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
-import { cn, flattenSiblings } from "@/lib/utils";
-import { FamilyInfo } from "@/types";
+import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 function SiblingInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (familyInformation: Partial<FamilyInfo>) => {
-      return await updateFamilyInformation(familyInformation);
-    },
-  });
+
   const form = useForm<SiblingInformationSchema>({
     resolver: zodResolver(siblingInformationSchema),
     defaultValues: {
@@ -46,9 +39,9 @@ function SiblingInformation() {
       },
     });
 
-    const flattenedSiblings = flattenSiblings(values.siblings);
-
-    mutate({ ...flattenedSiblings });
+    toast.success("Sibling information saved!", {
+      description: "Make sure to double check everything",
+    });
   }
 
   return (
@@ -88,7 +81,7 @@ function SiblingInformation() {
                     />
                     <FormField
                       control={form.control}
-                      name={`siblings.${index}.siblingDateOfBirth`}
+                      name={`siblings.${index}.siblingBirthDay`}
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Date of birth</FormLabel>
@@ -146,7 +139,7 @@ function SiblingInformation() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
                     <FormField
                       control={form.control}
-                      name={`siblings.${index}.siblingSchoolOrCompanyName`}
+                      name={`siblings.${index}.siblingSchoolCompany`}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>School or Company Name</FormLabel>
@@ -161,7 +154,7 @@ function SiblingInformation() {
 
                     <FormField
                       control={form.control}
-                      name={`siblings.${index}.siblingSchoolLevelOrCompanyPosition`}
+                      name={`siblings.${index}.siblingEducationOccupation`}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>School Level or Company Position</FormLabel>
@@ -182,40 +175,20 @@ function SiblingInformation() {
 
             <Button
               variant={"secondary"}
-              disabled={isPending}
               size={"lg"}
               className="hidden lg:flex w-full p-8 gap-2 uppercase my-4"
               type="submit">
-              {isPending ? (
-                <>
-                  Saving
-                  <DotPulse size="30" speed="1.3" color="white" />
-                </>
-              ) : (
-                <>
-                  Save
-                  <Save />
-                </>
-              )}
+              Save
+              <Save />
             </Button>
 
             <Button
               variant={"secondary"}
               size={"lg"}
-              disabled={isPending}
               className="flex lg:hidden w-full p-6 gap-2 uppercase my-4"
               type="submit">
-              {isPending ? (
-                <>
-                  Saving
-                  <DotPulse size="20" speed="1.3" color="white" />
-                </>
-              ) : (
-                <>
-                  Save
-                  <Save />
-                </>
-              )}
+              Save
+              <Save />
             </Button>
           </form>
         </Form>
@@ -227,11 +200,11 @@ function SiblingInformation() {
         className="hidden lg:flex w-full p-8 gap-2 uppercase mx-auto max-w-5xl"
         onClick={() =>
           append({
-            siblingDateOfBirth: new Date(),
+            siblingBirthDay: new Date(),
             siblingFullName: "",
             siblingReligion: "",
-            siblingSchoolLevelOrCompanyPosition: "",
-            siblingSchoolOrCompanyName: "",
+            siblingEducationOccupation: "",
+            siblingSchoolCompany: "",
           })
         }>
         Add Sibling
@@ -242,11 +215,11 @@ function SiblingInformation() {
         className="flex lg:hidden w-full p-6 gap-2 uppercase mx-auto max-w-5xl"
         onClick={() =>
           append({
-            siblingDateOfBirth: new Date(),
+            siblingBirthDay: new Date(),
             siblingFullName: "",
             siblingReligion: "",
-            siblingSchoolLevelOrCompanyPosition: "",
-            siblingSchoolOrCompanyName: "",
+            siblingEducationOccupation: "",
+            siblingSchoolCompany: "",
           })
         }>
         Add Sibling

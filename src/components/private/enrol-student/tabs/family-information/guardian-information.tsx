@@ -20,6 +20,7 @@ import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { parsePhoneNumber } from "react-phone-number-input";
 
 function GuardianInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
@@ -45,7 +46,7 @@ function GuardianInformation() {
       },
     });
 
-    mutate({ ...values, guardianDateOfBirth: values.guardianDateOfBirth as unknown as string });
+    mutate({ ...values, guardianBirthDay: values.guardianBirthDay as unknown as string });
   }
 
   return (
@@ -120,7 +121,7 @@ function GuardianInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="guardianDateOfBirth"
+              name="guardianBirthDay"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date of birth</FormLabel>
@@ -223,7 +224,7 @@ function GuardianInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="guardianNricFin"
+            name="guardianNric"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
@@ -238,12 +239,17 @@ function GuardianInformation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
-              name="guardianMobilePhone"
+              name="guardianMobile"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput
+                      {...field}
+                      value={parsePhoneNumber(String(field.value), "SG")?.number}
+                      international
+                      defaultCountry="SG"
+                    />
                   </FormControl>
                   <FormDescription>Enter the student's guardian mobile phone.</FormDescription>
                   <FormMessage />
@@ -271,7 +277,7 @@ function GuardianInformation() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
-            name="guardianWorkCompany"
+            name="guardianCompanyName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
@@ -286,7 +292,7 @@ function GuardianInformation() {
 
           <FormField
             control={form.control}
-            name="guardianWorkPosition"
+            name="guardianPosition"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Position</FormLabel>

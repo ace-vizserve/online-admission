@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-import { getCurrentParentGuardianDocuments } from "@/actions/private";
+import { getPreviousParentGuardianDocuments } from "@/actions/private";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
@@ -27,7 +27,7 @@ function ParentGuardianUpload() {
   const { data, isFetching, isSuccess } = useQuery({
     queryKey: ["parent-guardian-documents", params.id],
     queryFn: async () => {
-      return await getCurrentParentGuardianDocuments(params.id!);
+      return await getPreviousParentGuardianDocuments(params.id!);
     },
   });
 
@@ -124,10 +124,7 @@ function ParentGuardianUpload() {
             onValueChange={setMotherPass}
           />
         </div>
-        {(Object.keys(formState.familyInfo?.fatherInfo ?? {}).length > 0 ||
-          Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).filter((key) =>
-            key.includes("father")
-          ).length > 0) && (
+        {data?.parentGuardianUploadRequirements.hasFatherInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
@@ -156,10 +153,7 @@ function ParentGuardianUpload() {
             </div>
           </>
         )}
-        {(Object.keys(formState.familyInfo?.guardianInfo ?? {}).length > 0 ||
-          Object.keys(formState.uploadRequirements?.parentGuardianUploadRequirements ?? {}).filter((key) =>
-            key.includes("guardian")
-          ).length > 0) && (
+        {data?.parentGuardianUploadRequirements.hasGuardianInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>

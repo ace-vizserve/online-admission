@@ -1,3 +1,4 @@
+import { getNewStudentDiscounts } from "@/actions/private";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
 import EnrolNewStudentStepsLoader from "@/components/private/enrol-student/steps/enrol-new-student-steps-loader";
@@ -28,23 +29,22 @@ import {
 } from "@/data";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
+import "ldrs/react/Tailspin.css";
 import { ArrowRight, CircleHelp } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router";
 import { toast } from "sonner";
 
-const discountList = [
-  { label: "AY250H01EN", value: "AY250H01EN" },
-  { label: "AY250H02EN", value: "AY250H02EN" },
-  { label: "AY250H03EN", value: "AY250H03EN" },
-  { label: "AY250H04EN", value: "AY250H04EN" },
-  { label: "AY250H05EN", value: "AY250H05EN" },
-];
-
 function EnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const navigate = useNavigate();
+  const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
+    queryKey: ["new-discounts"],
+    queryFn: getNewStudentDiscounts,
+  });
   const [isPending, setTransition] = useTransition();
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [isShowDiscount, setIsShowDiscount] = useState<boolean>(false);
@@ -87,7 +87,7 @@ function EnrollmentInformation() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="w-full flex-1">
-        <Card className="w-full mx-auto border-none shadow-none">
+        <Card className="w-full mx-auto border-None shadow-None">
           <CardHeader>
             <CardTitle className="text-center text-xl lg:text-2xl text-primary">
               Input the necessary enrollment information
@@ -209,8 +209,8 @@ function EnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
+                            <SelectItem value="Yes">Yes</SelectItem>
+                            <SelectItem value="No">No</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>Will the student be using the school's bus service?</FormDescription>
@@ -234,8 +234,8 @@ function EnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
+                            <SelectItem value="Yes">Yes</SelectItem>
+                            <SelectItem value="No">No</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>Will you avail a school uniform?</FormDescription>
@@ -257,8 +257,8 @@ function EnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
+                            <SelectItem value="Yes">Yes</SelectItem>
+                            <SelectItem value="No">No</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>Will you avail student care service?</FormDescription>
@@ -303,13 +303,23 @@ function EnrollmentInformation() {
                 <div className="max-w-2xl mx-auto space-y-4 bg-emerald-400 p-6 rounded-2xl border border-muted shadow-sm">
                   <div className="space-y-4">
                     <Label className="text-xl text-white font-semibold">Apply a Discount</Label>
+                    {isPendingNewStudentDiscounts && (
+                      <div className="w-full flex items-center justify-center">
+                        <Tailspin size="30" stroke="3" speed="0.9" color="white" />
+                      </div>
+                    )}
+
                     <Select onValueChange={setDiscountType} value={discountType}>
                       <SelectTrigger className="w-full bg-white">
                         <SelectValue placeholder="Select a discount option" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-muted shadow-lg rounded-lg">
-                        <SelectItem value="referred-by-someone">🎯 Referred by someone</SelectItem>
-                        <SelectItem value="discount-code">🏷️ Discount code</SelectItem>
+                        {newStudentDiscounts?.hasReferredBySomeoneDiscounts && (
+                          <SelectItem value="referred-by-someone">🎯 Referred by someone</SelectItem>
+                        )}
+                        {newStudentDiscounts?.hasDiscountCodes && (
+                          <SelectItem value="discount-code">🏷️ Discount code</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -323,18 +333,7 @@ function EnrollmentInformation() {
                           <FormItem className="space-y-1">
                             <FormLabel className="text-white">Referrer's Name</FormLabel>
                             <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="w-full bg-white">
-                                    <SelectValue placeholder="Select referrer's name" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="referrer-1">Referrer 1</SelectItem>
-                                  <SelectItem value="referrer-2">Referrer 2</SelectItem>
-                                  <SelectItem value="referrer-3">Referrer 3</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <Input className="bg-white" type="" {...field} />
                             </FormControl>
                             <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
                             <FormMessage />
@@ -353,7 +352,7 @@ function EnrollmentInformation() {
                                   <MultiSelect
                                     key={0}
                                     variant={"inverted"}
-                                    options={discountList}
+                                    options={newStudentDiscounts?.discountCodes ?? []}
                                     onValueChange={field.onChange}
                                     placeholder="Select discount codes"
                                     maxCount={3}
@@ -363,7 +362,7 @@ function EnrollmentInformation() {
                                   <MultiSelect
                                     key={1}
                                     variant={"inverted"}
-                                    options={discountList}
+                                    options={newStudentDiscounts?.discountCodes ?? []}
                                     onValueChange={field.onChange}
                                     placeholder="Select discount codes"
                                     maxCount={1}
@@ -371,7 +370,6 @@ function EnrollmentInformation() {
                                   />
                                 </div>
                               </FormControl>
-                              <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -379,6 +377,7 @@ function EnrollmentInformation() {
                       ) : (
                         <div className="w-full flex justify-center items-center">
                           <Button
+                            disabled={!newStudentDiscounts?.hasDiscountCodes}
                             onClick={() => {
                               setIsShowDiscount(true);
                               setIsShowReferral(false);
@@ -406,7 +405,7 @@ function EnrollmentInformation() {
                                 <MultiSelect
                                   key={0}
                                   variant={"inverted"}
-                                  options={discountList}
+                                  options={newStudentDiscounts?.discountCodes ?? []}
                                   onValueChange={field.onChange}
                                   placeholder="Select discount codes"
                                   maxCount={3}
@@ -416,7 +415,7 @@ function EnrollmentInformation() {
                                 <MultiSelect
                                   key={1}
                                   variant={"inverted"}
-                                  options={discountList}
+                                  options={newStudentDiscounts?.discountCodes ?? []}
                                   onValueChange={field.onChange}
                                   placeholder="Select discount codes"
                                   maxCount={1}
@@ -424,7 +423,6 @@ function EnrollmentInformation() {
                                 />
                               </div>
                             </FormControl>
-                            <FormDescription className="text-white">Free merchandise / STAR kit.</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -437,18 +435,7 @@ function EnrollmentInformation() {
                             <FormItem className="space-y-1">
                               <FormLabel className="text-white">Referrer's Name</FormLabel>
                               <FormControl>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="w-full bg-white">
-                                      <SelectValue placeholder="Select referrer's name" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="referrer-1">Referrer 1</SelectItem>
-                                    <SelectItem value="referrer-2">Referrer 2</SelectItem>
-                                    <SelectItem value="referrer-3">Referrer 3</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <Input className="bg-white" {...field} />
                               </FormControl>
                               <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
                               <FormMessage />
@@ -458,6 +445,7 @@ function EnrollmentInformation() {
                       ) : (
                         <div className="w-full flex justify-center items-center">
                           <Button
+                            disabled={!newStudentDiscounts?.hasReferredBySomeoneDiscounts}
                             onClick={() => {
                               setIsShowDiscount(false);
                               setIsShowReferral(true);

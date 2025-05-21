@@ -1,10 +1,20 @@
 import { cn } from "@/lib/utils";
 import { Badge } from "./badge";
 
-export type StatusProps = "Uploaded" | "Valid" | "Expired";
+export type StatusProps = "Uploaded" | "Valid" | "Expired" | "Missing";
 
 function StatusBadge({ status, className }: { status: StatusProps; className?: string }) {
   switch (status) {
+    case "Missing":
+      return (
+        <Badge
+          className={cn(
+            "bg-red-600/10 dark:bg-red-600/20 hover:bg-red-600/10 text-red-500 shadow-none rounded-full",
+            className
+          )}>
+          <div className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2" /> Missing
+        </Badge>
+      );
     case "Uploaded":
       return (
         <Badge
@@ -35,6 +45,7 @@ function StatusBadge({ status, className }: { status: StatusProps; className?: s
           <div className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2" /> Expired
         </Badge>
       );
+
     default:
       break;
   }

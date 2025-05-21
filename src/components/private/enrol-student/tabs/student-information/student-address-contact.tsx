@@ -1,4 +1,3 @@
-import { updateStudentInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -7,24 +6,17 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { maritalStatuses } from "@/data";
-import { Student } from "@/types";
 import { studentAddressContactSchema, StudentAddressContactSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { Save } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router";
+import { parsePhoneNumber } from "react-phone-number-input";
+import { toast } from "sonner";
 
 function StudentAddressContact() {
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const params = useParams();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (studentInformation: Partial<Student>) => {
-      return await updateStudentInformation(studentInformation, params.id!);
-    },
-  });
+
   const form = useForm<StudentAddressContactSchema>({
     resolver: zodResolver(studentAddressContactSchema),
     defaultValues: {
@@ -42,7 +34,9 @@ function StudentAddressContact() {
       },
     });
 
-    mutate({ ...values });
+    toast.success("Student information saved!", {
+      description: "Make sure to double check everything",
+    });
   }
 
   return (
@@ -89,7 +83,7 @@ function StudentAddressContact() {
                   <LocationSelector
                     showStates={false}
                     selectedNationality={formState.studentInfo?.addressContact.nationality}
-                    onCountryChange={(value) => field.onChange(value?.nationality)}
+                    onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
                 <FormDescription>Select the country that best represents the student's nationality.</FormDescription>
@@ -107,7 +101,12 @@ function StudentAddressContact() {
               <FormItem className="flex flex-col items-start">
                 <FormLabel>Home phone</FormLabel>
                 <FormControl className="w-full">
-                  <PhoneInput {...field} defaultCountry="TR" />
+                  <PhoneInput
+                    {...field}
+                    value={parsePhoneNumber(field.value, "SG")?.formatInternational()}
+                    defaultCountry="SG"
+                    international
+                  />
                 </FormControl>
                 <FormDescription>Enter your home phone number.</FormDescription>
                 <FormMessage />
@@ -136,7 +135,12 @@ function StudentAddressContact() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Contact Person Number</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="TR" />
+                    <PhoneInput
+                      {...field}
+                      value={parsePhoneNumber(String(field.value), "SG")?.number}
+                      international
+                      defaultCountry="SG"
+                    />
                   </FormControl>
                   <FormDescription>Enter your student's contact person phone number.</FormDescription>
                   <FormMessage />
@@ -189,32 +193,14 @@ function StudentAddressContact() {
           />
         </div>
 
-        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="30" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
-          )}
+        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
 
-        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="20" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
-          )}
+        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
       </form>
     </Form>

@@ -31,14 +31,15 @@ function SiblingInformation() {
   });
 
   const onSubmit = (values: SiblingInformationSchema) => {
-    toast.success("Sibling information saved!", {
-      description: "Make sure to double check everything",
-    });
     setFormState({
       familyInfo: {
         ...formState.familyInfo!,
         siblingsInfo: values,
       },
+    });
+
+    toast.success("Sibling information saved!", {
+      description: "Make sure to double check everything",
     });
   };
 
@@ -79,7 +80,7 @@ function SiblingInformation() {
                     />
                     <FormField
                       control={form.control}
-                      name={`siblings.${index}.siblingDateOfBirth`}
+                      name={`siblings.${index}.siblingBirthDay`}
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Date of birth</FormLabel>
@@ -162,7 +163,7 @@ function SiblingInformation() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
                     <FormField
                       control={form.control}
-                      name={`siblings.${index}.siblingSchoolOrCompanyName`}
+                      name={`siblings.${index}.siblingSchoolCompany`}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>School or Company Name</FormLabel>
@@ -177,7 +178,7 @@ function SiblingInformation() {
 
                     <FormField
                       control={form.control}
-                      name={`siblings.${index}.siblingSchoolLevelOrCompanyPosition`}
+                      name={`siblings.${index}.siblingEducationOccupation`}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>School Level or Company Position</FormLabel>

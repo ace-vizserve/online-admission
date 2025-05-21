@@ -35,7 +35,7 @@ function StudentUpload() {
       description: "You're now ready to upload the Parent/Guardian documents.",
     });
 
-    const { idPicture, form12, medicalExam, pass, birthCertificate, passport, transcriptOfRecords } =
+    const { idPicture, form12, medical, pass, birthCert, passport, educCert } =
       formState.uploadRequirements!.studentUploadRequirements;
 
     setFormState({
@@ -48,15 +48,15 @@ function StudentUpload() {
         studentUploadRequirements: {
           idPicture,
           form12,
-          medicalExam,
+          medical,
           pass,
-          birthCertificate,
+          birthCert,
           passport,
-          transcriptOfRecords,
+          educCert,
           passType: values.passType,
-          passExpiryDate: values.passExpiryDate,
+          passExpiry: values.passExpiry,
           passportNumber: values.passportNumber,
-          passportExpiryDate: values.passportExpiryDate,
+          passportExpiry: values.passportExpiry,
           isValid: true,
         },
       },
@@ -84,7 +84,7 @@ function StudentUpload() {
             label="Student Birth Certificate"
             description="Upload a recent copy of birth certificate"
             form={form}
-            name="birthCertificate"
+            name="birthCert"
             value={birthCertificate}
             onValueChange={setBirthCertificate}
           />
@@ -95,7 +95,7 @@ function StudentUpload() {
             label="Transcript of Records"
             description="Upload the student's copy of TOR"
             form={form}
-            name="transcriptOfRecords"
+            name="educCert"
             value={transcriptOfRecords}
             onValueChange={setTranscriptOfRecords}
           />
@@ -119,7 +119,7 @@ function StudentUpload() {
             label="Medical Examination"
             description="Upload recent medical result of student"
             form={form}
-            name="medicalExam"
+            name="medical"
             value={medicalExam}
             onValueChange={setMedicalExam}
           />
