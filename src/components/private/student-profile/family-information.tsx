@@ -10,7 +10,7 @@ import InputWithIcon from "./input-with-icon";
 
 function FamilyInformation({ label, familyInformation }: { label: string; familyInformation: FamilyInfo }) {
   const {
-    motherDateOfBirth,
+    motherBirthDay,
     motherEmail,
     motherFirstName,
     motherLastName,
@@ -23,7 +23,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
     motherWorkCompany,
     motherWorkPosition,
     fatherEmail,
-    fatherDateOfBirth,
+    fatherBirthDay,
     fatherFirstName,
     fatherLastName,
     fatherMiddleName,
@@ -34,7 +34,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
     fatherReligion,
     fatherWorkCompany,
     fatherWorkPosition,
-    guardianDateOfBirth,
+    guardianBirthDay,
     guardianReligion,
     guardianEmail,
     guardianFirstName,
@@ -101,7 +101,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
-                    value={fatherDateOfBirth ? formatDate(fatherDateOfBirth, "PPP") : "N/A"}
+                    value={fatherBirthDay ? formatDate(fatherBirthDay, "PPP") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -226,7 +226,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
-                    value={motherDateOfBirth ? formatDate(motherDateOfBirth, "PPP") : "N/A"}
+                    value={motherBirthDay ? formatDate(motherBirthDay, "PPP") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -351,7 +351,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
-                    value={guardianDateOfBirth ? formatDate(guardianDateOfBirth, "PPP") : "N/A"}
+                    value={guardianBirthDay ? formatDate(guardianBirthDay, "PPP") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -455,9 +455,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                     <div className="space-y-2">
                       <Label>Birthday</Label>
                       <InputWithIcon
-                        value={
-                          sibling.siblingDateOfBirth ? formatDate(sibling.siblingDateOfBirth as string, "PPP") : "N/A"
-                        }
+                        value={sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "PPP") : "N/A"}
                         svgIcon={<Cake className="text-muted-foreground size-4" />}
                       />
                     </div>
@@ -473,14 +471,14 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                     <div className="space-y-2">
                       <Label>School Level / Company Position</Label>
                       <InputWithIcon
-                        value={(sibling.siblingSchoolLevelOrCompanyPosition as string) ?? "N/A"}
+                        value={(sibling.siblingEducationOccupation as string) ?? "N/A"}
                         svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>School / Company Name</Label>
                       <InputWithIcon
-                        value={(sibling.siblingSchoolOrCompanyName as string) ?? "N/A"}
+                        value={(sibling.siblingSchoolCompany as string) ?? "N/A"}
                         svgIcon={<School className="text-muted-foreground size-4" />}
                       />
                     </div>

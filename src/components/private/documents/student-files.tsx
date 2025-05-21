@@ -539,3 +539,18 @@
 // }
 
 // export default StudentFiles;
+
+// KINOMMENT KO MUNA DI KO MA-MERGE
+// FIX MO NALANG YUNG ERRORS INUPDATE KO KASI YUNG FUNCTIONS NA GAMIT
+
+// PANSAMANTALA TSX
+
+type ProfileProps = {
+  enroleeNumber: string;
+};
+
+function StudentFiles({ enroleeNumber }: ProfileProps) {
+  return <div>StudentFiles {enroleeNumber}</div>;
+}
+
+export default StudentFiles;
