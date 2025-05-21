@@ -1,5 +1,5 @@
 import { classLevels } from "@/data";
-import { Document, EnrolNewStudentFormState, FamilyInfo } from "@/types";
+import { EnrolNewStudentFormState, FamilyInfo } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -100,46 +100,4 @@ export function extractSiblings(family: FamilyInfo) {
   }
 
   return siblings;
-}
-
-export function generateRequiredDocuments(documents: Document[]) {
-  const getFileUrl = (type: string) => documents.find((doc) => doc.documentType === type)?.fileUrl || "";
-
-  const passportDoc = documents.find((doc) => doc.documentType === "passport");
-  const passDoc = documents.find((doc) => doc.documentType === "pass");
-
-  return {
-    birthCertificate: getFileUrl("birthCertificate"),
-    form12: getFileUrl("form12"),
-    idPicture: getFileUrl("idPicture"),
-    medicalExam: getFileUrl("medicalExam"),
-    pass: passDoc?.fileUrl || "",
-    passExpiryDate: passDoc?.passExpirationDate ?? null,
-    passType: passDoc?.passType || "",
-    passport: passportDoc?.fileUrl || "",
-    passportExpiryDate: passportDoc?.passportExpirationDate ?? null,
-    passportNumber: passportDoc?.passportNumber || "",
-    transcriptOfRecords: getFileUrl("transcriptOfRecords"),
-  };
-}
-
-export function generateDocuments(documents: Document[]) {
-  const getFileUrl = (type: string) => documents.find((doc) => doc.documentType === type)?.fileUrl || "";
-
-  const passportDoc = documents.find((doc) => doc.documentType === "Passport");
-  const passDoc = documents.find((doc) => doc.documentType === "Pass");
-
-  return {
-    birthCertificate: getFileUrl("Birth Certificate"),
-    form12: getFileUrl("Form 12"),
-    idPicture: getFileUrl("ID Picture"),
-    medicalExam: getFileUrl("Medical Exam"),
-    pass: passDoc?.fileUrl || "",
-    passExpiryDate: passDoc?.passExpirationDate ?? null,
-    passType: passDoc?.passType || "",
-    passport: passportDoc?.fileUrl || "",
-    passportExpiryDate: passportDoc?.passportExpirationDate ?? null,
-    passportNumber: passportDoc?.passportNumber || "",
-    transcriptOfRecords: getFileUrl("Transcript of Records"),
-  };
 }

@@ -106,7 +106,7 @@ export const columns: ColumnDef<TStudent>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/student-list/${student.studentID}`}>
+            <Link to={`/admission/student-list/${student.enroleeNumber}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View Documents
               </DropdownMenuItem>
@@ -117,7 +117,6 @@ export const columns: ColumnDef<TStudent>[] = [
     },
   },
 ];
-
 
 function DocumentsList() {
   const { data, isPending } = useQuery({

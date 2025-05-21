@@ -829,7 +829,7 @@ export async function getParentGuardianDocuments() {
   }
 }
 
-export async function getCurrentParentGuardianDocuments(studentID?: string) {
+export async function getCurrentParentGuardianDocuments(enroleeNumber?: string) {
   try {
     const {
       data: { session },
@@ -841,8 +841,8 @@ export async function getCurrentParentGuardianDocuments(studentID?: string) {
       .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
       .eq("academicYear", new Date().getFullYear());
 
-    if (studentID) {
-      enrollmentsQuery = enrollmentsQuery.eq("studentID", studentID);
+    if (enroleeNumber) {
+      enrollmentsQuery = enrollmentsQuery.eq("studentID", enroleeNumber);
     }
 
     const { data: enrollments } = await enrollmentsQuery;
@@ -855,8 +855,8 @@ export async function getCurrentParentGuardianDocuments(studentID?: string) {
       .neq("documentOwner", "student")
       .in("enrolmentNumber", enrolmentNumbers);
 
-    if (studentID) {
-      parentGuardianDocumentsQuery = parentGuardianDocumentsQuery.eq("studentID", studentID);
+    if (enroleeNumber) {
+      parentGuardianDocumentsQuery = parentGuardianDocumentsQuery.eq("studentID", enroleeNumber);
     }
 
     const { data: parentGuardianDocuments } = await parentGuardianDocumentsQuery;
