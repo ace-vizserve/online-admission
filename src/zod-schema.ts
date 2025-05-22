@@ -297,33 +297,50 @@ export const siblingInformationSchema = z
     });
   });
 
-export const enrollmentInformationSchema = z.object({
-  isValid: z.boolean().default(false).optional(),
-  levelApplied: z.string().min(1, {
-    message: "Class level is required",
-  }),
-  classType: z.string().min(1, {
-    message: "Class type is required",
-  }),
-  preferredSchedule: z.string().min(1, {
-    message: "Preferred schedule is required",
-  }),
-  additionalLearningOrSpecialNeeds: z.string().optional(),
-  availSchoolBus: z.string().min(1, {
-    message: "Bus service selection is required",
-  }),
-  availUniform: z.string().min(1, {
-    message: "School uniform selection is required",
-  }),
-  availStudentCare: z.string().min(1, {
-    message: "Student care selection is required",
-  }),
-  paymentOption: z.string().min(1, {
-    message: "Campus development fee selection is required",
-  }),
-  discount: z.array(z.string().optional()).optional(),
-  referrerName: z.string().optional(),
-});
+export const enrollmentInformationSchema = z
+  .object({
+    isValid: z.boolean().default(false).optional(),
+    levelApplied: z.string().min(1, {
+      message: "Class level is required",
+    }),
+    classType: z.string().min(1, {
+      message: "Class type is required",
+    }),
+    preferredSchedule: z.string().min(1, {
+      message: "Preferred schedule is required",
+    }),
+    additionalLearningOrSpecialNeeds: z.string().optional(),
+    availSchoolBus: z.string().min(1, {
+      message: "Bus service selection is required",
+    }),
+    availUniform: z.string().min(1, {
+      message: "School uniform selection is required",
+    }),
+    availStudentCare: z.string().min(1, {
+      message: "Student care selection is required",
+    }),
+    paymentOption: z.string().min(1, {
+      message: "Campus development fee selection is required",
+    }),
+    discount: z.array(z.string().optional()).optional(),
+    referrerName: z.string().optional(),
+    referrerMobile: z.string().optional(),
+  })
+  .superRefine((schema, ctx) => {
+    if (
+      schema.referrerName &&
+      schema.referrerName.toLowerCase() !== "na" &&
+      schema.referrerName.toLowerCase() !== "nil"
+    ) {
+      if (!schema.referrerMobile) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please enter your referrer's mobile phone",
+          path: ["referrerMobile"],
+        });
+      }
+    }
+  });
 
 z.instanceof(File, { message: "Photo is required" });
 

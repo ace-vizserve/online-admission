@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import { Save } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { parsePhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 import { toast } from "sonner";
 
 function StudentAddressContact() {
@@ -25,6 +25,20 @@ function StudentAddressContact() {
   });
 
   function onSubmit(values: StudentAddressContactSchema) {
+    if (form.getValues("homePhone") && !isValidPhoneNumber(form.getValues("homePhone"))) {
+      form.setError("homePhone", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
+    if (form.getValues("contactPersonNumber") && !isValidPhoneNumber(form.getValues("contactPersonNumber"))) {
+      form.setError("contactPersonNumber", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
     setFormState({
       studentInfo: {
         studentDetails: { ...(formState.studentInfo?.studentDetails ?? ({} as unknown as StudentDetailsSchema)) },
