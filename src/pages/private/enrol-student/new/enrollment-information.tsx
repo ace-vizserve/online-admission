@@ -87,7 +87,7 @@ function EnrollmentInformation() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="w-full flex-1">
-        <Card className="w-full mx-auto border-None shadow-None">
+        <Card className="w-full mx-auto border-none shadow-none">
           <CardHeader>
             <CardTitle className="text-center text-xl lg:text-2xl text-primary">
               Input the necessary enrollment information

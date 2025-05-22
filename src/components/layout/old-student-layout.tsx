@@ -1,6 +1,6 @@
 import EnrolOldStudentContextProvider, { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { ArrowLeft } from "lucide-react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate, useSearchParams } from "react-router";
 import MaxWidthWrapper from "../max-width-wrapper";
 import OldStudentSteps from "../private/enrol-student/old-student-steps";
 import SubmitApplicationDialog from "../private/enrol-student/submit-application-dialog";
@@ -18,10 +18,28 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { OctagonAlert } from "lucide-react";
+import { useEffect } from "react";
 import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function OldStudentLayout() {
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const academicYearParams = searchParams.get("academicYear");
+
+    if (!academicYearParams) {
+      navigate("/admission/dashboard");
+    }
+
+    if (academicYearParams != academicYear) {
+      setSearchParams({ academicYear });
+    }
+  }, [academicYear, navigate, searchParams, setSearchParams]);
+
   return (
     <>
       <BeforeUnloadWarning />
@@ -48,12 +66,12 @@ function OldStudentLayout() {
 
 function ExitApplicationDialog() {
   const { setFormState } = useEnrolOldStudentContext();
-  const navigate = useNavigate();
+  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
 
   function exitApplication() {
     setFormState({});
-    sessionStorage.removeItem("enrolOldStudentFormState");
-    navigate("/admission/dashboard");
+    setAcademicYear("");
+    sessionStorage.removeItem("enrolNewStudentFormState");
   }
 
   return (

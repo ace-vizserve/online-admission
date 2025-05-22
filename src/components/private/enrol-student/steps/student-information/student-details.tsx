@@ -10,6 +10,7 @@ import { religions } from "@/data";
 import { supabase } from "@/lib/client";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
@@ -20,6 +21,7 @@ import { toast } from "sonner";
 function StudentDetails() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const form = useForm<StudentDetailsSchema>({
     resolver: zodResolver(studentDetailsSchema),
@@ -31,7 +33,7 @@ function StudentDetails() {
   async function onSubmit(values: StudentDetailsSchema) {
     try {
       const { count } = await supabase
-        .from("ay2026_enrolment_applications")
+        .from(`${academicYear}_enrolment_applications`)
         .select("nric", { count: "exact" })
         .eq("nric", values.nric)
         .single();

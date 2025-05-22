@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { EnrolNewStudentFormState } from "@/types";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
@@ -20,10 +21,12 @@ import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-di
 
 function ParentGuardianUpload() {
   const navigate = useNavigate();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { formState, setFormState } = useEnrolNewStudentContext();
-
   const { mutate, isPending } = useMutation({
-    mutationFn: submitEnrollment,
+    mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
+      return await submitEnrollment(enrollmentDetails, academicYear);
+    },
     onSuccess() {
       navigate("/application-submitted", {
         replace: true,
@@ -73,7 +76,13 @@ function ParentGuardianUpload() {
     const birthDay = formState.studentInfo!.studentDetails.birthDay;
     const motherEmail = formState.familyInfo!.motherInfo.motherEmail;
     const fatherEmail = formState.familyInfo?.fatherInfo.fatherEmail;
-    const result = await lookupNewEnrolledStudent({ enroleeFullName, birthDay, motherEmail, fatherEmail });
+    const result = await lookupNewEnrolledStudent({
+      enroleeFullName,
+      birthDay,
+      motherEmail,
+      fatherEmail,
+      academicYear,
+    });
 
     if (result) {
       toast.error("Enrollment Already Exists!", {

@@ -1,6 +1,6 @@
 import EnrolNewStudentContextProvider, { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ArrowLeft } from "lucide-react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate, useSearchParams } from "react-router";
 import MaxWidthWrapper from "../max-width-wrapper";
 import NewStudentSteps from "../private/enrol-student/new-student-steps";
 import { buttonVariants } from "../ui/button";
@@ -17,10 +17,28 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { OctagonAlert } from "lucide-react";
+import { useEffect } from "react";
 import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function NewStudentLayout() {
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const academicYearParams = searchParams.get("academicYear");
+
+    if (!academicYearParams) {
+      navigate("/admission/dashboard");
+    }
+
+    if (academicYearParams != academicYear) {
+      setSearchParams({ academicYear });
+    }
+  }, [academicYear, navigate, searchParams, setSearchParams]);
+
   return (
     <>
       <BeforeUnloadWarning />
@@ -45,12 +63,12 @@ function NewStudentLayout() {
 
 function ExitApplicationDialog() {
   const { setFormState } = useEnrolNewStudentContext();
-  const navigate = useNavigate();
+  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
 
   function exitApplication() {
     setFormState({});
+    setAcademicYear("");
     sessionStorage.removeItem("enrolNewStudentFormState");
-    navigate("/admission/dashboard");
   }
 
   return (
