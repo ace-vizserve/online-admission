@@ -147,7 +147,7 @@ type StudentsListTableProps = {
       | {
           studentsList: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            studentID: any;
+            enroleeNumber: any;
             studentName: string;
             age: number;
             mothersName: string;

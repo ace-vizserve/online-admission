@@ -23,7 +23,7 @@ import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-i
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
 import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requirements";
 import { Enrollment } from "@/pages/private/Enrollment";
-import { SchoolYear } from "@/pages/private/school-year";
+// import { SchoolYear } from "@/pages/private/school-year";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentProfile from "@/pages/private/student-profile";
 import Uploaded from "@/pages/private/uploaded";
@@ -172,7 +172,7 @@ function AppRoutes() {
             }
           />
 
-          <Route
+          {/* <Route
             index
             path="documents/student-enrolment/:id"
             element={
@@ -180,7 +180,7 @@ function AppRoutes() {
                 <SchoolYear />
               </AuthGuard>
             }
-          />
+          /> */}
 
           <Route path="*" element={<NotFound />} />
         </Route>
