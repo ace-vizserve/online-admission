@@ -143,11 +143,13 @@ export type Document = {
   passport: string | null;
   passportStatus: string | null;
   passportExpiry: string | null;
+  passportNumber: string | null;
   birthCert: string | null;
   birthCertStatus: string | null;
   pass: string | null;
   passStatus: string | null;
   passExpiry: string | null;
+  passType: string | null;
   educCert: string | null;
   educCertStatus: string | null;
   motherPassport: string | null;
@@ -171,21 +173,32 @@ export type Document = {
   idPicture: string | null;
   idPictureStatus: string | null;
   idPictureUploadedDate: string | null;
+  documentType?: string;
+  status?: string;
+  fileUrl?: string;
 };
 
 export type FamilyDocument = {
-  id: number;
-  created_at: string;
-  documentOwner: "mother" | "father" | "guardian";
-  documentType: string;
-  enrolmentNumber: string;
-  fileUrl: string;
-  passExpirationDate: string | null;
-  passType: string | null;
-  passportExpirationDate: string | null;
-  passportNumber: string | null;
-  status: string;
-  enroleeNumber: string;
+  motherPassNumber: string | null;
+  motherPassport: string | null;
+  motherPassportStatus: string | null;
+  motherPassportExpiry: string | null;
+  motherPass: string | null;
+  motherPassStatus: string | null;
+  motherPassExpiry: string | null;
+  fatherPassport: string | null;
+  fatherPassportStatus: string | null;
+  fatherPassportExpiry: string | null;
+  fatherPass: string | null;
+  fatherPassStatus: string | null;
+  fatherPassExpiry: string | null;
+  guardianPassport: string | null;
+  guardianPassportStatus: string | null;
+  guardianPassportExpiry: string | null;
+  guardianPass: string | null;
+  guardianPassStatus: string | null;
+  guardianPassExpiry: string | null;
+  fileUrl?: string;
 };
 
 export type StudentDocuments = {
@@ -193,11 +206,17 @@ export type StudentDocuments = {
     enroleeFullName: string;
     academicYear: string;
   };
-  enroleeNumber: string;
+  studentID: string;
   documentType: string;
   fileUrl: string;
   status: string;
   created_at: string;
+};
+
+export type StudentDocumentsList = {
+  studentInformation: Student;
+  studentDocuments: StudentDocument;
+  familyDocuments: FamilyDocument[];
 };
 
 export type StudentDetails = {
@@ -263,7 +282,7 @@ export type StudentInfo = {
 };
 
 export type levelYear = {
-  id: string;
+  enroleeNumber: string;
   studentName: string;
   academicYear: string;
   grade_level: string;

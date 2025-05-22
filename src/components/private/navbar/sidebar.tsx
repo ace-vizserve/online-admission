@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, FolderOpen, LayoutDashboardIcon } from "lucide-react";
+import { ClipboardList, LayoutDashboardIcon } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -28,11 +28,11 @@ const data = {
       url: "/admission/enrolment",
       icon: ClipboardList,
     },
-    {
-      title: "Documents",
-      url: "/admission/documents",
-      icon: FolderOpen,
-    },
+    // {
+    //   title: "Documents",
+    //   url: "/admission/documents",
+    //   icon: FolderOpen,
+    // },
   ],
 };
 

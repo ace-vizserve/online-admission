@@ -3,7 +3,7 @@ import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
-import UploadFiles from "@/components/private/uploaded/upload-files";
+// import UploadFiles from "@/components/private/uploaded/upload-files";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
@@ -152,7 +152,7 @@ function AppRoutes() {
             }
           />
 
-          <Route
+          {/* <Route
             index
             path="student-file/:id"
             element={
@@ -160,7 +160,7 @@ function AppRoutes() {
                 <UploadFiles/>
               </AuthGuard>
             }
-          />
+          /> */}
 
           <Route
             index

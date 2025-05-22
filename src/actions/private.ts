@@ -196,34 +196,36 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
 
 export async function getStudentEnrollmentList() {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { data: data2025, error: error2025 } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("levelApplied, applicationStatus, enroleeNumber, enroleeFullName, studentNumber");
 
-    const { data, error } = await supabase
-      .from("student_enrolments")
-      .select("academicYear, grade_level, status, studentID, enroleeFullName")
-      .or(`parent1.eq.${session?.user.id}, parent2.eq.${session?.user.id}`);
+    const { data: data2026, error: error2026 } = await supabase
+      .from("ay2026_enrolment_applications")
+      .select("levelApplied, applicationStatus, enroleeNumber, enroleeFullName, studentNumber");
 
-    if (error) {
-      throw new Error(error.message);
+    if (error2025 || error2026) {
+      throw new Error(error2025?.message || error2026?.message);
     }
+    const studentsList = [
+      ...(data2025 ?? []).map(s => ({ ...s, year: "2025" })),
+      ...(data2026 ?? []).map(s => ({ ...s, year: "2026" })),
+    ];
 
-    return { studentsList: data };
+    return { studentsList };
   } catch (error) {
-    const err = error as AuthError;
+    const err = error as Error;
     toast.error(err.message);
   }
 }
 
-export async function getStudentDocumentsList(studentID: string) {
-  if (!studentID) return [];
+export async function getStudentDocumentsList(enroleeNumber: string) {
+  if (!enroleeNumber) return [];
   try {
     const { data } = await supabase
-      .from("enrolment_documents")
-      .select("*")
-      .eq("documentOwner", "student")
-      .eq("studentID", studentID);
+      .from("ay2025_enrolment_documents")
+      .select("form12, form12Status, medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus")
+      .eq("enroleeNumber", enroleeNumber)
 
     return data ?? [];
   } catch {
@@ -247,6 +249,10 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       throw new Error(studentInformationError.message);
     }
 
+    if (!studentInformation || !studentInformation.length) {
+      return null;
+    }
+
     const { data: documents, error: studentDocumentsError } = await supabase
       .from("ay2025_enrolment_documents")
       .select("*")
@@ -254,6 +260,10 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
 
     if (studentDocumentsError) {
       throw new Error(studentDocumentsError.message);
+    }
+
+    if (!documents || !documents.length) {
+      return null;
     }
 
     const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0];
@@ -1873,78 +1883,45 @@ export async function lookupOldEnrolledStudent({
   }
 }
 
-export async function getFamilyDocuments(studentID: string) {
-  if (!studentID) return [];
+export async function getFamilyDocuments(enroleeNumber: string) {
+  if (!enroleeNumber) return {};
   try {
-    // 1. Get names from applications table
-    const { data: appData } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("motherFullName, fatherFullName, guardianFullName")
-      .eq("studentID", studentID)
-      .single();
-
-    // 2. Get document URLs from documents table
-    const { data: docData } = await supabase
+    // Fetch the documents row
+    const { data: documents, error: documentsError } = await supabase
       .from("ay2025_enrolment_documents")
-      .select("motherPassport, motherPass, fatherPassport, fatherPass, guardianPassport, guardianPass")
-      .eq("studentID", studentID)
-      .single();
+      .select("*")
+      .eq("enroleeNumber", enroleeNumber);
 
-    if (!appData || !docData) return [];
+    if (documentsError) throw new Error(documentsError.message);
 
-    const docs = [];
+    if (!documents || !documents.length) return null;
 
-    if (docData.motherPassport) {
-      docs.push({
-        owner: "mother",
-        fullName: appData.motherFullName,
-        documentType: "Passport",
-        fileUrl: docData.motherPassport,
-      });
-    }
-    if (docData.motherPass) {
-      docs.push({
-        owner: "mother",
-        fullName: appData.motherFullName,
-        documentType: "Pass",
-        fileUrl: docData.motherPass,
-      });
-    }
-    if (docData.fatherPassport) {
-      docs.push({
-        owner: "father",
-        fullName: appData.fatherFullName,
-        documentType: "Passport",
-        fileUrl: docData.fatherPassport,
-      });
-    }
-    if (docData.fatherPass) {
-      docs.push({
-        owner: "father",
-        fullName: appData.fatherFullName,
-        documentType: "Pass",
-        fileUrl: docData.fatherPass,
-      });
-    }
-    if (docData.guardianPassport) {
-      docs.push({
-        owner: "guardian",
-        fullName: appData.guardianFullName,
-        documentType: "Passport",
-        fileUrl: docData.guardianPassport,
-      });
-    }
-    if (docData.guardianPass) {
-      docs.push({
-        owner: "guardian",
-        fullName: appData.guardianFullName,
-        documentType: "Pass",
-        fileUrl: docData.guardianPass,
-      });
-    }
+    // Extract parent/guardian document fields
+    const doc = documents[0];
 
-    return docs;
-  } catch {
-    return [];
+    return {
+      motherPassport: doc.motherPassport,
+      motherPassportExpiry: doc.motherPassportExpiry,
+      motherPassportStatus: doc.motherPassportStatus,
+      motherPass: doc.motherPass,
+      motherPassExpiry: doc.motherPassExpiry,
+      motherPassStatus: doc.motherPassStatus,
+      fatherPassport: doc.fatherPassport,
+      fatherPassportExpiry: doc.fatherPassportExpiry,
+      fatherPassportStatus: doc.fatherPassportStatus,
+      fatherPass: doc.fatherPass,
+      fatherPassExpiry: doc.fatherPassExpiry,
+      fatherPassStatus: doc.fatherPassStatus,
+      guardianPassport: doc.guardianPassport,
+      guardianPassportExpiry: doc.guardianPassportExpiry,
+      guardianPassportStatus: doc.guardianPassportStatus,
+      guardianPass: doc.guardianPass,
+      guardianPassExpiry: doc.guardianPassExpiry,
+      guardianPassStatus: doc.guardianPassStatus,
+    };
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+    return null;
   }
 }

@@ -125,11 +125,11 @@ function SingleDocuments() {
   }
 
   const students = data.studentsList.map(student => ({
-    id: student.studentID,
+    id: student.enroleeNumber,
     studentName: student.enroleeFullName,
     academicYear: student.academicYear,
-    grade_level: student.grade_level,
-    status: student.status
+    grade_level: student.levelApplied,
+    status: student.applicationStatus
   }));
 
   return <StudentsListTable refetch={refetch} isRefetching={isRefetching} studentsList={students} />;

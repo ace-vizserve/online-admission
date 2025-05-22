@@ -1,4 +1,4 @@
-import SingleDocuments from "@/components/private/documents/single-documents";
+import UploadFiles from "@/components/private/uploaded/upload-files";
 import { useParams } from "react-router";
 
 function Uploaded() {
@@ -11,7 +11,7 @@ function Uploaded() {
   return (
     <>
       <div className="py-7 md:py-14 px-4 md:px-6">
-        <SingleDocuments />
+        <UploadFiles enroleeNumber={params.id} />
       </div>
     </>
   );

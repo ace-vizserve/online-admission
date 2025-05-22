@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, User, UserPlus } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, RefreshCcw, User, UserPlus } from "lucide-react";
 import * as React from "react";
 
 import { getStudentList } from "@/actions/private";
@@ -24,8 +24,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { TStudent } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Link } from "react-router";
@@ -119,8 +120,8 @@ export const columns: ColumnDef<TStudent>[] = [
 ];
 
 function Enrol() {
-  const { data, isPending } = useQuery({
-    queryKey: ["enrolments-list"],
+  const { data, isPending, refetch, isRefetching } = useQuery({
+    queryKey: ["students-list"],
     queryFn: getStudentList,
   });
 
@@ -137,10 +138,32 @@ function Enrol() {
     return <NoStudentsPanel />;
   }
 
-  return <StudentsListTable studentsList={data.studentsList} />;
+  return <StudentsListTable refetch={refetch} isRefetching={isRefetching} studentsList={data.studentsList} />;
 }
 
-function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
+type StudentsListTableProps = {
+  refetch: (options?: RefetchOptions | undefined) => Promise<
+    QueryObserverResult<
+      | {
+          studentsList: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            studentID: any;
+            studentName: string;
+            age: number;
+            mothersName: string;
+            fathersName: string;
+          }[];
+        }
+      | undefined,
+      Error
+    >
+  >;
+  isRefetching: boolean;
+  studentsList: TStudent[];
+};
+
+function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsListTableProps) {
+  const queryClient = useQueryClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
@@ -160,16 +183,28 @@ function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
     },
   });
 
+  function updateDashboardDetails() {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["section-cards"] });
+  }
+
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">Students List</h1>
-      <div className="flex items-center py-4">
+      <div className="flex items-center gap-4  py-4">
         <Input
           placeholder="Filter names..."
-          value={(table.getColumn("enroleeFullName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("enroleeFullName")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("studentName")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
+        <Button disabled={isRefetching} onClick={updateDashboardDetails} size={"icon"} variant={"outline"}>
+          <RefreshCcw
+            className={cn({
+              "animate-spin": isRefetching,
+            })}
+          />
+        </Button>
       </div>
       <div className="rounded-md border overflow-hidden">
         <Table>
@@ -225,9 +260,9 @@ function StudentsListTable({ studentsList }: { studentsList: TStudent[] }) {
 
 function NoStudentsPanel() {
   return (
-    <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-3 my-7 md:my-14 text-center px-4">
-      <h2 className="text-lg font-semibold">No students to show</h2>
-      <p className="text-sm text-muted-foreground max-w-md">
+    <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-1.5 md:gap-3 my-7 md:my-14 text-center px-4">
+      <h2 className="text-lg md:text-xl font-semibold">No students to show</h2>
+      <p className="text-xs md:text-sm text-muted-foreground max-w-prose text-balance">
         You haven’t added any student records yet. Start by adding a student to see their enrollment information here.
       </p>
 

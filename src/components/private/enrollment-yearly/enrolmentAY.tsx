@@ -26,7 +26,13 @@ import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/client";
 
-const columns: ColumnDef<SingleStudent>[] = [
+const columns: ColumnDef<{
+  id: any;
+  studentName: any;
+  academicYear: string;
+  levelApplied: any;
+  status: any;
+}>[] = [
   {
     accessorKey: "academicYear",
     header: ({ column }) => (
@@ -42,7 +48,7 @@ const columns: ColumnDef<SingleStudent>[] = [
     cell: ({ row }) => <div className="capitalize text-xs ml-9">{row.getValue("academicYear")}</div>,
   },
   {
-    accessorKey: "level",
+    accessorKey: "levelApplied",
     header: ({ column }) => (
       <Button
         variant={"ghost"}
@@ -53,7 +59,7 @@ const columns: ColumnDef<SingleStudent>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("level")}</div>,
+    cell: ({ row }) => <div className="text-xs pl-3 tabular-nums">{row.getValue("levelApplied")}</div>,
   },
   {
     accessorKey: "status",
@@ -110,12 +116,12 @@ function EnrolmentAY() {
     queryKey: ["ay2025_enrolment_applications", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("student_enrolments")
+        .from("ay2025_enrolment_applications")
         .select(`
           id,
           enroleeFullName,
           academicYear,
-          grade_level,
+          levelApplied,
           status
         `)
         .eq("id", Number(id));
@@ -139,7 +145,7 @@ function EnrolmentAY() {
         id: record.id,
         studentName: record.enroleeFullName,
         academicYear: `${record.academicYear}`,
-        level: record.grade_level,
+        levelApplied: record.levelApplied,
         status: record.status,
       }));
     },

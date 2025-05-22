@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -30,6 +28,7 @@ import { QueryObserverResult, RefetchOptions, useQuery } from "@tanstack/react-q
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Link } from "react-router";
+import { useParams } from "react-router";
 
 
 export const columns: ColumnDef<levelYear>[] = [
@@ -56,12 +55,12 @@ export const columns: ColumnDef<levelYear>[] = [
           variant={"ghost"}
           className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Grade Level
+          Level
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("grade_level")}</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-3">{row.getValue("grade_level")}</div>,
   },
   {
     accessorKey: "status",
@@ -71,7 +70,7 @@ export const columns: ColumnDef<levelYear>[] = [
           variant={"ghost"}
           className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Stattus
+          Status
           <ArrowUpDown />
         </Button>
       );
@@ -93,9 +92,9 @@ export const columns: ColumnDef<levelYear>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/students/${student.id}`}>
+            <Link to={`/admission/document-file/${student.enroleeNumber}`}>
               <DropdownMenuItem className="text-xs">
-                <User className="mr-1" /> View Enrolment Information
+                <User className="mr-1" /> View Documents List
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
@@ -110,6 +109,12 @@ function SingleEnrol() {
     queryKey: ["students-enrolments-list"],
     queryFn: getStudentEnrollmentList,
   });
+  const params = useParams();
+  const enroleeNumber = params.id;
+
+  // Debug logs
+  console.log("params.id (enroleeNumber):", enroleeNumber);
+  console.log("studentsList:", data?.studentsList);
 
   if (isPending) {
     return (
@@ -124,14 +129,17 @@ function SingleEnrol() {
     return <NoStudentsPanel />;
   }
 
-  const students = data.studentsList.map(student => ({
-    id: student.studentID,
-    studentName: student.enroleeFullName,
-    academicYear: student.academicYear,
-    grade_level: student.grade_level,
-    status: student.status
-  }));
-
+  // Filter by enroleeNumber
+  const students = data.studentsList
+    .filter(student => String(student.enroleeNumber) === String(enroleeNumber))
+    .map(student => ({
+      enroleeNumber: student.enroleeNumber,
+      studentName: student.enroleeFullName,
+      academicYear: student.year,
+      grade_level: student.levelApplied,
+      status: student.applicationStatus,
+    } as levelYear));
+    
   return <StudentsListTable refetch={refetch} isRefetching={isRefetching} studentsList={students} />;
 }
 
@@ -171,8 +179,8 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter grade level..."
-          value={(table.getColumn("level")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("level")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("grade_level")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("grade_level")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
         <Button disabled={isRefetching} onClick={() => refetch()} size={"icon"} variant={"outline"}>
