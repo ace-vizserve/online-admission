@@ -199,6 +199,12 @@ export type FamilyDocument = {
   guardianPassStatus: string | null;
   guardianPassExpiry: string | null;
   fileUrl?: string;
+  motherPassportNumber?: string;
+  motherPassType?: string;
+  fatherPassportNumber?: string;
+  fatherPassType?: string;
+  guardianPassportNumber?: string;
+  guardianPassType?: string;
 };
 
 export type StudentDocuments = {
