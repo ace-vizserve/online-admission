@@ -208,8 +208,8 @@ export async function getStudentEnrollmentList() {
       throw new Error(error2025?.message || error2026?.message);
     }
     const studentsList = [
-      ...(data2025 ?? []).map(s => ({ ...s, year: "2025" })),
-      ...(data2026 ?? []).map(s => ({ ...s, year: "2026" })),
+      ...(data2025 ?? []).map((s) => ({ ...s, year: "2025" })),
+      ...(data2026 ?? []).map((s) => ({ ...s, year: "2026" })),
     ];
 
     return { studentsList };
@@ -224,8 +224,10 @@ export async function getStudentDocumentsList(enroleeNumber: string) {
   try {
     const { data } = await supabase
       .from("ay2025_enrolment_documents")
-      .select("form12, form12Status, medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus")
-      .eq("enroleeNumber", enroleeNumber)
+      .select(
+        "form12, form12Status, medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus"
+      )
+      .eq("enroleeNumber", enroleeNumber);
 
     return data ?? [];
   } catch {
@@ -1464,6 +1466,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     }
 
     sessionStorage.removeItem("enrolNewStudentFormState");
+    sessionStorage.removeItem("academicYear");
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -1843,6 +1846,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     }
 
     sessionStorage.removeItem("enrolOldStudentFormState");
+    sessionStorage.removeItem("academicYear");
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
