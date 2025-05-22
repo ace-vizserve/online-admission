@@ -20,7 +20,7 @@ import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { parsePhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 
 function GuardianInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
@@ -39,6 +39,13 @@ function GuardianInformation() {
   });
 
   function onSubmit(values: GuardianInformationSchema) {
+    if (!isValidPhoneNumber(values.guardianMobile)) {
+      form.setError("guardianMobile", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
     setFormState({
       familyInfo: {
         ...formState.familyInfo!,

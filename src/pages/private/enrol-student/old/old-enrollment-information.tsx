@@ -16,6 +16,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -36,6 +37,7 @@ import "ldrs/react/Tailspin.css";
 import { CircleFadingArrowUpIcon, CircleHelp, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { parsePhoneNumber } from "react-phone-number-input";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -69,6 +71,16 @@ function OldEnrollmentInformation() {
   }, [data, form, isSuccess]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
+    if ((isShowReferral || discountType === "referred-by-someone") && !values.referrerName) {
+      toast.warning("Referrer name is required!", {
+        description: "Please provide the name of your referrer or indicate NA/NIL if none.",
+      });
+      form.setError("referrerName", {
+        message: "",
+      });
+      return;
+    }
+
     setFormState({
       enrollmentInfo: { ...values, isValid: true },
     });
@@ -218,7 +230,7 @@ function OldEnrollmentInformation() {
                       <FormItem className="col-span-2">
                         <FormLabel>Additional learning or Special needs</FormLabel>
                         <FormControl>
-                          <Input type="" {...field} />
+                          <Input {...field} />
                         </FormControl>
                         <FormDescription>
                           Indicate if the student has any learning needs or special requirements.
@@ -365,13 +377,37 @@ function OldEnrollmentInformation() {
                           <FormItem className="space-y-1">
                             <FormLabel className="text-white">Referrer's Name</FormLabel>
                             <FormControl>
-                              <Input className="bg-white" type="" {...field} />
+                              <Input
+                                className="bg-white w-full"
+                                placeholder="Type NA or NIL if not applicable"
+                                {...field}
+                              />
                             </FormControl>
                             <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="referrerMobile"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col items-start">
+                            <FormLabel className="text-white">Referrer's Mobile</FormLabel>
+                            <FormControl className="w-full">
+                              <PhoneInput
+                                {...field}
+                                value={parsePhoneNumber(field.value ?? "", "SG")?.formatInternational()}
+                                defaultCountry="SG"
+                                international
+                                className="bg-white rounded-md"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       {isShowDiscount ? (
                         <FormField
                           control={form.control}
@@ -460,20 +496,47 @@ function OldEnrollmentInformation() {
                         )}
                       />
                       {isShowReferral ? (
-                        <FormField
-                          control={form.control}
-                          name="referrerName"
-                          render={({ field }) => (
-                            <FormItem className="space-y-1">
-                              <FormLabel className="text-white">Referrer's Name</FormLabel>
-                              <FormControl>
-                                <Input className="bg-white" {...field} />
-                              </FormControl>
-                              <FormDescription className="text-white">Inquire to HFSE for the details.</FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="referrerName"
+                            render={({ field }) => (
+                              <FormItem className="space-y-1">
+                                <FormLabel className="text-white">Referrer's Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    className="bg-white w-full"
+                                    placeholder="Type NA or NIL if not applicable"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-white">
+                                  Inquire to HFSE for the details.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="referrerMobile"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col items-start">
+                                <FormLabel className="text-white">Referrer's Mobile</FormLabel>
+                                <FormControl className="w-full">
+                                  <PhoneInput
+                                    {...field}
+                                    value={parsePhoneNumber(field.value ?? "", "SG")?.formatInternational()}
+                                    defaultCountry="SG"
+                                    international
+                                    className="bg-white rounded-md"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
                       ) : (
                         <div className="w-full flex justify-center items-center">
                           <Button

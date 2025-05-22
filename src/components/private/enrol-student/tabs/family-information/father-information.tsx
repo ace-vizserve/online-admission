@@ -20,7 +20,7 @@ import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { parsePhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 
 function FatherInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
@@ -39,6 +39,13 @@ function FatherInformation() {
   });
 
   function onSubmit(values: FatherInformationSchema) {
+    if (!isValidPhoneNumber(values.fatherMobile)) {
+      form.setError("fatherMobile", {
+        message: "Invalid phone number",
+      });
+      return;
+    }
+
     setFormState({
       familyInfo: {
         ...formState.familyInfo!,

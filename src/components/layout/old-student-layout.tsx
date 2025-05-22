@@ -71,7 +71,7 @@ function ExitApplicationDialog() {
   function exitApplication() {
     setFormState({});
     setAcademicYear("");
-    sessionStorage.removeItem("enrolNewStudentFormState");
+    sessionStorage.removeItem("enrolOldStudentFormState");
   }
 
   return (
