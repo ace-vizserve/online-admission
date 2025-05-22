@@ -7,6 +7,7 @@ import { Link } from "react-router";
 import fileSvg from "@/assets/file.svg";
 import { FamilyDocument } from "@/types";
 import { formatDate } from "date-fns";
+import { Separator } from "@/components/ui/separator";
 
 function renderFamilyDocCard({
   label,
@@ -42,7 +43,7 @@ function renderFamilyDocCard({
                 <div className="grid gap-2">
                   {typeLabel && (
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <span className="text-xs">Type</span>
+                      <span className="text-xs">Type/Number</span>
                       <Input
                         defaultValue={typeLabel}
                         className="col-span-2 h-8 capitalize"
@@ -99,7 +100,7 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
     );
   }
 
-  const docCards = [
+  const motherCards = [
     {
       label: "Mother's Passport",
       fileUrl: documents.motherPassport ?? undefined,
@@ -114,6 +115,9 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
       expiry: documents.motherPassExpiry ?? undefined,
       typeLabel: documents.motherPassType ?? undefined,
     },
+  ];
+
+  const fatherCards = [
     {
       label: "Father's Passport",
       fileUrl: documents.fatherPassport ?? undefined,
@@ -128,6 +132,9 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
       expiry: documents.fatherPassExpiry ?? undefined,
       typeLabel: documents.fatherPassType ?? undefined,
     },
+  ];
+
+  const guardianCards = [
     {
       label: "Guardian's Passport",
       fileUrl: documents.guardianPassport ?? undefined,
@@ -152,9 +159,19 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
           This section includes details about the parent and guardian documents for this current school year.
         </p>
       </div>
-      <h2 className="font-bold text-lg">Family Documents</h2>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
-        {docCards.map((props) => renderFamilyDocCard(props))}
+      <h2 className="font-bold text-lg">Mother's Documents</h2>
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
+        {motherCards.map((props) => renderFamilyDocCard(props))}
+      </div>
+      <Separator className="my-4" />
+      <h2 className="font-bold text-lg">Father's Documents</h2>
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
+        {fatherCards.map((props) => renderFamilyDocCard(props))}
+      </div>
+      <Separator className="my-4" />
+      <h2 className="font-bold text-lg">Guardian's Documents</h2>
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4">
+        {guardianCards.map((props) => renderFamilyDocCard(props))}
       </div>
     </div>
   );
