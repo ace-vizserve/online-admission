@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { EnrolNewStudentFormState } from "@/types";
+import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
@@ -77,6 +78,13 @@ function FamilyInformationTabs() {
 
     setFormState({
       familyInfo: { ...data } as unknown as EnrolNewStudentFormState["familyInfo"],
+      uploadRequirements: {
+        studentUploadRequirements: {} as StudentUploadRequirementsSchema,
+        parentGuardianUploadRequirements: {
+          hasFatherInfo: Object.keys(data).includes("fatherInfo"),
+          hasGuardianInfo: Object.keys(data).includes("guardianInfo"),
+        } as ParentGuardianUploadRequirementsSchema,
+      },
     });
   }, [data, isSuccess, setFormState]);
 

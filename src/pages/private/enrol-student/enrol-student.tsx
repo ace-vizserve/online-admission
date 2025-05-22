@@ -2,39 +2,52 @@ import { getEnrolledStudents } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
 import { EnrolledStudent } from "@/types";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { Field, Radio, RadioGroup } from "@headlessui/react";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import { ArrowLeft, ChevronRight, UserPlus2, UserRoundPlus } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
+import AcademicYearSelector from "./academic-year-selector";
 
 function EnrolStudent() {
   const { title, description } = ENROL_NEW_STUDENT_TITLE_DESCRIPTION;
+
   const { data, isPending } = useQuery({
     queryKey: ["enrolled-students"],
     queryFn: getEnrolledStudents,
   });
   const [selected, setSelected] = useState<EnrolledStudent | null>(data?.studentsList[0] ?? null);
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
 
   const selectStudent = useCallback((student: EnrolledStudent) => {
     setSelected(student);
   }, []);
 
+  function existingEnrollment() {
+    toast.warning("Enrollment not allowed for A.Y. 2025!", {
+      description: "This student is already enrolled. To continue, select a different year or add a new student.",
+    });
+  }
+
   return (
     <>
       <PageMetaData title={title} description={description} />
 
-      <div className="w-full fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+      <div className="w-full sticky lg:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl">
           <Link
+            onClick={() => setAcademicYear("")}
             to={"/admission/dashboard"}
             className={buttonVariants({
               variant: "link",
@@ -44,52 +57,63 @@ function EnrolStudent() {
           </Link>
         </MaxWidthWrapper>
       </div>
-      <div className="w-full h-screen flex items-center justify-center bg-muted">
-        <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
-          <CardHeader className="text-center px-2">
-            <CardTitle className="text-lg">Select a student</CardTitle>
-            <CardDescription className="text-sm">
-              Selecting a student will proceed with the enrolment process
-            </CardDescription>
-          </CardHeader>
-          <Separator />
-          <CardContent className="px-2">
-            <ScrollArea className="h-60">
-              {isPending ? (
-                <div className="flex h-72 w-full flex-col gap-2 items-center justify-center rounded-md border border-dashed bg-muted text-muted-foreground">
-                  <p className="text-xs text-muted-foreground animate-pulse">Fetching students...</p>
-                  <Tailspin size="20" stroke="3" speed="0.9" color="#262E40" />
-                </div>
-              ) : data?.studentsList != null && data.studentsList.length > 0 ? (
-                <StudentsList selected={selected} setSelected={selectStudent} studentList={data.studentsList} />
+      {academicYear === "" ? (
+        <AcademicYearSelector setSelectedAy={setAcademicYear} />
+      ) : (
+        <div className="w-full h-screen flex items-center justify-center bg-muted">
+          <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
+            <CardHeader className="text-center px-2">
+              <CardTitle className="text-lg">Select a student</CardTitle>
+              <CardDescription className="text-sm">
+                Selecting a student will proceed with the enrolment process
+              </CardDescription>
+            </CardHeader>
+            <Separator />
+            <CardContent className="px-2">
+              <ScrollArea className="h-60">
+                {isPending ? (
+                  <div className="flex h-72 w-full flex-col gap-2 items-center justify-center rounded-md border border-dashed bg-muted text-muted-foreground">
+                    <p className="text-xs text-muted-foreground animate-pulse">Fetching students...</p>
+                    <Tailspin size="20" stroke="3" speed="0.9" color="#262E40" />
+                  </div>
+                ) : data?.studentsList != null && data.studentsList.length > 0 ? (
+                  <StudentsList selected={selected} setSelected={selectStudent} studentList={data.studentsList} />
+                ) : (
+                  <NoStudents />
+                )}
+              </ScrollArea>
+            </CardContent>
+            <CardFooter className="flex items-center flex-col gap-2 px-4">
+              {academicYear === "ay2025" ? (
+                <Button className="w-full gap-2" onClick={existingEnrollment} variant={"outline"} size={"lg"}>
+                  Enrol student <ChevronRight />
+                </Button>
               ) : (
-                <NoStudents />
+                <Link
+                  to={`/enrol-student/${selected?.enroleeNumber}/student-info?academicYear=${academicYear}`}
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                    className: cn("gap-2 w-full", {
+                      "opacity-70 pointer-events-none": selected == null,
+                    }),
+                  })}>
+                  Enrol student <ChevronRight />
+                </Link>
               )}
-            </ScrollArea>
-          </CardContent>
-          <CardFooter className="flex items-center flex-col gap-2 px-4">
-            <Link
-              to={`/enrol-student/${selected?.enroleeNumber}/student-info`}
-              className={buttonVariants({
-                variant: "outline",
-                size: "lg",
-                className: cn("gap-2 w-full", {
-                  "opacity-70 pointer-events-none": selected == null,
-                }),
-              })}>
-              Enrol student <ChevronRight />
-            </Link>
-            <Link
-              to={"/enrol-student/new/student-info"}
-              className={buttonVariants({
-                size: "lg",
-                className: "gap-2 w-full",
-              })}>
-              Add new student <UserPlus2 />
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
+
+              <Link
+                to={`/enrol-student/new/student-info?academicYear=${academicYear}`}
+                className={buttonVariants({
+                  size: "lg",
+                  className: "gap-2 w-full",
+                })}>
+                Add new student <UserPlus2 />
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </>
   );
 }

@@ -7,6 +7,11 @@ export type SecuritySettingsSheetStore = {
   setIsOpen: (state: boolean) => void;
 };
 
+export type AcademicYearStore = {
+  academicYear: string;
+  setAcademicYear: (academicYear: string) => void;
+};
+
 export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
   isOpen: false,
   setIsOpen: (state) => set(() => ({ isOpen: state })),
@@ -72,6 +77,19 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
     }),
     {
       name: "enrolOldStudentFormState",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
+
+export const useSelectAcademicYear = create<AcademicYearStore>()(
+  persist(
+    (set) => ({
+      academicYear: "",
+      setAcademicYear: (academicYear: string) => set({ academicYear }),
+    }),
+    {
+      name: "academicYear",
       storage: createJSONStorage(() => sessionStorage),
     }
   )
