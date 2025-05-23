@@ -19,11 +19,11 @@ export function createUser() {
         email: fatherEmail,
         password,
         email_confirm: true,
-        phone: phone_number,
         user_metadata: {
           fullName: fatherFullName,
           password_changed: password_changed,
           temporary_password: password,
+          phone_number: phone_number,
         },
       });
 
