@@ -140,6 +140,7 @@ export async function getEnrolledStudents() {
     const { data: studentInformation, error: studentInformationError } = await supabase
       .from("ay2025_enrolment_applications")
       .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto", { count: "exact" })
+      .eq("applicationStatus", "Registered")
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
       .order("enroleeNumber", { ascending: false });
 
@@ -735,7 +736,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
       result.guardianInfo = guardianInfo;
     }
 
-    return result;
+    return removeEmptyKeys(result);
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -1118,6 +1119,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       fatherFullName: "",
       guardianFullName: "",
       ...enrollmentDetails.familyInfo.fatherInfo,
+      ...enrollmentDetails.familyInfo.motherInfo,
       ...enrollmentDetails.familyInfo.guardianInfo,
       ...flattenedSiblings,
     };
@@ -1514,6 +1516,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       fatherFullName: "",
       guardianFullName: "",
       ...enrollmentDetails.familyInfo.fatherInfo,
+      ...enrollmentDetails.familyInfo.motherInfo,
       ...enrollmentDetails.familyInfo.guardianInfo,
       ...flattenedSiblings,
     };
