@@ -254,9 +254,9 @@ function FatherInformation() {
                   <FormControl className="w-full">
                     <PhoneInput
                       {...field}
-                      value={parsePhoneNumber(String(field.value), "SG")?.number}
-                      international
+                      value={parsePhoneNumber(field.value, "SG")?.formatInternational() ?? field.value}
                       defaultCountry="SG"
+                      international
                     />
                   </FormControl>
                   <FormDescription>Enter the student's father mobile phone.</FormDescription>
