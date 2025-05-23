@@ -189,8 +189,8 @@ function StudentDetails() {
                     onValueChange={field.onChange}
                     className="flex gap-2">
                     {[
-                      ["Male", "male"],
-                      ["Female", "female"],
+                      ["Male", "Male"],
+                      ["Female", "Female"],
                     ].map((option, index) => (
                       <FormItem className="flex items-center space-x-3 space-y-0" key={index}>
                         <FormControl>
