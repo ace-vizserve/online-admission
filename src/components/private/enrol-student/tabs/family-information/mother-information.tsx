@@ -258,7 +258,7 @@ function MotherInformation() {
                   <FormControl className="w-full">
                     <PhoneInput
                       {...field}
-                      value={parsePhoneNumber(field.value, "SG")?.formatInternational() ?? field.value}
+                      value={parsePhoneNumber(String(field.value), "SG")?.formatInternational() ?? String(field.value)}
                       defaultCountry="SG"
                       international
                     />
