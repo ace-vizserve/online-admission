@@ -28,6 +28,7 @@ import { studentPassTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { StudentFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
@@ -63,8 +64,12 @@ const StudentFileUploaderDialog = memo(function ({
   formState,
   setFormState,
 }: StudentFileUploaderDialogProps) {
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+
   const { mutate, isPending } = useMutation({
-    mutationFn: uploadFileToBucket,
+    mutationFn: async (file: File) => {
+      return await uploadFileToBucket(file, academicYear);
+    },
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
@@ -439,8 +444,12 @@ function StudentFileUploaderDrawer({
   setFormState,
   value,
 }: StudentFileUploaderDialogProps) {
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+
   const { mutate, isPending } = useMutation({
-    mutationFn: uploadFileToBucket,
+    mutationFn: async (file: File) => {
+      return await uploadFileToBucket(file, academicYear);
+    },
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {

@@ -48,6 +48,7 @@ import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router";
 
 import fileSvg from "@/assets/file.svg";
+import { useSelectAcademicYear } from "@/zustand-store";
 const form12Url = import.meta.env.VITE_FORM_12_URL as string;
 const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
@@ -63,8 +64,12 @@ const StudentFileUploaderDialog = memo(function ({
   formState,
   setFormState,
 }: StudentFileUploaderDialogProps) {
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+
   const { mutate, isPending } = useMutation({
-    mutationFn: uploadFileToBucket,
+    mutationFn: async (file: File) => {
+      return await uploadFileToBucket(file, academicYear);
+    },
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
@@ -106,6 +111,23 @@ const StudentFileUploaderDialog = memo(function ({
   function uploadFile() {
     if (value == null || !value.length) return;
     mutate(value[0]);
+  }
+
+  function changeDocument() {
+    if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
+    form.setValue(name, "");
+
+    setFormState({
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements.parentGuardianUploadRequirements,
+        },
+        studentUploadRequirements: {
+          ...formState.uploadRequirements.studentUploadRequirements,
+          [name]: "",
+        },
+      },
+    });
   }
 
   if (isDesktop) {
@@ -159,7 +181,10 @@ const StudentFileUploaderDialog = memo(function ({
             )}
 
             {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-              <div className="w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+              <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+                <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                  Change document
+                </Button>
                 <div className="p-6 bg-white rounded-full">
                   <img src={fileSvg} className="size-14" />
                 </div>
@@ -415,8 +440,12 @@ function StudentFileUploaderDrawer({
   setFormState,
   value,
 }: StudentFileUploaderDialogProps) {
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+
   const { mutate, isPending } = useMutation({
-    mutationFn: uploadFileToBucket,
+    mutationFn: async (file: File) => {
+      return await uploadFileToBucket(file, academicYear);
+    },
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
@@ -459,6 +488,23 @@ function StudentFileUploaderDrawer({
   function uploadFile() {
     if (value == null || !value.length) return;
     mutate(value[0]);
+  }
+
+  function changeDocument() {
+    if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
+    form.setValue(name, "");
+
+    setFormState({
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements.parentGuardianUploadRequirements,
+        },
+        studentUploadRequirements: {
+          ...formState.uploadRequirements.studentUploadRequirements,
+          [name]: "",
+        },
+      },
+    });
   }
 
   return (
@@ -513,7 +559,10 @@ function StudentFileUploaderDrawer({
           )}
 
           {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-            <div className="w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+            <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+              <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                Change document
+              </Button>
               <div className="p-6 bg-white rounded-full">
                 <img src={fileSvg} className="size-14" />
               </div>

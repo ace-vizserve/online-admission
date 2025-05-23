@@ -1,3 +1,4 @@
+import { checkNricExists } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -7,7 +8,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
-import { supabase } from "@/lib/client";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
@@ -32,19 +32,15 @@ function StudentDetails() {
 
   async function onSubmit(values: StudentDetailsSchema) {
     try {
-      const { count } = await supabase
-        .from(`${academicYear}_enrolment_applications`)
-        .select("nric", { count: "exact" })
-        .eq("nric", values.nric)
-        .single();
+      const isNricTaken = await checkNricExists(values.nric, academicYear);
 
-      if (count != null && count > 0) {
-        toast.warning("A student with this NRIC/FIN already exists!", {
-          description: "Please verify before submitting",
+      if (isNricTaken) {
+        toast.info("NRIC already taken", {
+          description: "This NRIC is already in use. Please double-check or enter a different one.",
         });
         form.setError("nric", {
           type: "manual",
-          message: "This NRIC/FIN is already registered.",
+          message: "NRIC is already taken",
         });
         return;
       }
