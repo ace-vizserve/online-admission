@@ -6,11 +6,12 @@ import { StudentDocumentsList } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { FolderOpen, Plus, User } from "lucide-react";
+import { FolderOpen, Plus, User, Users } from "lucide-react";
 import { Link } from "react-router";
 import StudentDocuments from "@/components/private/documents/student-files";
 import FamilyDocuments from "@/components/private/documents/family-files";
 import SingleDocuments from "../documents/single-documents";
+import OldFamilyInfo from "../documents/old-family-info";
 
 type ProfileProps = {
   enroleeNumber: string;
@@ -22,7 +23,13 @@ const tabs = [
     value: "student-information",
     icon: User,
   },
-  {
+
+    {
+    name: "Family Information",
+    value: "family-information",
+    icon: Users,
+  },
+    {
     name: "Student Documents",
     value: "student-documents",
     icon: FolderOpen,
@@ -114,12 +121,14 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function InfoBox({ label, value, studentDetails, familyDocuments }: { label: string; value: string; studentDetails: StudentDocumentsList; familyDocuments?: any; isFamilyLoading?: boolean }) {
-  const { studentDocuments, studentInformation } = studentDetails;
+  const {familyInformation, studentDocuments, studentInformation,  } = studentDetails;
   switch (value) {
     case "student-information":
       return <SingleDocuments label={label} studentInformation={studentInformation} />;
     case "student-documents":
       return <StudentDocuments label={label} documents={studentDocuments} />;
+    case "family-information":
+      return <OldFamilyInfo label={label} familyInformation={familyInformation} />;
     case "family-documents": {
       return <FamilyDocuments label={label} documents={familyDocuments} />;
     }

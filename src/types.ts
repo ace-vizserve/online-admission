@@ -223,6 +223,7 @@ export type StudentDocumentsList = {
   studentInformation: Student;
   studentDocuments: StudentDocument;
   familyDocuments: FamilyDocument[];
+  familyInformation: FamilyInfo;
 };
 
 export type StudentDetails = {
