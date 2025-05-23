@@ -6,12 +6,11 @@ import { AuthError } from "@supabase/supabase-js";
 import { differenceInYears, parseISO } from "date-fns";
 import generate from "secure-password-gen";
 import { toast } from "sonner";
-
-import fatherAccounts from "../../father-accounts.json";
+import fatherAccounts from "../../father.json";
 
 export function createUser() {
   fatherAccounts.slice(0, 3).map(async (account) => {
-    const { fatherEmail, fatherFullName, password_changed } = account;
+    const { fatherEmail, fatherFullName, password_changed, phone_number } = account;
 
     const password = generate(10, true, true, false, false);
 
@@ -20,6 +19,7 @@ export function createUser() {
         email: fatherEmail,
         password,
         email_confirm: true,
+        phone: phone_number,
         user_metadata: {
           fullName: fatherFullName,
           password_changed: password_changed,
