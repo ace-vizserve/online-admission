@@ -1931,60 +1931,38 @@ export async function lookupOldEnrolledStudent({
 export async function getFamilyDocuments(enroleeNumber: string) {
   if (!enroleeNumber) return {};
   try {
-    const { data: applications, error: applicationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("motherPass, motherPassport, fatherPass, fatherPassport, guardianPass, guardianPassport")
-      .eq("enroleeNumber", enroleeNumber);
-
-    if (applicationError) throw new Error(applicationError.message);
-
-    const application = applications?.[0];
-
-    const { data: documentsList, error: documentsError } = await supabase
+    // Fetch the documents row
+    const { data: documents, error: documentsError } = await supabase
       .from("ay2025_enrolment_documents")
       .select("*")
       .eq("enroleeNumber", enroleeNumber);
 
     if (documentsError) throw new Error(documentsError.message);
 
-    const documents = documentsList?.[0];
+    if (!documents || !documents.length) return null;
 
-    if (!application || !documents) return null;
-
-    const {
-      motherPass: motherPassType,
-      motherPassport: motherPassportNumber,
-      fatherPass: fatherPassType,
-      fatherPassport: fatherPassportNumber,
-      guardianPass: guardianPassType,
-      guardianPassport: guardianPassportNumber,
-    } = application;
+    // Extract parent/guardian document fields
+    const doc = documents[0];
 
     return {
-      motherPassport: documents.motherPassport,
-      motherPassportNumber,
-      motherPassportExpiry: documents.motherPassportExpiry,
-      motherPassportStatus: documents.motherPassportStatus,
-      motherPass: documents.motherPass,
-      motherPassType,
-      motherPassExpiry: documents.motherPassExpiry,
-      motherPassStatus: documents.motherPassStatus,
-      fatherPassport: documents.fatherPassport,
-      fatherPassportNumber,
-      fatherPassportExpiry: documents.fatherPassportExpiry,
-      fatherPassportStatus: documents.fatherPassportStatus,
-      fatherPass: documents.fatherPass,
-      fatherPassType,
-      fatherPassExpiry: documents.fatherPassExpiry,
-      fatherPassStatus: documents.fatherPassStatus,
-      guardianPassport: documents.guardianPassport,
-      guardianPassportNumber,
-      guardianPassportExpiry: documents.guardianPassportExpiry,
-      guardianPassportStatus: documents.guardianPassportStatus,
-      guardianPass: documents.guardianPass,
-      guardianPassType,
-      guardianPassExpiry: documents.guardianPassExpiry,
-      guardianPassStatus: documents.guardianPassStatus,
+      motherPassport: doc.motherPassport,
+      motherPassportExpiry: doc.motherPassportExpiry,
+      motherPassportStatus: doc.motherPassportStatus,
+      motherPass: doc.motherPass,
+      motherPassExpiry: doc.motherPassExpiry,
+      motherPassStatus: doc.motherPassStatus,
+      fatherPassport: doc.fatherPassport,
+      fatherPassportExpiry: doc.fatherPassportExpiry,
+      fatherPassportStatus: doc.fatherPassportStatus,
+      fatherPass: doc.fatherPass,
+      fatherPassExpiry: doc.fatherPassExpiry,
+      fatherPassStatus: doc.fatherPassStatus,
+      guardianPassport: doc.guardianPassport,
+      guardianPassportExpiry: doc.guardianPassportExpiry,
+      guardianPassportStatus: doc.guardianPassportStatus,
+      guardianPass: doc.guardianPass,
+      guardianPassExpiry: doc.guardianPassExpiry,
+      guardianPassStatus: doc.guardianPassStatus,
     };
   } catch (error) {
     const err = error as AuthError;
