@@ -383,6 +383,7 @@ function EnrollmentInformation() {
                               <FormControl>
                                 <div>
                                   <MultiSelect
+                                    maxSelectedItems={3}
                                     key={0}
                                     variant={"inverted"}
                                     options={newStudentDiscounts?.discountCodes ?? []}
@@ -393,6 +394,7 @@ function EnrollmentInformation() {
                                   />
 
                                   <MultiSelect
+                                    maxSelectedItems={3}
                                     key={1}
                                     variant={"inverted"}
                                     options={newStudentDiscounts?.discountCodes ?? []}
@@ -436,6 +438,7 @@ function EnrollmentInformation() {
                             <FormControl>
                               <div>
                                 <MultiSelect
+                                  maxSelectedItems={3}
                                   key={0}
                                   variant={"inverted"}
                                   options={newStudentDiscounts?.discountCodes ?? []}
@@ -446,6 +449,7 @@ function EnrollmentInformation() {
                                 />
 
                                 <MultiSelect
+                                  maxSelectedItems={3}
                                   key={1}
                                   variant={"inverted"}
                                   options={newStudentDiscounts?.discountCodes ?? []}

@@ -29,7 +29,7 @@ function StudentDetails() {
     },
   });
 
-  function onSubmit(values: StudentDetailsSchema) {
+  async function onSubmit(values: StudentDetailsSchema) {
     const age = differenceInYears(new Date(), values.birthDay);
 
     if (age < 3) {

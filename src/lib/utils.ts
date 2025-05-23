@@ -22,7 +22,7 @@ export function removeEmptyKeys(obj: Record<string, unknown>) {
 }
 
 export function replaceNulls<T extends Record<string, unknown>>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, value === null ? "" : value])) as T;
+  return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, value == null ? "" : value])) as T;
 }
 
 export const formatBytes = (

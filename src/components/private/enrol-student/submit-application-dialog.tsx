@@ -118,6 +118,7 @@ function SubmitApplicationDialog() {
       const birthDay = formState.studentInfo!.studentDetails.birthDay;
       const motherEmail = formState.familyInfo.motherInfo.motherEmail;
       const fatherEmail = formState.familyInfo?.fatherInfo.fatherEmail;
+
       const result = await lookupNewEnrolledStudent({
         enroleeFullName,
         birthDay,

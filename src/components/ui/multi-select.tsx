@@ -104,6 +104,7 @@ interface MultiSelectProps
    * Optional, can be used to add custom styles.
    */
   className?: string;
+  maxSelectedItems: number;
 }
 
 export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -138,11 +139,19 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     };
 
     const toggleOption = (option: string) => {
-      const newSelectedValues = selectedValues.includes(option)
-        ? selectedValues.filter((value) => value !== option)
-        : [...selectedValues, option];
-      setSelectedValues(newSelectedValues);
-      onValueChange(newSelectedValues);
+      const isAlreadySelected = selectedValues.includes(option);
+
+      if (isAlreadySelected) {
+        const newSelectedValues = selectedValues.filter((value) => value !== option);
+        setSelectedValues(newSelectedValues);
+        onValueChange(newSelectedValues);
+      } else {
+        if (selectedValues.length >= props.maxSelectedItems) return;
+
+        const newSelectedValues = [...selectedValues, option];
+        setSelectedValues(newSelectedValues);
+        onValueChange(newSelectedValues);
+      }
     };
 
     const handleClear = () => {
@@ -164,7 +173,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       if (selectedValues.length === options.length) {
         handleClear();
       } else {
-        const allValues = options.map((option) => option.value);
+        const allValues = options.slice(0, props.maxSelectedItems).map((option) => option.value);
         setSelectedValues(allValues);
         onValueChange(allValues);
       }
@@ -267,7 +276,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     <CommandItem
                       key={option.value}
                       onSelect={() => toggleOption(option.value)}
-                      className="cursor-pointer">
+                      className={cn(
+                        "cursor-pointer",
+                        !selectedValues.includes(option.value) &&
+                          selectedValues.length >= props.maxSelectedItems &&
+                          "opacity-50 pointer-events-none"
+                      )}>
                       <div
                         className={cn(
                           "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
