@@ -309,7 +309,7 @@ export const enrollmentInformationSchema = z
     preferredSchedule: z.string().min(1, {
       message: "Preferred schedule is required",
     }),
-    additionalLearningOrSpecialNeeds: z.string().optional(),
+    additionalLearningNeeds: z.string().optional(),
     availSchoolBus: z.string().min(1, {
       message: "Bus service selection is required",
     }),

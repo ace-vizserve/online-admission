@@ -222,7 +222,7 @@ function OldEnrollmentInformation() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
-                    name="additionalLearningOrSpecialNeeds"
+                    name="additionalLearningNeeds"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
                         <FormLabel>Additional learning or Special needs</FormLabel>
