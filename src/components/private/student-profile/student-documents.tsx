@@ -70,6 +70,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                           id="passType"
                           defaultValue={passDocument.passType!.replace("_", " ")}
                           className="col-span-2 h-8 capitalize"
+                          tabIndex={-1}
                           readOnly
                         />
                       </div>
@@ -79,6 +80,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                           id="passExpirationDate"
                           defaultValue={formatDate(new Date(passDocument.passExpiry!), "PPP")}
                           className="col-span-2 h-8"
+                          tabIndex={-1}
                           readOnly
                         />
                       </div>
@@ -142,6 +144,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                         <Input
                           id="passType"
                           defaultValue={passportDocument.passportNumber!}
+                          tabIndex={-1}
                           className="col-span-2 h-8 capitalize"
                           readOnly
                         />
@@ -152,6 +155,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                           id="passExpirationDate"
                           defaultValue={formatDate(new Date(passportDocument.passportExpiry!), "PPP")}
                           className="col-span-2 h-8"
+                          tabIndex={-1}
                           readOnly
                         />
                       </div>

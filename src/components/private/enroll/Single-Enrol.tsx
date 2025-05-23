@@ -94,7 +94,7 @@ export const columns: ColumnDef<levelYear>[] = [
           <DropdownMenuContent className="mt-2">
             <Link to={`/admission/document-file/${student.enroleeNumber}`}>
               <DropdownMenuItem className="text-xs">
-                <User className="mr-1" /> View Documents List
+                <User className="mr-1" /> View Enrolment Information
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
@@ -174,7 +174,7 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
   return (
     <div className="w-full py-7 md:py-14">
       <h1 className="font-bold text-lg lg:text-2xl">
-        {studentName ? `${studentName} Enrolment List` : "Student not found"}
+        {studentName ? `${studentName}` : "Student not found"}
       </h1>
       <div className="flex items-center gap-4 py-4">
         <Input

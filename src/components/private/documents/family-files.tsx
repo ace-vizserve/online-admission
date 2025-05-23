@@ -55,6 +55,7 @@ function renderFamilyDocCard({
                     <div className="grid grid-cols-3 items-center gap-4">
                       <span className="text-xs">Expires at</span>
                       <Input
+                        tabIndex={-1}
                         defaultValue={formatDate(new Date(expiry), "PPP")}
                         className="col-span-2 h-8"
                         readOnly

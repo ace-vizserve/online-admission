@@ -69,12 +69,14 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                           id="passType"
                           defaultValue={passDocument.passType!.replace("_", " ")}
                           className="col-span-2 h-8 capitalize"
+                          tabIndex={-1}
                           readOnly
                         />
                       </div>
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Expires at</Label>
                         <Input
+                           tabIndex={-1}
                           id="passExpirationDate"
                           defaultValue={formatDate(new Date(passDocument.passExpiry!), "PPP")}
                           className="col-span-2 h-8"
@@ -139,6 +141,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Passport #</Label>
                         <Input
+                          tabIndex={-1}
                           id="passType"
                           defaultValue={passportDocument.passportNumber!}
                           className="col-span-2 h-8 capitalize"
@@ -148,6 +151,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Expires at</Label>
                         <Input
+                          tabIndex={-1}
                           id="passExpirationDate"
                           defaultValue={formatDate(new Date(passportDocument.passportExpiry!), "PPP")}
                           className="col-span-2 h-8"

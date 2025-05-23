@@ -90,7 +90,8 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
           </Avatar>
           <div className="text-center space-y-1">
             <p className="font-semibold text-black text-balance">{studentName}</p>
-            <p className="text-sm text-muted-foreground font-semibold">Student # {studentNumber}</p>
+            <p className="text-sm text-muted-foreground font-semibold">Student No.: {studentNumber}</p>
+            <p className="text-sm text-muted-foreground font-semibold">Enrolee No.: {enroleeNumber}</p>
           </div>
         </div>
 
