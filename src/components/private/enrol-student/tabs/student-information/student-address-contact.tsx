@@ -117,7 +117,7 @@ function StudentAddressContact() {
                 <FormControl className="w-full">
                   <PhoneInput
                     {...field}
-                    value={parsePhoneNumber(field.value, "SG")?.formatInternational()}
+                    value={parsePhoneNumber(field.value, "SG")?.formatInternational() ?? field.value}
                     defaultCountry="SG"
                     international
                   />
@@ -151,9 +151,9 @@ function StudentAddressContact() {
                   <FormControl className="w-full">
                     <PhoneInput
                       {...field}
-                      value={parsePhoneNumber(String(field.value), "SG")?.number}
-                      international
+                      value={parsePhoneNumber(field.value, "SG")?.formatInternational() ?? field.value}
                       defaultCountry="SG"
+                      international
                     />
                   </FormControl>
                   <FormDescription>Enter your student's contact person phone number.</FormDescription>

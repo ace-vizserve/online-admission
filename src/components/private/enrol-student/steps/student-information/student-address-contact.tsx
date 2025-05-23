@@ -139,7 +139,7 @@ function StudentAddressContact() {
               <FormItem className="flex flex-col items-start">
                 <FormLabel>Home phone</FormLabel>
                 <FormControl className="w-full">
-                  <PhoneInput {...field} defaultCountry="SG" international />
+                  <PhoneInput {...field} defaultCountry="SG" international countryCallingCodeEditable />
                 </FormControl>
                 <FormDescription>Enter your home phone number.</FormDescription>
                 <FormMessage />
@@ -168,7 +168,7 @@ function StudentAddressContact() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Contact Person Number</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} defaultCountry="SG" international />
+                    <PhoneInput {...field} countryCallingCodeEditable defaultCountry="SG" international />
                   </FormControl>
                   <FormDescription>Student's contact person phone number.</FormDescription>
                   <FormMessage />

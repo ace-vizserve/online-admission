@@ -327,11 +327,7 @@ export const enrollmentInformationSchema = z
     referrerMobile: z.string().optional(),
   })
   .superRefine((schema, ctx) => {
-    if (
-      schema.referrerName &&
-      schema.referrerName.toLowerCase() !== "na" &&
-      schema.referrerName.toLowerCase() !== "nil"
-    ) {
+    if (schema.referrerName) {
       if (!schema.referrerMobile) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

@@ -37,7 +37,7 @@ import "ldrs/react/Tailspin.css";
 import { CircleFadingArrowUpIcon, CircleHelp, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { parsePhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -71,12 +71,9 @@ function OldEnrollmentInformation() {
   }, [data, form, isSuccess]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
-    if ((isShowReferral || discountType === "referred-by-someone") && !values.referrerName) {
-      toast.warning("Referrer name is required!", {
-        description: "Please provide the name of your referrer or indicate NA/NIL if none.",
-      });
-      form.setError("referrerName", {
-        message: "",
+    if (values.referrerMobile && !isValidPhoneNumber(values.referrerMobile)) {
+      form.setError("referrerMobile", {
+        message: "Invalid phone number",
       });
       return;
     }
@@ -97,7 +94,7 @@ function OldEnrollmentInformation() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="w-full flex-1">
-        <Card className="w-full mx-auto border-None shadow-None">
+        <Card className="w-full mx-auto border-none shadow-none">
           <CardHeader className="gap-8 p-0">
             <CardTitle className="text-balance text-center text-2xl text-primary">
               Input the necessary enrollment information
@@ -379,7 +376,7 @@ function OldEnrollmentInformation() {
                             <FormControl>
                               <Input
                                 className="bg-white w-full"
-                                placeholder="Type NA or NIL if not applicable"
+                                placeholder="Enter your referrer's full name"
                                 {...field}
                               />
                             </FormControl>
@@ -399,6 +396,7 @@ function OldEnrollmentInformation() {
                                 {...field}
                                 value={parsePhoneNumber(field.value ?? "", "SG")?.formatInternational()}
                                 defaultCountry="SG"
+                                countryCallingCodeEditable
                                 international
                                 className="bg-white rounded-md"
                               />
@@ -506,7 +504,7 @@ function OldEnrollmentInformation() {
                                 <FormControl>
                                   <Input
                                     className="bg-white w-full"
-                                    placeholder="Type NA or NIL if not applicable"
+                                    placeholder="Enter your referrer's full name"
                                     {...field}
                                   />
                                 </FormControl>
@@ -528,6 +526,7 @@ function OldEnrollmentInformation() {
                                     {...field}
                                     value={parsePhoneNumber(field.value ?? "", "SG")?.formatInternational()}
                                     defaultCountry="SG"
+                                    countryCallingCodeEditable
                                     international
                                     className="bg-white rounded-md"
                                   />

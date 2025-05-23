@@ -262,7 +262,7 @@ function FatherInformation() {
                   <FormControl className="w-full">
                     <PhoneInput
                       {...field}
-                      value={parsePhoneNumber(String(field.value), "SG")?.number}
+                      value={parsePhoneNumber(field.value, "SG")?.formatInternational() ?? field.value}
                       defaultCountry="SG"
                       international
                     />
