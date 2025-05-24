@@ -1026,8 +1026,8 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
         ...motherDocuments,
         ...fatherDocuments,
         ...guardianDocuments,
-        hasFatherInfo: Object.keys(fatherInfo[0] as Record<string, unknown>).length > 1,
-        hasGuardianInfo: Object.keys(guardianInfo[0] as Record<string, unknown>).length > 1,
+        hasFatherInfo: fatherInfo[0] != null && Object.keys(fatherInfo[0] as Record<string, unknown>).length > 1,
+        hasGuardianInfo: guardianInfo[0] != null && Object.keys(guardianInfo[0] as Record<string, unknown>).length > 1,
       },
     };
   } catch (error) {
