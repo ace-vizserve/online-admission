@@ -1,43 +1,9 @@
-import { supabaseAdmin } from "@/lib/admin-client";
 import { supabase } from "@/lib/client";
 import { extractSiblings, filterKeysBySubstring, flattenSiblings, removeEmptyKeys } from "@/lib/utils";
 import { EnrolNewStudentFormState, EnrolOldStudentFormState, FamilyInfo, Student } from "@/types";
 import { AuthError } from "@supabase/supabase-js";
 import { differenceInYears, parseISO } from "date-fns";
-import generate from "secure-password-gen";
 import { toast } from "sonner";
-import fatherAccounts from "../../father.json";
-
-export function createUser() {
-  fatherAccounts.slice(0, 3).map(async (account) => {
-    const { fatherEmail, fatherFullName, password_changed, phone_number } = account;
-
-    const password = generate(10, true, true, false, false);
-
-    try {
-      const { data, error } = await supabaseAdmin.auth.admin.createUser({
-        email: fatherEmail,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          fullName: fatherFullName,
-          password_changed: password_changed,
-          temporary_password: password,
-          phone_number: phone_number,
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      console.log(data);
-    } catch (error) {
-      const err = error as AuthError;
-      toast.error(err.message);
-    }
-  });
-}
 
 export async function getSectionCardsDetails() {
   try {
