@@ -53,6 +53,8 @@ function StudentAddressContact() {
     });
   }
 
+  console.log(form.getValues("parentMaritalStatus").trim());
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
@@ -171,7 +173,7 @@ function StudentAddressContact() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Parent's Marital Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value.trim()}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select marital status" />

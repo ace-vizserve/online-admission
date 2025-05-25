@@ -1,4 +1,6 @@
-import { getStudentDetails, getFamilyDocuments } from "@/actions/private";
+import { getFamilyDocuments, getStudentDetails } from "@/actions/private";
+import FamilyDocuments from "@/components/private/documents/family-files";
+import StudentDocuments from "@/components/private/documents/student-files";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,10 +10,8 @@ import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { FolderOpen, Plus, User, Users } from "lucide-react";
 import { Link } from "react-router";
-import StudentDocuments from "@/components/private/documents/student-files";
-import FamilyDocuments from "@/components/private/documents/family-files";
-import SingleDocuments from "../documents/single-documents";
 import OldFamilyInfo from "../documents/old-family-info";
+import SingleDocuments from "../documents/single-documents";
 
 type ProfileProps = {
   enroleeNumber: string;
@@ -24,12 +24,12 @@ const tabs = [
     icon: User,
   },
 
-    {
+  {
     name: "Family Information",
     value: "family-information",
     icon: Users,
   },
-    {
+  {
     name: "Student Documents",
     value: "student-documents",
     icon: FolderOpen,
@@ -71,7 +71,7 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
     return <NoData />;
   }
 
-  const studentName = `${data.studentInformation.lastName}, ${data.studentInformation.firstName} ${
+  const studentName = `${data.studentInformation?.lastName}, ${data.studentInformation?.firstName} ${
     data.studentInformation.middleName?.charAt(0) ?? ""
   }`;
 
@@ -120,9 +120,20 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function InfoBox({ label, value, studentDetails, familyDocuments }: { label: string; value: string; studentDetails: StudentDocumentsList; familyDocuments?: any; isFamilyLoading?: boolean }) {
-  const {familyInformation, studentDocuments, studentInformation,  } = studentDetails;
+function InfoBox({
+  label,
+  value,
+  studentDetails,
+  familyDocuments,
+}: {
+  label: string;
+  value: string;
+  studentDetails: StudentDocumentsList;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  familyDocuments?: any;
+  isFamilyLoading?: boolean;
+}) {
+  const { familyInformation, studentDocuments, studentInformation } = studentDetails;
   switch (value) {
     case "student-information":
       return <SingleDocuments label={label} studentInformation={studentInformation} />;
