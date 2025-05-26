@@ -20,6 +20,10 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
   const birthCertDocument = documents.permanentDocuments[2];
   const eduCertDocument = documents.permanentDocuments[3];
 
+  const maskedPassport = passportDocument.passportNumber
+    ? "••••••" + passportDocument.passportNumber.slice(-4)
+    : "Not provided";
+
   return (
     <div className="space-y-8 py-6 xl:py-0">
       <div className="space-y-2">
@@ -143,7 +147,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                         <Label className="text-xs">Passport #</Label>
                         <Input
                           id="passType"
-                          defaultValue={passportDocument.passportNumber!}
+                          defaultValue={maskedPassport}
                           tabIndex={-1}
                           className="col-span-2 h-8 capitalize"
                           readOnly

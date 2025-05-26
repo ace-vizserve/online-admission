@@ -652,7 +652,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
 
     if (motherInfoKeys.length > 1) {
       motherInfoKeys.map((key) => {
-        if (familyInformation[key] != null) {
+        if (familyInformation[key] != null && familyInformation[key] != "") {
           motherInfo[key] = String(familyInformation[key]);
         }
       });
@@ -660,7 +660,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
 
     if (fatherInfoKeys.length > 1) {
       fatherInfoKeys.map((key) => {
-        if (familyInformation[key] != null) {
+        if (familyInformation[key] != null && familyInformation[key] != "") {
           fatherInfo[key] = String(familyInformation[key]);
         }
       });
@@ -668,7 +668,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
 
     if (guardianInfoKeys.length > 1) {
       guardianInfoKeys.map((key) => {
-        if (familyInformation[key] != null) {
+        if (familyInformation[key] != null && familyInformation[key] != "") {
           guardianInfo[key] = String(familyInformation[key]);
         }
       });
@@ -763,12 +763,14 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
 
     const { medical, passport, birthCert, pass, educCert } = documents[0];
 
+    const maskedPassport = passportNumber ? "••••••" + passportNumber.slice(-4) : "";
+
     const previousStudentDocuments = {
       birthCert: birthCert ?? "",
       medical: medical ?? "",
       educCert: educCert ?? "",
       passport: passport ?? "",
-      passportNumber: passportNumber ?? "",
+      passportNumber: maskedPassport,
       passportExpiry: passportExpiry ?? "",
       pass: pass ?? "",
       passExpiry: passExpiry ?? "",
@@ -944,7 +946,10 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     const { motherPass, motherPassport } = parentGuardianDocuments[0];
 
     const motherPassDocument = { motherPass, motherPassType, motherPassExpiry };
-    const motherPassportDocument = { motherPassport, motherPassportNumber, motherPassportExpiry };
+
+    const motherMaskedPassport = motherPassportNumber ? "••••••" + motherPassportNumber.slice(-4) : "";
+
+    const motherPassportDocument = { motherPassport, motherPassportNumber: motherMaskedPassport, motherPassportExpiry };
 
     const {
       fatherPass: fatherPassType,
@@ -955,7 +960,10 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     const { fatherPass, fatherPassport } = parentGuardianDocuments[0];
 
     const fatherPassDocument = { fatherPass, fatherPassType, fatherPassExpiry };
-    const fatherPassportDocument = { fatherPassport, fatherPassportNumber, fatherPassportExpiry };
+
+    const fatherMaskedPassport = fatherPassportNumber ? "••••••" + fatherPassportNumber.slice(-4) : "";
+
+    const fatherPassportDocument = { fatherPassport, fatherPassportNumber: fatherMaskedPassport, fatherPassportExpiry };
 
     const {
       guardianPass: guardianPassType,
@@ -966,7 +974,14 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     const { guardianPass, guardianPassport } = parentGuardianDocuments[0];
 
     const guardianPassDocument = { guardianPass, guardianPassType, guardianPassExpiry };
-    const guardianPassportDocument = { guardianPassport, guardianPassportNumber, guardianPassportExpiry };
+
+    const guardianMaskedPassport = guardianPassportNumber ? "••••••" + guardianPassportNumber.slice(-4) : "";
+
+    const guardianPassportDocument = {
+      guardianPassport,
+      guardianPassportNumber: guardianMaskedPassport,
+      guardianPassportExpiry,
+    };
 
     const motherDocuments = { ...removeEmptyKeys(motherPassDocument), ...removeEmptyKeys(motherPassportDocument) };
 

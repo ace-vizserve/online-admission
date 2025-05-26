@@ -14,7 +14,7 @@ export function wait(time: number) {
 export function removeEmptyKeys(obj: Record<string, unknown>) {
   const cleaned: Record<string, unknown> = {};
   Object.entries(obj).forEach(([key, value]) => {
-    if (value !== null && value !== "") {
+    if (value != null && value != "") {
       cleaned[key] = value;
     }
   });
