@@ -6,6 +6,12 @@ export const HOME_PAGE_TITLE_DESCRIPTION = {
     "Apply to HFSE International School online. Create a parent account, submit requirements, and manage your child’s admission with our secure digital portal.",
 };
 
+export const ADMISSION_GUIDELINES_TITLE_DESCRIPTION = {
+  title: "Admission Guidelines | HFSE International School Online Admission",
+  description:
+    "Learn about the step-by-step admission process at HFSE International School. Review requirements, understand key procedures, and prepare for a smooth online application experience.",
+};
+
 export const ABOUT_PAGE_TITLE_DESCRIPTION = {
   title: "About HFSE International School | Learn Our Mission & Vision",
   description:
