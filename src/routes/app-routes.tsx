@@ -9,6 +9,7 @@ import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
 import NotFound from "@/pages/not-found";
+import AdmissionGuidelines from "@/pages/private/admission-guidelines";
 import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
 import Documents from "@/pages/private/documents";
@@ -98,6 +99,16 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <Dashboard />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            index
+            path="guidelines"
+            element={
+              <AuthGuard>
+                <AdmissionGuidelines />
               </AuthGuard>
             }
           />
