@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/drawer";
 import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { parentGuardianPassTypes } from "@/data";
@@ -341,7 +341,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <PassportInput {...field} placeholder="Enter  passport number" />
                       </FormControl>
                       <FormDescription>Student’s passport number.</FormDescription>
                       <FormMessage />
@@ -467,7 +467,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <PassportInput {...field} placeholder="Enter  passport number" />
                       </FormControl>
                       <FormDescription>Father passport number.</FormDescription>
                       <FormMessage />
@@ -593,7 +593,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <PassportInput {...field} placeholder="Enter  passport number" />
                       </FormControl>
                       <FormDescription>Student’s passport number.</FormDescription>
                       <FormMessage />
@@ -938,7 +938,7 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input className="placeholder:text-sm" placeholder="Enter passport number" {...field} />
+                      <PassportInput className="placeholder:text-sm" {...field} placeholder="Enter  passport number" />
                     </FormControl>
 
                     <FormMessage />
@@ -1060,7 +1060,7 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input className="placeholder:text-sm" placeholder="Enter passport number" {...field} />
+                      <PassportInput className="placeholder:text-sm" {...field} placeholder="Enter  passport number" />
                     </FormControl>
 
                     <FormMessage />
@@ -1183,7 +1183,7 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input className="placeholder:text-sm" placeholder="Enter passport number" {...field} />
+                      <PassportInput className="placeholder:text-sm" {...field} placeholder="Enter  passport number" />
                     </FormControl>
 
                     <FormMessage />

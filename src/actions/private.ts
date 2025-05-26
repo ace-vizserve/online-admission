@@ -763,14 +763,12 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
 
     const { medical, passport, birthCert, pass, educCert } = documents[0];
 
-    const maskedPassport = passportNumber ? "••••••" + passportNumber.slice(-4) : "";
-
     const previousStudentDocuments = {
       birthCert: birthCert ?? "",
       medical: medical ?? "",
       educCert: educCert ?? "",
       passport: passport ?? "",
-      passportNumber: maskedPassport,
+      passportNumber,
       passportExpiry: passportExpiry ?? "",
       pass: pass ?? "",
       passExpiry: passExpiry ?? "",
@@ -947,9 +945,7 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
 
     const motherPassDocument = { motherPass, motherPassType, motherPassExpiry };
 
-    const motherMaskedPassport = motherPassportNumber ? "••••••" + motherPassportNumber.slice(-4) : "";
-
-    const motherPassportDocument = { motherPassport, motherPassportNumber: motherMaskedPassport, motherPassportExpiry };
+    const motherPassportDocument = { motherPassport, motherPassportNumber, motherPassportExpiry };
 
     const {
       fatherPass: fatherPassType,
@@ -961,9 +957,7 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
 
     const fatherPassDocument = { fatherPass, fatherPassType, fatherPassExpiry };
 
-    const fatherMaskedPassport = fatherPassportNumber ? "••••••" + fatherPassportNumber.slice(-4) : "";
-
-    const fatherPassportDocument = { fatherPassport, fatherPassportNumber: fatherMaskedPassport, fatherPassportExpiry };
+    const fatherPassportDocument = { fatherPassport, fatherPassportNumber, fatherPassportExpiry };
 
     const {
       guardianPass: guardianPassType,
@@ -975,11 +969,9 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
 
     const guardianPassDocument = { guardianPass, guardianPassType, guardianPassExpiry };
 
-    const guardianMaskedPassport = guardianPassportNumber ? "••••••" + guardianPassportNumber.slice(-4) : "";
-
     const guardianPassportDocument = {
       guardianPassport,
-      guardianPassportNumber: guardianMaskedPassport,
+      guardianPassportNumber,
       guardianPassportExpiry,
     };
 
