@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/drawer";
 import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { studentPassTypes } from "@/data";
@@ -366,7 +366,7 @@ const StudentFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <PassportInput {...field} placeholder="Enter your passport number" />
                       </FormControl>
                       <FormDescription>Student’s passport number.</FormDescription>
                       <FormMessage />
@@ -738,7 +738,11 @@ function StudentFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input className="placeholder:text-sm" placeholder="Enter your passport number" {...field} />
+                      <PassportInput
+                        className="placeholder:text-sm"
+                        placeholder="Enter your passport number"
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />

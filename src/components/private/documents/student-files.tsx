@@ -1,6 +1,7 @@
 import fileSvg from "@/assets/file.svg";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
@@ -18,10 +19,6 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
   const medicalCertDocument = documents.permanentDocuments[1];
   const birthCertDocument = documents.permanentDocuments[2];
   const eduCertDocument = documents.permanentDocuments[3];
-
-  const maskedPassport = passportDocument.passportNumber
-    ? "••••••" + passportDocument.passportNumber.slice(-4)
-    : "Not provided";
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
@@ -144,13 +141,9 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                     <div className="grid gap-2">
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Passport #</Label>
-                        <Input
-                          tabIndex={-1}
-                          id="passType"
-                          defaultValue={maskedPassport}
-                          className="col-span-2 h-8 capitalize"
-                          readOnly
-                        />
+                        <div className="flex items-center col-span-2 ">
+                          <PassportInput defaultValue={passportDocument.passportNumber ?? ""} readOnly />
+                        </div>
                       </div>
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Expires at</Label>

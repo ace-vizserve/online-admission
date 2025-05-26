@@ -10,6 +10,7 @@ import { EllipsisVertical, Eye, EyeClosed } from "lucide-react";
 import { Link } from "react-router";
 
 import fileSvg from "@/assets/file.svg";
+import { PassportInput } from "@/components/ui/passport-input";
 
 function StudentDocuments({ label, documents }: { label: string; documents: StudentDocument }) {
   const passportDocument = documents.documentsThatExpire[0];
@@ -19,10 +20,6 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
   const medicalCertDocument = documents.permanentDocuments[1];
   const birthCertDocument = documents.permanentDocuments[2];
   const eduCertDocument = documents.permanentDocuments[3];
-
-  const maskedPassport = passportDocument.passportNumber
-    ? "••••••" + passportDocument.passportNumber.slice(-4)
-    : "Not provided";
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
@@ -145,13 +142,9 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                     <div className="grid gap-2">
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Passport #</Label>
-                        <Input
-                          id="passType"
-                          defaultValue={maskedPassport}
-                          tabIndex={-1}
-                          className="col-span-2 h-8 capitalize"
-                          readOnly
-                        />
+                        <div className="flex items-center col-span-2 ">
+                          <PassportInput defaultValue={passportDocument.passportNumber ?? ""} readOnly />
+                        </div>
                       </div>
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Expires at</Label>

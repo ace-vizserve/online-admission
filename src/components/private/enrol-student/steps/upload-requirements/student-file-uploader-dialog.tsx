@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/drawer";
 import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { parentGuardianPassTypes, studentPassTypes } from "@/data";
@@ -48,6 +47,7 @@ import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router";
 
 import fileSvg from "@/assets/file.svg";
+import { PassportInput } from "@/components/ui/passport-input";
 import { useSelectAcademicYear } from "@/zustand-store";
 const form12Url = import.meta.env.VITE_FORM_12_URL as string;
 const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
@@ -362,7 +362,7 @@ const StudentFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <PassportInput {...field} placeholder="Enter your passport number" />
                       </FormControl>
                       <FormDescription>Student’s passport number.</FormDescription>
                       <FormMessage />
@@ -738,7 +738,11 @@ function StudentFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input className="placeholder:text-sm" placeholder="Enter your passport number" {...field} />
+                      <PassportInput
+                        {...field}
+                        className="placeholder:text-sm"
+                        placeholder="Enter your passport number"
+                      />
                     </FormControl>
 
                     <FormMessage />
