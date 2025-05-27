@@ -124,12 +124,13 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 
     const responses = await Promise.all(
       filesToUpload.map(async (file) => {
-        const { error, data } = await supabase.storage
-          .from(bucketName)
-          .upload(path ? `${path}/${file.name}` : file.name, file, {
-            cacheControl: cacheControl.toString(),
-            upsert,
-          });
+        const timestamp = Date.now();
+        const filePath = path ? `${path}/${file.name}-${timestamp}` : `${file.name}-${timestamp}`;
+
+        const { error, data } = await supabase.storage.from(bucketName).upload(filePath, file, {
+          cacheControl: cacheControl.toString(),
+          upsert,
+        });
         if (error) {
           return { name: file.name, message: error.message };
         } else {

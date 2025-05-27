@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { maritalStatuses } from "@/data";
@@ -11,7 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import { Save } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 import { toast } from "sonner";
 
 function StudentAddressContact() {
@@ -25,20 +23,6 @@ function StudentAddressContact() {
   });
 
   function onSubmit(values: StudentAddressContactSchema) {
-    if (form.getValues("homePhone") && !isValidPhoneNumber(form.getValues("homePhone"))) {
-      form.setError("homePhone", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
-
-    if (form.getValues("contactPersonNumber") && !isValidPhoneNumber(form.getValues("contactPersonNumber"))) {
-      form.setError("contactPersonNumber", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
-
     setFormState({
       studentInfo: {
         studentDetails: { ...(formState.studentInfo?.studentDetails ?? ({} as unknown as StudentDetailsSchema)) },
@@ -117,12 +101,7 @@ function StudentAddressContact() {
               <FormItem className="flex flex-col items-start">
                 <FormLabel>Home phone</FormLabel>
                 <FormControl className="w-full">
-                  <PhoneInput
-                    {...field}
-                    value={parsePhoneNumber(String(field.value), "SG")?.formatInternational() ?? String(field.value)}
-                    defaultCountry="SG"
-                    international
-                  />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter your home phone number.</FormDescription>
                 <FormMessage />
@@ -151,12 +130,7 @@ function StudentAddressContact() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Contact Person Number</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput
-                      {...field}
-                      value={parsePhoneNumber(String(field.value), "SG")?.formatInternational() ?? String(field.value)}
-                      defaultCountry="SG"
-                      international
-                    />
+                    <Input {...field} />
                   </FormControl>
                   <FormDescription>Enter your student's contact person phone number.</FormDescription>
                   <FormMessage />

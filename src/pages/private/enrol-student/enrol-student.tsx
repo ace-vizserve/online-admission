@@ -47,7 +47,10 @@ function EnrolStudent() {
       <div className="w-full sticky lg:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl">
           <Link
-            onClick={() => setAcademicYear("")}
+            onClick={() => {
+              sessionStorage.clear();
+              setAcademicYear("");
+            }}
             to={"/admission/dashboard"}
             className={buttonVariants({
               variant: "link",

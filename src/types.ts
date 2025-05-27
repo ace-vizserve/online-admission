@@ -278,6 +278,7 @@ export type TStudent = {
   age: number;
   mothersName: string;
   fathersName: string;
+  studentNumber: string;
 };
 
 export type StudentInfo = {
@@ -289,10 +290,11 @@ export type StudentInfo = {
 };
 
 export type levelYear = {
+  studentNumber: string;
   enroleeNumber: string;
   studentName: string;
   academicYear: string;
-  grade_level: string;
+  gradeLevel: string;
   status: string;
 };
 
@@ -460,4 +462,24 @@ export type DocumentsInformation = {
   medical: File | string;
   passport: File | string;
   pass: File | string;
+};
+
+export type StudentDocumentUpdatePayload = Partial<Omit<StudentUploadRequirementsSchema, "isValid">>;
+export type ParentGuardianDocumentUpdatePayload = Partial<
+  Omit<ParentGuardianUploadRequirementsSchema, "isValid" | "hasFatherInfo" | "hasGuardianInfo">
+>;
+
+export type StudentReuploadProps = {
+  enroleeNumber: string;
+  academicYear: string;
+  documentType: string;
+  payload: StudentDocumentUpdatePayload;
+};
+
+export type ParentGuardianReuploadProps = {
+  role: string;
+  enroleeNumber: string;
+  academicYear: string;
+  documentType: string;
+  payload: ParentGuardianDocumentUpdatePayload;
 };

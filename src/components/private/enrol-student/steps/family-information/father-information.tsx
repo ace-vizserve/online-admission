@@ -3,7 +3,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
@@ -17,16 +16,16 @@ import {
 } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Save } from "lucide-react";
+import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function FatherInformation() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const navigate = useNavigate();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
-
   const form = useForm<FatherInformationSchema>({
     resolver: zodResolver(fatherInformationSchema),
     defaultValues: {
@@ -35,13 +34,6 @@ function FatherInformation() {
   });
 
   function onSubmit(values: FatherInformationSchema) {
-    if (!isValidPhoneNumber(values.fatherMobile)) {
-      form.setError("fatherMobile", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
-
     setFormState({
       ...formState,
       familyInfo: {
@@ -62,6 +54,19 @@ function FatherInformation() {
     toast.success("Father information details saved!", {
       description: "Make sure to double check everything",
     });
+  }
+
+  function proceedToNextStep() {
+    if (!formState.familyInfo?.motherInfo.isValid) {
+      toast.warning("Missing mother information details!", {
+        description: "Make sure to double check everything",
+      });
+      return;
+    }
+
+    setCompletedTabs("/enrol-student/new/family-info");
+    setCurrentTab("/enrol-student/new/enrollment-info");
+    navigate("/enrol-student/new/enrollment-info");
   }
 
   return (
@@ -260,12 +265,7 @@ function FatherInformation() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput
-                      {...field}
-                      value={parsePhoneNumber(String(field.value), "SG")?.formatInternational() ?? String(field.value)}
-                      defaultCountry="SG"
-                      international
-                    />
+                    <Input {...field} />
                   </FormControl>
                   <FormDescription>Enter the student's father mobile phone.</FormDescription>
                   <FormMessage />
@@ -322,15 +322,31 @@ function FatherInformation() {
           />
         </div>
 
-        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          Save
-          <Save />
-        </Button>
+        <div className="flex flex-col gap-4">
+          <Button size={"lg"} variant={"secondary"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+            Save
+            <Save />
+          </Button>
 
-        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Save
-          <Save />
-        </Button>
+          <Button variant={"secondary"} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+            Save
+            <Save />
+          </Button>
+
+          <Button
+            onClick={proceedToNextStep}
+            size={"lg"}
+            className="hidden lg:flex w-full p-8 gap-2 uppercase"
+            type="button">
+            Proceed to Next Step
+            <ArrowRight />
+          </Button>
+
+          <Button onClick={proceedToNextStep} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="button">
+            Proceed to Next Step
+            <ArrowRight />
+          </Button>
+        </div>
       </form>
     </Form>
   );

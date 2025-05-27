@@ -4,7 +4,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
@@ -20,7 +19,6 @@ import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 
 function MotherInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
@@ -44,13 +42,6 @@ function MotherInformation() {
   }, [form, formState.familyInfo?.motherInfo]);
 
   function onSubmit(values: MotherInformationSchema) {
-    if (!isValidPhoneNumber(values.motherMobile)) {
-      form.setError("motherMobile", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
-
     setFormState({
       familyInfo: {
         ...formState.familyInfo!,
@@ -256,12 +247,7 @@ function MotherInformation() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput
-                      {...field}
-                      value={parsePhoneNumber(String(field.value), "SG")?.formatInternational() ?? String(field.value)}
-                      defaultCountry="SG"
-                      international
-                    />
+                    <Input {...field} />
                   </FormControl>
                   <FormDescription>Enter the student's mother mobile phone.</FormDescription>
                   <FormMessage />

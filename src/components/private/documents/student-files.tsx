@@ -1,17 +1,44 @@
+import { studentReuploadDocuments } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
-import { StudentDocument } from "@/types";
+import { studentPassTypes } from "@/data";
+import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
+import { cn } from "@/lib/utils";
+import { StudentDocument, StudentDocumentUpdatePayload, StudentReuploadProps } from "@/types";
 import { Label } from "@radix-ui/react-dropdown-menu";
-import { formatDate } from "date-fns";
-import { EllipsisVertical, Eye, EyeClosed } from "lucide-react";
-import { Link } from "react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, formatDate } from "date-fns";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
+import { CalendarIcon, Download, EllipsisVertical, Eye, EyeClosed, RotateCcw, Save } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router";
+import { toast } from "sonner";
+
+const form12Url = import.meta.env.VITE_FORM_12_URL as string;
+const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 function StudentFiles({ label, documents }: { label: string; documents: StudentDocument }) {
+  const params = useParams();
+  const [searchParams] = useSearchParams();
+  const academicYear = searchParams.get("academicYear");
   const passportDocument = documents.documentsThatExpire[0];
   const passDocument = documents.documentsThatExpire[1];
 
@@ -95,15 +122,30 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             </div>
             <p className="text-muted-foreground font-medium text-sm">Pass</p>
 
-            <Link
-              to={passDocument.pass!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to={passDocument.pass!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+
+              <StudentFileUploaderDialog
+                status={passDocument.passStatus!}
+                academicYear={academicYear!}
+                documentType="pass"
+                enroleeNumber={params.id!}
+                label="Student's Pass"
+                payload={{
+                  pass: passDocument.pass!,
+                  passExpiry: passDocument.passExpiry! as Date,
+                  passType: passDocument.passType!,
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -166,15 +208,30 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             </div>
             <p className="text-muted-foreground font-medium text-sm">Passport</p>
 
-            <Link
-              to={passportDocument.passport!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to={passportDocument.passport!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+
+              <StudentFileUploaderDialog
+                status={passportDocument.passportStatus!}
+                academicYear={academicYear!}
+                documentType="passport"
+                enroleeNumber={params.id!}
+                label="Student's Passport"
+                payload={{
+                  pass: passportDocument.passport!,
+                  passExpiry: passportDocument.passportExpiry! as Date,
+                  passportNumber: passportDocument.passportNumber!,
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -209,15 +266,28 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             </div>
             <p className="text-muted-foreground font-medium text-sm">Form 12</p>
 
-            <Link
-              to={form12Document.form12!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to={form12Document.form12!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+
+              <StudentFileUploaderDialog
+                status={form12Document.form12Status!}
+                academicYear={academicYear!}
+                documentType="form12"
+                enroleeNumber={params.id!}
+                label="Student's Form 12"
+                payload={{
+                  form12: form12Document.form12!,
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -247,15 +317,28 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             </div>
             <p className="text-muted-foreground font-medium text-sm">Medical Exam</p>
 
-            <Link
-              to={medicalCertDocument.medical!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to={medicalCertDocument.medical!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+
+              <StudentFileUploaderDialog
+                status={medicalCertDocument.medicalStatus!}
+                academicYear={academicYear!}
+                documentType="medical"
+                enroleeNumber={params.id!}
+                label="Student's Medical"
+                payload={{
+                  medical: medicalCertDocument.medical!,
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -285,15 +368,28 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             </div>
             <p className="text-muted-foreground font-medium text-sm">Birth Certificate</p>
 
-            <Link
-              to={birthCertDocument.birthCert!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to={birthCertDocument.birthCert!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+
+              <StudentFileUploaderDialog
+                status={birthCertDocument.birthCertStatus!}
+                academicYear={academicYear!}
+                documentType="birthCert"
+                enroleeNumber={params.id!}
+                label="Student's Birth Certificate"
+                payload={{
+                  birthCert: birthCertDocument.birthCert!,
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -323,19 +419,330 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             </div>
             <p className="text-muted-foreground font-medium text-sm">Transcript of Records</p>
 
-            <Link
-              to={eduCertDocument.educCert!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to={eduCertDocument.educCert!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+
+              <StudentFileUploaderDialog
+                status={eduCertDocument.educCertStatus!}
+                academicYear={academicYear!}
+                documentType="eduCert"
+                enroleeNumber={params.id!}
+                label="Student's Transcript of Records"
+                payload={{
+                  educCert: eduCertDocument.educCert!,
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function StudentFileUploaderDialog({
+  status,
+  academicYear,
+  documentType,
+  enroleeNumber,
+  label,
+}: StudentReuploadProps & { label: string; status: string }) {
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (payload: StudentDocumentUpdatePayload) => {
+      return await studentReuploadDocuments({ academicYear, documentType, enroleeNumber, payload });
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["student-documents", enroleeNumber],
+      });
+    },
+  });
+
+  const [pass, setPass] = useState("");
+  const [passType, setPassType] = useState("");
+  const [passExpiry, setPassExpiry] = useState<Date | undefined>();
+
+  const [passport, setPassport] = useState("");
+  const [passportNumber, setPassportNumber] = useState("");
+  const [passportExpiry, setPassportExpiry] = useState<Date | undefined>();
+
+  const [birthCert, setBirthCert] = useState("");
+
+  const [form12, setForm12] = useState("");
+
+  const [medical, setMedical] = useState("");
+
+  const [eduCert, setEduCert] = useState("");
+
+  const props = useSupabaseUpload({
+    bucketName: "parent-portal",
+    path: `${academicYear}/documents`,
+    allowedMimeTypes: ["image/*", "application/pdf"],
+    maxFiles: 1,
+    maxFileSize: 1000 * 1000 * 4,
+  });
+
+  useEffect(() => {
+    if (!props.isSuccess) return;
+
+    if (documentType == "pass") {
+      setPass(props.successes[0]);
+    }
+
+    if (documentType == "passport") {
+      setPassport(props.successes[0]);
+    }
+
+    if (documentType == "birthCert") {
+      setBirthCert(props.successes[0]);
+    }
+
+    if (documentType == "form12") {
+      setForm12(props.successes[0]);
+    }
+
+    if (documentType == "medical") {
+      setMedical(props.successes[0]);
+    }
+
+    if (documentType == "eduCert") {
+      setEduCert(props.successes[0]);
+    }
+  }, [documentType, props.isSuccess, props.successes]);
+
+  function submitReupload(e: FormEvent) {
+    e.preventDefault();
+
+    let filePayload: Record<string, unknown> | null = null;
+
+    switch (documentType) {
+      case "pass":
+        if (!pass) {
+          toast.error("Please upload the pass document.");
+          return;
+        }
+        if (passType === "") {
+          toast.error("Please select a pass type.");
+          return;
+        }
+        if (!passExpiry) {
+          toast.error("Please provide a pass expiry date.");
+          return;
+        }
+        filePayload = {
+          pass,
+          passType,
+          passExpiry: passExpiry.toISOString(),
+        };
+        break;
+
+      case "passport":
+        if (!passport) {
+          toast.error("Please upload the passport document.");
+          return;
+        }
+        if (passportNumber.trim() === "") {
+          toast.error("Please enter a passport number.");
+          return;
+        }
+        if (!passportExpiry) {
+          toast.error("Please provide a passport expiry date.");
+          return;
+        }
+        filePayload = {
+          passport,
+          passportNumber,
+          passportExpiry: passportExpiry.toISOString(),
+        };
+        break;
+
+      case "birthCert":
+        if (!birthCert) {
+          toast.error("Please upload the birth certificate.");
+          return;
+        }
+        filePayload = {
+          birthCert,
+        };
+        break;
+
+      case "form12":
+        if (!form12) {
+          toast.error("Please upload Form 12.");
+          return;
+        }
+        filePayload = {
+          form12,
+        };
+        break;
+
+      case "medical":
+        if (!medical) {
+          toast.error("Please upload the medical exam.");
+          return;
+        }
+        filePayload = {
+          medical,
+        };
+        break;
+
+      case "eduCert":
+        if (!eduCert) {
+          toast.error("Please upload the educational certificate.");
+          return;
+        }
+        filePayload = {
+          eduCert,
+        };
+        break;
+    }
+
+    mutate({ ...filePayload });
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button disabled={status == "Valid" || status == "Uploaded" || isPending} className="gap-2 text-xs w-full">
+          Reupload <RotateCcw />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="!max-w-2xl">
+        <form onSubmit={submitReupload} className="grid grid-cols-1 items-center space-y-4">
+          <DialogHeader className="text-start">
+            <DialogTitle>{label}</DialogTitle>
+            <DialogDescription>
+              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+            </DialogDescription>
+          </DialogHeader>
+          {documentType === "form12" && (
+            <Link
+              to={form12Url}
+              target="_blank"
+              className={buttonVariants({
+                className: "gap-2 w-max mx-auto text-xs",
+                variant: "outline",
+              })}>
+              Download Form 12 Form <Download />
+            </Link>
+          )}
+
+          {documentType === "medical" && (
+            <Link
+              to={medicalExamurl}
+              target="_blank"
+              className={buttonVariants({
+                className: "gap-2 w-max mx-auto text-xs",
+                variant: "outline",
+              })}>
+              Download Medical Exam Form <Download />
+            </Link>
+          )}
+
+          <Dropzone {...props}>
+            <DropzoneEmptyState />
+            <DropzoneContent />
+          </Dropzone>
+
+          {documentType === "pass" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Select onValueChange={setPassType} defaultValue={passType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a pass type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {studentPassTypes.map((passType) => (
+                    <SelectItem key={passType.value} value={passType.value}>
+                      {passType.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn("w-full pl-3 text-left font-normal", !passExpiry && "text-muted-foreground")}>
+                    {passExpiry ? format(passExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={passExpiry}
+                    onSelect={setPassExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {documentType === "passport" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Input
+                required
+                placeholder="Enter passport number"
+                value={passportNumber}
+                onChange={(e) => setPassportNumber(e.target.value)}
+              />
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn("w-full pl-3 text-left font-normal", !passportExpiry && "text-muted-foreground")}>
+                    {passportExpiry ? format(passportExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={passportExpiry}
+                    onSelect={setPassportExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+          <DialogFooter>
+            <Button className="w-full gap-2" type="submit">
+              {isPending ? (
+                <>
+                  Saving <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Save changes
+                  <Save />
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -12,15 +12,55 @@ export type AcademicYearStore = {
   setAcademicYear: (academicYear: string) => void;
 };
 
-export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
-  isOpen: false,
-  setIsOpen: (state) => set(() => ({ isOpen: state })),
-}));
-
 export type PasswordResetStore = {
   passwordResetState: boolean;
   setPasswordResetState: (state: boolean) => void;
 };
+
+export type EnrolNewStudentTabStateStore = {
+  currentTab: string;
+  completedTabs: string[];
+  setCurrentTab: (tab: string) => void;
+  setCompletedTabs: (tab: string) => void;
+};
+
+export type EnrolNewStudentStore = {
+  formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
+  setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
+};
+
+export type EnrolOldStudentStore = {
+  formState: Partial<EnrolOldStudentFormState> | Record<string, null>;
+  setFormState: (data: Partial<EnrolOldStudentFormState>) => void;
+};
+
+export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateStore>()(
+  persist(
+    (set) => ({
+      currentTab: "",
+      completedTabs: [],
+      setCurrentTab: (tab: string) =>
+        set((state) => ({
+          ...state,
+          currentTab: tab,
+        })),
+      setCompletedTabs: (tab: string) =>
+        set((state) => ({
+          ...state,
+          completedTabs: [...state.completedTabs, tab],
+        })),
+    }),
+    {
+      name: "enrolNewStudentTabState",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
+
+export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
+  isOpen: false,
+  setIsOpen: (state) => set(() => ({ isOpen: state })),
+}));
 
 export const usePasswordResetStore = create<PasswordResetStore>()(
   persist(
@@ -33,11 +73,6 @@ export const usePasswordResetStore = create<PasswordResetStore>()(
     }
   )
 );
-
-export type EnrolNewStudentStore = {
-  formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
-  setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
-};
 
 export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
   persist(
@@ -57,11 +92,6 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
     }
   )
 );
-
-export type EnrolOldStudentStore = {
-  formState: Partial<EnrolOldStudentFormState> | Record<string, null>;
-  setFormState: (data: Partial<EnrolOldStudentFormState>) => void;
-};
 
 export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
   persist(

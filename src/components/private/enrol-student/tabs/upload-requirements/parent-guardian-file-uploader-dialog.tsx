@@ -33,7 +33,16 @@ import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CalendarIcon, CircleAlert, CloudUpload, ExternalLink, Paperclip, Trash2, Upload } from "lucide-react";
+import {
+  CalendarIcon,
+  CheckCircle2,
+  CircleAlert,
+  CloudUpload,
+  ExternalLink,
+  Paperclip,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { memo } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
@@ -74,7 +83,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
-        form.setValue(name, data!.imagePath);
+        form.setValue(name, data!.imagePath, { shouldValidate: true });
         setFormState({
           uploadRequirements: {
             studentUploadRequirements: {
@@ -116,7 +125,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
   function changeDocument() {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
-    form.setValue(name, "");
+    form.resetField(name);
 
     setFormState({
       uploadRequirements: {
@@ -137,9 +146,16 @@ const ParentGuardianFileUploaderDialog = memo(function ({
       <div
         className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
           "bg-red-50": errors[name] != null,
+          "bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements[name],
         })}>
         <div className="flex items-center gap-4">
-          {errors[name] != null ? <CircleAlert className="size-6 text-destructive" /> : <Upload className="size-6" />}
+          {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+            <CheckCircle2 className="stroke-white fill-green-600" />
+          ) : errors[name] != null ? (
+            <CircleAlert className="size-6 text-destructive" />
+          ) : (
+            <Upload className="size-6" />
+          )}
           <div className="flex flex-col gap-1">
             <span className="text-sm">{label}</span>
             <span className="text-muted-foreground text-xs">{description}</span>
@@ -147,7 +163,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant={errors[name] != null ? "destructive" : "outline"}>Upload</Button>
+            <Button variant={errors[name] != null ? "destructive" : "outline"}>
+              {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? "View" : "Upload"}
+            </Button>
           </DialogTrigger>
 
           <DialogContent className="!max-w-2xl">
@@ -680,7 +698,7 @@ function ParentGuardianFileUploaderDrawer({
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
-        form.setValue(name, data!.imagePath);
+        form.setValue(name, data!.imagePath, { shouldValidate: true });
         setFormState({
           uploadRequirements: {
             studentUploadRequirements: {
@@ -717,7 +735,7 @@ function ParentGuardianFileUploaderDrawer({
 
   function changeDocument() {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
-    form.setValue(name, "");
+    form.resetField(name);
 
     setFormState({
       uploadRequirements: {
@@ -737,17 +755,26 @@ function ParentGuardianFileUploaderDrawer({
     <div
       className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
         "bg-red-50": errors[name] != null,
+        "bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements[name],
       })}>
       <div className="flex items-center gap-4">
-        {errors[name] != null ? <CircleAlert className="size-6 text-destructive" /> : <Upload className="size-6" />}
+        {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+          <CheckCircle2 className="stroke-white fill-green-600" />
+        ) : errors[name] != null ? (
+          <CircleAlert className="size-6 text-destructive" />
+        ) : (
+          <Upload className="size-6" />
+        )}
         <div className="flex flex-col gap-1">
           <span className="text-sm">{label}</span>
-          <span className="text-muted-foreground text-xs text-balance">{description}</span>
+          <span className="text-muted-foreground text-xs">{description}</span>
         </div>
       </div>
       <Drawer>
         <DrawerTrigger asChild>
-          <Button variant={errors[name] != null ? "destructive" : "outline"}>Upload</Button>
+          <Button variant={errors[name] != null ? "destructive" : "outline"}>
+            {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? "View" : "Upload"}
+          </Button>
         </DrawerTrigger>
 
         <DrawerContent className="px-4">

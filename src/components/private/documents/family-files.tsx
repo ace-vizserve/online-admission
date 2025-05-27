@@ -1,15 +1,35 @@
+import { parentGuardianReuploadDocuments } from "@/actions/private";
+import fileSvg from "@/assets/file.svg";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
-import { Eye, EyeClosed, EllipsisVertical } from "lucide-react";
-import { Link } from "react-router";
-import fileSvg from "@/assets/file.svg";
-import { FamilyDocument } from "@/types";
-import { formatDate } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
+import { parentGuardianPassTypes } from "@/data";
+import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
+import { cn } from "@/lib/utils";
+import { FamilyDocument, ParentGuardianDocumentUpdatePayload, ParentGuardianReuploadProps } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, formatDate } from "date-fns";
+import { DotPulse } from "ldrs/react";
+import { CalendarIcon, EllipsisVertical, Eye, EyeClosed, RotateCcw, Save } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router";
+import { toast } from "sonner";
 
-function renderFamilyDocCard({
+function RenderFamilyDocCard({
   label,
   fileUrl,
   status,
@@ -23,10 +43,14 @@ function renderFamilyDocCard({
   typeLabel?: string;
 }) {
   const isMissing = !fileUrl;
+  const params = useParams();
+  const [searchParams] = useSearchParams();
+  const academicYear = searchParams.get("academicYear");
+
   return (
     <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
       <div className="w-full flex relative">
-        <StatusBadge className="absolute -top-2" status={status as StatusProps || "Missing"} />
+        <StatusBadge className="absolute -top-2" status={(status as StatusProps) || "Missing"} />
         {!isMissing && (
           <Popover>
             <PopoverTrigger asChild>
@@ -44,11 +68,7 @@ function renderFamilyDocCard({
                   {typeLabel && (
                     <div className="grid grid-cols-3 items-center gap-4">
                       <span className="text-xs">Type/Number</span>
-                      <Input
-                        defaultValue={typeLabel}
-                        className="col-span-2 h-8 capitalize"
-                        readOnly
-                      />
+                      <Input defaultValue={typeLabel} className="col-span-2 h-8 capitalize" readOnly />
                     </div>
                   )}
                   {expiry && (
@@ -77,15 +97,28 @@ function renderFamilyDocCard({
           View document <EyeClosed />
         </Button>
       ) : (
-        <Link
-          to={fileUrl}
-          target="_blank"
-          className={buttonVariants({
-            className: "gap-2 text-xs  w-full",
-            variant: "secondary",
-          })}>
-          View document <Eye />
-        </Link>
+        <div className="flex flex-col gap-2 w-full">
+          <Link
+            to={fileUrl}
+            target="_blank"
+            className={buttonVariants({
+              className: "gap-2 text-xs  w-full",
+              variant: "secondary",
+            })}>
+            View document <Eye />
+          </Link>
+          <ParentGuardianFileUploaderDialog
+            role=""
+            status={status!}
+            academicYear={academicYear!}
+            documentType={typeLabel!}
+            enroleeNumber={params.id!}
+            label={label!}
+            payload={{
+              fatherPass: "",
+            }}
+          />
+        </div>
       )}
     </div>
   );
@@ -162,19 +195,491 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
       </div>
       <h2 className="font-bold text-lg">Mother's Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
-        {motherCards.map((props) => renderFamilyDocCard(props))}
+        {motherCards.map((props) => (
+          <RenderFamilyDocCard {...props} />
+        ))}
       </div>
       <Separator className="my-4" />
       <h2 className="font-bold text-lg">Father's Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
-        {fatherCards.map((props) => renderFamilyDocCard(props))}
+        {fatherCards.map((props) => (
+          <RenderFamilyDocCard {...props} />
+        ))}
       </div>
       <Separator className="my-4" />
       <h2 className="font-bold text-lg">Guardian's Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4">
-        {guardianCards.map((props) => renderFamilyDocCard(props))}
+        {guardianCards.map((props) => (
+          <RenderFamilyDocCard {...props} />
+        ))}
       </div>
     </div>
+  );
+}
+
+function ParentGuardianFileUploaderDialog({
+  role,
+  status,
+  academicYear,
+  documentType,
+  enroleeNumber,
+  label,
+}: ParentGuardianReuploadProps & { label: string; status: string; role: string }) {
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (payload: ParentGuardianDocumentUpdatePayload) => {
+      return await parentGuardianReuploadDocuments({ academicYear, documentType, enroleeNumber, payload, role });
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["student-documents", enroleeNumber],
+      });
+    },
+  });
+
+  const [motherPass, setMotherPass] = useState("");
+  const [motherPassType, setMotherPassType] = useState("");
+  const [motherPassExpiry, setMotherPassExpiry] = useState<Date>();
+
+  const [motherPassport, setMotherPassport] = useState("");
+  const [motherPassportNumber, setMotherPassportNumber] = useState("");
+  const [motherPassportExpiry, setMotherPassportExpiry] = useState<Date>();
+
+  const [fatherPass, setFatherPass] = useState("");
+  const [fatherPassType, setFatherPassType] = useState("");
+  const [fatherPassExpiry, setFatherPassExpiry] = useState<Date>();
+
+  const [fatherPassport, setFatherPassport] = useState("");
+  const [fatherPassportNumber, setFatherPassportNumber] = useState("");
+  const [fatherPassportExpiry, setFatherPassportExpiry] = useState<Date>();
+
+  const [guardianPass, setGuardianPass] = useState("");
+  const [guardianPassType, setGuardianPassType] = useState("");
+  const [guardianPassExpiry, setGuardianPassExpiry] = useState<Date>();
+
+  const [guardianPassport, setGuardianPassport] = useState("");
+  const [guardianPassportNumber, setGuardianPassportNumber] = useState("");
+  const [guardianPassportExpiry, setGuardianPassportExpiry] = useState<Date>();
+
+  const props = useSupabaseUpload({
+    bucketName: "parent-portal",
+    path: `${academicYear}/documents`,
+    allowedMimeTypes: ["image/*", "application/pdf"],
+    maxFiles: 1,
+    maxFileSize: 1000 * 1000 * 4,
+  });
+
+  useEffect(() => {
+    if (!props.isSuccess) return;
+    const uploadedFile = props.successes[0];
+
+    if (documentType === "pass") {
+      if (role === "mother") setMotherPass(uploadedFile);
+      else if (role === "father") setFatherPass(uploadedFile);
+      else if (role === "guardian") setGuardianPass(uploadedFile);
+    }
+
+    if (documentType === "passport") {
+      if (role === "mother") setMotherPassport(uploadedFile);
+      else if (role === "father") setFatherPassport(uploadedFile);
+      else if (role === "guardian") setGuardianPassport(uploadedFile);
+    }
+  }, [documentType, role, props.isSuccess, props.successes]);
+
+  function submitReupload(e: FormEvent) {
+    e.preventDefault();
+
+    let filePayload: Record<string, unknown> = {};
+
+    switch (documentType) {
+      case "motherPass":
+        if (!motherPass) {
+          toast.error("Please upload the pass document.");
+          return;
+        }
+        if (motherPassType === "") {
+          toast.error("Please select a pass type.");
+          return;
+        }
+        if (!motherPassExpiry) {
+          toast.error("Please provide a pass expiry date.");
+          return;
+        }
+        filePayload = {
+          motherPass,
+          motherPassType,
+          motherPassExpiry: motherPassExpiry.toISOString(),
+        };
+        break;
+      case "motherPassport":
+        if (!motherPassport) {
+          toast.error("Please upload the passport document.");
+          return;
+        }
+        if (motherPassportNumber === "") {
+          toast.error("Please enter the passport number.");
+          return;
+        }
+        if (!motherPassportExpiry) {
+          toast.error("Please provide a passport expiry date.");
+          return;
+        }
+        filePayload = {
+          motherPassport,
+          motherPassportNumber,
+          motherPassportExpiry: motherPassportExpiry.toISOString(),
+        };
+        break;
+      case "fatherPass":
+        if (!fatherPass) {
+          toast.error("Please upload the pass document.");
+          return;
+        }
+        if (fatherPassType === "") {
+          toast.error("Please select a pass type.");
+          return;
+        }
+        if (!fatherPassExpiry) {
+          toast.error("Please provide a pass expiry date.");
+          return;
+        }
+        filePayload = {
+          fatherPass,
+          fatherPassType,
+          fatherPassExpiry: fatherPassExpiry.toISOString(),
+        };
+        break;
+      case "fatherPassport":
+        if (!fatherPassport) {
+          toast.error("Please upload the passport document.");
+          return;
+        }
+        if (fatherPassportNumber === "") {
+          toast.error("Please enter the passport number.");
+          return;
+        }
+        if (!fatherPassportExpiry) {
+          toast.error("Please provide a passport expiry date.");
+          return;
+        }
+        filePayload = {
+          fatherPassport,
+          fatherPassportNumber,
+          fatherPassportExpiry: fatherPassportExpiry.toISOString(),
+        };
+        break;
+
+      case "guardianPass":
+        if (!guardianPass) {
+          toast.error("Please upload the pass document.");
+          return;
+        }
+        if (guardianPassType === "") {
+          toast.error("Please select a pass type.");
+          return;
+        }
+        if (!guardianPassExpiry) {
+          toast.error("Please provide a pass expiry date.");
+          return;
+        }
+        filePayload = {
+          guardianPass,
+          guardianPassType,
+          guardianPassExpiry: guardianPassExpiry.toISOString(),
+        };
+        break;
+      case "guardianPassport":
+        if (!guardianPassport) {
+          toast.error("Please upload the passport document.");
+          return;
+        }
+        if (guardianPassportNumber === "") {
+          toast.error("Please enter the passport number.");
+          return;
+        }
+        if (!guardianPassportExpiry) {
+          toast.error("Please provide a passport expiry date.");
+          return;
+        }
+        filePayload = {
+          guardianPassport,
+          guardianPassportNumber,
+          guardianPassportExpiry: guardianPassportExpiry.toISOString(),
+        };
+        break;
+    }
+
+    mutate(filePayload);
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button disabled={status == "Valid" || status == "Uploaded" || isPending} className="gap-2 text-xs w-full">
+          Reupload <RotateCcw />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="!max-w-2xl">
+        <form onSubmit={submitReupload} className="grid grid-cols-1 items-center space-y-4">
+          <DialogHeader className="text-start">
+            <DialogTitle>{label}</DialogTitle>
+            <DialogDescription>
+              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Dropzone {...props}>
+            <DropzoneEmptyState />
+            <DropzoneContent />
+          </Dropzone>
+
+          {documentType === "motherPass" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Select onValueChange={setMotherPassType} defaultValue={motherPassType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a pass type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parentGuardianPassTypes.map((passType) => (
+                    <SelectItem key={passType.value} value={passType.value}>
+                      {passType.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn("w-full pl-3 text-left font-normal", !motherPassExpiry && "text-muted-foreground")}>
+                    {motherPassExpiry ? format(motherPassExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={motherPassExpiry}
+                    onSelect={setMotherPassExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {documentType === "motherPassport" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Input
+                required
+                placeholder="Enter passport number"
+                value={motherPassportNumber}
+                onChange={(e) => setMotherPassportNumber(e.target.value)}
+              />
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !motherPassportExpiry && "text-muted-foreground"
+                    )}>
+                    {motherPassportExpiry ? format(motherPassportExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={motherPassportExpiry}
+                    onSelect={setMotherPassportExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {documentType === "fatherPass" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Select onValueChange={setFatherPassType} defaultValue={fatherPassType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a pass type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parentGuardianPassTypes.map((passType) => (
+                    <SelectItem key={passType.value} value={passType.value}>
+                      {passType.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn("w-full pl-3 text-left font-normal", !fatherPassExpiry && "text-muted-foreground")}>
+                    {fatherPassExpiry ? format(fatherPassExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={fatherPassExpiry}
+                    onSelect={setFatherPassExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {documentType === "fatherPassport" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Input
+                required
+                placeholder="Enter passport number"
+                value={fatherPassportNumber}
+                onChange={(e) => setFatherPassportNumber(e.target.value)}
+              />
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !motherPassportExpiry && "text-muted-foreground"
+                    )}>
+                    {fatherPassportExpiry ? format(fatherPassportExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={fatherPassportExpiry}
+                    onSelect={setFatherPassportExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {documentType === "guardianPass" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Select onValueChange={setGuardianPassType} defaultValue={guardianPassType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a pass type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parentGuardianPassTypes.map((passType) => (
+                    <SelectItem key={passType.value} value={passType.value}>
+                      {passType.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn("w-full pl-3 text-left font-normal", !guardianPassExpiry && "text-muted-foreground")}>
+                    {guardianPassExpiry ? format(guardianPassExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={guardianPassExpiry}
+                    onSelect={setGuardianPassExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {documentType === "guardianPassport" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <Input
+                required
+                placeholder="Enter passport number"
+                value={fatherPassportNumber}
+                onChange={(e) => setGuardianPassportNumber(e.target.value)}
+              />
+
+              <Popover modal>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !guardianPassportExpiry && "text-muted-foreground"
+                    )}>
+                    {guardianPassportExpiry ? format(guardianPassportExpiry, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    disabled={[
+                      {
+                        before: new Date(),
+                      },
+                    ]}
+                    selected={guardianPassportExpiry}
+                    onSelect={setGuardianPassportExpiry}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+          <DialogFooter>
+            <Button className="w-full gap-2" type="submit">
+              {isPending ? (
+                <>
+                  Saving <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Save changes
+                  <Save />
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

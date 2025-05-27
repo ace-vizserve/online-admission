@@ -16,7 +16,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,7 +25,6 @@ import {
   classLevels,
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
-  preferredSchedule,
 } from "@/data";
 import { getNextGradeLevel } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
@@ -37,9 +35,21 @@ import "ldrs/react/Tailspin.css";
 import { CircleFadingArrowUpIcon, CircleHelp, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 import { useParams } from "react-router";
 import { toast } from "sonner";
+
+const MORNING_AFTERNOON_CLASS_LEVEL = [
+  "Young Starters",
+  "Primary 1",
+  "Primary 2",
+  "Primary 3",
+  "Primary 4",
+  "Primary 5",
+  "Primary 6",
+];
+const WHOLE_DAY_CLASS_LEVEL = ["Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
+
+const STANDARD_CLASS_LEVELS = ["Primary 5", "Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
 
 function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
@@ -54,10 +64,9 @@ function OldEnrollmentInformation() {
       return await getStudentEnrollmentInformation(params.id!);
     },
   });
+  const [selectedLevel, setSelectedLevel] = useState<string>("");
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const [isShowDiscount, setIsShowDiscount] = useState<boolean>(false);
-  const [isShowReferral, setIsShowReferral] = useState<boolean>(false);
-  const [discountType, setDiscountType] = useState<string>("");
+  const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(false);
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
@@ -67,17 +76,11 @@ function OldEnrollmentInformation() {
 
   useEffect(() => {
     if (!isSuccess || !data) return;
+    setSelectedLevel(data.levelApplied);
     form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
   }, [data, form, isSuccess]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
-    if (values.referrerMobile && !isValidPhoneNumber(values.referrerMobile)) {
-      form.setError("referrerMobile", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
-
     setFormState({
       enrollmentInfo: { ...values, isValid: true },
     });
@@ -142,7 +145,10 @@ function OldEnrollmentInformation() {
                       <FormItem>
                         <FormLabel>Class Level</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedLevel(value);
+                          }}
                           defaultValue={getNextGradeLevel(data?.levelApplied) ?? field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -179,11 +185,17 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {classTypes.map((type) => (
-                              <SelectItem key={type.value} value={type.value}>
-                                {type.label}
+                            {STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
+                                Standard Class (ENGLISH + TAGALOG)
                               </SelectItem>
-                            ))}
+                            ) : (
+                              classTypes.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {type.label}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                         <FormDescription>Choose the type of class (e.g., Enrichment Class).</FormDescription>
@@ -205,11 +217,17 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {preferredSchedule.map((schedule) => (
-                              <SelectItem key={schedule.value} value={schedule.value}>
-                                {schedule.label}
-                              </SelectItem>
-                            ))}
+                            {MORNING_AFTERNOON_CLASS_LEVEL.includes(selectedLevel) && (
+                              <>
+                                <SelectItem value={"Morning"}>Morning</SelectItem>
+
+                                <SelectItem value={"Afternoon"}>Afternoon</SelectItem>
+                              </>
+                            )}
+
+                            {WHOLE_DAY_CLASS_LEVEL.includes(selectedLevel) && (
+                              <SelectItem value={"Whole Day"}>Whole Day</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormDescription>Select your preferred time slot for classes.</FormDescription>
@@ -344,28 +362,69 @@ function OldEnrollmentInformation() {
                 <div className="max-w-2xl mx-auto space-y-4 bg-emerald-400 p-6 rounded-2xl border border-muted shadow-sm">
                   <div className="space-y-4">
                     <Label className="text-xl text-white font-semibold">Apply a Discount</Label>
-                    {isPendingCurrentStudentDiscounts && (
+                    {isPendingCurrentStudentDiscounts ? (
                       <div className="w-full flex items-center justify-center">
                         <Tailspin size="30" stroke="3" speed="0.9" color="white" />
                       </div>
-                    )}
+                    ) : (
+                      <FormField
+                        control={form.control}
+                        name="discount"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <FormLabel className="text-white">Discount Code</FormLabel>
+                            <FormControl>
+                              <div>
+                                <MultiSelect
+                                  maxSelectedItems={3}
+                                  key={0}
+                                  variant={"inverted"}
+                                  options={currentStudentDiscounts?.discountCodes ?? []}
+                                  onValueChange={(value) => {
+                                    if (value.includes("Referred by someone")) {
+                                      setIsSelectedReferredBySomeone(true);
+                                    } else {
+                                      form.setValue("referrerName", "");
+                                      form.setValue("referrerMobile", "");
+                                      setIsSelectedReferredBySomeone(false);
+                                    }
+                                    console.log(value);
+                                    field.onChange(value);
+                                  }}
+                                  placeholder="Select discount codes"
+                                  maxCount={3}
+                                  className="hidden bg-white hover:bg-white lg:block"
+                                />
 
-                    <Select onValueChange={setDiscountType} value={discountType}>
-                      <SelectTrigger className="w-full bg-white">
-                        <SelectValue placeholder="Select a discount option" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-muted shadow-lg rounded-lg">
-                        {currentStudentDiscounts?.hasReferredBySomeoneDiscounts && (
-                          <SelectItem value="referred-by-someone">🎯 Referred by someone</SelectItem>
+                                <MultiSelect
+                                  maxSelectedItems={3}
+                                  key={1}
+                                  variant={"inverted"}
+                                  options={currentStudentDiscounts?.discountCodes ?? []}
+                                  onValueChange={(value) => {
+                                    if (value.includes("Referred by someone")) {
+                                      setIsSelectedReferredBySomeone(true);
+                                    } else {
+                                      form.setValue("referrerName", "");
+                                      form.setValue("referrerMobile", "");
+                                      setIsSelectedReferredBySomeone(false);
+                                    }
+                                    field.onChange(value);
+                                  }}
+                                  placeholder="Select discount codes"
+                                  maxCount={1}
+                                  className="block bg-white hover:bg-white lg:hidden"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                        {currentStudentDiscounts?.hasDiscountCodes && (
-                          <SelectItem value="discount-code">🏷️ Discount code</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
+                      />
+                    )}
                   </div>
 
-                  {discountType === "referred-by-someone" && (
+                  {isSelectedReferredBySomeone && (
                     <>
                       <FormField
                         control={form.control}
@@ -375,6 +434,7 @@ function OldEnrollmentInformation() {
                             <FormLabel className="text-white">Referrer's Name</FormLabel>
                             <FormControl>
                               <Input
+                                required
                                 className="bg-white w-full"
                                 placeholder="Enter your referrer's full name"
                                 {...field}
@@ -392,169 +452,12 @@ function OldEnrollmentInformation() {
                           <FormItem className="flex flex-col items-start">
                             <FormLabel className="text-white">Referrer's Mobile</FormLabel>
                             <FormControl className="w-full">
-                              <PhoneInput
-                                {...field}
-                                value={parsePhoneNumber(field.value ?? "", "SG")?.formatInternational()}
-                                defaultCountry="SG"
-                                countryCallingCodeEditable
-                                international
-                                className="bg-white rounded-md"
-                              />
+                              <Input className="bg-white" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
-                      {isShowDiscount ? (
-                        <FormField
-                          control={form.control}
-                          name="discount"
-                          render={({ field }) => (
-                            <FormItem className="space-y-1">
-                              <FormLabel className="text-white">Discount Code</FormLabel>
-                              <FormControl>
-                                <div>
-                                  <MultiSelect
-                                    maxSelectedItems={3}
-                                    key={0}
-                                    variant={"inverted"}
-                                    options={currentStudentDiscounts?.discountCodes ?? []}
-                                    onValueChange={field.onChange}
-                                    placeholder="Select discount codes"
-                                    maxCount={3}
-                                    className="hidden bg-white hover:bg-white lg:block"
-                                  />
-
-                                  <MultiSelect
-                                    maxSelectedItems={3}
-                                    key={1}
-                                    variant={"inverted"}
-                                    options={currentStudentDiscounts?.discountCodes ?? []}
-                                    onValueChange={field.onChange}
-                                    placeholder="Select discount codes"
-                                    maxCount={1}
-                                    className="block bg-white hover:bg-white lg:hidden"
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      ) : (
-                        <div className="w-full flex justify-center items-center">
-                          <Button
-                            disabled={!currentStudentDiscounts?.hasDiscountCodes}
-                            onClick={() => {
-                              setIsShowDiscount(true);
-                              setIsShowReferral(false);
-                            }}
-                            size={"lg"}
-                            type="button"
-                            className="bg-amber-500 hover:bg-amber-600">
-                            Add Discount Code
-                          </Button>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {discountType === "discount-code" && (
-                    <>
-                      <FormField
-                        control={form.control}
-                        name="discount"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1">
-                            <FormLabel className="text-white">Discount Code</FormLabel>
-                            <FormControl>
-                              <div>
-                                <MultiSelect
-                                  maxSelectedItems={3}
-                                  key={0}
-                                  variant={"inverted"}
-                                  options={currentStudentDiscounts?.discountCodes ?? []}
-                                  onValueChange={field.onChange}
-                                  placeholder="Select discount codes"
-                                  maxCount={3}
-                                  className="hidden bg-white hover:bg-white lg:block"
-                                />
-
-                                <MultiSelect
-                                  maxSelectedItems={3}
-                                  key={1}
-                                  variant={"inverted"}
-                                  options={currentStudentDiscounts?.discountCodes ?? []}
-                                  onValueChange={field.onChange}
-                                  placeholder="Select discount codes"
-                                  maxCount={1}
-                                  className="block bg-white hover:bg-white lg:hidden"
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {isShowReferral ? (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="referrerName"
-                            render={({ field }) => (
-                              <FormItem className="space-y-1">
-                                <FormLabel className="text-white">Referrer's Name</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    className="bg-white w-full"
-                                    placeholder="Enter your referrer's full name"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-white">
-                                  Inquire to HFSE for the details.
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="referrerMobile"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-col items-start">
-                                <FormLabel className="text-white">Referrer's Mobile</FormLabel>
-                                <FormControl className="w-full">
-                                  <PhoneInput
-                                    {...field}
-                                    value={parsePhoneNumber(field.value ?? "", "SG")?.formatInternational()}
-                                    defaultCountry="SG"
-                                    countryCallingCodeEditable
-                                    international
-                                    className="bg-white rounded-md"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </>
-                      ) : (
-                        <div className="w-full flex justify-center items-center">
-                          <Button
-                            disabled={!currentStudentDiscounts?.hasReferredBySomeoneDiscounts}
-                            onClick={() => {
-                              setIsShowDiscount(false);
-                              setIsShowReferral(true);
-                            }}
-                            size={"lg"}
-                            type="button"
-                            className="bg-amber-500 hover:bg-amber-600">
-                            Apply Referral Discount
-                          </Button>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>

@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { maritalStatuses } from "@/data";
@@ -11,13 +10,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
 
 function StudentAddressContact() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const navigate = useNavigate();
   const [isPending, setTransition] = useTransition();
 
@@ -41,19 +39,7 @@ function StudentAddressContact() {
       });
       return;
     }
-    if (form.getValues("homePhone") && !isValidPhoneNumber(form.getValues("homePhone"))) {
-      form.setError("homePhone", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
 
-    if (form.getValues("contactPersonNumber") && !isValidPhoneNumber(form.getValues("contactPersonNumber"))) {
-      form.setError("contactPersonNumber", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
     setFormState({
       studentInfo: {
         addressContact: values,
@@ -63,6 +49,9 @@ function StudentAddressContact() {
     toast.success("Student Address & Contact details saved!", {
       description: "Proceeding to the next step...",
     });
+
+    setCompletedTabs("/enrol-student/new/student-info");
+    setCurrentTab("/enrol-student/new/family-info");
   }
 
   useEffect(() => {
@@ -139,7 +128,7 @@ function StudentAddressContact() {
               <FormItem className="flex flex-col items-start">
                 <FormLabel>Home phone</FormLabel>
                 <FormControl className="w-full">
-                  <PhoneInput {...field} defaultCountry="SG" international countryCallingCodeEditable />
+                  <Input {...field} />
                 </FormControl>
                 <FormDescription>Enter your home phone number.</FormDescription>
                 <FormMessage />
@@ -168,7 +157,7 @@ function StudentAddressContact() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Contact Person Number</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput {...field} countryCallingCodeEditable defaultCountry="SG" international />
+                    <Input {...field} />
                   </FormControl>
                   <FormDescription>Student's contact person phone number.</FormDescription>
                   <FormMessage />

@@ -12,7 +12,7 @@ import {
 import { ArrowUpDown, MoreHorizontal, RefreshCcw, User, UserPlus } from "lucide-react";
 import * as React from "react";
 
-import { getStudentEnrollmentList } from "@/actions/private";
+import { getStudentEnrollmentsList } from "@/actions/private";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,9 +27,7 @@ import { levelYear } from "@/types";
 import { QueryObserverResult, RefetchOptions, useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { Link } from "react-router";
-import { useParams } from "react-router";
-
+import { Link, useParams } from "react-router";
 
 export const columns: ColumnDef<levelYear>[] = [
   {
@@ -48,7 +46,7 @@ export const columns: ColumnDef<levelYear>[] = [
     cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("academicYear")}</div>,
   },
   {
-    accessorKey: "grade_level",
+    accessorKey: "gradeLevel",
     header: ({ column }) => {
       return (
         <Button
@@ -60,7 +58,7 @@ export const columns: ColumnDef<levelYear>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-3">{row.getValue("grade_level")}</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-3">{row.getValue("gradeLevel")}</div>,
   },
   {
     accessorKey: "status",
@@ -92,7 +90,7 @@ export const columns: ColumnDef<levelYear>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
-            <Link to={`/admission/document-file/${student.enroleeNumber}`}>
+            <Link to={`/admission/document-file/${student.enroleeNumber}?academicYear=ay${student.academicYear}`}>
               <DropdownMenuItem className="text-xs">
                 <User className="mr-1" /> View Enrolment Information
               </DropdownMenuItem>
@@ -105,16 +103,13 @@ export const columns: ColumnDef<levelYear>[] = [
 ];
 
 function SingleEnrol() {
+  const params = useParams();
   const { data, isPending, refetch, isRefetching } = useQuery({
     queryKey: ["students-enrolments-list"],
-    queryFn: getStudentEnrollmentList,
+    queryFn: async () => {
+      return await getStudentEnrollmentsList(params.id!);
+    },
   });
-  const params = useParams();
-  const enroleeNumber = params.id;
-
-  // Debug logs
-  console.log("params.id (enroleeNumber):", enroleeNumber);
-  console.log("studentsList:", data?.studentsList);
 
   if (isPending) {
     return (
@@ -129,18 +124,7 @@ function SingleEnrol() {
     return <NoStudentsPanel />;
   }
 
-  // Filter by enroleeNumber
-  const students = data.studentsList
-    .filter(student => String(student.enroleeNumber) === String(enroleeNumber))
-    .map(student => ({
-      enroleeNumber: student.enroleeNumber,
-      studentName: student.enroleeFullName,
-      academicYear: student.year,
-      grade_level: student.levelApplied,
-      status: student.applicationStatus,
-    } as levelYear));
-    
-  return <StudentsListTable refetch={refetch} isRefetching={isRefetching} studentsList={students} />;
+  return <StudentsListTable refetch={refetch} isRefetching={isRefetching} studentsList={data.studentsList} />;
 }
 
 type StudentsListTableProps = {
@@ -173,9 +157,7 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
 
   return (
     <div className="w-full py-7 md:py-14">
-      <h1 className="font-bold text-lg lg:text-2xl">
-        {studentName ? `${studentName}` : "Student not found"}
-      </h1>
+      <h1 className="font-bold text-lg lg:text-2xl">{studentName ? `${studentName}` : "Student not found"}</h1>
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter grade level..."

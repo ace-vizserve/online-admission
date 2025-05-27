@@ -1,8 +1,15 @@
 import { supabase } from "@/lib/client";
 import { extractSiblings, filterKeysBySubstring, flattenSiblings, removeEmptyKeys } from "@/lib/utils";
-import { EnrolNewStudentFormState, EnrolOldStudentFormState, FamilyInfo, Student } from "@/types";
+import {
+  EnrolNewStudentFormState,
+  EnrolOldStudentFormState,
+  FamilyInfo,
+  ParentGuardianReuploadProps,
+  Student,
+  StudentReuploadProps,
+} from "@/types";
 import { AuthError } from "@supabase/supabase-js";
-import { differenceInYears, parseISO } from "date-fns";
+import { differenceInYears, isBefore, parseISO } from "date-fns";
 import { toast } from "sonner";
 
 export async function getSectionCardsDetails() {
@@ -56,37 +63,102 @@ export async function getSectionCardsDetails() {
   }
 }
 
+export async function getStudentEnrollmentsList(studentNumber: string) {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!studentNumber) return { studentsList: [] };
+
+    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
+      .from("ay2026_enrolment_applications")
+      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
+      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
+      .eq("studentNumber", studentNumber);
+
+    if (ay2026studentInformationError) {
+      throw new Error(ay2026studentInformationError.message);
+    }
+
+    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
+      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
+      .eq("studentNumber", studentNumber);
+
+    if (ay2025studentInformationError) {
+      throw new Error(ay2025studentInformationError.message);
+    }
+
+    const mapStudents = (data: typeof ay2025studentInformation, academicYear: string) =>
+      data.map((info) => ({
+        studentNumber: info.studentNumber,
+        studentName: info.enroleeFullName,
+        academicYear,
+        gradeLevel: info.levelApplied,
+        status: info.applicationStatus,
+        enroleeNumber: info.enroleeNumber,
+      }));
+
+    const studentsList = [
+      ...mapStudents(ay2026studentInformation, "2026"),
+      ...mapStudents(ay2025studentInformation, "2025"),
+    ];
+
+    return { studentsList };
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+    return { studentsList: [] };
+  }
+}
+
 export async function getStudentList() {
   try {
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: studentInformation, error: studentInformationError } = await supabase
+    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
+      .from("ay2026_enrolment_applications")
+      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber", {
+        count: "exact",
+      })
+      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+
+    if (ay2026studentInformationError) {
+      throw new Error(ay2026studentInformationError.message);
+    }
+
+    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
       .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName", { count: "exact" })
+      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber", {
+        count: "exact",
+      })
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
       .order("enroleeNumber", { ascending: false });
 
-    if (studentInformationError) {
-      throw new Error(studentInformationError.message);
+    if (ay2025studentInformationError) {
+      throw new Error(ay2025studentInformationError.message);
     }
 
-    const mapped = studentInformation.map((info) => {
-      const age = differenceInYears(new Date(), parseISO(info.birthDay));
-      return {
+    const mapStudents = (data: typeof ay2025studentInformation) =>
+      data.map((info) => ({
         enroleeNumber: info.enroleeNumber,
         studentName: info.enroleeFullName,
-        age,
+        age: differenceInYears(new Date(), parseISO(info.birthDay)),
         mothersName: info.motherFullName ?? "--",
         fathersName: info.fatherFullName ?? "--",
-      };
-    });
+        studentNumber: info.studentNumber,
+      }));
 
-    const seenNames = new Set();
-    const studentsList = mapped.filter((student) => {
-      if (seenNames.has(student.studentName)) return false;
-      seenNames.add(student.studentName);
+    const allStudents = [...mapStudents(ay2026studentInformation), ...mapStudents(ay2025studentInformation)];
+
+    const seen = new Set();
+    const studentsList = allStudents.filter((s) => {
+      if (seen.has(s.studentName)) return false;
+      seen.add(s.studentName);
       return true;
     });
 
@@ -161,31 +233,6 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
   }
 }
 
-export async function getStudentEnrollmentList() {
-  try {
-    const { data: data2025, error: error2025 } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("levelApplied, applicationStatus, enroleeNumber, enroleeFullName, studentNumber");
-
-    const { data: data2026, error: error2026 } = await supabase
-      .from("ay2026_enrolment_applications")
-      .select("levelApplied, applicationStatus, enroleeNumber, enroleeFullName, studentNumber");
-
-    if (error2025 || error2026) {
-      throw new Error(error2025?.message || error2026?.message);
-    }
-    const studentsList = [
-      ...(data2025 ?? []).map((s) => ({ ...s, year: "2025" })),
-      ...(data2026 ?? []).map((s) => ({ ...s, year: "2026" })),
-    ];
-
-    return { studentsList };
-  } catch (error) {
-    const err = error as Error;
-    toast.error(err.message);
-  }
-}
-
 export async function getStudentDocumentsList(enroleeNumber: string) {
   if (!enroleeNumber) return [];
   try {
@@ -208,31 +255,116 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: studentInformation, error: studentInformationError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let studentInformation: any[] | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let documents: any[] | null = null;
+
+    const { data, error } = await supabase
       .from("ay2025_enrolment_applications")
       .select("*")
       .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+      .or(`fatherEmail.eq.${session?.user.email},motherEmail.eq.${session?.user.email}`);
 
-    if (studentInformationError) {
-      throw new Error(studentInformationError.message);
+    if (error) throw new Error(error.message);
+
+    if (data && data.length > 0) {
+      studentInformation = data;
+
+      const docRes = await supabase.from("ay2025_enrolment_documents").select("*").eq("enroleeNumber", enroleeNumber);
+
+      if (docRes.error) throw new Error(docRes.error.message);
+
+      documents = docRes.data;
     }
 
-    if (!studentInformation || !studentInformation.length) {
+    if (documents && documents.length > 0) {
+      const doc = documents[0];
+      const updates: Record<string, unknown> = {};
+      const now = new Date();
+
+      const expiryFields = [
+        { field: "passExpiry", statusField: "passStatus" },
+        { field: "passportExpiry", statusField: "passportStatus" },
+        { field: "motherPassportExpiry", statusField: "motherPassportStatus" },
+        { field: "motherPassExpiry", statusField: "motherPassStatus" },
+        { field: "fatherPassportExpiry", statusField: "fatherPassportStatus" },
+        { field: "fatherPassExpiry", statusField: "fatherPassStatus" },
+        { field: "guardianPassportExpiry", statusField: "guardianPassportStatus" },
+        { field: "guardianPassExpiry", statusField: "guardianPassStatus" },
+      ];
+
+      expiryFields.forEach(({ field, statusField }) => {
+        if (doc[field] && isBefore(new Date(doc[field]), now)) {
+          updates[statusField] = "Expired";
+        }
+      });
+
+      if (Object.keys(updates).length > 0) {
+        const { error: updateError } = await supabase
+          .from("ay2025_enrolment_documents")
+          .update(updates)
+          .eq("enroleeNumber", enroleeNumber);
+
+        if (updateError) throw new Error(updateError.message);
+      }
+    }
+
+    if (!studentInformation || studentInformation.length === 0) {
+      const res2026 = await supabase
+        .from("ay2026_enrolment_applications")
+        .select("*")
+        .eq("enroleeNumber", enroleeNumber)
+        .or(`fatherEmail.eq.${session?.user.email},motherEmail.eq.${session?.user.email}`);
+
+      if (res2026.error) throw new Error(res2026.error.message);
+
+      if (!res2026.data || res2026.data.length === 0) return null;
+      studentInformation = res2026.data;
+
+      const docRes2026 = await supabase
+        .from("ay2026_enrolment_documents")
+        .select("*")
+        .eq("enroleeNumber", enroleeNumber);
+
+      if (docRes2026.error) throw new Error(docRes2026.error.message);
+      documents = docRes2026.data;
+    }
+
+    if (!documents || documents.length === 0) {
       return null;
     }
 
-    const { data: documents, error: studentDocumentsError } = await supabase
-      .from("ay2025_enrolment_documents")
-      .select("*")
-      .eq("enroleeNumber", enroleeNumber);
+    if (documents && documents.length > 0) {
+      const doc = documents[0];
+      const updates: Record<string, unknown> = {};
+      const now = new Date();
 
-    if (studentDocumentsError) {
-      throw new Error(studentDocumentsError.message);
-    }
+      const expiryFields = [
+        { field: "passExpiry", statusField: "passStatus" },
+        { field: "passportExpiry", statusField: "passportStatus" },
+        { field: "motherPassportExpiry", statusField: "motherPassportStatus" },
+        { field: "motherPassExpiry", statusField: "motherPassStatus" },
+        { field: "fatherPassportExpiry", statusField: "fatherPassportStatus" },
+        { field: "fatherPassExpiry", statusField: "fatherPassStatus" },
+        { field: "guardianPassportExpiry", statusField: "guardianPassportStatus" },
+        { field: "guardianPassExpiry", statusField: "guardianPassStatus" },
+      ];
 
-    if (!documents || !documents.length) {
-      return null;
+      expiryFields.forEach(({ field, statusField }) => {
+        if (doc[field] && isBefore(new Date(doc[field]), now)) {
+          updates[statusField] = "Expired";
+        }
+      });
+
+      if (Object.keys(updates).length > 0) {
+        const { error: updateError } = await supabase
+          .from("ay2026_enrolment_documents")
+          .update(updates)
+          .eq("enroleeNumber", enroleeNumber);
+
+        if (updateError) throw new Error(updateError.message);
+      }
     }
 
     const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0];
@@ -484,21 +616,14 @@ export async function getNewStudentDiscounts() {
       throw new Error(newStudentDiscountsError.message);
     }
 
-    const referredBySomeoneDiscountCode: { label: string; value: string }[] = [];
     const discountCodes: { label: string; value: string }[] = [];
 
     newStudentDiscounts.map((discount) => {
-      if (discount.discountCode === "Referred by someone") {
-        referredBySomeoneDiscountCode.push({ label: discount.details, value: discount.discountCode });
-      } else {
-        discountCodes.push({ label: discount.details, value: discount.discountCode });
-      }
+      discountCodes.push({ label: discount.details, value: discount.discountCode });
     });
 
     return {
-      referredBySomeoneDiscountCode,
       discountCodes,
-      hasReferredBySomeoneDiscounts: referredBySomeoneDiscountCode.length > 0,
       hasDiscountCodes: discountCodes.length > 0,
     };
   } catch (error) {
@@ -522,21 +647,14 @@ export async function getCurrentStudentDiscounts() {
       throw new Error(currentStudentDiscountsError.message);
     }
 
-    const referredBySomeoneDiscountCode: { label: string; value: string }[] = [];
     const discountCodes: { label: string; value: string }[] = [];
 
     currentStudentDiscounts.map((discount) => {
-      if (discount.discountCode === "Referred by someone") {
-        referredBySomeoneDiscountCode.push({ label: discount.details, value: discount.discountCode });
-      } else {
-        discountCodes.push({ label: discount.details, value: discount.discountCode });
-      }
+      discountCodes.push({ label: discount.details, value: discount.discountCode });
     });
 
     return {
-      referredBySomeoneDiscountCode,
       discountCodes,
-      hasReferredBySomeoneDiscounts: referredBySomeoneDiscountCode.length > 0,
       hasDiscountCodes: discountCodes.length > 0,
     };
   } catch (error) {
@@ -709,32 +827,6 @@ export async function getFamilyInformation(enroleeNumber?: string) {
   }
 }
 
-export async function getStudentDocuments() {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const { data: enrollments } = await supabase
-      .from("student_enrolments")
-      .select("enrolmentNumber")
-      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`);
-
-    const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
-
-    const { data: studentDocuments } = await supabase
-      .from("enrolment_documents")
-      .select("*")
-      .eq("documentOwner", "student")
-      .in("enrolmentNumber", enrolmentNumbers);
-
-    return { studentDocuments };
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
-}
-
 export async function getPreviousStudentDocuments(enroleeNumber: string) {
   try {
     const {
@@ -775,134 +867,7 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
       passType: passType ?? "",
     };
 
-    return { studentUploadRequirements: { ...previousStudentDocuments } };
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
-}
-
-export async function getParentGuardianDocuments() {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const { data: enrollments } = await supabase
-      .from("student_enrolments")
-      .select("enrolmentNumber")
-      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`);
-
-    const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
-
-    const { data: parentGuardianDocuments } = await supabase
-      .from("enrolment_documents")
-      .select("*")
-      .neq("documentOwner", "student")
-      .in("enrolmentNumber", enrolmentNumbers);
-
-    return { parentGuardianDocuments };
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
-}
-
-export async function getCurrentParentGuardianDocuments(enroleeNumber?: string) {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    let enrollmentsQuery = supabase
-      .from("student_enrolments")
-      .select("enrolmentNumber")
-      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
-      .eq("academicYear", new Date().getFullYear());
-
-    if (enroleeNumber) {
-      enrollmentsQuery = enrollmentsQuery.eq("studentID", enroleeNumber);
-    }
-
-    const { data: enrollments } = await enrollmentsQuery;
-
-    const enrolmentNumbers = enrollments?.map((e) => e.enrolmentNumber) ?? [];
-
-    let parentGuardianDocumentsQuery = supabase
-      .from("enrolment_documents")
-      .select("*")
-      .neq("documentOwner", "student")
-      .in("enrolmentNumber", enrolmentNumbers);
-
-    if (enroleeNumber) {
-      parentGuardianDocumentsQuery = parentGuardianDocumentsQuery.eq("studentID", enroleeNumber);
-    }
-
-    const { data: parentGuardianDocuments } = await parentGuardianDocumentsQuery;
-
-    const motherPassDocument = parentGuardianDocuments
-      ?.filter((document) => document.documentOwner === "mother" && document.documentType === "Pass")
-      .map((pass) => ({
-        motherPass: pass?.fileUrl,
-        motherPassType: pass?.passType,
-        motherPassExpiry: pass?.passExpirationDate,
-      }))[0];
-
-    const motherPassportDocument = parentGuardianDocuments
-      ?.filter((document) => document.documentOwner === "mother" && document.documentType === "Passport")
-      .map((pass) => ({
-        motherPassport: pass?.fileUrl,
-        motherPassportNumber: pass?.passportNumber,
-        motherPassportExpiry: pass?.passportExpirationDate,
-      }))[0];
-
-    const fatherPassDocument = parentGuardianDocuments
-      ?.filter((document) => document.documentOwner === "father" && document.documentType === "Pass")
-      .map((pass) => ({
-        fatherPass: pass?.fileUrl,
-        fatherPassType: pass?.passType,
-        fatherPassExpiry: pass?.passExpirationDate,
-      }))[0];
-
-    const fatherPassportDocument = parentGuardianDocuments
-      ?.filter((document) => document.documentOwner === "father" && document.documentType === "Passport")
-      .map((pass) => ({
-        fatherPassport: pass?.fileUrl,
-        fatherPassportNumber: pass?.passportNumber,
-        fatherPassportExpiry: pass?.passportExpirationDate,
-      }))[0];
-
-    const guardianPassDocument = parentGuardianDocuments
-      ?.filter((document) => document.documentOwner === "guardian" && document.documentType === "Pass")
-      .map((pass) => ({
-        guardianPass: pass?.fileUrl,
-        guardianPassType: pass?.passType,
-        guardianPassExpiry: new Date(pass?.passExpirationDate),
-      }))[0];
-
-    const guardianPassportDocument = parentGuardianDocuments
-      ?.filter((document) => document.documentOwner === "guardian" && document.documentType === "Passport")
-      .map((pass) => ({
-        guardianPassport: pass?.fileUrl,
-        guardianPassportNumber: pass?.passportNumber,
-        guardianPassportExpiry: new Date(pass?.passportExpirationDate),
-      }))[0];
-
-    const motherDocuments = { ...motherPassDocument, ...motherPassportDocument };
-
-    const fatherDocuments = { ...fatherPassDocument, ...fatherPassportDocument };
-
-    const guardianDocuments = { ...guardianPassDocument, ...guardianPassportDocument };
-
-    return {
-      parentGuardianUploadRequirements: {
-        ...motherDocuments,
-        ...fatherDocuments,
-        ...guardianDocuments,
-        hasFatherInfo: Object.keys(fatherDocuments).length > 0,
-        hasGuardianInfo: Object.keys(guardianDocuments).length > 0,
-      },
-    };
+    return { studentUploadRequirements: { ...removeEmptyKeys(previousStudentDocuments) } };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -1079,6 +1044,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     delete enrollmentDetails.uploadRequirements.studentUploadRequirements.isValid;
     delete enrollmentDetails.studentInfo.studentDetails.isValid;
     delete enrollmentDetails.studentInfo.addressContact.isValid;
+    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -1130,7 +1096,9 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     if (enrollmentDetails.enrollmentInfo.discount && enrollmentDetails.enrollmentInfo.discount.length > 0) {
       enrollmentDetails.enrollmentInfo.discount.forEach((discount, index) => {
         const i = index + 1;
-        flattenedDiscounts[`discount${i}`] = discount;
+        if (!discount?.includes("Referred by someone")) {
+          flattenedDiscounts[`discount${i}`] = discount;
+        }
       });
     }
 
@@ -1180,7 +1148,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         passportExpiry,
         ...familyInfo,
         ...enrollmentInfo,
-        applicationStatus: "Submitted",
+        applicationStatus: "Registered",
       })
       .select("id")
       .single();
@@ -1243,7 +1211,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         .from(`${academicYear}_enrolment_documents`)
         .update({
           medical,
-          medicalStatus: "Uploaded",
+          medicalStatus: medical ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1252,7 +1220,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         .update({
           passport,
           passportExpiry,
-          passportStatus: "Uploaded",
+          passportStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1261,7 +1229,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         .update({
           pass,
           passExpiry,
-          passStatus: "Uploaded",
+          passStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1277,7 +1245,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         .from(`${academicYear}_enrolment_documents`)
         .update({
           educCert,
-          educCertStatus: "Uploaded",
+          educCertStatus: educCert ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1330,7 +1298,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         .update({
           motherPassport: motherEnrollmentDocuments.motherPassport,
           motherPassportExpiry: motherEnrollmentDocuments.motherPassportExpiry,
-          motherPassportStatus: "Uploaded",
+          motherPassportStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1339,7 +1307,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         .update({
           motherPass: motherEnrollmentDocuments.motherPass,
           motherPassExpiry: motherEnrollmentDocuments.motherPassExpiry,
-          motherPassStatus: "Uploaded",
+          motherPassStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1388,7 +1356,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
           .update({
             fatherPassport: fatherEnrollmentDocuments.fatherPassport,
             fatherPassportExpiry: fatherEnrollmentDocuments.fatherPassportExpiry,
-            fatherPassportStatus: "Uploaded",
+            fatherPassportStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1397,7 +1365,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
           .update({
             fatherPass: fatherEnrollmentDocuments.fatherPass,
             fatherPassExpiry: fatherEnrollmentDocuments.fatherPassExpiry,
-            fatherPassStatus: "Uploaded",
+            fatherPassStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1447,7 +1415,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
           .update({
             guardianPassport: guardianEnrollmentDocuments.guardianPassport,
             guardianPassportExpiry: guardianEnrollmentDocuments.guardianPassportExpiry,
-            guardianPassportStatus: "Uploaded",
+            guardianPassportStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1456,7 +1424,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
           .update({
             guardianPass: guardianEnrollmentDocuments.guardianPass,
             guardianPassExpiry: guardianEnrollmentDocuments.guardianPassExpiry,
-            guardianPassStatus: "Uploaded",
+            guardianPassStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1492,8 +1460,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       throw new Error(enrollmentApplicationStatusError.message);
     }
 
-    sessionStorage.removeItem("enrolNewStudentFormState");
-    sessionStorage.removeItem("academicYear");
+    sessionStorage.clear();
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -1525,9 +1492,9 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     };
 
     delete enrollmentDetails.uploadRequirements.studentUploadRequirements.isValid;
-
     delete enrollmentDetails.studentInfo.studentDetails.isValid;
     delete enrollmentDetails.studentInfo.addressContact.isValid;
+    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -1579,7 +1546,9 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     if (enrollmentDetails.enrollmentInfo.discount && enrollmentDetails.enrollmentInfo.discount.length > 0) {
       enrollmentDetails.enrollmentInfo.discount.forEach((discount, index) => {
         const i = index + 1;
-        flattenedDiscounts[`discount${i}`] = discount;
+        if (!discount?.includes("Referred by someone")) {
+          flattenedDiscounts[`discount${i}`] = discount;
+        }
       });
     }
 
@@ -1630,7 +1599,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         passportExpiry,
         ...familyInfo,
         ...enrollmentInfo,
-        applicationStatus: "Submitted",
+        applicationStatus: "Registered",
       })
       .select("id")
       .single();
@@ -1676,7 +1645,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         .from("ay2026_enrolment_documents")
         .update({
           medical,
-          medicalStatus: "Uploaded",
+          medicalStatus: medical ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1685,7 +1654,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         .update({
           passport,
           passportExpiry,
-          passportStatus: "Uploaded",
+          passportStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1694,7 +1663,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         .update({
           pass,
           passExpiry,
-          passStatus: "Uploaded",
+          passStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1710,7 +1679,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         .from("ay2026_enrolment_documents")
         .update({
           educCert,
-          educCertStatus: "Uploaded",
+          educCertStatus: educCert ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1763,7 +1732,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         .update({
           motherPassport: motherEnrollmentDocuments.motherPassport,
           motherPassportExpiry: motherEnrollmentDocuments.motherPassportExpiry,
-          motherPassportStatus: "Uploaded",
+          motherPassportStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1772,7 +1741,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         .update({
           motherPass: motherEnrollmentDocuments.motherPass,
           motherPassExpiry: motherEnrollmentDocuments.motherPassExpiry,
-          motherPassStatus: "Uploaded",
+          motherPassStatus: "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1821,7 +1790,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
           .update({
             fatherPassport: fatherEnrollmentDocuments.fatherPassport,
             fatherPassportExpiry: fatherEnrollmentDocuments.fatherPassportExpiry,
-            fatherPassportStatus: "Uploaded",
+            fatherPassportStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1830,7 +1799,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
           .update({
             fatherPass: fatherEnrollmentDocuments.fatherPass,
             fatherPassExpiry: fatherEnrollmentDocuments.fatherPassExpiry,
-            fatherPassStatus: "Uploaded",
+            fatherPassStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1880,7 +1849,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
           .update({
             guardianPassport: guardianEnrollmentDocuments.guardianPassport,
             guardianPassportExpiry: guardianEnrollmentDocuments.guardianPassportExpiry,
-            guardianPassportStatus: "Uploaded",
+            guardianPassportStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1889,7 +1858,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
           .update({
             guardianPass: guardianEnrollmentDocuments.guardianPass,
             guardianPassExpiry: guardianEnrollmentDocuments.guardianPassExpiry,
-            guardianPassStatus: "Uploaded",
+            guardianPassStatus: "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1925,8 +1894,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       throw new Error(enrollmentApplicationStatusError.message);
     }
 
-    sessionStorage.removeItem("enrolOldStudentFormState");
-    sessionStorage.removeItem("academicYear");
+    sessionStorage.clear();
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -1936,17 +1904,23 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 export async function getFamilyDocuments(enroleeNumber: string) {
   if (!enroleeNumber) return {};
   try {
-    // Fetch the documents row
-    const { data: documents, error: documentsError } = await supabase
+    // eslint-disable-next-line prefer-const
+    let { data: documents, error } = await supabase
       .from("ay2025_enrolment_documents")
       .select("*")
       .eq("enroleeNumber", enroleeNumber);
 
-    if (documentsError) throw new Error(documentsError.message);
+    if (error) throw new Error(error.message);
 
-    if (!documents || !documents.length) return null;
+    if (!documents || documents.length === 0) {
+      const fallback = await supabase.from("ay2026_enrolment_documents").select("*").eq("enroleeNumber", enroleeNumber);
 
-    // Extract parent/guardian document fields
+      if (fallback.error) throw new Error(fallback.error.message);
+      documents = fallback.data;
+    }
+
+    if (!documents || documents.length === 0) return null;
+
     const doc = documents[0];
 
     return {
@@ -2027,6 +2001,133 @@ export async function lookupNewEnrolledStudent({
     return Array.isArray(data) && data.length > 0;
   } catch (error) {
     const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
+export async function studentReuploadDocuments({
+  academicYear,
+  documentType,
+  enroleeNumber,
+  payload,
+}: StudentReuploadProps) {
+  try {
+    const applicationsTable = `${academicYear}_enrolment_applications`;
+    const documentsTable = `${academicYear}_enrolment_documents`;
+
+    const appUpdates: Record<string, unknown> = {};
+    const docUpdates: Record<string, unknown> = {};
+
+    switch (documentType) {
+      case "pass":
+        appUpdates["pass"] = payload.passType;
+        appUpdates["passExpiry"] = payload.passExpiry;
+
+        docUpdates["pass"] = payload.pass;
+        docUpdates["passExpiry"] = payload.passExpiry;
+        docUpdates["passStatus"] = "Valid";
+        break;
+      case "passport":
+        appUpdates["passportNumber"] = payload.passportNumber;
+        appUpdates["passportExpiry"] = payload.passportExpiry;
+
+        docUpdates["passport"] = payload.passport;
+        docUpdates["passportExpiry"] = payload.passExpiry;
+        docUpdates["passportStatus"] = "Valid";
+        break;
+      case "form12":
+        docUpdates["form12"] = payload.form12;
+        docUpdates["form12Status"] = "Uploaded";
+        break;
+      case "eduCert":
+        docUpdates["eduCert"] = payload.educCert;
+        docUpdates["eduCertStatus"] = "Uploaded";
+        break;
+      case "birthCert":
+        docUpdates["birthCert"] = payload.birthCert;
+        docUpdates["birthCertStatus"] = "Uploaded";
+        break;
+      case "medical":
+        docUpdates["medical"] = payload.medical;
+        docUpdates["medicalStatus"] = "Uploaded";
+        break;
+      default:
+        break;
+    }
+
+    const { error: appError } = await supabase
+      .from(applicationsTable)
+      .update({ ...appUpdates })
+      .eq("enroleeNumber", enroleeNumber);
+
+    if (appError) throw new Error(appError.message);
+
+    const { error: docError } = await supabase
+      .from(documentsTable)
+      .update({ ...docUpdates })
+      .eq("enroleeNumber", enroleeNumber);
+
+    if (docError) throw new Error(docError.message);
+
+    toast.success("Documents updated successfully.");
+  } catch (error) {
+    const err = error as Error;
+    toast.error(err.message);
+  }
+}
+
+export async function parentGuardianReuploadDocuments({
+  role,
+  academicYear,
+  documentType,
+  enroleeNumber,
+  payload,
+}: ParentGuardianReuploadProps) {
+  try {
+    const applicationsTable = `${academicYear}_enrolment_applications`;
+    const documentsTable = `${academicYear}_enrolment_documents`;
+
+    const appUpdates: Record<string, unknown> = {};
+    const docUpdates: Record<string, unknown> = {};
+
+    switch (documentType) {
+      case `${role}Pass`:
+        appUpdates[`${role}Pass`] = payload.motherPassType;
+        appUpdates[`${role}PassExpiry`] = payload.motherPassExpiry;
+
+        docUpdates[`${role}Pass`] = payload.motherPass;
+        docUpdates[`${role}PassExpiry`] = payload.motherPassExpiry;
+        docUpdates[`${role}PassStatus`] = "Valid";
+        break;
+      case `${role}Passport`:
+        appUpdates[`${role}PassportNumber`] = payload.motherPassportNumber;
+        appUpdates[`${role}PassportExpiry`] = payload.motherPassportExpiry;
+
+        docUpdates[`${role}Passport`] = payload.motherPassport;
+        docUpdates[`${role}PassportExpiry`] = payload.motherPassportExpiry;
+        docUpdates[`${role}PassportStatus`] = "Valid";
+        break;
+      default:
+        break;
+    }
+
+    const { error: appError } = await supabase
+      .from(applicationsTable)
+      .update({ ...appUpdates })
+      .eq("enroleeNumber", enroleeNumber);
+
+    if (appError) throw new Error(appError.message);
+
+    const { error: docError } = await supabase
+      .from(documentsTable)
+      .update({ ...docUpdates })
+      .eq("enroleeNumber", enroleeNumber);
+
+    if (docError) throw new Error(docError.message);
+
+    toast.success("Documents updated successfully.");
+  } catch (error) {
+    const err = error as Error;
     toast.error(err.message);
   }
 }

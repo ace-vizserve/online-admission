@@ -11,7 +11,7 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import useSession from "@/hooks/use-session";
 import { useSecuritySettingsSheetStore } from "@/zustand-store";
-import { Bell, ChevronsUpDown, LogOut, Settings, Sparkles } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import SecuritySettings from "../security-settings";
@@ -64,12 +64,8 @@ export function NavUser() {
                   <Settings />
                   Security Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell />
-                  Notifications
-                </DropdownMenuItem>
               </DropdownMenuGroup>
-              <DropdownMenuSeparator />
+
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   <Link className="flex items-center gap-2" to={"/admission/guidelines"}>
