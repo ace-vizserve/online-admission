@@ -1,6 +1,7 @@
 import { buttonVariants } from "@/components/ui/button";
+import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { cn } from "@/lib/utils";
-import { useLocation } from "react-router";
+import { useNavigate } from "react-router";
 
 const STEPS = [
   {
@@ -30,21 +31,25 @@ const STEPS = [
 ];
 
 function NewStudentSteps() {
-  const { pathname } = useLocation();
+  const { currentTab, completedTabs } = useEnrolNewStudentContext();
+  const navigate = useNavigate();
 
   return (
     <ol className="flex flex-col lg:flex-row gap-0.5 pb-6 lg:pb-0">
-      {STEPS.map((step, i) => {
-        const isCurrent = pathname.endsWith(step.url);
-        const isCompleted = STEPS.slice(i + 1).some((step) => pathname.endsWith(step.url));
+      {STEPS.map((step) => {
+        const isCurrent = currentTab == step.url;
+        const isCompleted = completedTabs.includes(step.url);
 
         return (
           <li
             key={step.name}
+            onClick={() => {
+              navigate(step.url);
+            }}
             className={buttonVariants({
               size: "lg",
-              className: cn("relative overflow-hidden lg:flex-1 w-full py-10 px-6 rounded-none", {
-                "opacity-100": isCurrent || isCompleted,
+              className: cn("relative overflow-hidden lg:flex-1 w-full py-10 px-6 rounded-none pointer-events-none", {
+                "opacity-100 cursor-pointer pointer-events-auto": isCurrent || isCompleted,
                 "bg-green-50": isCompleted,
               }),
               variant: "outline",

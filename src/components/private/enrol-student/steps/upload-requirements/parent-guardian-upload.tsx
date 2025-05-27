@@ -1,38 +1,23 @@
 import { Button } from "@/components/ui/button";
 
-import { lookupNewEnrolledStudent, submitEnrollment } from "@/actions/private";
+import { lookupNewEnrolledStudent } from "@/actions/private";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { EnrolNewStudentFormState } from "@/types";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
-import { Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Save } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
 
 function ParentGuardianUpload() {
-  const navigate = useNavigate();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { formState, setFormState } = useEnrolNewStudentContext();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
-      return await submitEnrollment(enrollmentDetails, academicYear);
-    },
-    onSuccess() {
-      navigate("/application-submitted", {
-        replace: true,
-      });
-    },
-  });
 
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
   const [motherPassport, setMotherPassport] = useState<File[] | null>(null);
@@ -48,19 +33,13 @@ function ParentGuardianUpload() {
     },
   });
 
-  useEffect(() => {
-    if (form.formState.isSubmitSuccessful) {
-      mutate(formState as EnrolNewStudentFormState);
-    }
-  }, [form.formState.isSubmitSuccessful, formState, mutate]);
-
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
       !Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length &&
       !formState.uploadRequirements!.studentUploadRequirements.isValid
     ) {
-      toast.warning("Student Documents is missing!", {
-        description: "Please fill out all required fields to move proceed.",
+      toast.warning("Student Documents are missing!", {
+        description: "Please fill out all required fields to proceed.",
       });
       window.scrollTo({
         top: 0,
@@ -97,8 +76,12 @@ function ParentGuardianUpload() {
         studentUploadRequirements: {
           ...formState.uploadRequirements!.studentUploadRequirements,
         },
-        parentGuardianUploadRequirements: { ...values },
+        parentGuardianUploadRequirements: { ...values, isValid: true },
       },
+    });
+
+    toast.success("Parent/Guardian documents saved!", {
+      description: "You're now ready to submit the application",
     });
   }
 
@@ -191,38 +174,16 @@ function ParentGuardianUpload() {
         )}
 
         <Button
-          disabled={isPending}
           size="lg"
-          className="bg-green-500 hover:bg-green-600 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase mt-8"
+          className="mt-8 mb-0 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase"
           type="submit">
-          {isPending ? (
-            <>
-              Submitting
-              <DotPulse size="30" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Submit Application
-              <Send className="w-6 h-6" />
-            </>
-          )}
+          Save
+          <Save />
         </Button>
 
-        <Button
-          disabled={isPending}
-          className="bg-green-500 hover:bg-green-600 flex lg:hidden w-full p-6 gap-2 uppercase mt-8"
-          type="submit">
-          {isPending ? (
-            <>
-              Submitting
-              <DotPulse size="30" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Submit Application
-              <Send className="w-6 h-6" />
-            </>
-          )}
+        <Button className="mt-8 mb-0 flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
       </form>
     </Form>

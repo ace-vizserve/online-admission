@@ -69,9 +69,9 @@ function ExitApplicationDialog() {
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
 
   function exitApplication() {
+    sessionStorage.clear();
     setFormState({});
     setAcademicYear("");
-    sessionStorage.removeItem("enrolOldStudentFormState");
   }
 
   return (
@@ -79,7 +79,7 @@ function ExitApplicationDialog() {
       <AlertDialogTrigger asChild>
         <Button variant="link" className="gap-2">
           <ArrowLeft />
-          Go back
+          Cancel
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

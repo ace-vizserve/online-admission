@@ -246,6 +246,8 @@ export const classTypes = [
 export const preferredSchedule = [
   { label: "Afternoon", value: "Afternoon" },
   { label: "Morning", value: "Morning" },
+  { label: "Morning (Waitlist)", value: "Morning (Waitlist)" },
+  { label: "Whole Day", value: "Whole Day" },
 ] as const;
 
 export const campusDevelopmentFee = [

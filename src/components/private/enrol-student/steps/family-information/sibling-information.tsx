@@ -11,13 +11,15 @@ import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
+import { ArrowRight, CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function SiblingInformation() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const navigate = useNavigate();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const [siblingOtherReligions, setSiblingOtherReligions] = useState<Record<number, boolean>>({});
   const form = useForm<SiblingInformationSchema>({
     resolver: zodResolver(siblingInformationSchema),
@@ -42,6 +44,19 @@ function SiblingInformation() {
       description: "Make sure to double check everything",
     });
   };
+
+  function proceedToNextStep() {
+    if (!formState.familyInfo?.motherInfo.isValid) {
+      toast.warning("Missing mother information details!", {
+        description: "Make sure to double check everything",
+      });
+      return;
+    }
+
+    setCompletedTabs("/enrol-student/new/family-info");
+    setCurrentTab("/enrol-student/new/enrollment-info");
+    navigate("/enrol-student/new/enrollment-info");
+  }
 
   return (
     <>
@@ -197,19 +212,35 @@ function SiblingInformation() {
               </Card>
             ))}
 
-            <Button
-              variant={"secondary"}
-              size={"lg"}
-              className="mb-4 hidden lg:flex w-full p-8 gap-2 uppercase"
-              type="submit">
-              Save
-              <Save />
-            </Button>
+            <div className="flex flex-col gap-4 mb-4">
+              <Button
+                size={"lg"}
+                variant={"secondary"}
+                className="hidden lg:flex w-full p-8 gap-2 uppercase"
+                type="submit">
+                Save
+                <Save />
+              </Button>
 
-            <Button variant={"secondary"} className="mb-4 flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-              Save
-              <Save />
-            </Button>
+              <Button variant={"secondary"} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+                Save
+                <Save />
+              </Button>
+
+              <Button
+                onClick={proceedToNextStep}
+                size={"lg"}
+                className="hidden lg:flex w-full p-8 gap-2 uppercase"
+                type="button">
+                Proceed to Next Step
+                <ArrowRight />
+              </Button>
+
+              <Button onClick={proceedToNextStep} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="button">
+                Proceed to Next Step
+                <ArrowRight />
+              </Button>
+            </div>
           </form>
         </Form>
       )}

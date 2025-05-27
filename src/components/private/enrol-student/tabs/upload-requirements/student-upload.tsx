@@ -52,6 +52,7 @@ function StudentUpload() {
           ...formState.uploadRequirements?.parentGuardianUploadRequirements,
         } as ParentGuardianUploadRequirementsSchema,
         studentUploadRequirements: {
+          ...formState.uploadRequirements?.studentUploadRequirements,
           ...(data?.studentUploadRequirements ?? {}),
         } as unknown as StudentUploadRequirementsSchema,
       },

@@ -1,9 +1,24 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { type UseSupabaseUploadReturn } from "@/hooks/use-supabase-upload";
-import { cn, formatBytes } from "@/lib/utils";
-import { File, Loader2, Upload, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CheckCircle, File, Loader2, Upload, X } from "lucide-react";
 import { createContext, type PropsWithChildren, useCallback, useContext } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+
+export const formatBytes = (
+  bytes: number,
+  decimals = 2,
+  size?: "bytes" | "KB" | "MB" | "GB" | "TB" | "PB" | "EB" | "ZB" | "YB"
+) => {
+  const k = 1000;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+  if (bytes === 0 || bytes === undefined) return size !== undefined ? `0 ${size}` : "0 bytes";
+  const i = size !== undefined ? sizes.indexOf(size) : Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+};
 
 type DropzoneContextType = Omit<UseSupabaseUploadReturn, "getRootProps" | "getInputProps">;
 
@@ -45,7 +60,7 @@ const Dropzone = ({
     </DropzoneContext.Provider>
   );
 };
-const DropzoneContent = ({ className, label }: { className?: string; label: string }) => {
+const DropzoneContent = ({ className }: { className?: string }) => {
   const { files, setFiles, onUpload, loading, successes, errors, maxFileSize, maxFiles, isSuccess } =
     useDropzoneContext();
 
@@ -60,13 +75,12 @@ const DropzoneContent = ({ className, label }: { className?: string; label: stri
 
   if (isSuccess) {
     return (
-      <>
-        <Avatar className="h-20 w-20 mx-auto">
-          <AvatarImage src={successes[0]} alt="student photo" className="object-cover" />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
-        <p className="mt-1 text-sm text-muted-foreground"> {label}</p>
-      </>
+      <div className={cn("flex flex-row items-center gap-x-2 justify-center", className)}>
+        <CheckCircle size={16} className="text-primary" />
+        <p className="text-primary text-sm">
+          Successfully uploaded {files.length} file{files.length > 1 ? "s" : ""}
+        </p>
+      </div>
     );
   }
 

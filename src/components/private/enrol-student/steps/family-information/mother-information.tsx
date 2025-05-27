@@ -3,7 +3,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
@@ -15,7 +14,6 @@ import { format } from "date-fns";
 import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
@@ -24,7 +22,7 @@ function MotherInformation() {
   const navigate = useNavigate();
   const [isPending, setTransition] = useTransition();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
 
   const form = useForm<MotherInformationSchema>({
     resolver: zodResolver(motherInformationSchema),
@@ -36,17 +34,14 @@ function MotherInformation() {
   useEffect(() => {
     if (!formState.familyInfo?.motherInfo) return;
 
+    if (Object.keys(formState.familyInfo?.motherInfo ?? {}).length) {
+      formState.familyInfo.motherInfo.isValid = true;
+    }
+
     form.reset(formState.familyInfo.motherInfo);
   }, [form, formState.familyInfo?.motherInfo]);
 
   function onSubmit(values: MotherInformationSchema) {
-    if (!isValidPhoneNumber(values.motherMobile)) {
-      form.setError("motherMobile", {
-        message: "Invalid phone number",
-      });
-      return;
-    }
-
     setFormState({
       ...formState,
       familyInfo: {
@@ -60,14 +55,6 @@ function MotherInformation() {
   }
 
   function saveDetails() {
-    if (form.getValues("motherMobile") && !isValidPhoneNumber(form.getValues("motherMobile"))) {
-      form.setError("motherMobile", {
-        message: "Invalid phone number",
-      });
-
-      return;
-    }
-
     form.trigger();
 
     if (!form.formState.isValid) return;
@@ -83,6 +70,9 @@ function MotherInformation() {
     toast.success("Mother's information has been saved!", {
       description: "You can continue filling out the other family details.",
     });
+
+    setCompletedTabs("/enrol-student/new/family-info");
+    setCurrentTab("/enrol-student/new/enrollment-info");
   }
 
   useEffect(() => {
@@ -294,12 +284,7 @@ function MotherInformation() {
                 <FormItem className="flex flex-col items-start">
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl className="w-full">
-                    <PhoneInput
-                      {...field}
-                      value={parsePhoneNumber(String(field.value), "SG")?.formatInternational() ?? String(field.value)}
-                      defaultCountry="SG"
-                      international
-                    />
+                    <Input {...field} />
                   </FormControl>
                   <FormDescription>Enter the student's mother mobile phone.</FormDescription>
                   <FormMessage />

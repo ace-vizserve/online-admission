@@ -146,8 +146,9 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
         setSelectedValues(newSelectedValues);
         onValueChange(newSelectedValues);
       } else {
-        if (selectedValues.length >= props.maxSelectedItems) return;
-
+        if (selectedValues.length >= props.maxSelectedItems && option !== "Referred by someone") {
+          return;
+        }
         const newSelectedValues = [...selectedValues, option];
         setSelectedValues(newSelectedValues);
         onValueChange(newSelectedValues);
@@ -280,6 +281,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         "cursor-pointer",
                         !selectedValues.includes(option.value) &&
                           selectedValues.length >= props.maxSelectedItems &&
+                          option.value !== "Referred by someone" &&
                           "opacity-50 pointer-events-none"
                       )}>
                       <div

@@ -32,7 +32,7 @@ function StudentUpload() {
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     toast.success("Student documents saved!", {
-      description: "You're now ready to upload the Parent/Guardian documents.",
+      description: "You're now ready to upload the Parent/Guardian documents",
     });
 
     const { idPicture, form12, medical, pass, birthCert, passport, educCert } =

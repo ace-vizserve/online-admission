@@ -140,6 +140,8 @@ function SubmitApplicationDialog() {
       toast.error(err.message, {
         description: "Please upload a valid, updated document",
       });
+    } finally {
+      sessionStorage.clear();
     }
   }
 

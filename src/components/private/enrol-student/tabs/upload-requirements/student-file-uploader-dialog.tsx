@@ -35,6 +35,7 @@ import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import {
   CalendarIcon,
+  CheckCircle2,
   CircleAlert,
   CloudUpload,
   Download,
@@ -73,7 +74,7 @@ const StudentFileUploaderDialog = memo(function ({
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
-        form.setValue(name, data!.imagePath);
+        form.setValue(name, data!.imagePath, { shouldValidate: true });
         setFormState({
           uploadRequirements: {
             parentGuardianUploadRequirements: {
@@ -119,7 +120,7 @@ const StudentFileUploaderDialog = memo(function ({
 
   function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
-    form.setValue(name, "");
+    form.setValue(name, "", { shouldValidate: true });
 
     setFormState({
       uploadRequirements: {
@@ -139,9 +140,16 @@ const StudentFileUploaderDialog = memo(function ({
       <div
         className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
           "bg-red-50": errors[name] != null,
+          "bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
         })}>
         <div className="flex items-center gap-4">
-          {errors[name] != null ? <CircleAlert className="size-6 text-destructive" /> : <Upload className="size-6" />}
+          {formState.uploadRequirements?.studentUploadRequirements[name] ? (
+            <CheckCircle2 className="stroke-white fill-green-600" />
+          ) : errors[name] != null ? (
+            <CircleAlert className="size-6 text-destructive" />
+          ) : (
+            <Upload className="size-6" />
+          )}
           <div className="flex flex-col gap-1">
             <span className="text-sm">{label}</span>
             <span className="text-muted-foreground text-xs">{description}</span>
@@ -149,7 +157,9 @@ const StudentFileUploaderDialog = memo(function ({
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant={errors[name] != null ? "destructive" : "outline"}>Upload</Button>
+            <Button variant={errors[name] != null ? "destructive" : "outline"}>
+              {formState.uploadRequirements?.studentUploadRequirements[name] ? "View" : "Upload"}
+            </Button>
           </DialogTrigger>
 
           <DialogContent className="!max-w-2xl">
@@ -492,7 +502,7 @@ function StudentFileUploaderDrawer({
 
   function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
-    form.setValue(name, "");
+    form.resetField(name);
 
     setFormState({
       uploadRequirements: {
@@ -511,17 +521,26 @@ function StudentFileUploaderDrawer({
     <div
       className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
         "bg-red-50": errors[name] != null,
+        "bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
       })}>
       <div className="flex items-center gap-4">
-        {errors[name] != null ? <CircleAlert className="size-6 text-destructive" /> : <Upload className="size-6" />}
+        {formState.uploadRequirements?.studentUploadRequirements[name] ? (
+          <CheckCircle2 className="stroke-white fill-green-600" />
+        ) : errors[name] != null ? (
+          <CircleAlert className="size-6 text-destructive" />
+        ) : (
+          <Upload className="size-6" />
+        )}
         <div className="flex flex-col gap-1">
           <span className="text-sm">{label}</span>
-          <span className="text-muted-foreground text-xs text-balance">{description}</span>
+          <span className="text-muted-foreground text-xs">{description}</span>
         </div>
       </div>
       <Drawer>
         <DrawerTrigger asChild>
-          <Button variant={errors[name] != null ? "destructive" : "outline"}>Upload</Button>
+          <Button variant={errors[name] != null ? "destructive" : "outline"}>
+            {formState.uploadRequirements?.studentUploadRequirements[name] ? "View" : "Upload"}
+          </Button>
         </DrawerTrigger>
 
         <DrawerContent className="px-4">
