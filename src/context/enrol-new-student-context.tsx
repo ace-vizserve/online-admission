@@ -27,6 +27,7 @@ function EnrolNewStudentContextProvider({ children }: { children: ReactNode }) {
   const setCurrentTab = useEnrolNewStudentTabStateStore((state) => state.setCurrentTab);
   const enrolNewStudentFormState = useEnrolNewStudentStore((state) => state.formState);
   const setEnrolNewStudentFormState = useEnrolNewStudentStore((state) => state.setFormState);
+  const clearState = useEnrolNewStudentStore((state) => state.clearState);
 
   useEffect(() => {
     if (currentTab != "") return;
@@ -37,6 +38,7 @@ function EnrolNewStudentContextProvider({ children }: { children: ReactNode }) {
   return (
     <EnrolNewStudentContext.Provider
       value={{
+        clearState,
         formState: enrolNewStudentFormState,
         setFormState: setEnrolNewStudentFormState,
         completedTabs,

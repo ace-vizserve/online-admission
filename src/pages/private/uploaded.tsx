@@ -10,7 +10,7 @@ function Uploaded() {
 
   return (
     <>
-      <div className="py-7 md:py-14 px-4 md:px-6">
+      <div className="max-w-screen-2xl mx-auto w-full py-7 md:py-14 px-4 md:px-6">
         <UploadFiles enroleeNumber={params.id} />
       </div>
     </>

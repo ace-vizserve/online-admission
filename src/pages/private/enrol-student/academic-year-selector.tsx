@@ -20,7 +20,7 @@ const academicYears = [
     value: "ay2026",
     name: "AY 2026",
     label: "Academic Year 2026",
-    description: "Early registration for AY 2026 starts June 2025.",
+    description: "Early registration for AY 2026 starts July 2025.",
     details: ["Secure a slot early", "Registration opens July 1, 2025", "Classes begin January 2026"],
     buttonText: "Pre-register for AY 2026",
     isUpcoming: true,

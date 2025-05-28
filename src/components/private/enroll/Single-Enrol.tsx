@@ -105,7 +105,7 @@ export const columns: ColumnDef<levelYear>[] = [
 function SingleEnrol() {
   const params = useParams();
   const { data, isPending, refetch, isRefetching } = useQuery({
-    queryKey: ["students-enrolments-list"],
+    queryKey: ["students-enrolments-list", params.id],
     queryFn: async () => {
       return await getStudentEnrollmentsList(params.id!);
     },
@@ -161,8 +161,8 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter grade level..."
-          value={(table.getColumn("grade_level")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("grade_level")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("gradeLevel")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("gradeLevel")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
         <Button disabled={isRefetching} onClick={() => refetch()} size={"icon"} variant={"outline"}>

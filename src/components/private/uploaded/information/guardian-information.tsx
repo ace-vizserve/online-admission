@@ -1,22 +1,21 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/client";
 import type { GuardianInformation as GuardianInformationType } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
 
 const GuardianInformation = () => {
-
   const { id } = useParams();
 
   const { data, isLoading, error } = useQuery<GuardianInformationType | null>({
     queryKey: ["ay2025_enrolment_applications_guardian", id],
     queryFn: async () => {
-      console.log("Fetching student info for id:", id);
       const { data, error } = await supabase
         .from("ay2025_enrolment_applications")
-        .select(`
+        .select(
+          `
             guardianFirstName,
             guardianMiddleName,
             guardianLastName,
@@ -28,15 +27,26 @@ const GuardianInformation = () => {
             guardianEmail,
             guardianCompanyName,
             guardianPosition
-        `)
+        `
+        )
         .eq("id", id)
         .single();
-      console.log("Supabase result:", { data, error });
+
       if (error) throw error;
       // Only show UI if there is at least one guardian field present
-      const hasGuardian = data && (
-        data.guardianFirstName || data.guardianMiddleName || data.guardianLastName || data.guardianPreferredName || data.guardianBirthDay || data.guardianReligion || data.guardianNric || data.guardianMobile || data.guardianEmail || data.guardianCompanyName || data.guardianPosition
-      );
+      const hasGuardian =
+        data &&
+        (data.guardianFirstName ||
+          data.guardianMiddleName ||
+          data.guardianLastName ||
+          data.guardianPreferredName ||
+          data.guardianBirthDay ||
+          data.guardianReligion ||
+          data.guardianNric ||
+          data.guardianMobile ||
+          data.guardianEmail ||
+          data.guardianCompanyName ||
+          data.guardianPosition);
       if (!hasGuardian) return null;
       return {
         guardianFirstName: data?.guardianFirstName ?? "",
@@ -61,7 +71,6 @@ const GuardianInformation = () => {
   if (error) return <div>Error loading guardian information.</div>;
   if (!data) return <div></div>;
 
-
   return (
     <div className="mb-4">
       <Card>
@@ -74,73 +83,73 @@ const GuardianInformation = () => {
               <div className="mb-2">
                 <Label>First Name</Label>
               </div>
-              <Input value={data.guardianFirstName || ''} readOnly />
+              <Input value={data.guardianFirstName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Middle Name</Label>
               </div>
-              <Input value={data.guardianMiddleName || ''} readOnly />
+              <Input value={data.guardianMiddleName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Last Name</Label>
               </div>
-              <Input value={data.guardianLastName || ''} readOnly />
+              <Input value={data.guardianLastName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Preferred Name</Label>
               </div>
-              <Input value={data.guardianPreferredName || ''} readOnly />
+              <Input value={data.guardianPreferredName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Date of Birth</Label>
               </div>
-              <Input value={data.guardianBirthDay || ''} readOnly />
+              <Input value={data.guardianBirthDay || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Religion</Label>
               </div>
-              <Input value={data.guardianReligion || ''} readOnly />
+              <Input value={data.guardianReligion || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Country</Label>
               </div>
-              <Input value={data.guardianCountry || ''} readOnly />
+              <Input value={data.guardianCountry || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>NRIC/FIN</Label>
               </div>
-              <Input value={data.guardianNric || ''} readOnly />
+              <Input value={data.guardianNric || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Mobile Phone</Label>
               </div>
-              <Input value={data.guardianMobile || ''} readOnly />
+              <Input value={data.guardianMobile || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Email Address</Label>
               </div>
-              <Input value={data.guardianEmail || ''} readOnly />
+              <Input value={data.guardianEmail || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Work Company</Label>
               </div>
-              <Input value={data.guardianCompanyName || ''} readOnly />
+              <Input value={data.guardianCompanyName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Work Position</Label>
               </div>
-              <Input value={data.guardianPosition || ''} readOnly />
+              <Input value={data.guardianPosition || ""} readOnly />
             </div>
           </div>
         </CardContent>
@@ -149,4 +158,4 @@ const GuardianInformation = () => {
   );
 };
 
-export default GuardianInformation
+export default GuardianInformation;

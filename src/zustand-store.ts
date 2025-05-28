@@ -10,6 +10,7 @@ export type SecuritySettingsSheetStore = {
 export type AcademicYearStore = {
   academicYear: string;
   setAcademicYear: (academicYear: string) => void;
+  clearState: () => void;
 };
 
 export type PasswordResetStore = {
@@ -22,22 +23,28 @@ export type EnrolNewStudentTabStateStore = {
   completedTabs: string[];
   setCurrentTab: (tab: string) => void;
   setCompletedTabs: (tab: string) => void;
+  clearState: () => void;
 };
 
 export type EnrolNewStudentStore = {
   formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
+  clearState: () => void;
 };
 
 export type EnrolOldStudentStore = {
   formState: Partial<EnrolOldStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolOldStudentFormState>) => void;
+  clearState: () => void;
 };
 
 export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateStore>()(
   persist(
     (set) => ({
       currentTab: "",
+      clearState: () => {
+        set({ currentTab: "", completedTabs: [] });
+      },
       completedTabs: [],
       setCurrentTab: (tab: string) =>
         set((state) => ({
@@ -78,6 +85,9 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
   persist(
     (set) => ({
       formState: {},
+      clearState: () => {
+        set({ formState: {} });
+      },
       setFormState: (data: Partial<EnrolNewStudentFormState>) =>
         set((state) => ({
           formState: {
@@ -97,6 +107,9 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
   persist(
     (set) => ({
       formState: {},
+      clearState: () => {
+        set({ formState: {} });
+      },
       setFormState: (data: Partial<EnrolOldStudentFormState>) =>
         set((state) => ({
           formState: {
@@ -116,6 +129,9 @@ export const useSelectAcademicYear = create<AcademicYearStore>()(
   persist(
     (set) => ({
       academicYear: "",
+      clearState: () => {
+        set({ academicYear: "" });
+      },
       setAcademicYear: (academicYear: string) => set({ academicYear }),
     }),
     {

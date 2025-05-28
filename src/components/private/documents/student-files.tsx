@@ -460,7 +460,7 @@ function StudentFileUploaderDialog({
     mutationFn: async (payload: StudentDocumentUpdatePayload) => {
       return await studentReuploadDocuments({ academicYear, documentType, enroleeNumber, payload });
     },
-    onSuccess() {
+    onSettled() {
       queryClient.invalidateQueries({
         queryKey: ["student-documents", enroleeNumber],
       });
@@ -695,7 +695,7 @@ function StudentFileUploaderDialog({
 
           {documentType === "passport" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <Input
+              <PassportInput
                 required
                 placeholder="Enter passport number"
                 value={passportNumber}

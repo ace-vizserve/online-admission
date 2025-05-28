@@ -49,6 +49,8 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
 ];
 const WHOLE_DAY_CLASS_LEVEL = ["Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
 
+const ENRICHMENT_CLASS_LEVELS = ["Young Starters"];
+
 const STANDARD_CLASS_LEVELS = ["Primary 5", "Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
 
 function OldEnrollmentInformation() {
@@ -185,12 +187,14 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
+                            {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value={"Enrichment Class"}>Enrichment Class</SelectItem>
+                            ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
                                 Standard Class (ENGLISH + TAGALOG)
                               </SelectItem>
                             ) : (
-                              classTypes.map((type) => (
+                              classTypes.slice(-4).map((type) => (
                                 <SelectItem key={type.value} value={type.value}>
                                   {type.label}
                                 </SelectItem>
@@ -376,7 +380,7 @@ function OldEnrollmentInformation() {
                             <FormControl>
                               <div>
                                 <MultiSelect
-                                  maxSelectedItems={3}
+                                  maxselecteditems={3}
                                   key={0}
                                   variant={"inverted"}
                                   options={currentStudentDiscounts?.discountCodes ?? []}
@@ -388,7 +392,6 @@ function OldEnrollmentInformation() {
                                       form.setValue("referrerMobile", "");
                                       setIsSelectedReferredBySomeone(false);
                                     }
-                                    console.log(value);
                                     field.onChange(value);
                                   }}
                                   placeholder="Select discount codes"
@@ -397,7 +400,7 @@ function OldEnrollmentInformation() {
                                 />
 
                                 <MultiSelect
-                                  maxSelectedItems={3}
+                                  maxselecteditems={3}
                                   key={1}
                                   variant={"inverted"}
                                   options={currentStudentDiscounts?.discountCodes ?? []}

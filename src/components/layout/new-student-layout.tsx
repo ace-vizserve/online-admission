@@ -18,31 +18,39 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "@/types";
-import { useSelectAcademicYear } from "@/zustand-store";
+import { useEnrolNewStudentTabStateStore, useSelectAcademicYear } from "@/zustand-store";
 import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useTransition } from "react";
 import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function NewStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isPending, setTransition] = useTransition();
+
+  const redirectToDashboard = useCallback(() => {
+    setTransition(() => {
+      navigate("/admission/dashboard");
+    });
+  }, [navigate]);
 
   useEffect(() => {
     const academicYearParams = searchParams.get("academicYear");
 
     if (!academicYearParams) {
-      navigate("/admission/dashboard");
+      redirectToDashboard();
     }
 
     if (academicYearParams != academicYear) {
       setSearchParams({ academicYear });
     }
-  }, [academicYear, navigate, searchParams, setSearchParams]);
+  }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
 
   return (
     <>
@@ -54,7 +62,10 @@ function NewStudentLayout() {
             <SubmitApplicationDialog />
           </MaxWidthWrapper>
         </div>
-        <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
+        <MaxWidthWrapper
+          className={cn("max-w-screen-2xl scale-100 opacity-100 transition-all", {
+            "scale-[98%] opacity-90": isPending,
+          })}>
           <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
             <div className="w-full overflow-x-auto">
               <NewStudentSteps />
@@ -71,7 +82,9 @@ function SubmitApplicationDialog() {
   const navigate = useNavigate();
 
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-  const { formState } = useEnrolNewStudentContext();
+  const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+  const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
+  const { formState, clearState } = useEnrolNewStudentContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
       return await submitEnrollment(enrollmentDetails, academicYear);
@@ -82,6 +95,9 @@ function SubmitApplicationDialog() {
       });
     },
     onSettled() {
+      clearState();
+      clearAcademicYearState();
+      clearEnrolNewStudentTabState();
       sessionStorage.clear();
     },
   });
@@ -136,13 +152,15 @@ function SubmitApplicationDialog() {
 }
 
 function ExitApplicationDialog() {
-  const { setFormState } = useEnrolNewStudentContext();
-  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
+  const { clearState } = useEnrolNewStudentContext();
+  const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
+  const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
 
   function exitApplication() {
+    clearState();
+    clearAcademicYearState();
+    clearEnrolNewStudentTabState();
     sessionStorage.clear();
-    setFormState({});
-    setAcademicYear("");
   }
 
   return (

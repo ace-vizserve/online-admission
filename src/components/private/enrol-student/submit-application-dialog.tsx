@@ -29,7 +29,7 @@ function checkExpiry(label: string, expiry: Date | null | undefined, type: "pass
 function SubmitApplicationDialog() {
   const navigate = useNavigate();
   const params = useParams();
-  const { formState } = useEnrolOldStudentContext();
+  const { formState, clearState } = useEnrolOldStudentContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       return await submitExistingEnrollment(formState as EnrolOldStudentFormState, params.id!);
@@ -38,6 +38,10 @@ function SubmitApplicationDialog() {
       navigate("/application-submitted", {
         replace: true,
       });
+    },
+    onSettled() {
+      clearState();
+      sessionStorage.clear();
     },
   });
 
@@ -140,8 +144,6 @@ function SubmitApplicationDialog() {
       toast.error(err.message, {
         description: "Please upload a valid, updated document",
       });
-    } finally {
-      sessionStorage.clear();
     }
   }
 

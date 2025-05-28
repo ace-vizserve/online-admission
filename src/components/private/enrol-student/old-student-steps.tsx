@@ -1,14 +1,16 @@
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { NavLink, useParams } from "react-router";
 
 function OldStudentSteps() {
   const params = useParams();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   return (
     <ol className="flex flex-col lg:flex-row gap-0.5 pb-6 lg:pb-0">
       <NavLink
-        to={`/enrol-student/${params.id}/student-info`}
+        to={`/enrol-student/${params.id}/student-info?=academicYear=${academicYear}`}
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",
@@ -26,7 +28,7 @@ function OldStudentSteps() {
       </NavLink>
 
       <NavLink
-        to={`/enrol-student/${params.id}/family-info`}
+        to={`/enrol-student/${params.id}/family-info?=academicYear=${academicYear}`}
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",
@@ -44,7 +46,7 @@ function OldStudentSteps() {
       </NavLink>
 
       <NavLink
-        to={`/enrol-student/${params.id}/enrollment-info`}
+        to={`/enrol-student/${params.id}/enrollment-info?=academicYear=${academicYear}`}
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",
@@ -62,7 +64,7 @@ function OldStudentSteps() {
       </NavLink>
 
       <NavLink
-        to={`/enrol-student/${params.id}/documents`}
+        to={`/enrol-student/${params.id}/documents?=academicYear=${academicYear}`}
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",

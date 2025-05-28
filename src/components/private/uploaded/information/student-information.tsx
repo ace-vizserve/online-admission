@@ -8,13 +8,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
 const StudentInformationComponent = () => {
-  console.log("StudentInformationComponent mounted");
   const { id } = useParams();
 
   const { data, isLoading, error } = useQuery<StudentInformation | null>({
     queryKey: ["ay2025_enrolment_applications", id],
     queryFn: async () => {
-      console.log("Fetching student info for id:", id);
       const { data, error } = await supabase
         .from("ay2025_enrolment_applications")
         .select(
@@ -41,7 +39,7 @@ const StudentInformationComponent = () => {
         )
         .eq("id", id)
         .single();
-      console.log("Supabase result:", { data, error });
+
       if (error) throw error;
       return { country: "", ...data } as StudentInformation;
     },

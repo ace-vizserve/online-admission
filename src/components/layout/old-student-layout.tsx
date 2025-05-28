@@ -18,27 +18,35 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { OctagonAlert } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useTransition } from "react";
 import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function OldStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isPending, setTransition] = useTransition();
+
+  const redirectToDashboard = useCallback(() => {
+    setTransition(() => {
+      navigate("/admission/dashboard");
+    });
+  }, [navigate]);
 
   useEffect(() => {
     const academicYearParams = searchParams.get("academicYear");
 
     if (!academicYearParams) {
-      navigate("/admission/dashboard");
+      redirectToDashboard();
     }
 
     if (academicYearParams != academicYear) {
       setSearchParams({ academicYear });
     }
-  }, [academicYear, navigate, searchParams, setSearchParams]);
+  }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
 
   return (
     <>
@@ -51,7 +59,10 @@ function OldStudentLayout() {
           </MaxWidthWrapper>
         </div>
 
-        <MaxWidthWrapper className="max-w-screen-2xl bg-grainy">
+        <MaxWidthWrapper
+          className={cn("max-w-screen-2xl scale-100 opacity-100 transition-all", {
+            "scale-[98%] opacity-90": isPending,
+          })}>
           <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
             <div className="w-full overflow-x-auto">
               <OldStudentSteps />
@@ -65,13 +76,13 @@ function OldStudentLayout() {
 }
 
 function ExitApplicationDialog() {
-  const { setFormState } = useEnrolOldStudentContext();
-  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
+  const { clearState } = useEnrolOldStudentContext();
+  const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
 
   function exitApplication() {
+    clearState();
+    clearAcademicYearState();
     sessionStorage.clear();
-    setFormState({});
-    setAcademicYear("");
   }
 
   return (

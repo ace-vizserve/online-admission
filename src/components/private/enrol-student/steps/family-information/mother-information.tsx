@@ -52,6 +52,8 @@ function MotherInformation() {
     toast.success("Family information details saved!", {
       description: "Proceeding to the next step...",
     });
+    setCompletedTabs("/enrol-student/new/family-info");
+    setCurrentTab("/enrol-student/new/enrollment-info");
   }
 
   function saveDetails() {
@@ -70,9 +72,6 @@ function MotherInformation() {
     toast.success("Mother's information has been saved!", {
       description: "You can continue filling out the other family details.",
     });
-
-    setCompletedTabs("/enrol-student/new/family-info");
-    setCurrentTab("/enrol-student/new/enrollment-info");
   }
 
   useEffect(() => {

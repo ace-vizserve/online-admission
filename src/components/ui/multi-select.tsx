@@ -104,7 +104,7 @@ interface MultiSelectProps
    * Optional, can be used to add custom styles.
    */
   className?: string;
-  maxSelectedItems: number;
+  maxselecteditems: number;
 }
 
 export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -146,7 +146,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
         setSelectedValues(newSelectedValues);
         onValueChange(newSelectedValues);
       } else {
-        if (selectedValues.length >= props.maxSelectedItems && option !== "Referred by someone") {
+        if (selectedValues.length >= props.maxselecteditems && option !== "Referred by someone") {
           return;
         }
         const newSelectedValues = [...selectedValues, option];
@@ -174,7 +174,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       if (selectedValues.length === options.length) {
         handleClear();
       } else {
-        const allValues = options.slice(0, props.maxSelectedItems).map((option) => option.value);
+        const allValues = options.slice(0, props.maxselecteditems).map((option) => option.value);
         setSelectedValues(allValues);
         onValueChange(allValues);
       }
@@ -280,7 +280,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                       className={cn(
                         "cursor-pointer",
                         !selectedValues.includes(option.value) &&
-                          selectedValues.length >= props.maxSelectedItems &&
+                          selectedValues.length >= props.maxselecteditems &&
                           option.value !== "Referred by someone" &&
                           "opacity-50 pointer-events-none"
                       )}>
