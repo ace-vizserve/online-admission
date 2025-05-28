@@ -59,15 +59,17 @@ function OldStudentLayout() {
           </MaxWidthWrapper>
         </div>
 
-        <MaxWidthWrapper
-          className={cn("max-w-screen-2xl scale-100 opacity-100 transition-all", {
-            "scale-[98%] opacity-90": isPending,
-          })}>
-          <div className="min-h-screen max-w-screen-2xl mx-auto flex flex-col md:gap-12 items-center justify-center">
+        <MaxWidthWrapper className="max-w-screen-2xl ">
+          <div className="min-h-screen w-full flex flex-col md:gap-12 items-center justify-center">
             <div className="w-full overflow-x-auto">
               <OldStudentSteps />
             </div>
-            <Outlet />
+            <div
+              className={cn("w-full opacity-100 scale-100 transition-all", {
+                "scale-95 opacity-70": isPending,
+              })}>
+              <Outlet />
+            </div>
           </div>
         </MaxWidthWrapper>
       </EnrolOldStudentContextProvider>

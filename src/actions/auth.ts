@@ -72,6 +72,16 @@ export async function userRegister({ firstName, lastName, relationship, email, p
 
 export async function sendPasswordResetLink({ email }: { email: string }) {
   try {
+    const {
+      data: { users },
+    } = await supabaseAdmin.auth.admin.listUsers();
+
+    const emailExist = users.find((user) => user.email === email);
+
+    if (!emailExist) {
+      throw new Error("An account with this email doesn't exists!");
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email);
 
     if (error) {
