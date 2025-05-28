@@ -37,8 +37,6 @@ function StudentAddressContact() {
     });
   }
 
-  console.log(form.getValues("parentMaritalStatus").trim());
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">

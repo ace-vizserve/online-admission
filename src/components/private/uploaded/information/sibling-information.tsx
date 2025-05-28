@@ -1,32 +1,31 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/client";
 import type { SiblingInformation as SiblingInformationType } from "@/types";
-
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
 
 const SiblingInformation = () => {
-  console.log("StudentInformationComponent mounted");
   const { id } = useParams();
 
   const { data, isLoading, error } = useQuery<SiblingInformationType | null>({
     queryKey: ["ay2025_enrolment_applications_sibling1", id],
     queryFn: async () => {
-      console.log("Fetching student info for id:", id);
       const { data, error } = await supabase
         .from("ay2025_enrolment_applications")
-        .select(`
+        .select(
+          `
             siblingFullName1,
             siblingBirthDay1,
             siblingReligion1,
             siblingEducationOccupation1,
             siblingSchoolCompany1
-        `)
+        `
+        )
         .eq("id", id)
         .single();
-      console.log("Supabase result:", { data, error });
+
       if (error) throw error;
       return {
         siblingFullName: data?.siblingFullName1 ?? "",
@@ -55,31 +54,31 @@ const SiblingInformation = () => {
               <div className="mb-2">
                 <Label>Full Name</Label>
               </div>
-              <Input value={data.siblingFullName || ''} readOnly />
+              <Input value={data.siblingFullName || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Date of Birth</Label>
               </div>
-              <Input value={data.siblingBirthDay || ''} readOnly />
+              <Input value={data.siblingBirthDay || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Religion</Label>
               </div>
-              <Input value={data.siblingReligion || ''} readOnly />
+              <Input value={data.siblingReligion || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>Education</Label>
               </div>
-              <Input value={data.siblingEducationOccupation || ''} readOnly />
+              <Input value={data.siblingEducationOccupation || ""} readOnly />
             </div>
             <div>
               <div className="mb-2">
                 <Label>School</Label>
               </div>
-              <Input value={data.siblingSchoolCompany || ''} readOnly />
+              <Input value={data.siblingSchoolCompany || ""} readOnly />
             </div>
           </div>
         </CardContent>

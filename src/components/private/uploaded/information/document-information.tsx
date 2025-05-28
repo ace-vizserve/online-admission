@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/client";
 import type { DocumentsInformation as DocumentsInformationType } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
 
 const documentFields = [
   { label: "Student ID Picture", key: "idPicture" },
@@ -17,7 +17,6 @@ const documentFields = [
 
 const DocumentsInformation = () => {
   const { id } = useParams();
-  console.log("ID from params:", id);
 
   const { data, isLoading, error } = useQuery<DocumentsInformationType | null>({
     queryKey: ["ay2025_documents_applications_", id],
@@ -27,8 +26,7 @@ const DocumentsInformation = () => {
         .select("idPicture, birthCert, form12, medical, passport, pass")
         .eq("id", id)
         .single();
-      console.log("Supabase data:", data);
-      console.log("Supabase error:", error);
+
       if (error) throw error;
       return {
         idPicture: data?.idPicture ?? "",
@@ -71,9 +69,10 @@ const DocumentsInformation = () => {
                       <a
                         href={data[field.key as keyof DocumentsInformationType] as string}
                         target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button className="cursor-pointer" variant="default" size="sm">View</Button>
+                        rel="noopener noreferrer">
+                        <Button className="cursor-pointer" variant="default" size="sm">
+                          View
+                        </Button>
                       </a>
                     ) : (
                       <span>Not uploaded</span>
@@ -87,6 +86,6 @@ const DocumentsInformation = () => {
       </Card>
     </div>
   );
-}
+};
 
 export default DocumentsInformation;

@@ -29,6 +29,7 @@ import { TStudent } from "@/types";
 import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
+import { useState } from "react";
 import { Link } from "react-router";
 
 export const columns: ColumnDef<TStudent>[] = [
@@ -166,6 +167,10 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
   const queryClient = useQueryClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 8,
+  });
 
   const table = useReactTable({
     data: studentsList,
@@ -176,11 +181,12 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-
     state: {
+      pagination,
       sorting,
       columnFilters,
     },
+    onPaginationChange: setPagination,
   });
 
   function updateDashboardDetails() {

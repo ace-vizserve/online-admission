@@ -363,13 +363,6 @@ export const studentUploadRequirementsSchema = z
         message: "Please upload the file to continue",
       })
       .optional(),
-    form12: z
-      .string()
-      .url({ message: "Upload the file to continue" })
-      .min(1, { message: "Form 12 is required" })
-      .refine((val) => val.startsWith("http"), {
-        message: "Please upload the file to continue",
-      }),
     medical: z
       .string()
       .url("Please upload the file to continue")

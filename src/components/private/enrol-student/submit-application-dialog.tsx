@@ -29,7 +29,7 @@ function checkExpiry(label: string, expiry: Date | null | undefined, type: "pass
 function SubmitApplicationDialog() {
   const navigate = useNavigate();
   const params = useParams();
-  const { formState } = useEnrolOldStudentContext();
+  const { formState, clearState } = useEnrolOldStudentContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       return await submitExistingEnrollment(formState as EnrolOldStudentFormState, params.id!);
@@ -38,6 +38,10 @@ function SubmitApplicationDialog() {
       navigate("/application-submitted", {
         replace: true,
       });
+    },
+    onSettled() {
+      clearState();
+      sessionStorage.clear();
     },
   });
 
@@ -76,11 +80,7 @@ function SubmitApplicationDialog() {
         return;
       }
 
-      const { form12, medical, passExpiry, passportExpiry } = formState.uploadRequirements.studentUploadRequirements;
-
-      if (!form12) {
-        throw new Error("Form 12 is required!");
-      }
+      const { medical, passExpiry, passportExpiry } = formState.uploadRequirements.studentUploadRequirements;
 
       if (!medical) {
         throw new Error("Medical Exam result is required!");
@@ -140,8 +140,6 @@ function SubmitApplicationDialog() {
       toast.error(err.message, {
         description: "Please upload a valid, updated document",
       });
-    } finally {
-      sessionStorage.clear();
     }
   }
 

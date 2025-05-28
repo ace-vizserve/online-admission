@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
@@ -35,12 +36,18 @@ function RenderFamilyDocCard({
   status,
   expiry,
   typeLabel,
+  role,
+  payload,
+  documentType,
 }: {
   label: string;
   fileUrl?: string;
   status?: string;
   expiry?: string;
   typeLabel?: string;
+  role: string;
+  documentType: string;
+  payload: Record<string, unknown>;
 }) {
   const isMissing = !fileUrl;
   const params = useParams();
@@ -108,15 +115,13 @@ function RenderFamilyDocCard({
             View document <Eye />
           </Link>
           <ParentGuardianFileUploaderDialog
-            role=""
+            role={role}
             status={status!}
             academicYear={academicYear!}
-            documentType={typeLabel!}
+            documentType={documentType}
             enroleeNumber={params.id!}
             label={label!}
-            payload={{
-              fatherPass: "",
-            }}
+            payload={{ ...payload }}
           />
         </div>
       )}
@@ -136,52 +141,94 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
 
   const motherCards = [
     {
+      role: "mother",
       label: "Mother's Passport",
       fileUrl: documents.motherPassport ?? undefined,
       status: documents.motherPassportStatus ?? undefined,
       expiry: documents.motherPassportExpiry ?? undefined,
       typeLabel: documents.motherPassportNumber ?? undefined,
+      documentType: "motherPassport",
+      payload: {
+        motherPassport: documents.motherPassport,
+        motherPassportNumber: documents.motherPassportNumber,
+        motherPassportExpiry: documents.motherPassportExpiry,
+      },
     },
     {
+      role: "mother",
       label: "Mother's Pass",
       fileUrl: documents.motherPass ?? undefined,
       status: documents.motherPassStatus ?? undefined,
       expiry: documents.motherPassExpiry ?? undefined,
       typeLabel: documents.motherPassType ?? undefined,
+      documentType: "motherPass",
+      payload: {
+        motherPass: documents.motherPass,
+        motherPassType: documents.motherPassType,
+        motherPassExpiry: documents.motherPassExpiry,
+      },
     },
   ];
 
   const fatherCards = [
     {
+      role: "father",
       label: "Father's Passport",
       fileUrl: documents.fatherPassport ?? undefined,
       status: documents.fatherPassportStatus ?? undefined,
       expiry: documents.fatherPassportExpiry ?? undefined,
       typeLabel: documents.fatherPassportNumber ?? undefined,
+      documentType: "fatherPassport",
+      payload: {
+        fatherPassport: documents.fatherPassport,
+        fatherPassportNumber: documents.fatherPassportNumber,
+        fatherPassportExpiry: documents.fatherPassportExpiry,
+      },
     },
     {
+      role: "father",
       label: "Father's Pass",
       fileUrl: documents.fatherPass ?? undefined,
       status: documents.fatherPassStatus ?? undefined,
       expiry: documents.fatherPassExpiry ?? undefined,
       typeLabel: documents.fatherPassType ?? undefined,
+      documentType: "motherPass",
+      payload: {
+        fatherPass: documents.fatherPass,
+        fatherPassType: documents.fatherPassType,
+        fatherPassExpiry: documents.fatherPassExpiry,
+      },
     },
   ];
 
   const guardianCards = [
     {
+      role: "guardian",
       label: "Guardian's Passport",
       fileUrl: documents.guardianPassport ?? undefined,
       status: documents.guardianPassportStatus ?? undefined,
       expiry: documents.guardianPassportExpiry ?? undefined,
       typeLabel: documents.guardianPassportNumber ?? undefined,
+      documentType: "guardianPassport",
+      payload: {
+        guardianPassport: documents.guardianPassport,
+        guardianPassportNumber: documents.guardianPassportNumber,
+        guardianPassportExpiry: documents.guardianPassportExpiry,
+      },
     },
     {
+      role: "guardian",
       label: "Guardian's Pass",
       fileUrl: documents.guardianPass ?? undefined,
       status: documents.guardianPassStatus ?? undefined,
       expiry: documents.guardianPassExpiry ?? undefined,
       typeLabel: documents.guardianPassType ?? undefined,
+      documentType: "guardianPass",
+      payload: {
+        guardianPass: documents.guardianPass,
+        guardianPassType: documents.guardianPassType,
+        guardianPassExpiry: documents.guardianPassExpiry,
+      },
     },
   ];
 
@@ -230,9 +277,9 @@ function ParentGuardianFileUploaderDialog({
     mutationFn: async (payload: ParentGuardianDocumentUpdatePayload) => {
       return await parentGuardianReuploadDocuments({ academicYear, documentType, enroleeNumber, payload, role });
     },
-    onSuccess() {
+    onSettled() {
       queryClient.invalidateQueries({
-        queryKey: ["student-documents", enroleeNumber],
+        queryKey: ["family-documents", enroleeNumber],
       });
     },
   });
@@ -273,16 +320,26 @@ function ParentGuardianFileUploaderDialog({
     if (!props.isSuccess) return;
     const uploadedFile = props.successes[0];
 
-    if (documentType === "pass") {
-      if (role === "mother") setMotherPass(uploadedFile);
-      else if (role === "father") setFatherPass(uploadedFile);
-      else if (role === "guardian") setGuardianPass(uploadedFile);
+    if (documentType === "motherPass") {
+      setMotherPass(uploadedFile);
+    }
+    if (documentType === "motherPassport") {
+      setMotherPassport(uploadedFile);
     }
 
-    if (documentType === "passport") {
-      if (role === "mother") setMotherPassport(uploadedFile);
-      else if (role === "father") setFatherPassport(uploadedFile);
-      else if (role === "guardian") setGuardianPassport(uploadedFile);
+    if (documentType === "fatherPass") {
+      setFatherPass(uploadedFile);
+    }
+    if (documentType === "fatherPassport") {
+      setFatherPassport(uploadedFile);
+    }
+
+    if (documentType === "guardianPass") {
+      setGuardianPass(uploadedFile);
+    }
+
+    if (documentType === "guardianPassport") {
+      setGuardianPassport(uploadedFile);
     }
   }, [documentType, role, props.isSuccess, props.successes]);
 
@@ -475,7 +532,7 @@ function ParentGuardianFileUploaderDialog({
 
           {documentType === "motherPassport" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <Input
+              <PassportInput
                 required
                 placeholder="Enter passport number"
                 value={motherPassportNumber}
@@ -552,7 +609,7 @@ function ParentGuardianFileUploaderDialog({
 
           {documentType === "fatherPassport" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <Input
+              <PassportInput
                 required
                 placeholder="Enter passport number"
                 value={fatherPassportNumber}
@@ -629,7 +686,7 @@ function ParentGuardianFileUploaderDialog({
 
           {documentType === "guardianPassport" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <Input
+              <PassportInput
                 required
                 placeholder="Enter passport number"
                 value={fatherPassportNumber}

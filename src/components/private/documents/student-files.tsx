@@ -276,17 +276,6 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                 })}>
                 View document <Eye />
               </Link>
-
-              <StudentFileUploaderDialog
-                status={form12Document.form12Status!}
-                academicYear={academicYear!}
-                documentType="form12"
-                enroleeNumber={params.id!}
-                label="Student's Form 12"
-                payload={{
-                  form12: form12Document.form12!,
-                }}
-              />
             </div>
           </div>
         )}
@@ -460,7 +449,7 @@ function StudentFileUploaderDialog({
     mutationFn: async (payload: StudentDocumentUpdatePayload) => {
       return await studentReuploadDocuments({ academicYear, documentType, enroleeNumber, payload });
     },
-    onSuccess() {
+    onSettled() {
       queryClient.invalidateQueries({
         queryKey: ["student-documents", enroleeNumber],
       });
@@ -695,7 +684,7 @@ function StudentFileUploaderDialog({
 
           {documentType === "passport" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <Input
+              <PassportInput
                 required
                 placeholder="Enter passport number"
                 value={passportNumber}

@@ -50,7 +50,6 @@ import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router";
 
-const form12Url = import.meta.env.VITE_FORM_12_URL as string;
 const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 const NOT_FILE_INPUTS = ["passExpiry", "passType", "passportExpiry", "passportNumber"];
@@ -169,18 +168,6 @@ const StudentFileUploaderDialog = memo(function ({
                 Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
               </DialogDescription>
             </DialogHeader>
-
-            {name === "form12" && (
-              <Link
-                to={form12Url}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 w-max mx-auto text-xs",
-                  variant: "outline",
-                })}>
-                Download Form 12 Form <Download />
-              </Link>
-            )}
 
             {name === "medical" && (
               <Link
@@ -550,19 +537,6 @@ function StudentFileUploaderDrawer({
               Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
             </DrawerDescription>
           </DrawerHeader>
-
-          {name === "form12" && (
-            <Link
-              to={form12Url}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 w-max mx-auto text-xs",
-                variant: "outline",
-                size: "sm",
-              })}>
-              Download Form 12 Form <Download />
-            </Link>
-          )}
 
           {name === "medical" && (
             <Link

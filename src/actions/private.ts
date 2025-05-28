@@ -18,6 +18,43 @@ export async function getSectionCardsDetails() {
       data: { session },
     } = await supabase.auth.getSession();
 
+    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
+      .from("ay2026_enrolment_applications")
+      .select("studentNumber", {
+        count: "exact",
+      })
+      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+
+    if (ay2026studentInformationError) {
+      throw new Error(ay2026studentInformationError.message);
+    }
+
+    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("studentNumber", {
+        count: "exact",
+      })
+      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
+      .order("enroleeNumber", { ascending: false });
+
+    if (ay2025studentInformationError) {
+      throw new Error(ay2025studentInformationError.message);
+    }
+
+    const mapStudents = (data: typeof ay2025studentInformation) =>
+      data.map((info) => ({
+        studentNumber: info.studentNumber,
+      }));
+
+    const allStudents = [...mapStudents(ay2026studentInformation), ...mapStudents(ay2025studentInformation)];
+
+    const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
+      if (!acc.some((o) => o.studentNumber === obj.studentNumber)) {
+        acc.push(obj);
+      }
+      return acc;
+    }, []);
+
     const { error: totalChildrenError, data: totalChildren } = await supabase
       .from("ay2025_enrolment_applications")
       .select("enroleeNumber, enroleeFullName")
@@ -56,7 +93,7 @@ export async function getSectionCardsDetails() {
       return true;
     });
 
-    return { totalChildren: seenTotalChildrenNames.size, currentEnrolledStudents: seenCurrentEnrolled.size };
+    return { totalChildren: studentsList.length, currentEnrolledStudents: seenCurrentEnrolled.size };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -106,7 +143,14 @@ export async function getStudentEnrollmentsList(studentNumber: string) {
       ...mapStudents(ay2025studentInformation, "2025"),
     ];
 
-    return { studentsList };
+    const enrollmentStudentList = studentsList.reduce((acc: typeof studentsList, obj) => {
+      if (!acc.some((o) => o.enroleeNumber === obj.enroleeNumber)) {
+        acc.push(obj);
+      }
+      return acc;
+    }, []);
+
+    return { studentsList: enrollmentStudentList };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -155,12 +199,12 @@ export async function getStudentList() {
 
     const allStudents = [...mapStudents(ay2026studentInformation), ...mapStudents(ay2025studentInformation)];
 
-    const seen = new Set();
-    const studentsList = allStudents.filter((s) => {
-      if (seen.has(s.studentName)) return false;
-      seen.add(s.studentName);
-      return true;
-    });
+    const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
+      if (!acc.some((o) => o.studentNumber === obj.studentNumber)) {
+        acc.push(obj);
+      }
+      return acc;
+    }, []);
 
     return { studentsList };
   } catch (error) {
@@ -1027,7 +1071,6 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
   try {
     const {
       birthCert,
-      form12,
       idPicture,
       medical,
       pass,
@@ -1199,14 +1242,6 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     }
 
     const studentDocumentUploadResults = await Promise.all([
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          form12,
-          form12Status: "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
@@ -1459,8 +1494,6 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     if (enrollmentApplicationStatusError) {
       throw new Error(enrollmentApplicationStatusError.message);
     }
-
-    sessionStorage.clear();
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -1477,7 +1510,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     const {
       birthCert,
-      form12,
+
       idPicture,
       medical,
       pass,
@@ -1633,14 +1666,6 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     }
 
     const studentDocumentUploadResults = await Promise.all([
-      supabase
-        .from("ay2026_enrolment_documents")
-        .update({
-          form12,
-          form12Status: "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from("ay2026_enrolment_documents")
         .update({
@@ -1893,8 +1918,6 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     if (enrollmentApplicationStatusError) {
       throw new Error(enrollmentApplicationStatusError.message);
     }
-
-    sessionStorage.clear();
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -2035,10 +2058,6 @@ export async function studentReuploadDocuments({
         docUpdates["passportExpiry"] = payload.passExpiry;
         docUpdates["passportStatus"] = "Valid";
         break;
-      case "form12":
-        docUpdates["form12"] = payload.form12;
-        docUpdates["form12Status"] = "Uploaded";
-        break;
       case "eduCert":
         docUpdates["eduCert"] = payload.educCert;
         docUpdates["eduCertStatus"] = "Uploaded";
@@ -2100,7 +2119,7 @@ export async function parentGuardianReuploadDocuments({
         docUpdates[`${role}PassStatus`] = "Valid";
         break;
       case `${role}Passport`:
-        appUpdates[`${role}PassportNumber`] = payload.motherPassportNumber;
+        appUpdates[`${role}Passport`] = payload.motherPassportNumber;
         appUpdates[`${role}PassportExpiry`] = payload.motherPassportExpiry;
 
         docUpdates[`${role}Passport`] = payload.motherPassport;

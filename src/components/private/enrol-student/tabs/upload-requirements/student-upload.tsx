@@ -31,7 +31,6 @@ function StudentUpload() {
   const [idPicture, setIdPicture] = useState<File[] | null>(null);
   const [birthCertificate, setBirthCertificate] = useState<File[] | null>(null);
   const [transcriptOfRecords, setTranscriptOfRecords] = useState<File[] | null>(null);
-  const [form12, setForm12] = useState<File[] | null>(null);
   const [medicalExam, setMedicalExam] = useState<File[] | null>(null);
   const [passport, setPassport] = useState<File[] | null>(null);
   const [pass, setPass] = useState<File[] | null>(null);
@@ -134,17 +133,6 @@ function StudentUpload() {
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
-            label="Form 12"
-            description="Upload Form 12 copy"
-            form={form}
-            name="form12"
-            value={form12}
-            onValueChange={setForm12}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
             label="Medical Examination"
             description="Upload recent medical result of student"
             form={form}
@@ -163,9 +151,7 @@ function StudentUpload() {
             value={passport}
             onValueChange={setPassport}
           />
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}

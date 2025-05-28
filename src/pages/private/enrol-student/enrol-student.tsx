@@ -12,9 +12,10 @@ import { EnrolledStudent } from "@/types";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { Field, Radio, RadioGroup } from "@headlessui/react";
 import { useQuery } from "@tanstack/react-query";
-import { Tailspin } from "ldrs/react";
+import { DotPulse, Tailspin } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { ArrowLeft, ChevronRight, UserPlus2, UserRoundPlus } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, useTransition } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import AcademicYearSelector from "./academic-year-selector";
@@ -29,6 +30,9 @@ function EnrolStudent() {
   const [selected, setSelected] = useState<EnrolledStudent | null>(data?.studentsList[0] ?? null);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
+  const clearState = useSelectAcademicYear((state) => state.clearState);
+
+  const [isLoading, setTransition] = useTransition();
 
   const selectStudent = useCallback((student: EnrolledStudent) => {
     setSelected(student);
@@ -40,6 +44,21 @@ function EnrolStudent() {
     });
   }
 
+  function goBack() {
+    setTransition(() => {
+      clearState();
+      sessionStorage.clear();
+    });
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <DotPulse size="50" speed="1.3" color="#111A2E" />
+      </div>
+    );
+  }
+
   return (
     <>
       <PageMetaData title={title} description={description} />
@@ -47,10 +66,7 @@ function EnrolStudent() {
       <div className="w-full sticky lg:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl">
           <Link
-            onClick={() => {
-              sessionStorage.clear();
-              setAcademicYear("");
-            }}
+            onClick={goBack}
             to={"/admission/dashboard"}
             className={buttonVariants({
               variant: "link",

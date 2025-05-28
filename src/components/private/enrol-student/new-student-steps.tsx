@@ -1,6 +1,7 @@
 import { buttonVariants } from "@/components/ui/button";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { cn } from "@/lib/utils";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { useNavigate } from "react-router";
 
 const STEPS = [
@@ -32,6 +33,7 @@ const STEPS = [
 
 function NewStudentSteps() {
   const { currentTab, completedTabs } = useEnrolNewStudentContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
 
   return (
@@ -44,7 +46,7 @@ function NewStudentSteps() {
           <li
             key={step.name}
             onClick={() => {
-              navigate(step.url);
+              navigate(`${step.url}?=academicYear=${academicYear}`);
             }}
             className={buttonVariants({
               size: "lg",

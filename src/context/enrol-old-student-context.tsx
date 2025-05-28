@@ -18,10 +18,11 @@ export function useEnrolOldStudentContext() {
 function EnrolOldStudentContextProvider({ children }: { children: ReactNode }) {
   const enrolOldStudentFormState = useEnrolOldStudentStore((state) => state.formState);
   const setEnrolOldStudentFormState = useEnrolOldStudentStore((state) => state.setFormState);
+  const clearState = useEnrolOldStudentStore((state) => state.clearState);
 
   return (
     <EnrolOldStudentContext.Provider
-      value={{ formState: enrolOldStudentFormState, setFormState: setEnrolOldStudentFormState }}>
+      value={{ clearState, formState: enrolOldStudentFormState, setFormState: setEnrolOldStudentFormState }}>
       {children}
     </EnrolOldStudentContext.Provider>
   );
