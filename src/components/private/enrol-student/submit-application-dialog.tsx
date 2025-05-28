@@ -80,11 +80,7 @@ function SubmitApplicationDialog() {
         return;
       }
 
-      const { form12, medical, passExpiry, passportExpiry } = formState.uploadRequirements.studentUploadRequirements;
-
-      if (!form12) {
-        throw new Error("Form 12 is required!");
-      }
+      const { medical, passExpiry, passportExpiry } = formState.uploadRequirements.studentUploadRequirements;
 
       if (!medical) {
         throw new Error("Medical Exam result is required!");

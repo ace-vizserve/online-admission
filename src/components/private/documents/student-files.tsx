@@ -276,17 +276,6 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                 })}>
                 View document <Eye />
               </Link>
-
-              <StudentFileUploaderDialog
-                status={form12Document.form12Status!}
-                academicYear={academicYear!}
-                documentType="form12"
-                enroleeNumber={params.id!}
-                label="Student's Form 12"
-                payload={{
-                  form12: form12Document.form12!,
-                }}
-              />
             </div>
           </div>
         )}
