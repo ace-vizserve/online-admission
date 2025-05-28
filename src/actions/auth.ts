@@ -1,3 +1,4 @@
+import { supabaseAdmin } from "@/lib/admin-client";
 import { supabase } from "@/lib/client";
 import { LoginSchema, RegistrationSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
@@ -34,6 +35,16 @@ export async function userLogout() {
 
 export async function userRegister({ firstName, lastName, relationship, email, password }: RegistrationSchema) {
   try {
+    const {
+      data: { users },
+    } = await supabaseAdmin.auth.admin.listUsers();
+
+    const emailExist = users.find((user) => user.email === email);
+
+    if (emailExist) {
+      throw new Error("An account with this email already exists!");
+    }
+
     const { error } = await supabase.auth.signUp({
       options: {
         data: {
