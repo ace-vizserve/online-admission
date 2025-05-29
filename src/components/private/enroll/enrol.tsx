@@ -146,14 +146,16 @@ type StudentsListTableProps = {
   refetch: (options?: RefetchOptions | undefined) => Promise<
     QueryObserverResult<
       | {
-          studentsList: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            enroleeNumber: any;
-            studentName: string;
-            age: number;
-            mothersName: string;
-            fathersName: string;
-          }[];
+          studentsList:
+            | {
+                enroleeNumber: string;
+                studentName: string;
+                age: number;
+                mothersName: string;
+                fathersName: string;
+                studentNumber: string;
+              }[]
+            | undefined;
         }
       | undefined,
       Error

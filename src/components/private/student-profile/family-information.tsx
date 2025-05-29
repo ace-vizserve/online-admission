@@ -15,37 +15,37 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
     motherFirstName,
     motherLastName,
     motherMiddleName,
-    motherMobilePhone,
+    motherMobile,
     motherNationality,
     motherNric,
     motherPreferredName,
     motherReligion,
-    motherWorkCompany,
-    motherWorkPosition,
+    motherCompanyName,
+    motherPosition,
     fatherEmail,
     fatherBirthDay,
     fatherFirstName,
     fatherLastName,
     fatherMiddleName,
-    fatherMobilePhone,
+    fatherMobile,
     fatherNationality,
     fatherNric,
     fatherPreferredName,
     fatherReligion,
-    fatherWorkCompany,
-    fatherWorkPosition,
+    fatherCompanyName,
+    fatherPosition,
     guardianBirthDay,
     guardianReligion,
     guardianEmail,
     guardianFirstName,
     guardianLastName,
     guardianMiddleName,
-    guardianMobilePhone,
+    guardianMobile,
     guardianNationality,
     guardianNric,
     guardianPreferredName,
-    guardianWorkCompany,
-    guardianWorkPosition,
+    guardianCompanyName,
+    guardianPosition,
   } = familyInformation;
 
   const siblings = extractSiblings(familyInformation);
@@ -134,7 +134,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Mobile Number</Label>
                   <InputWithIcon
-                    value={fatherMobilePhone ?? "N/A"}
+                    value={fatherMobile ?? "N/A"}
                     svgIcon={<Phone className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -167,14 +167,14 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Company</Label>
                   <InputWithIcon
-                    value={fatherWorkCompany ?? "N/A"}
+                    value={fatherCompanyName ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Position</Label>
                   <InputWithIcon
-                    value={fatherWorkPosition ?? "N/A"}
+                    value={fatherPosition ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -259,7 +259,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Mobile Number</Label>
                   <InputWithIcon
-                    value={motherMobilePhone ?? "N/A"}
+                    value={motherMobile ?? "N/A"}
                     svgIcon={<Phone className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -292,14 +292,14 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Company</Label>
                   <InputWithIcon
-                    value={motherWorkCompany ?? "N/A"}
+                    value={motherCompanyName ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Position</Label>
                   <InputWithIcon
-                    value={motherWorkPosition ?? "N/A"}
+                    value={motherPosition ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -384,7 +384,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Mobile Number</Label>
                   <InputWithIcon
-                    value={guardianMobilePhone ?? "N/A"}
+                    value={guardianMobile ?? "N/A"}
                     svgIcon={<Phone className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -417,14 +417,14 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Company</Label>
                   <InputWithIcon
-                    value={guardianWorkCompany ?? "N/A"}
+                    value={guardianCompanyName ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Position</Label>
                   <InputWithIcon
-                    value={guardianWorkPosition ?? "N/A"}
+                    value={guardianPosition ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
                 </div>
