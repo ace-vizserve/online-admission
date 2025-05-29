@@ -48,9 +48,10 @@ export async function userRegister({ firstName, lastName, relationship, email, p
     const { error } = await supabase.auth.signUp({
       options: {
         data: {
-          firstName,
-          lastName,
+          fullName: `${lastName}, ${firstName}`,
           relationship,
+          password_changed: true,
+          temporary_password: null,
         },
       },
       email,
