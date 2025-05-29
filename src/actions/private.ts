@@ -1,5 +1,15 @@
 import { supabase } from "@/lib/client";
-import { extractSiblings, filterKeysBySubstring, flattenSiblings, removeEmptyKeys } from "@/lib/utils";
+import {
+  extractFamilyInfo,
+  extractSiblings,
+  extractStudentInfo,
+  filterKeysBySubstring,
+  flattenSiblings,
+  getCurrentAYEnrolledStudents,
+  getStudentEnrollments,
+  getStudentsList,
+  removeEmptyKeys,
+} from "@/lib/utils";
 import {
   EnrolNewStudentFormState,
   EnrolOldStudentFormState,
@@ -9,7 +19,7 @@ import {
   StudentReuploadProps,
 } from "@/types";
 import { AuthError } from "@supabase/supabase-js";
-import { differenceInYears, isBefore, parseISO } from "date-fns";
+import { isBefore } from "date-fns";
 import { toast } from "sonner";
 
 export async function getSectionCardsDetails() {
@@ -18,82 +28,18 @@ export async function getSectionCardsDetails() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
-      .from("ay2026_enrolment_applications")
-      .select("studentNumber", {
-        count: "exact",
-      })
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
-
-    if (ay2026studentInformationError) {
-      throw new Error(ay2026studentInformationError.message);
+    if (!session) {
+      throw new Error("No user session!");
     }
 
-    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("studentNumber", {
-        count: "exact",
-      })
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
-      .order("enroleeNumber", { ascending: false });
+    const studentsList = await getStudentsList(session.user.email!);
 
-    if (ay2025studentInformationError) {
-      throw new Error(ay2025studentInformationError.message);
-    }
+    const currentEnrolledStudents = await getCurrentAYEnrolledStudents(session.user.email!);
 
-    const mapStudents = (data: typeof ay2025studentInformation) =>
-      data.map((info) => ({
-        studentNumber: info.studentNumber,
-      }));
-
-    const allStudents = [...mapStudents(ay2026studentInformation), ...mapStudents(ay2025studentInformation)];
-
-    const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
-      if (!acc.some((o) => o.studentNumber === obj.studentNumber)) {
-        acc.push(obj);
-      }
-      return acc;
-    }, []);
-
-    const { error: totalChildrenError, data: totalChildren } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeNumber, enroleeFullName")
-      .not("applicationStatus", "is", "null")
-      .neq("applicationStatus", "DELETED")
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
-      .order("enroleeNumber", { ascending: false });
-
-    if (totalChildrenError) {
-      throw new Error(totalChildrenError.message);
-    }
-
-    const { error: currentEnrolledError, data: currentEnrolled } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeNumber, enroleeFullName")
-      .eq("applicationStatus", "Registered")
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
-      .order("enroleeNumber", { ascending: false });
-
-    if (currentEnrolledError) {
-      throw new Error(currentEnrolledError.message);
-    }
-
-    const seenTotalChildrenNames = new Set();
-    const seenCurrentEnrolled = new Set();
-
-    totalChildren.filter((student) => {
-      if (seenTotalChildrenNames.has(student.enroleeFullName)) return false;
-      seenTotalChildrenNames.add(student.enroleeFullName);
-      return true;
-    });
-
-    currentEnrolled.filter((student) => {
-      if (seenCurrentEnrolled.has(student.enroleeFullName)) return false;
-      seenCurrentEnrolled.add(student.enroleeFullName);
-      return true;
-    });
-
-    return { totalChildren: studentsList.length, currentEnrolledStudents: seenCurrentEnrolled.size };
+    return {
+      totalChildren: studentsList?.length,
+      currentEnrolledStudents: currentEnrolledStudents?.currentEnrolledStudentCount,
+    };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -106,55 +52,16 @@ export async function getStudentEnrollmentsList(studentNumber: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (!studentNumber) return { studentsList: [] };
-
-    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
-      .from("ay2026_enrolment_applications")
-      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
-      .eq("studentNumber", studentNumber);
-
-    if (ay2026studentInformationError) {
-      throw new Error(ay2026studentInformationError.message);
+    if (!session) {
+      throw new Error("No user session!");
     }
 
-    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
-      .eq("studentNumber", studentNumber);
-
-    if (ay2025studentInformationError) {
-      throw new Error(ay2025studentInformationError.message);
-    }
-
-    const mapStudents = (data: typeof ay2025studentInformation, academicYear: string) =>
-      data.map((info) => ({
-        studentNumber: info.studentNumber,
-        studentName: info.enroleeFullName,
-        academicYear,
-        gradeLevel: info.levelApplied,
-        status: info.applicationStatus,
-        enroleeNumber: info.enroleeNumber,
-      }));
-
-    const studentsList = [
-      ...mapStudents(ay2026studentInformation, "2026"),
-      ...mapStudents(ay2025studentInformation, "2025"),
-    ];
-
-    const enrollmentStudentList = studentsList.reduce((acc: typeof studentsList, obj) => {
-      if (!acc.some((o) => o.enroleeNumber === obj.enroleeNumber)) {
-        acc.push(obj);
-      }
-      return acc;
-    }, []);
+    const enrollmentStudentList = await getStudentEnrollments(studentNumber, session.user.email!);
 
     return { studentsList: enrollmentStudentList };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
-    return { studentsList: [] };
   }
 }
 
@@ -164,47 +71,11 @@ export async function getStudentList() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
-      .from("ay2026_enrolment_applications")
-      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber", {
-        count: "exact",
-      })
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
-
-    if (ay2026studentInformationError) {
-      throw new Error(ay2026studentInformationError.message);
+    if (!session) {
+      throw new Error("No user session!");
     }
 
-    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber", {
-        count: "exact",
-      })
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
-      .order("enroleeNumber", { ascending: false });
-
-    if (ay2025studentInformationError) {
-      throw new Error(ay2025studentInformationError.message);
-    }
-
-    const mapStudents = (data: typeof ay2025studentInformation) =>
-      data.map((info) => ({
-        enroleeNumber: info.enroleeNumber,
-        studentName: info.enroleeFullName,
-        age: differenceInYears(new Date(), parseISO(info.birthDay)),
-        mothersName: info.motherFullName ?? "--",
-        fathersName: info.fatherFullName ?? "--",
-        studentNumber: info.studentNumber,
-      }));
-
-    const allStudents = [...mapStudents(ay2026studentInformation), ...mapStudents(ay2025studentInformation)];
-
-    const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
-      if (!acc.some((o) => o.studentNumber === obj.studentNumber)) {
-        acc.push(obj);
-      }
-      return acc;
-    }, []);
+    const studentsList = await getStudentsList(session.user.email!);
 
     return { studentsList };
   } catch (error) {
@@ -219,34 +90,13 @@ export async function getEnrolledStudents() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: studentInformation, error: studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto", { count: "exact" })
-      .eq("applicationStatus", "Registered")
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
-      .order("enroleeNumber", { ascending: false });
-
-    if (studentInformationError) {
-      throw new Error(studentInformationError.message);
+    if (!session) {
+      throw new Error("No user session!");
     }
 
-    const mapped = studentInformation.map((info) => {
-      return {
-        enroleeNumber: info.enroleeNumber,
-        studentName: info.enroleeFullName,
-        levelApplied: info.levelApplied,
-        enroleePhoto: info.enroleePhoto,
-      };
-    });
+    const currentEnrolledStudents = await getCurrentAYEnrolledStudents(session.user.email!);
 
-    const seenNames = new Set();
-    const studentsList = mapped.filter((student) => {
-      if (seenNames.has(student.studentName)) return false;
-      seenNames.add(student.studentName);
-      return true;
-    });
-
-    return { studentsList };
+    return { studentsList: currentEnrolledStudents?.currentEnrolled ?? [] };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -410,96 +260,13 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
         if (updateError) throw new Error(updateError.message);
       }
     }
+    console.log(studentInformation[0]);
 
     const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0];
 
-    const {
-      motherDateOfBirth,
-      motherEmail,
-      motherFirstName,
-      motherLastName,
-      motherMiddleName,
-      motherMobilePhone,
-      motherNationality,
-      motherNric,
-      motherPreferredName,
-      motherReligion,
-      motherWorkCompany,
-      motherWorkPosition,
-      fatherEmail,
-      fatherDateOfBirth,
-      fatherFirstName,
-      fatherLastName,
-      fatherMiddleName,
-      fatherMobilePhone,
-      fatherNationality,
-      fatherNric,
-      fatherPreferredName,
-      fatherReligion,
-      fatherWorkCompany,
-      fatherWorkPosition,
-      guardianDateOfBirth,
-      guardianReligion,
-      guardianEmail,
-      guardianFirstName,
-      guardianLastName,
-      guardianMiddleName,
-      guardianMobilePhone,
-      guardianNationality,
-      guardianNric,
-      guardianPreferredName,
-      guardianWorkCompany,
-      guardianWorkPosition,
-      siblingFullName1,
-      siblingFullName2,
-      siblingFullName3,
-      siblingFullName4,
-      siblingFullName5,
-      siblingBirthDay1,
-      siblingBirthDay2,
-      siblingBirthDay3,
-      siblingBirthDay4,
-      siblingBirthDay5,
-      siblingReligion1,
-      siblingReligion2,
-      siblingReligion3,
-      siblingReligion4,
-      siblingReligion5,
-      siblingSchoolCompany1,
-      siblingSchoolCompany2,
-      siblingSchoolCompany3,
-      siblingSchoolCompany4,
-      siblingSchoolCompany5,
-      siblingEducationOccupation1,
-      siblingEducationOccupation2,
-      siblingEducationOccupation3,
-      siblingEducationOccupation4,
-      siblingEducationOccupation5,
-    } = studentInformation[0];
+    const { father, guardian, mother, ...siblings } = extractFamilyInfo(studentInformation);
 
-    const {
-      id,
-      created_at,
-      studentNumber,
-      nationality,
-      firstName,
-      lastName,
-      middleName,
-      birthDay,
-      contactPerson,
-      contactPersonNumber,
-      gender,
-      homeAddress,
-      homePhone,
-      livingWithWhom,
-      nric,
-      parentMaritalStatus,
-      postalCode,
-      preferredName,
-      primaryLanguage,
-      religion,
-      enroleePhoto,
-    } = studentInformation[0];
+    const studentInfo = extractStudentInfo(studentInformation);
 
     const {
       form12,
@@ -518,90 +285,13 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
 
     return {
       studentInformation: {
-        id,
-        enroleeNumber,
-        created_at,
-        studentNumber,
-        nationality,
-        firstName,
-        lastName,
-        middleName,
-        birthDay,
-        contactPerson,
-        contactPersonNumber,
-        gender,
-        homeAddress,
-        homePhone,
-        livingWithWhom,
-        nric,
-        parentMaritalStatus,
-        postalCode,
-        preferredName,
-        primaryLanguage,
-        religion,
+        ...studentInfo,
       },
       familyInformation: {
-        motherDateOfBirth,
-        motherEmail,
-        motherFirstName,
-        motherLastName,
-        motherMiddleName,
-        motherMobilePhone,
-        motherNationality,
-        motherNric,
-        motherPreferredName,
-        motherReligion,
-        motherWorkCompany,
-        motherWorkPosition,
-        fatherEmail,
-        fatherDateOfBirth,
-        fatherFirstName,
-        fatherLastName,
-        fatherMiddleName,
-        fatherMobilePhone,
-        fatherNationality,
-        fatherNric,
-        fatherPreferredName,
-        fatherReligion,
-        fatherWorkCompany,
-        fatherWorkPosition,
-        guardianDateOfBirth,
-        guardianReligion,
-        guardianEmail,
-        guardianFirstName,
-        guardianLastName,
-        guardianMiddleName,
-        guardianMobilePhone,
-        guardianNationality,
-        guardianNric,
-        guardianPreferredName,
-        guardianWorkCompany,
-        guardianWorkPosition,
-        siblingFullName1,
-        siblingFullName2,
-        siblingFullName3,
-        siblingFullName4,
-        siblingFullName5,
-        siblingBirthDay1,
-        siblingBirthDay2,
-        siblingBirthDay3,
-        siblingBirthDay4,
-        siblingBirthDay5,
-        siblingReligion1,
-        siblingReligion2,
-        siblingReligion3,
-        siblingReligion4,
-        siblingReligion5,
-        siblingSchoolCompany1,
-        siblingSchoolCompany2,
-        siblingSchoolCompany3,
-        siblingSchoolCompany4,
-        siblingSchoolCompany5,
-        siblingEducationOccupation1,
-        siblingEducationOccupation2,
-        siblingEducationOccupation3,
-        siblingEducationOccupation4,
-        siblingEducationOccupation5,
+        ...father,
+        ...guardian,
+        ...mother,
+        ...siblings,
       },
       studentDocuments: {
         documentsThatExpire: [
@@ -637,7 +327,7 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
           },
         ],
       },
-      studentIDPicture: enroleePhoto,
+      studentIDPicture: studentInfo.enroleePhoto,
     };
   } catch (error) {
     const err = error as AuthError;

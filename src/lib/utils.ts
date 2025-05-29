@@ -1,7 +1,11 @@
 import { classLevels } from "@/data";
-import { EnrolNewStudentFormState, FamilyInfo } from "@/types";
+import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
+import { AuthError } from "@supabase/supabase-js";
 import { clsx, type ClassValue } from "clsx";
+import { differenceInYears, parseISO } from "date-fns";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
+import { supabase } from "./client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -48,6 +52,144 @@ export function getNextGradeLevel(currentValue: string) {
   }
 
   return classLevels[currentIndex + 1].value;
+}
+
+export function extractStudentInfo(studentInformation: Student[]) {
+  const info = studentInformation[0];
+
+  const studentInfo = {
+    id: info.id,
+    created_at: info.created_at,
+    studentNumber: info.studentNumber,
+    nationality: info.nationality,
+    firstName: info.firstName,
+    lastName: info.lastName,
+    middleName: info.middleName ?? "",
+    birthDay: info.birthDay,
+    contactPerson: info.contactPerson,
+    contactPersonNumber: info.contactPersonNumber,
+    gender: info.gender,
+    homeAddress: info.homeAddress,
+    homePhone: info.homePhone,
+    livingWithWhom: info.livingWithWhom,
+    nric: info.nric,
+    parentMaritalStatus: info.parentMaritalStatus,
+    postalCode: info.postalCode,
+    preferredName: info.preferredName,
+    primaryLanguage: info.primaryLanguage,
+    religion: info.religion,
+    enroleePhoto: info.enroleePhoto,
+  };
+
+  return studentInfo;
+}
+
+export function extractFamilyInfo(studentInformation: FamilyInfo[]) {
+  const info = studentInformation[0];
+
+  const mother = {
+    motherBirthDay: info.motherBirthDay,
+    motherEmail: info.motherEmail,
+    motherFirstName: info.motherFirstName,
+    motherLastName: info.motherLastName,
+    motherMiddleName: info.motherMiddleName,
+    motherMobile: info.motherMobile,
+    motherNationality: info.motherNationality,
+    motherNric: info.motherNric,
+    motherPreferredName: info.motherPreferredName,
+    motherReligion: info.motherReligion,
+    motherCompanyName: info.motherCompanyName,
+    motherPosition: info.motherPosition,
+  };
+
+  const father = {
+    fatherBirthDay: info.fatherBirthDay,
+    fatherEmail: info.fatherEmail,
+    fatherFirstName: info.fatherFirstName,
+    fatherLastName: info.fatherLastName,
+    fatherMiddleName: info.fatherMiddleName,
+    fatherMobile: info.fatherMobile,
+    fatherNationality: info.fatherNationality,
+    fatherNric: info.fatherNric,
+    fatherPreferredName: info.fatherPreferredName,
+    fatherReligion: info.fatherReligion,
+    fatherCompanyName: info.fatherCompanyName,
+    fatherPosition: info.fatherPosition,
+  };
+
+  const guardian = {
+    guardianBirthDay: info.guardianBirthDay,
+    guardianEmail: info.guardianEmail,
+    guardianFirstName: info.guardianFirstName,
+    guardianLastName: info.guardianLastName,
+    guardianMiddleName: info.guardianMiddleName,
+    guardianMobile: info.guardianMobile,
+    guardianNationality: info.guardianNationality,
+    guardianNric: info.guardianNric,
+    guardianPreferredName: info.guardianPreferredName,
+    guardianReligion: info.guardianReligion,
+    guardianCompanyName: info.guardianCompanyName,
+    guardianPosition: info.guardianPosition,
+  };
+
+  const {
+    siblingFullName1,
+    siblingFullName2,
+    siblingFullName3,
+    siblingFullName4,
+    siblingFullName5,
+    siblingBirthDay1,
+    siblingBirthDay2,
+    siblingBirthDay3,
+    siblingBirthDay4,
+    siblingBirthDay5,
+    siblingReligion1,
+    siblingReligion2,
+    siblingReligion3,
+    siblingReligion4,
+    siblingReligion5,
+    siblingSchoolCompany1,
+    siblingSchoolCompany2,
+    siblingSchoolCompany3,
+    siblingSchoolCompany4,
+    siblingSchoolCompany5,
+    siblingEducationOccupation1,
+    siblingEducationOccupation2,
+    siblingEducationOccupation3,
+    siblingEducationOccupation4,
+    siblingEducationOccupation5,
+  } = info;
+
+  return {
+    mother,
+    father,
+    guardian,
+    siblingFullName1,
+    siblingFullName2,
+    siblingFullName3,
+    siblingFullName4,
+    siblingFullName5,
+    siblingBirthDay1,
+    siblingBirthDay2,
+    siblingBirthDay3,
+    siblingBirthDay4,
+    siblingBirthDay5,
+    siblingReligion1,
+    siblingReligion2,
+    siblingReligion3,
+    siblingReligion4,
+    siblingReligion5,
+    siblingSchoolCompany1,
+    siblingSchoolCompany2,
+    siblingSchoolCompany3,
+    siblingSchoolCompany4,
+    siblingSchoolCompany5,
+    siblingEducationOccupation1,
+    siblingEducationOccupation2,
+    siblingEducationOccupation3,
+    siblingEducationOccupation4,
+    siblingEducationOccupation5,
+  };
 }
 
 export function filterKeysBySubstring(obj: Record<string, unknown>, substring: string) {
@@ -100,4 +242,149 @@ export function extractSiblings(family: FamilyInfo) {
   }
 
   return siblings;
+}
+
+export async function getStudentsList(parentEmail: string) {
+  try {
+    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
+      .from("ay2026_enrolment_applications")
+      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`);
+
+    if (ay2026studentInformationError) {
+      throw new Error(ay2026studentInformationError.message);
+    }
+
+    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .order("enroleeNumber", { ascending: false });
+
+    if (ay2025studentInformationError) {
+      throw new Error(ay2025studentInformationError.message);
+    }
+
+    const mapStudents = (data: typeof ay2025studentInformation) =>
+      data.map((info) => ({
+        enroleeNumber: info.enroleeNumber,
+        studentName: info.enroleeFullName,
+        age: differenceInYears(new Date(), parseISO(info.birthDay)),
+        mothersName: info.motherFullName ?? "--",
+        fathersName: info.fatherFullName ?? "--",
+        studentNumber: info.studentNumber,
+      }));
+
+    const allStudents = [...mapStudents(ay2026studentInformation), ...mapStudents(ay2025studentInformation)];
+
+    const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
+      if (!acc.some((o) => o.studentNumber === obj.studentNumber)) {
+        acc.push(obj);
+      }
+      return acc;
+    }, []);
+
+    return studentsList;
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
+export async function getCurrentAYEnrolledStudents(parentEmail: string) {
+  try {
+    const { error: totalChildrenError, data: totalChildren } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("enroleeNumber, enroleeFullName")
+      .not("applicationStatus", "is", "null")
+      .neq("applicationStatus", "DELETED")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .order("enroleeNumber", { ascending: false });
+
+    if (totalChildrenError) {
+      throw new Error(totalChildrenError.message);
+    }
+
+    const { error: currentEnrolledError, data: currentEnrolled } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto")
+      .eq("applicationStatus", "Registered")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .order("enroleeNumber", { ascending: false });
+
+    if (currentEnrolledError) {
+      throw new Error(currentEnrolledError.message);
+    }
+
+    const seenTotalChildrenNames = new Set();
+    const seenCurrentEnrolled = new Set();
+
+    totalChildren.filter((student) => {
+      if (seenTotalChildrenNames.has(student.enroleeFullName)) return false;
+      seenTotalChildrenNames.add(student.enroleeFullName);
+      return true;
+    });
+
+    const filteredCurrentEnrolled = currentEnrolled.filter((student) => {
+      if (seenCurrentEnrolled.has(student.enroleeFullName)) return false;
+      seenCurrentEnrolled.add(student.enroleeFullName);
+      return true;
+    });
+
+    return { currentEnrolledStudentCount: seenCurrentEnrolled.size, currentEnrolled: filteredCurrentEnrolled };
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
+export async function getStudentEnrollments(studentNumber: string, parentEmail: string) {
+  try {
+    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
+      .from("ay2026_enrolment_applications")
+      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .eq("studentNumber", studentNumber);
+
+    if (ay2026studentInformationError) {
+      throw new Error(ay2026studentInformationError.message);
+    }
+
+    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .eq("studentNumber", studentNumber);
+
+    if (ay2025studentInformationError) {
+      throw new Error(ay2025studentInformationError.message);
+    }
+
+    const mapStudents = (data: typeof ay2025studentInformation, academicYear: string) =>
+      data.map((info) => ({
+        studentNumber: info.studentNumber,
+        studentName: info.enroleeFullName,
+        academicYear,
+        gradeLevel: info.levelApplied,
+        status: info.applicationStatus,
+        enroleeNumber: info.enroleeNumber,
+      }));
+
+    const studentsList = [
+      ...mapStudents(ay2026studentInformation, "2026"),
+      ...mapStudents(ay2025studentInformation, "2025"),
+    ];
+
+    const enrollmentStudentList = studentsList.reduce((acc: typeof studentsList, obj) => {
+      if (!acc.some((o) => o.enroleeNumber === obj.enroleeNumber)) {
+        acc.push(obj);
+      }
+      return acc;
+    }, []);
+
+    return enrollmentStudentList;
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
 }

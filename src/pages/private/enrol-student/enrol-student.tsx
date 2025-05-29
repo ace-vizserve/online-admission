@@ -167,7 +167,7 @@ const StudentsList = memo(function ({ selected, setSelected, studentList }: Stud
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-1">
-                <span className="font-semibold text-sm capitalize">{student.studentName}</span>
+                <span className="font-semibold text-sm capitalize">{student.enroleeFullName}</span>
                 <span className="text-xs text-muted-foreground font-medium capitalize">{student.levelApplied}</span>
               </div>
             </div>

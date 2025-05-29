@@ -23,33 +23,33 @@ export type DiscountCode = {
 
 export type EnrolledStudent = {
   enroleeNumber: string;
-  studentName: string;
+  enroleeFullName: string;
   levelApplied: string;
   enroleePhoto: string;
 };
 
 export type Student = {
   id: number;
-  enroleeNumber: string;
-  studentNumber: string | null;
-  firstName: string;
-  middleName: string | null;
-  lastName: string;
-  preferredName: string;
-  birthDay: string;
-  gender: string;
+  created_at: string;
+  studentNumber: string;
   nationality: string;
-  nric: string;
-  primaryLanguage: string;
-  religion: string;
-  parentMaritalStatus: string;
-  livingWithWhom: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  birthDay: string;
   contactPerson: string;
   contactPersonNumber: string;
-  homePhone: string;
+  gender: string;
   homeAddress: string;
+  homePhone: string;
+  livingWithWhom: string;
+  nric: string;
+  parentMaritalStatus: string;
   postalCode: string;
-  created_at: string;
+  preferredName: string;
+  primaryLanguage: string;
+  religion: string;
+  enroleePhoto: string;
 };
 
 export type Mother = {
@@ -58,13 +58,13 @@ export type Mother = {
   motherFirstName: string | null;
   motherLastName: string | null;
   motherMiddleName: string | null;
-  motherMobilePhone: string | null;
+  motherMobile: string | null;
   motherNationality: string | null;
   motherNric: string | null;
   motherPreferredName: string | null;
   motherReligion: string | null;
-  motherWorkCompany: string | null;
-  motherWorkPosition: string | null;
+  motherCompanyName: string | null;
+  motherPosition: string | null;
 };
 
 export type Father = {
@@ -73,13 +73,13 @@ export type Father = {
   fatherFirstName: string | null;
   fatherLastName: string | null;
   fatherMiddleName: string | null;
-  fatherMobilePhone: string | null;
+  fatherMobile: string | null;
   fatherNationality: string | null;
   fatherNric: string | null;
   fatherPreferredName: string | null;
   fatherReligion: string | null;
-  fatherWorkCompany: string | null;
-  fatherWorkPosition: string | null;
+  fatherCompanyName: string | null;
+  fatherPosition: string | null;
 };
 
 export type Guardian = {
@@ -88,13 +88,13 @@ export type Guardian = {
   guardianFirstName: string | null;
   guardianLastName: string | null;
   guardianMiddleName: string | null;
-  guardianMobilePhone: string | null;
+  guardianMobile: string | null;
   guardianNationality: string | null;
   guardianNric: string | null;
   guardianPreferredName: string | null;
   guardianReligion: string | null;
-  guardianWorkCompany: string | null;
-  guardianWorkPosition: string | null;
+  guardianCompanyName: string | null;
+  guardianPosition: string | null;
 };
 
 export type Siblings = {
@@ -131,7 +131,7 @@ export type Siblings = {
 
 export type FamilyInfo = Mother & Father & Guardian & Siblings;
 
-export type Document = {
+export type StudentDocuments = {
   id: number;
   created_at: string;
   studentNumber: string | null;
@@ -205,18 +205,6 @@ export type FamilyDocument = {
   fatherPassType?: string;
   guardianPassportNumber?: string;
   guardianPassType?: string;
-};
-
-export type StudentDocuments = {
-  student_enrolments: {
-    enroleeFullName: string;
-    academicYear: string;
-  };
-  studentID: string;
-  documentType: string;
-  fileUrl: string;
-  status: string;
-  created_at: string;
 };
 
 export type StudentDocumentsList = {
