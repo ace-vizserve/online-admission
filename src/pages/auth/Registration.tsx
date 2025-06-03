@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
+import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 
@@ -169,7 +170,19 @@ function Registration() {
           </Card>
         </MaxWidthWrapper>
         <div className="bg-muted hidden lg:flex lg:items-center lg:justify-center">
-          <img
+          <motion.img
+            initial={{
+              opacity: 0,
+              translateY: 40,
+            }}
+            animate={{
+              opacity: 1,
+              translateY: 0,
+            }}
+            transition={{
+              duration: 1,
+              type: "spring",
+            }}
             src={students}
             alt="HFSE International School Students"
             className="object-cover w-3/4 h-auto rounded-lg"
