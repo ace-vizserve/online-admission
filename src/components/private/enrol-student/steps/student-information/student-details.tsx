@@ -21,6 +21,7 @@ import { toast } from "sonner";
 function StudentDetails() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
+  const [isValidatingNric, setIsValidatingNric] = useState<boolean>(false);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const form = useForm<StudentDetailsSchema>({
@@ -32,6 +33,7 @@ function StudentDetails() {
 
   async function onSubmit(values: StudentDetailsSchema) {
     try {
+      setIsValidatingNric(true);
       const isNricTaken = await checkNricExists(values.nric, academicYear);
 
       if (isNricTaken) {
@@ -70,6 +72,8 @@ function StudentDetails() {
       });
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsValidatingNric(false);
     }
   }
 
@@ -278,8 +282,12 @@ function StudentDetails() {
             control={form.control}
             name="nric"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="relative">
                 <FormLabel>NRIC / FIN</FormLabel>
+                {isValidatingNric && (
+                  <div className="absolute top-1 right-0 w-4 h-4 border-[2px] border-secondary border-t-primary rounded-full animate-spin" />
+                )}
+
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -290,12 +298,16 @@ function StudentDetails() {
           />
         </div>
 
-        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+        <Button
+          disabled={isValidatingNric}
+          size={"lg"}
+          className="hidden lg:flex w-full p-8 gap-2 uppercase"
+          type="submit">
           Save
           <Save />
         </Button>
 
-        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+        <Button disabled={isValidatingNric} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
           Save
           <Save />
         </Button>

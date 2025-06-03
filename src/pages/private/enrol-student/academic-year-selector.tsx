@@ -33,9 +33,9 @@ type Props = {
 
 const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
   return (
-    <div className="lg:h-screen flex flex-col items-center justify-center py-12 px-6 bg-muted">
-      <h1 className="text-3xl lg:text-4xl font-bold text-center tracking-tight">Choose Academic Year</h1>
-      <div className="mt-12 max-w-screen-lg mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="pt-24 h-screen flex flex-col items-center justify-center py-12 px-6 bg-muted">
+      <h1 className="hidden md:block text-4xl font-bold text-center tracking-tight">Choose Academic Year</h1>
+      <div className="mt-8 md:mt-12 max-w-screen-md mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {academicYears.map((year) => (
           <div
             key={year.name}

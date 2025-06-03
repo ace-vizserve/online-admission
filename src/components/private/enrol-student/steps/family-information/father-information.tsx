@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
+import { EnrolNewStudentFormState } from "@/types";
 import {
   fatherInformationSchema,
   FatherInformationSchema,
@@ -15,6 +17,7 @@ import {
   StudentUploadRequirementsSchema,
 } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
@@ -24,27 +27,39 @@ import { toast } from "sonner";
 
 function FatherInformation() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const form = useForm<FatherInformationSchema>({
     resolver: zodResolver(fatherInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.fatherInfo,
+      noFatherInfo: formState.familyInfo?.fatherInfo?.noFatherInfo ?? false,
+      isValid: formState.familyInfo?.fatherInfo?.isValid ?? false,
     },
   });
 
   function onSubmit(values: FatherInformationSchema) {
+    const insertedValues = Object.values(values).filter((v) => typeof v !== "boolean" && v != "" && v != undefined);
+
+    if (insertedValues.length > 0 && values.noFatherInfo) {
+      form.setError("noFatherInfo", {
+        message: "You've entered father details but marked them as not applicable. Please resolve the conflict.",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        fatherInfo: { ...values },
+        fatherInfo: { ...values, isValid: true },
       },
       uploadRequirements: {
         parentGuardianUploadRequirements: {
-          hasFatherInfo: true,
           ...(formState.uploadRequirements
             ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          hasFatherInfo: !values.noFatherInfo,
         },
         studentUploadRequirements: {
           ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
@@ -56,10 +71,83 @@ function FatherInformation() {
     });
   }
 
+  async function hasFatherInfoToggle(checked: boolean) {
+    if (checked) {
+      form.reset({
+        ...form.getValues(),
+        fatherFirstName: "",
+        fatherMiddleName: "",
+        fatherLastName: "",
+        fatherPreferredName: "",
+        fatherBirthDay: undefined,
+        fatherNationality: "",
+        fatherReligion: undefined,
+        fatherOtherReligion: undefined,
+        fatherNric: "",
+        fatherMobile: "",
+        fatherEmail: "",
+        fatherCompanyName: "",
+        fatherPosition: "",
+        noFatherInfo: true,
+      });
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          fatherInfo: {
+            noFatherInfo: true,
+          },
+        },
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            hasFatherInfo: false,
+            ...(formState.uploadRequirements
+              ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          },
+          studentUploadRequirements: {
+            ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+          },
+        },
+      });
+    } else {
+      await queryClient.refetchQueries({
+        queryKey: ["new-family-information"],
+      });
+      const familyInfo = queryClient.getQueryData(["new-family-information"]) as EnrolNewStudentFormState["familyInfo"];
+      form.reset({ ...(familyInfo?.fatherInfo ?? {}), noFatherInfo: false });
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          fatherInfo: {
+            noFatherInfo: false,
+          },
+        },
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            hasFatherInfo: true,
+            ...(formState.uploadRequirements
+              ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          },
+          studentUploadRequirements: {
+            ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+          },
+        },
+      });
+    }
+  }
+
   function proceedToNextStep() {
     if (!formState.familyInfo?.motherInfo.isValid) {
-      toast.warning("Missing mother information details!", {
-        description: "Make sure to double check everything",
+      toast.warning("Mother's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
+      });
+      return;
+    }
+
+    if (!formState.familyInfo?.fatherInfo.isValid) {
+      toast.warning("Father's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
       });
       return;
     }
@@ -178,7 +266,7 @@ function FatherInformation() {
                     <FormLabel>Religion</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        if (value === "other") {
+                        if (value === "Other") {
                           setIsOtherReligion(true);
                         } else {
                           setIsOtherReligion(false);
@@ -235,7 +323,6 @@ function FatherInformation() {
                   />
                 </FormControl>
                 <FormDescription>Select the country that best represents the father's nationality.</FormDescription>
-                <FormMessage />
                 <FormMessage />
               </FormItem>
             )}
@@ -322,18 +409,46 @@ function FatherInformation() {
           />
         </div>
 
+        <FormField
+          control={form.control}
+          name="noFatherInfo"
+          render={({ field }) => (
+            <FormItem className="my-8 w-full mx-auto max-w-lg rounded-lg border px-4 py-6">
+              <div className="w-full flex flex-row items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <FormLabel>Is the father's information not available?</FormLabel>
+                  <FormDescription className="text-pretty">
+                    Turn this on if you are unable to provide the father's details.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={async (checked) => {
+                      field.onChange(checked);
+                      await hasFatherInfoToggle(checked);
+                    }}
+                  />
+                </FormControl>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="flex flex-col gap-4">
           <Button size={"lg"} variant={"secondary"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-            Save
+            Confirm & Save
             <Save />
           </Button>
 
           <Button variant={"secondary"} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-            Save
+            Confirm & Save
             <Save />
           </Button>
 
           <Button
+            disabled={!formState.familyInfo?.fatherInfo?.isValid}
             onClick={proceedToNextStep}
             size={"lg"}
             className="hidden lg:flex w-full p-8 gap-2 uppercase"
@@ -342,7 +457,11 @@ function FatherInformation() {
             <ArrowRight />
           </Button>
 
-          <Button onClick={proceedToNextStep} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="button">
+          <Button
+            disabled={!formState.familyInfo?.fatherInfo?.isValid}
+            onClick={proceedToNextStep}
+            className="flex lg:hidden w-full p-6 gap-2 uppercase"
+            type="button">
             Proceed to Next Step
             <ArrowRight />
           </Button>

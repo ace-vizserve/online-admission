@@ -42,6 +42,8 @@ function Profile({ enroleeNumber }: ProfileProps) {
     },
   });
 
+  console.log(data);
+
   if (isPending) {
     return (
       <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">

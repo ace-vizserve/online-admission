@@ -25,6 +25,7 @@ export type EnrolledStudent = {
   enroleeNumber: string;
   enroleeFullName: string;
   levelApplied: string;
+  studentNumber: string;
   enroleePhoto: string;
 };
 

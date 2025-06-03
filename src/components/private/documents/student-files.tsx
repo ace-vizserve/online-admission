@@ -1,6 +1,7 @@
 import { studentReuploadDocuments } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -276,6 +277,9 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                 })}>
                 View document <Eye />
               </Link>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
             </div>
           </div>
         )}
@@ -470,14 +474,15 @@ function StudentFileUploaderDialog({
 
   const [medical, setMedical] = useState("");
 
-  const [eduCert, setEduCert] = useState("");
+  const [educCert, setEducCert] = useState("");
 
   const props = useSupabaseUpload({
     bucketName: "parent-portal",
     path: `${academicYear}/documents`,
-    allowedMimeTypes: ["image/*", "application/pdf"],
-    maxFiles: 1,
+    allowedMimeTypes: ["application/pdf"],
+    maxFiles: documentType === "medical" ? 4 : 1,
     maxFileSize: 1000 * 1000 * 4,
+    mergeFiles: documentType === "medical" ? true : false,
   });
 
   useEffect(() => {
@@ -504,7 +509,7 @@ function StudentFileUploaderDialog({
     }
 
     if (documentType == "eduCert") {
-      setEduCert(props.successes[0]);
+      setEducCert(props.successes[0]);
     }
   }, [documentType, props.isSuccess, props.successes]);
 
@@ -585,12 +590,12 @@ function StudentFileUploaderDialog({
         break;
 
       case "eduCert":
-        if (!eduCert) {
+        if (!educCert) {
           toast.error("Please upload the educational certificate.");
           return;
         }
         filePayload = {
-          eduCert,
+          educCert,
         };
         break;
     }
@@ -613,6 +618,11 @@ function StudentFileUploaderDialog({
               Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
             </DialogDescription>
           </DialogHeader>
+
+          <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+            Upload all pages containing relevant details
+          </Badge>
+
           {documentType === "form12" && (
             <Link
               to={form12Url}

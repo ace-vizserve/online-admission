@@ -1,5 +1,6 @@
 import { uploadFileToBucket } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -54,6 +55,8 @@ const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 const NOT_FILE_INPUTS = ["passExpiry", "passType", "passportExpiry", "passportNumber"];
 
+const MULTIPLE_FILE_UPLOADS = ["medical", "passport", "pass", "birthCert"];
+
 const StudentFileUploaderDialog = memo(function ({
   form,
   value,
@@ -67,7 +70,7 @@ const StudentFileUploaderDialog = memo(function ({
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(file, academicYear);
     },
     onSuccess(data) {
@@ -93,17 +96,14 @@ const StudentFileUploaderDialog = memo(function ({
 
   const { errors } = useFormState({ control: form.control });
   const dropZoneConfig: DropzoneOptions = {
-    maxFiles: 1,
-    disabled: false,
+    maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
-    multiple: false,
     accept:
       name === "idPicture"
         ? {
             "image/*": [],
           }
         : {
-            "image/*": [],
             "application/pdf": [],
           },
   };
@@ -114,12 +114,13 @@ const StudentFileUploaderDialog = memo(function ({
 
   function uploadFile() {
     if (value == null || !value.length) return;
-    mutate(value[0]);
+    mutate(value);
   }
 
   function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
-    form.setValue(name, "", { shouldValidate: true });
+
+    const OPTIONAL_DOCS = ["medical", "educCert"];
 
     setFormState({
       uploadRequirements: {
@@ -128,10 +129,12 @@ const StudentFileUploaderDialog = memo(function ({
         },
         studentUploadRequirements: {
           ...formState.uploadRequirements.studentUploadRequirements,
-          [name]: "",
+          [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
         },
       },
     });
+
+    form.resetField(name);
   }
 
   if (isDesktop) {
@@ -163,11 +166,18 @@ const StudentFileUploaderDialog = memo(function ({
 
           <DialogContent className="!max-w-2xl">
             <DialogHeader className="text-start">
-              <DialogTitle>{label}</DialogTitle>
+              <DialogTitle>{label} </DialogTitle>
+
               <DialogDescription>
                 Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
               </DialogDescription>
             </DialogHeader>
+
+            {!formState.uploadRequirements?.studentUploadRequirements[name] && MULTIPLE_FILE_UPLOADS.includes(name) ? (
+              <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+                Upload all pages containing relevant details
+              </Badge>
+            ) : null}
 
             {name === "medical" && (
               <Link
@@ -444,7 +454,7 @@ function StudentFileUploaderDrawer({
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(file, academicYear);
     },
     onSuccess(data) {
@@ -469,27 +479,28 @@ function StudentFileUploaderDrawer({
   });
 
   const { errors } = useFormState({ control: form.control });
-
   const dropZoneConfig: DropzoneOptions = {
-    maxFiles: 1,
-    disabled: false,
+    maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
-    multiple: false,
-    accept: {
-      "image/jpeg": [],
-      "image/png": [],
-      "application/pdf": [],
-    },
+    accept:
+      name === "idPicture"
+        ? {
+            "image/*": [],
+          }
+        : {
+            "application/pdf": [],
+          },
   };
 
   function uploadFile() {
     if (value == null || !value.length) return;
-    mutate(value[0]);
+    mutate(value);
   }
 
   function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
-    form.resetField(name);
+
+    const OPTIONAL_DOCS = ["medical", "educCert"];
 
     setFormState({
       uploadRequirements: {
@@ -498,10 +509,12 @@ function StudentFileUploaderDrawer({
         },
         studentUploadRequirements: {
           ...formState.uploadRequirements.studentUploadRequirements,
-          [name]: "",
+          [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
         },
       },
     });
+
+    form.resetField(name);
   }
 
   return (
@@ -530,13 +543,20 @@ function StudentFileUploaderDrawer({
           </Button>
         </DrawerTrigger>
 
-        <DrawerContent className="px-4">
+        <DrawerContent className="px-4 space-y-4">
           <DrawerHeader className="text-start px-0">
             <DrawerTitle>{label}</DrawerTitle>
+
             <DrawerDescription className="text-xs">
-              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.{" "}
             </DrawerDescription>
           </DrawerHeader>
+
+          {!formState.uploadRequirements?.studentUploadRequirements[name] && MULTIPLE_FILE_UPLOADS.includes(name) ? (
+            <Badge className="w-max mx-auto text-xs bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload all pages containing relevant details
+            </Badge>
+          ) : null}
 
           {name === "medical" && (
             <Link
@@ -554,12 +574,12 @@ function StudentFileUploaderDrawer({
           {formState.uploadRequirements?.studentUploadRequirements[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
               <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
-                Change document
+                Change
               </Button>
               <div className="p-6 bg-white rounded-full">
                 <img src={fileSvg} className="size-14" />
               </div>
-              <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
+              <p className="text-muted-foreground text-xs">{label} has been uploaded</p>
 
               {!NOT_FILE_INPUTS.includes(name) && formState.uploadRequirements?.studentUploadRequirements[name] && (
                 <Link
@@ -658,7 +678,7 @@ function StudentFileUploaderDrawer({
           )}
 
           {name === "pass" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="passType"
@@ -724,7 +744,7 @@ function StudentFileUploaderDrawer({
           )}
 
           {name === "passport" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="passportNumber"

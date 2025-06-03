@@ -12,15 +12,13 @@ import { motherInformationSchema, MotherInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
 
 function MotherInformation() {
   const navigate = useNavigate();
-  const [isPending, setTransition] = useTransition();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
 
@@ -28,18 +26,9 @@ function MotherInformation() {
     resolver: zodResolver(motherInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.motherInfo,
+      isValid: formState.familyInfo?.motherInfo?.isValid ?? false,
     },
   });
-
-  useEffect(() => {
-    if (!formState.familyInfo?.motherInfo) return;
-
-    if (Object.keys(formState.familyInfo?.motherInfo ?? {}).length) {
-      formState.familyInfo.motherInfo.isValid = true;
-    }
-
-    form.reset(formState.familyInfo.motherInfo);
-  }, [form, formState.familyInfo?.motherInfo]);
 
   function onSubmit(values: MotherInformationSchema) {
     setFormState({
@@ -49,41 +38,30 @@ function MotherInformation() {
         motherInfo: { ...values, isValid: true },
       },
     });
-    toast.success("Family information details saved!", {
-      description: "Proceeding to the next step...",
-    });
-    setCompletedTabs("/enrol-student/new/family-info");
-    setCurrentTab("/enrol-student/new/enrollment-info");
-  }
-
-  function saveDetails() {
-    form.trigger();
-
-    if (!form.formState.isValid) return;
-
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        motherInfo: { ...form.getValues(), isValid: true },
-      },
-    });
 
     toast.success("Mother's information has been saved!", {
-      description: "You can continue filling out the other family details.",
+      description: "Make sure to double check everything",
     });
   }
 
-  useEffect(() => {
-    if (form.formState.isSubmitSuccessful) {
-      setTransition(() => {
-        navigate("/enrol-student/new/enrollment-info");
+  function proceedToNextStep() {
+    if (!formState.familyInfo?.fatherInfo?.isValid) {
+      toast.warning("Father's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
       });
+      return;
     }
-  }, [form.formState.isSubmitSuccessful, navigate]);
 
-  if (isPending) {
-    return <EnrolNewStudentStepsLoader />;
+    if (!formState.familyInfo?.motherInfo?.isValid) {
+      toast.warning("Mother's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
+      });
+      return;
+    }
+
+    setCompletedTabs("/enrol-student/new/family-info");
+    setCurrentTab("/enrol-student/new/enrollment-info");
+    navigate("/enrol-student/new/enrollment-info");
   }
 
   return (
@@ -341,31 +319,31 @@ function MotherInformation() {
         </div>
 
         <div className="flex flex-col gap-4">
+          <Button size={"lg"} variant={"secondary"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+            Confirm & Save
+            <Save />
+          </Button>
+
+          <Button variant={"secondary"} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+            Confirm & Save
+            <Save />
+          </Button>
+
           <Button
-            onClick={saveDetails}
+            disabled={!formState.familyInfo?.motherInfo.isValid}
+            onClick={proceedToNextStep}
             size={"lg"}
-            variant={"secondary"}
             className="hidden lg:flex w-full p-8 gap-2 uppercase"
             type="button">
-            Save
-            <Save />
-          </Button>
-
-          <Button
-            onClick={saveDetails}
-            variant={"secondary"}
-            className="flex lg:hidden w-full p-6 gap-2 uppercase"
-            type="button">
-            Save
-            <Save />
-          </Button>
-
-          <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
             Proceed to Next Step
             <ArrowRight />
           </Button>
 
-          <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          <Button
+            disabled={!formState.familyInfo?.motherInfo.isValid}
+            onClick={proceedToNextStep}
+            className="flex lg:hidden w-full p-6 gap-2 uppercase"
+            type="button">
             Proceed to Next Step
             <ArrowRight />
           </Button>

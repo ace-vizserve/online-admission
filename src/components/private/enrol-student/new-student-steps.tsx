@@ -13,13 +13,13 @@ const STEPS = [
   },
   {
     name: "Family Information",
-    description: "Family & guardian",
+    description: "Family information",
     url: "/enrol-student/new/family-info",
     label: "familyInfo",
   },
   {
     name: "Enrollment Information",
-    description: "Student Enrollment Details",
+    description: "Student Enrolment details",
     url: "/enrol-student/new/enrollment-info",
     label: "enrollmentInfo",
   },

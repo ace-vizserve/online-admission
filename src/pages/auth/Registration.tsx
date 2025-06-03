@@ -92,7 +92,6 @@ function Registration() {
                               <SelectContent>
                                 <SelectItem value="mother">Mother</SelectItem>
                                 <SelectItem value="father">Father</SelectItem>
-                                <SelectItem value="guardian">Guardian</SelectItem>
                               </SelectContent>
                             </Select>
                           </FormControl>

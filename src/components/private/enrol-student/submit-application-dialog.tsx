@@ -1,4 +1,4 @@
-import { lookupNewEnrolledStudent, submitExistingEnrollment } from "@/actions/private";
+import { submitExistingEnrollment } from "@/actions/private";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,8 +48,8 @@ function SubmitApplicationDialog() {
   async function verifyEnrollmentDetails() {
     try {
       if (formState.familyInfo == null) {
-        toast.info("Review Family Information", {
-          description: "Please double-check all family details before submitting.",
+        toast.info("Review Family Information!", {
+          description: "Please double-check all family details before submitting",
         });
         return;
       }
@@ -70,13 +70,15 @@ function SubmitApplicationDialog() {
 
       if (formState.enrollmentInfo.levelApplied === "Secondary 4") {
         toast.info("Enrollment not allowed!", {
-          description: "The student has completed Secondary 4, the final year of secondary school.",
+          description: "The student has completed Secondary 4, the final year of secondary school",
         });
         return;
       }
 
       if (formState.uploadRequirements?.studentUploadRequirements == null) {
-        toast.warning("Please upload the required documents in documents tab");
+        toast.warning("Please upload the required documents in documents tab", {
+          description: "Kindly double check every details before submitting",
+        });
         return;
       }
 
@@ -111,28 +113,6 @@ function SubmitApplicationDialog() {
       checkExpiry("Father", fatherPassportExpiry, "passport");
       checkExpiry("Guardian", guardianPassExpiry, "pass");
       checkExpiry("Guardian", guardianPassportExpiry, "passport");
-
-      const enroleeFullName = `${formState.studentInfo?.studentDetails.lastName}, ${
-        formState.studentInfo?.studentDetails.firstName
-      }, ${formState.studentInfo?.studentDetails.middleName ?? ""}`;
-      const birthDay = formState.studentInfo!.studentDetails.birthDay;
-      const motherEmail = formState.familyInfo.motherInfo.motherEmail;
-      const fatherEmail = formState.familyInfo?.fatherInfo.fatherEmail;
-
-      const result = await lookupNewEnrolledStudent({
-        enroleeFullName,
-        birthDay,
-        motherEmail,
-        fatherEmail,
-        academicYear: "ay2026",
-      });
-
-      if (result) {
-        toast.error("Enrollment Already Exists!", {
-          description: "A matching student and parent record is already enrolled",
-        });
-        return;
-      }
 
       mutate();
     } catch (error) {

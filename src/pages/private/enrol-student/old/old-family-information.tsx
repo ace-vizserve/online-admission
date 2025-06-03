@@ -27,7 +27,7 @@ const tabs = [
   },
   {
     name: "Father Information",
-    skippable: true,
+    skippable: false,
     value: "father-information",
     icon: Users,
     component: FatherInformation,
@@ -66,26 +66,29 @@ function OldFamilyInformation() {
 function FamilyInformationTabs() {
   const params = useParams();
   const { setFormState, formState } = useEnrolOldStudentContext();
-  const { data, isPending, isSuccess } = useQuery({
-    queryKey: ["old-family-information"],
+  const { data, isPending, isSuccess, fetchStatus } = useQuery({
+    queryKey: ["old-family-information", params.id],
     queryFn: async () => {
       return await getFamilyInformation(params.id);
     },
+    enabled: Object.keys(formState.familyInfo ?? {}).length < 1,
   });
 
   useEffect(() => {
     if (!isSuccess || !data) return;
 
+    if (formState.familyInfo != null) return;
+
     setFormState({
       familyInfo: { ...data! } as unknown as EnrolOldStudentFormState["familyInfo"],
     });
-  }, [data, isSuccess, setFormState]);
+  }, [data, formState.familyInfo, isSuccess, setFormState]);
 
-  if (isPending) {
+  if (fetchStatus === "fetching" && isPending) {
     return <Loader />;
   }
 
-  if (!Object.keys(formState.familyInfo ?? {}).length) {
+  if (formState.familyInfo == null) {
     return <Loader />;
   }
 

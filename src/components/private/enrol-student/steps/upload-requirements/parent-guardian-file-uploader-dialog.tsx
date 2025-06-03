@@ -1,5 +1,6 @@
 import { uploadFileToBucket } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -77,7 +78,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(file, academicYear);
     },
     onSuccess(data) {
@@ -103,13 +104,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   const { errors } = useFormState({ control: form.control });
 
   const dropZoneConfig: DropzoneOptions = {
-    maxFiles: 1,
-    disabled: false,
+    maxFiles: 4,
     maxSize: 1024 * 1024 * 4, // 4MB max
-    multiple: false,
     accept: {
-      "image/jpeg": [],
-      "image/png": [],
       "application/pdf": [],
     },
   };
@@ -120,7 +117,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
   function uploadFile() {
     if (value == null || !value.length) return;
-    mutate(value[0]);
+    mutate(value);
   }
 
   function changeDocument() {
@@ -175,6 +172,12 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG, and PDF.
               </DialogDescription>
             </DialogHeader>
+
+            {!formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+              <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+                Upload all pages containing relevant details
+              </Badge>
+            ) : null}
 
             {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
               <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
@@ -691,7 +694,7 @@ function ParentGuardianFileUploaderDrawer({
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(file, academicYear);
     },
     onSuccess(data) {
@@ -716,20 +719,17 @@ function ParentGuardianFileUploaderDrawer({
 
   const { errors } = useFormState({ control: form.control });
   const dropZoneConfig: DropzoneOptions = {
-    maxFiles: 1,
+    maxFiles: 4,
     disabled: false,
     maxSize: 1024 * 1024 * 4, // 4MB max
-    multiple: false,
     accept: {
-      "image/jpeg": [],
-      "image/png": [],
       "application/pdf": [],
     },
   };
 
   function uploadFile() {
     if (value == null || !value.length) return;
-    mutate(value[0]);
+    mutate(value);
   }
 
   function changeDocument() {
@@ -784,6 +784,12 @@ function ParentGuardianFileUploaderDrawer({
             </DrawerDescription>
           </DrawerHeader>
 
+          {!formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload all pages containing relevant details
+            </Badge>
+          ) : null}
+
           {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
               <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
@@ -792,7 +798,7 @@ function ParentGuardianFileUploaderDrawer({
               <div className="p-6 bg-white rounded-full">
                 <img src={fileSvg} className="size-14" />
               </div>
-              <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
+              <p className="text-muted-foreground text-xs">{label} has been uploaded</p>
 
               {!NOT_FILE_INPUTS.includes(name) &&
                 formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
@@ -877,7 +883,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "motherPass" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="motherPassType"
@@ -943,7 +949,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "motherPassport" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="motherPassportNumber"
@@ -998,7 +1004,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "fatherPass" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="fatherPassType"
@@ -1065,7 +1071,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "fatherPassport" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="fatherPassportNumber"
@@ -1121,7 +1127,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "guardianPass" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="guardianPassType"
@@ -1188,7 +1194,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {name === "guardianPassport" && (
-            <div className="grid grid-cols-1 gap-2 pt-4 w-full">
+            <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
                 control={form.control}
                 name="guardianPassportNumber"

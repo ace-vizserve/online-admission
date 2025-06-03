@@ -125,7 +125,7 @@ function ParentGuardianUpload() {
             onValueChange={setMotherPass}
           />
         </div>
-        {data?.parentGuardianUploadRequirements.hasFatherInfo && (
+        {!formState.familyInfo?.fatherInfo?.noFatherInfo && data?.parentGuardianUploadRequirements.hasFatherInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
