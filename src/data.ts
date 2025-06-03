@@ -218,7 +218,7 @@ export const religions = [
   { label: "Hinduism", value: "Hinduism" },
   { label: "Buddhism", value: "Buddhism" },
   { label: "Judaism", value: "Judaism" },
-  { label: "Other", value: "other" },
+  { label: "Other", value: "Other" },
 ] as const;
 
 export const classLevels = [

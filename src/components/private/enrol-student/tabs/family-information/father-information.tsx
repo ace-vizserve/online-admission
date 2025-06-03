@@ -1,4 +1,3 @@
-import { updateFamilyInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -6,45 +5,140 @@ import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
-import { FamilyInfo } from "@/types";
-import { fatherInformationSchema, FatherInformationSchema } from "@/zod-schema";
+import { EnrolNewStudentFormState } from "@/types";
+import {
+  fatherInformationSchema,
+  FatherInformationSchema,
+  ParentGuardianUploadRequirementsSchema,
+  StudentUploadRequirementsSchema,
+} from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useParams } from "react-router";
+import { toast } from "sonner";
 
 function FatherInformation() {
+  const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (familyInformation: Partial<FamilyInfo>) => {
-      return await updateFamilyInformation(familyInformation);
-    },
-  });
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
-
+  const queryClient = useQueryClient();
   const form = useForm<FatherInformationSchema>({
     resolver: zodResolver(fatherInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.fatherInfo,
+      noFatherInfo: formState.familyInfo?.fatherInfo?.noFatherInfo ?? false,
     },
   });
 
   function onSubmit(values: FatherInformationSchema) {
+    const insertedValues = Object.values(values).filter((v) => typeof v !== "boolean" && v != "" && v != undefined);
+
+    if (insertedValues.length > 0 && values.noFatherInfo) {
+      form.setError("noFatherInfo", {
+        message: "You've entered father details but marked them as not applicable. Please resolve the conflict.",
+      });
+      return;
+    }
+
     setFormState({
+      ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        fatherInfo: { ...values },
+        fatherInfo: { ...values, isValid: true },
+      },
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          ...(formState.uploadRequirements
+            ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          hasFatherInfo: !values.noFatherInfo,
+        },
+        studentUploadRequirements: {
+          ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+        },
       },
     });
+    toast.success("Father information details saved!", {
+      description: "Make sure to double check everything",
+    });
+  }
 
-    mutate({ ...values, fatherBirthDay: values.fatherBirthDay as unknown as string });
+  async function hasFatherInfoToggle(checked: boolean) {
+    if (checked) {
+      form.reset({
+        ...form.getValues(),
+        fatherFirstName: "",
+        fatherMiddleName: "",
+        fatherLastName: "",
+        fatherPreferredName: "",
+        fatherBirthDay: undefined,
+        fatherNationality: "",
+        fatherReligion: undefined,
+        fatherOtherReligion: undefined,
+        fatherNric: "",
+        fatherMobile: "",
+        fatherEmail: "",
+        fatherCompanyName: "",
+        fatherPosition: "",
+        noFatherInfo: true,
+      });
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          fatherInfo: {
+            noFatherInfo: true,
+          },
+        },
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            hasFatherInfo: false,
+            ...(formState.uploadRequirements
+              ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          },
+          studentUploadRequirements: {
+            ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+          },
+        },
+      });
+    } else {
+      await queryClient.refetchQueries({
+        queryKey: ["old-family-information", params.id],
+        fetchStatus: "idle",
+      });
+      const familyInfo = queryClient.getQueryData([
+        "old-family-information",
+        params.id,
+      ]) as EnrolNewStudentFormState["familyInfo"];
+      form.reset({ ...(familyInfo?.fatherInfo ?? {}), noFatherInfo: false });
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          fatherInfo: {
+            noFatherInfo: false,
+          },
+        },
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            hasFatherInfo: true,
+            ...(formState.uploadRequirements
+              ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          },
+          studentUploadRequirements: {
+            ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+          },
+        },
+      });
+    }
   }
 
   return (
@@ -300,32 +394,41 @@ function FatherInformation() {
           />
         </div>
 
-        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="30" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
+        <FormField
+          control={form.control}
+          name="noFatherInfo"
+          render={({ field }) => (
+            <FormItem className="my-8 w-full mx-auto max-w-lg rounded-lg border px-4 py-6">
+              <div className="w-full flex flex-row items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <FormLabel>Is the father's information not available?</FormLabel>
+                  <FormDescription className="text-pretty">
+                    Turn this on if you are unable to provide the father's details.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={async (checked) => {
+                      field.onChange(checked);
+                      await hasFatherInfoToggle(checked);
+                    }}
+                  />
+                </FormControl>
+              </div>
+              <FormMessage />
+            </FormItem>
           )}
+        />
+
+        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
 
-        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="20" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
-          )}
+        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
       </form>
     </Form>

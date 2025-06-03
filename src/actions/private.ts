@@ -13,7 +13,6 @@ import {
 import {
   EnrolNewStudentFormState,
   EnrolOldStudentFormState,
-  FamilyInfo,
   ParentGuardianReuploadProps,
   Student,
   StudentReuploadProps,
@@ -21,6 +20,8 @@ import {
 import { AuthError } from "@supabase/supabase-js";
 import { isBefore } from "date-fns";
 import { toast } from "sonner";
+
+import PDFMerger from "pdf-merger-js";
 
 export async function getSectionCardsDetails() {
   try {
@@ -226,7 +227,22 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
     }
 
     if (!documents || documents.length === 0) {
-      return null;
+      documents = [
+        {
+          form12: null,
+          form12Status: null,
+          medical: null,
+          medicalStatus: null,
+          passport: null,
+          passportStatus: null,
+          birthCert: null,
+          birthCertStatus: null,
+          pass: null,
+          passStatus: null,
+          educCert: null,
+          educCertStatus: null,
+        },
+      ];
     }
 
     if (documents && documents.length > 0) {
@@ -260,7 +276,6 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
         if (updateError) throw new Error(updateError.message);
       }
     }
-    console.log(studentInformation[0]);
 
     const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0];
 
@@ -391,31 +406,6 @@ export async function getCurrentStudentDiscounts() {
       discountCodes,
       hasDiscountCodes: discountCodes.length > 0,
     };
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
-}
-
-export async function uploadFileToBucket(file: File, academicYear: string) {
-  try {
-    const { data: fileUpload, error: uploadError } = await supabase.storage
-      .from("parent-portal")
-      .upload(`${academicYear}/documents/${file.name}_${Date.now()}`, file, {
-        upsert: false,
-      });
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("parent-portal").getPublicUrl(fileUpload.path);
-
-    toast.success("Document uploaded successfully!");
-
-    return { imagePath: publicUrl };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -585,9 +575,9 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
       throw new Error(studentDocumentsError.message);
     }
 
-    const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0];
+    const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0] ?? {};
 
-    const { medical, passport, birthCert, pass, educCert } = documents[0];
+    const { medical, passport, birthCert, pass, educCert } = documents[0] ?? {};
 
     const previousStudentDocuments = {
       birthCert: birthCert ?? "",
@@ -639,8 +629,8 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
       motherPassExpiry,
       motherPassportExpiry,
       motherPassport: motherPassportNumber,
-    } = parentGuardianDocumentsInformation[0];
-    const { motherPass, motherPassport } = parentGuardianDocuments[0];
+    } = parentGuardianDocumentsInformation[0] ?? {};
+    const { motherPass, motherPassport } = parentGuardianDocuments[0] ?? {};
 
     const motherPassDocument = { motherPass, motherPassType, motherPassExpiry };
 
@@ -651,8 +641,8 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
       fatherPassExpiry,
       fatherPassportExpiry,
       fatherPassport: fatherPassportNumber,
-    } = parentGuardianDocumentsInformation[0];
-    const { fatherPass, fatherPassport } = parentGuardianDocuments[0];
+    } = parentGuardianDocumentsInformation[0] ?? {};
+    const { fatherPass, fatherPassport } = parentGuardianDocuments[0] ?? {};
 
     const fatherPassDocument = { fatherPass, fatherPassType, fatherPassExpiry };
 
@@ -663,8 +653,8 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
       guardianPassExpiry,
       guardianPassportExpiry,
       guardianPassport: guardianPassportNumber,
-    } = parentGuardianDocumentsInformation[0];
-    const { guardianPass, guardianPassport } = parentGuardianDocuments[0];
+    } = parentGuardianDocumentsInformation[0] ?? {};
+    const { guardianPass, guardianPassport } = parentGuardianDocuments[0] ?? {};
 
     const guardianPassDocument = { guardianPass, guardianPassType, guardianPassExpiry };
 
@@ -733,30 +723,6 @@ export async function updateStudentInformation(studentInformation: Partial<Stude
   }
 }
 
-export async function updateFamilyInformation(familyInformation: Partial<FamilyInfo>) {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const { error: updateError } = await supabase
-      .from("family_information")
-      .update({
-        ...familyInformation,
-      })
-      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`);
-
-    if (updateError) {
-      throw new Error(updateError.message);
-    }
-
-    toast.success("Family information has been saved!");
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
-}
-
 export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormState, academicYear: string) {
   try {
     const {
@@ -778,6 +744,8 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     delete enrollmentDetails.studentInfo.studentDetails.isValid;
     delete enrollmentDetails.studentInfo.addressContact.isValid;
     delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
+    delete enrollmentDetails.familyInfo.fatherInfo.isValid;
+    delete enrollmentDetails.familyInfo.fatherInfo.noFatherInfo;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -845,7 +813,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     delete enrollmentInfo.isValid;
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo) {
-      familyInfo.fatherFullName = `${familyInfo.fatherLastName.toUpperCase()}, ${familyInfo.fatherFirstName.toUpperCase()}, ${
+      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}, ${
         familyInfo?.fatherMiddleName?.toUpperCase() ?? ""
       }, `;
     }
@@ -1218,6 +1186,8 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     delete enrollmentDetails.studentInfo.studentDetails.isValid;
     delete enrollmentDetails.studentInfo.addressContact.isValid;
     delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
+    delete enrollmentDetails.familyInfo.fatherInfo.isValid;
+    delete enrollmentDetails.familyInfo.fatherInfo.noFatherInfo;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -1285,7 +1255,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     delete enrollmentInfo.isValid;
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo) {
-      familyInfo.fatherFullName = `${familyInfo.fatherLastName.toUpperCase()}, ${familyInfo.fatherFirstName.toUpperCase()}, ${
+      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}, ${
         familyInfo?.fatherMiddleName?.toUpperCase() ?? ""
       }, `;
     }
@@ -1637,29 +1607,28 @@ export async function getFamilyDocuments(enroleeNumber: string) {
     const doc = documents[0];
 
     return {
-      motherPassport: doc.motherPassport,
-      motherPassportExpiry: doc.motherPassportExpiry,
-      motherPassportStatus: doc.motherPassportStatus,
-      motherPass: doc.motherPass,
-      motherPassExpiry: doc.motherPassExpiry,
-      motherPassStatus: doc.motherPassStatus,
-      fatherPassport: doc.fatherPassport,
-      fatherPassportExpiry: doc.fatherPassportExpiry,
-      fatherPassportStatus: doc.fatherPassportStatus,
-      fatherPass: doc.fatherPass,
-      fatherPassExpiry: doc.fatherPassExpiry,
-      fatherPassStatus: doc.fatherPassStatus,
-      guardianPassport: doc.guardianPassport,
-      guardianPassportExpiry: doc.guardianPassportExpiry,
-      guardianPassportStatus: doc.guardianPassportStatus,
-      guardianPass: doc.guardianPass,
-      guardianPassExpiry: doc.guardianPassExpiry,
-      guardianPassStatus: doc.guardianPassStatus,
+      motherPassport: doc?.motherPassport ?? null,
+      motherPassportExpiry: doc.motherPassportExpiry ?? null,
+      motherPassportStatus: doc.motherPassportStatus ?? null,
+      motherPass: doc?.motherPass ?? null,
+      motherPassExpiry: doc?.motherPassExpiry ?? null,
+      motherPassStatus: doc?.motherPassStatus ?? null,
+      fatherPassport: doc?.fatherPassport ?? null,
+      fatherPassportExpiry: doc?.fatherPassportExpiry ?? null,
+      fatherPassportStatus: doc?.fatherPassportStatus ?? null,
+      fatherPass: doc?.fatherPass ?? null,
+      fatherPassExpiry: doc?.fatherPassExpiry ?? null,
+      fatherPassStatus: doc?.fatherPassStatus ?? null,
+      guardianPassport: doc?.guardianPassport ?? null,
+      guardianPassportExpiry: doc?.guardianPassportExpiry ?? null,
+      guardianPassportStatus: doc?.guardianPassportStatus ?? null,
+      guardianPass: doc?.guardianPass ?? null,
+      guardianPassExpiry: doc?.guardianPassExpiry ?? null,
+      guardianPassStatus: doc?.guardianPassStatus ?? null,
     };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
-    return null;
   }
 }
 
@@ -1681,27 +1650,17 @@ export async function checkNricExists(nric: string, academicYear: string) {
 }
 
 export async function lookupNewEnrolledStudent({
-  enroleeFullName,
-  birthDay,
-  motherEmail,
-  fatherEmail,
+  studentNumber,
   academicYear,
 }: {
   academicYear: string;
-  enroleeFullName: string;
-  birthDay: Date;
-  motherEmail: string;
-  fatherEmail?: string;
+  studentNumber: string;
 }) {
   try {
-    const birthDate = new Date(birthDay).toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
-
     const { data, error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .select("*", { count: "exact" })
-      .eq("birthDay", birthDate)
-      .ilike("enroleeFullName", enroleeFullName)
-      .or(`fatherEmail.eq.${fatherEmail}, motherEmail.eq.${motherEmail}`);
+      .eq("studentNumber", studentNumber);
 
     if (error) {
       throw new Error(error.message);
@@ -1748,9 +1707,9 @@ export async function studentReuploadDocuments({
         docUpdates["passportExpiry"] = payload.passExpiry;
         docUpdates["passportStatus"] = "Valid";
         break;
-      case "eduCert":
-        docUpdates["eduCert"] = payload.educCert;
-        docUpdates["eduCertStatus"] = "Uploaded";
+      case "educCert":
+        docUpdates["educCert"] = payload.educCert;
+        docUpdates["educCertStatus"] = "Uploaded";
         break;
       case "birthCert":
         docUpdates["birthCert"] = payload.birthCert;
@@ -1837,6 +1796,64 @@ export async function parentGuardianReuploadDocuments({
     toast.success("Documents updated successfully.");
   } catch (error) {
     const err = error as Error;
+    toast.error(err.message);
+  }
+}
+
+export async function mergeAndUploadPDF(files: File[]) {
+  try {
+    const merger = new PDFMerger();
+
+    for (const file of files) {
+      await merger.add(file);
+    }
+
+    await merger.setMetadata({
+      title: "Merged PDF Document",
+      author: "HFSE Admissions System",
+      producer: "HFSE PDF Merger Tool",
+      creator: "HFSE Admissions App",
+    });
+    const mergedBuffer = await merger.saveAsBuffer();
+
+    const blob = new Blob([new Uint8Array(mergedBuffer)], { type: "application/pdf" });
+
+    const mergedFile = new File([blob], "merged.pdf", { type: "application/pdf" });
+
+    return mergedFile;
+  } catch (error) {
+    const err = error as Error;
+    toast.error(err.message);
+  }
+}
+
+export async function uploadFileToBucket(files: File[], academicYear: string) {
+  try {
+    const mergedFile = await mergeAndUploadPDF(files);
+
+    if (!mergedFile) {
+      throw new Error("No file to upload!");
+    }
+
+    const { data: fileUpload, error: uploadError } = await supabase.storage
+      .from("parent-portal")
+      .upload(`${academicYear}/documents/${Date.now()}_${mergedFile.name}`, mergedFile, {
+        upsert: false,
+      });
+
+    if (uploadError) {
+      throw new Error(uploadError.message);
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("parent-portal").getPublicUrl(fileUpload.path);
+
+    toast.success("Document uploaded successfully!");
+
+    return { imagePath: publicUrl };
+  } catch (error) {
+    const err = error as AuthError;
     toast.error(err.message);
   }
 }

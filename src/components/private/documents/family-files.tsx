@@ -1,6 +1,7 @@
 import { parentGuardianReuploadDocuments } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -130,42 +131,33 @@ function RenderFamilyDocCard({
 }
 
 function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDocument }) {
-  if (!documents || Object.keys(documents).length === 0) {
-    return (
-      <div className="space-y-8 py-6 xl:py-0">
-        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
-        <p className="text-sm text-muted-foreground">No family documents found.</p>
-      </div>
-    );
-  }
-
   const motherCards = [
     {
       role: "mother",
       label: "Mother's Passport",
-      fileUrl: documents.motherPassport ?? undefined,
-      status: documents.motherPassportStatus ?? undefined,
-      expiry: documents.motherPassportExpiry ?? undefined,
-      typeLabel: documents.motherPassportNumber ?? undefined,
+      fileUrl: documents?.motherPassport ?? undefined,
+      status: documents?.motherPassportStatus ?? undefined,
+      expiry: documents?.motherPassportExpiry ?? undefined,
+      typeLabel: documents?.motherPassportNumber ?? undefined,
       documentType: "motherPassport",
       payload: {
-        motherPassport: documents.motherPassport,
-        motherPassportNumber: documents.motherPassportNumber,
-        motherPassportExpiry: documents.motherPassportExpiry,
+        motherPassport: documents?.motherPassport,
+        motherPassportNumber: documents?.motherPassportNumber,
+        motherPassportExpiry: documents?.motherPassportExpiry,
       },
     },
     {
       role: "mother",
       label: "Mother's Pass",
-      fileUrl: documents.motherPass ?? undefined,
-      status: documents.motherPassStatus ?? undefined,
-      expiry: documents.motherPassExpiry ?? undefined,
-      typeLabel: documents.motherPassType ?? undefined,
+      fileUrl: documents?.motherPass ?? undefined,
+      status: documents?.motherPassStatus ?? undefined,
+      expiry: documents?.motherPassExpiry ?? undefined,
+      typeLabel: documents?.motherPassType ?? undefined,
       documentType: "motherPass",
       payload: {
-        motherPass: documents.motherPass,
-        motherPassType: documents.motherPassType,
-        motherPassExpiry: documents.motherPassExpiry,
+        motherPass: documents?.motherPass,
+        motherPassType: documents?.motherPassType,
+        motherPassExpiry: documents?.motherPassExpiry,
       },
     },
   ];
@@ -174,29 +166,29 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
     {
       role: "father",
       label: "Father's Passport",
-      fileUrl: documents.fatherPassport ?? undefined,
-      status: documents.fatherPassportStatus ?? undefined,
-      expiry: documents.fatherPassportExpiry ?? undefined,
-      typeLabel: documents.fatherPassportNumber ?? undefined,
+      fileUrl: documents?.fatherPassport ?? undefined,
+      status: documents?.fatherPassportStatus ?? undefined,
+      expiry: documents?.fatherPassportExpiry ?? undefined,
+      typeLabel: documents?.fatherPassportNumber ?? undefined,
       documentType: "fatherPassport",
       payload: {
-        fatherPassport: documents.fatherPassport,
-        fatherPassportNumber: documents.fatherPassportNumber,
-        fatherPassportExpiry: documents.fatherPassportExpiry,
+        fatherPassport: documents?.fatherPassport,
+        fatherPassportNumber: documents?.fatherPassportNumber,
+        fatherPassportExpiry: documents?.fatherPassportExpiry,
       },
     },
     {
       role: "father",
       label: "Father's Pass",
-      fileUrl: documents.fatherPass ?? undefined,
-      status: documents.fatherPassStatus ?? undefined,
-      expiry: documents.fatherPassExpiry ?? undefined,
-      typeLabel: documents.fatherPassType ?? undefined,
+      fileUrl: documents?.fatherPass ?? undefined,
+      status: documents?.fatherPassStatus ?? undefined,
+      expiry: documents?.fatherPassExpiry ?? undefined,
+      typeLabel: documents?.fatherPassType ?? undefined,
       documentType: "motherPass",
       payload: {
-        fatherPass: documents.fatherPass,
-        fatherPassType: documents.fatherPassType,
-        fatherPassExpiry: documents.fatherPassExpiry,
+        fatherPass: documents?.fatherPass,
+        fatherPassType: documents?.fatherPassType,
+        fatherPassExpiry: documents?.fatherPassExpiry,
       },
     },
   ];
@@ -205,29 +197,29 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
     {
       role: "guardian",
       label: "Guardian's Passport",
-      fileUrl: documents.guardianPassport ?? undefined,
-      status: documents.guardianPassportStatus ?? undefined,
-      expiry: documents.guardianPassportExpiry ?? undefined,
-      typeLabel: documents.guardianPassportNumber ?? undefined,
+      fileUrl: documents?.guardianPassport ?? undefined,
+      status: documents?.guardianPassportStatus ?? undefined,
+      expiry: documents?.guardianPassportExpiry ?? undefined,
+      typeLabel: documents?.guardianPassportNumber ?? undefined,
       documentType: "guardianPassport",
       payload: {
-        guardianPassport: documents.guardianPassport,
-        guardianPassportNumber: documents.guardianPassportNumber,
-        guardianPassportExpiry: documents.guardianPassportExpiry,
+        guardianPassport: documents?.guardianPassport,
+        guardianPassportNumber: documents?.guardianPassportNumber,
+        guardianPassportExpiry: documents?.guardianPassportExpiry,
       },
     },
     {
       role: "guardian",
       label: "Guardian's Pass",
-      fileUrl: documents.guardianPass ?? undefined,
-      status: documents.guardianPassStatus ?? undefined,
-      expiry: documents.guardianPassExpiry ?? undefined,
-      typeLabel: documents.guardianPassType ?? undefined,
+      fileUrl: documents?.guardianPass ?? undefined,
+      status: documents?.guardianPassStatus ?? undefined,
+      expiry: documents?.guardianPassExpiry ?? undefined,
+      typeLabel: documents?.guardianPassType ?? undefined,
       documentType: "guardianPass",
       payload: {
-        guardianPass: documents.guardianPass,
-        guardianPassType: documents.guardianPassType,
-        guardianPassExpiry: documents.guardianPassExpiry,
+        guardianPass: documents?.guardianPass,
+        guardianPassType: documents?.guardianPassType,
+        guardianPassExpiry: documents?.guardianPassExpiry,
       },
     },
   ];
@@ -311,9 +303,10 @@ function ParentGuardianFileUploaderDialog({
   const props = useSupabaseUpload({
     bucketName: "parent-portal",
     path: `${academicYear}/documents`,
-    allowedMimeTypes: ["image/*", "application/pdf"],
-    maxFiles: 1,
+    allowedMimeTypes: ["application/pdf"],
+    maxFiles: 4,
     maxFileSize: 1000 * 1000 * 4,
+    mergeFiles: true,
   });
 
   useEffect(() => {
@@ -484,6 +477,10 @@ function ParentGuardianFileUploaderDialog({
               Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
             </DialogDescription>
           </DialogHeader>
+
+          <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+            Upload all pages containing relevant details
+          </Badge>
 
           <Dropzone {...props}>
             <DropzoneEmptyState />

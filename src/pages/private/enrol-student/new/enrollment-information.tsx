@@ -50,24 +50,25 @@ const WHOLE_DAY_CLASS_LEVEL = ["Secondary 1", "Secondary 2", "Secondary 3", "Sec
 
 const ENRICHMENT_CLASS_LEVELS = ["Young Starters"];
 
-const STANDARD_CLASS_LEVELS = ["Primary 5", "Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
+const STANDARD_CLASS_LEVELS = ["Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
 
 function EnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
+  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const navigate = useNavigate();
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
     queryKey: ["new-discounts"],
     queryFn: getNewStudentDiscounts,
   });
   const [isPending, setTransition] = useTransition();
-  const [selectedLevel, setSelectedLevel] = useState<string>("");
+  const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(false);
-  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
 
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
       ...formState.enrollmentInfo,
+      contractSignatory: formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo ? "Father" : "",
     },
   });
 
@@ -336,6 +337,33 @@ function EnrollmentInformation() {
                 </div>
 
                 <div className="max-w-2xl mx-auto space-y-4 bg-emerald-400 p-6 rounded-2xl border border-muted shadow-sm">
+                  <FormField
+                    control={form.control}
+                    name="contractSignatory"
+                    render={({ field }) => (
+                      <FormItem className="text-white">
+                        <FormLabel>Parent Contract Signatory</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-white text-black w-full">
+                              <SelectValue placeholder="Choose a signatory option" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo && (
+                              <SelectItem value={"Father"}>Father</SelectItem>
+                            )}
+                            <SelectItem value={"Mother"}>Mother</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <FormDescription className="text-white">
+                          Please select who will sign the contract on behalf of the student.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <div className="space-y-4">
                     <Label className="text-xl text-white font-semibold">Apply a Discount</Label>
                     {isPendingNewStudentDiscounts ? (
@@ -366,7 +394,11 @@ function EnrollmentInformation() {
                                     }
                                     field.onChange(value);
                                   }}
-                                  placeholder="Select discount codes"
+                                  placeholder={
+                                    newStudentDiscounts?.discountCodes.length
+                                      ? "Select discount codes"
+                                      : "No discount codes available"
+                                  }
                                   maxCount={3}
                                   className="hidden bg-white hover:bg-white lg:block"
                                 />
@@ -386,7 +418,11 @@ function EnrollmentInformation() {
                                     }
                                     field.onChange(value);
                                   }}
-                                  placeholder="Select discount codes"
+                                  placeholder={
+                                    newStudentDiscounts?.discountCodes.length
+                                      ? "Select discount codes"
+                                      : "No discount codes available"
+                                  }
                                   maxCount={1}
                                   className="block bg-white hover:bg-white lg:hidden"
                                 />
@@ -461,22 +497,23 @@ function EnrollmentInformation() {
 function CDFDetailsDialog() {
   return (
     <Dialog>
-      <DialogTrigger>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size={"icon"} variant={"ghost"} type="button">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="ghost" type="button">
                 <CircleHelp className="stroke-blue-600 stroke-2" />
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click here to see CDF details</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </DialogTrigger>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Click here to see CDF details</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <DialogContent className="!max-w-3xl">
-        <DialogHeader>
+        <DialogHeader className="text-start">
           <DialogTitle>Campus Development Fees</DialogTitle>
           <DialogDescription>Kindly choose your preferred payment option below.</DialogDescription>
         </DialogHeader>

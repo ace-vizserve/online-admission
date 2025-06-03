@@ -1,11 +1,9 @@
 import { Button } from "@/components/ui/button";
 
-import { lookupNewEnrolledStudent } from "@/actions/private";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
-import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
@@ -16,7 +14,6 @@ import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
 
 function ParentGuardianUpload() {
-  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { formState, setFormState } = useEnrolNewStudentContext();
 
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
@@ -46,27 +43,6 @@ function ParentGuardianUpload() {
         behavior: "smooth",
       });
       form.setError("root", {});
-      return;
-    }
-
-    const enroleeFullName = `${formState.studentInfo?.studentDetails.lastName}, ${
-      formState.studentInfo?.studentDetails.firstName
-    }, ${formState.studentInfo?.studentDetails.middleName ?? ""}`;
-    const birthDay = formState.studentInfo!.studentDetails.birthDay;
-    const motherEmail = formState.familyInfo!.motherInfo.motherEmail;
-    const fatherEmail = formState.familyInfo?.fatherInfo.fatherEmail;
-    const result = await lookupNewEnrolledStudent({
-      enroleeFullName,
-      birthDay,
-      motherEmail,
-      fatherEmail,
-      academicYear,
-    });
-
-    if (result) {
-      toast.error("Enrollment Already Exists!", {
-        description: "A matching student and parent record is already enrolled",
-      });
       return;
     }
 

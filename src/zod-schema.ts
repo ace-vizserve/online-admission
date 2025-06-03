@@ -74,7 +74,7 @@ export const studentDetailsSchema = z
     }),
   })
   .superRefine((schema, ctx) => {
-    if (schema.religion === "other") {
+    if (schema.religion === "Other") {
       if (!schema.otherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -150,7 +150,7 @@ export const guardianInformationSchema = z
     }),
   })
   .superRefine((schema, ctx) => {
-    if (schema.guardianReligion === "other") {
+    if (schema.guardianReligion === "Other") {
       if (!schema.guardianOtherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -163,43 +163,60 @@ export const guardianInformationSchema = z
 
 export const fatherInformationSchema = z
   .object({
-    fatherFirstName: z.string().min(1, {
-      message: "Father's first name is required",
-    }),
+    isValid: z.boolean().default(false).optional(),
+    noFatherInfo: z.boolean().default(false).optional(),
+    fatherFirstName: z.string().optional(),
     fatherMiddleName: z.string().optional(),
-    fatherLastName: z.string().min(1, {
-      message: "Father's last name is required",
-    }),
-    fatherPreferredName: z.string().min(1, {
-      message: "Preferred name is required",
-    }),
-    fatherBirthDay: z.coerce.date({
-      required_error: "Father's date of birth is required",
-      invalid_type_error: "Please enter a valid date",
-    }),
-    fatherNationality: z.string(),
-    fatherReligion: z.string().min(1, {
-      message: "Religion is required",
-    }),
+    fatherLastName: z.string().optional(),
+    fatherPreferredName: z.string().optional(),
+    fatherBirthDay: z.coerce
+      .date({
+        invalid_type_error: "Please enter a valid date",
+      })
+      .optional(),
+    fatherNationality: z.string().optional(),
+    fatherReligion: z.string().optional(),
     fatherOtherReligion: z.string().optional(),
-    fatherNric: z.string().min(1, {
-      message: "NRIC/FIN is required",
-    }),
-    fatherMobile: z.string().min(1, {
-      message: "Mobile phone number is required",
-    }),
-    fatherEmail: z.string().email({
-      message: "Please enter a valid email address",
-    }),
-    fatherCompanyName: z.string().min(1, {
-      message: "Company name is required",
-    }),
-    fatherPosition: z.string().min(1, {
-      message: "Position at work is required",
-    }),
+    fatherNric: z.string().optional(),
+    fatherMobile: z.string().optional(),
+    fatherEmail: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => val === undefined || z.string().email().safeParse(val).success, {
+        message: "Please enter a valid email address",
+      })
+      .optional(),
+    fatherCompanyName: z.string().optional(),
+    fatherPosition: z.string().optional(),
   })
   .superRefine((schema, ctx) => {
-    if (schema.fatherReligion === "other") {
+    const requiredFields = [
+      { key: "fatherFirstName", label: "Father's first name" },
+      { key: "fatherLastName", label: "Father's last name" },
+      { key: "fatherPreferredName", label: "Preferred name" },
+      { key: "fatherBirthDay", label: "Father's date of birth" },
+      { key: "fatherNationality", label: "Nationality" },
+      { key: "fatherReligion", label: "Religion" },
+      { key: "fatherNric", label: "NRIC/FIN" },
+      { key: "fatherMobile", label: "Mobile phone number" },
+      { key: "fatherEmail", label: "Email address" },
+      { key: "fatherCompanyName", label: "Company name" },
+      { key: "fatherPosition", label: "Position at work" },
+    ];
+
+    if (!schema.noFatherInfo) {
+      for (const field of requiredFields) {
+        if (!schema[field.key as keyof typeof schema]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [field.key],
+            message: `${field.label} is required`,
+          });
+        }
+      }
+    }
+
+    if (schema.fatherReligion === "Other") {
       if (!schema.fatherOtherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -249,7 +266,7 @@ export const motherInformationSchema = z
     }),
   })
   .superRefine((schema, ctx) => {
-    if (schema.motherReligion === "other") {
+    if (schema.motherReligion === "Other") {
       if (!schema.motherOtherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -287,7 +304,7 @@ export const siblingInformationSchema = z
   })
   .superRefine((schema, ctx) => {
     schema.siblings.forEach((sibling, index) => {
-      if (sibling.siblingReligion === "other" && !sibling.siblingOtherReligion) {
+      if (sibling.siblingReligion === "Other" && !sibling.siblingOtherReligion) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify your religion",
@@ -325,6 +342,9 @@ export const enrollmentInformationSchema = z
     discount: z.array(z.string().optional()).optional(),
     referrerName: z.string().optional(),
     referrerMobile: z.string().optional(),
+    contractSignatory: z.string().min(1, {
+      message: "Parent contract signatory is required",
+    }),
   })
   .superRefine((schema, ctx) => {
     if (schema.referrerName) {

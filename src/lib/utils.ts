@@ -307,7 +307,7 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
 
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase
       .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto")
+      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber")
       .eq("applicationStatus", "Registered")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
       .order("enroleeNumber", { ascending: false });
@@ -344,7 +344,8 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
       .from("ay2026_enrolment_applications")
       .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("studentNumber", studentNumber);
+      .eq("studentNumber", studentNumber)
+      .eq("applicationStatus", "Registered");
 
     if (ay2026studentInformationError) {
       throw new Error(ay2026studentInformationError.message);
@@ -354,7 +355,8 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
       .from("ay2025_enrolment_applications")
       .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("studentNumber", studentNumber);
+      .eq("studentNumber", studentNumber)
+      .eq("applicationStatus", "Registered");
 
     if (ay2025studentInformationError) {
       throw new Error(ay2025studentInformationError.message);

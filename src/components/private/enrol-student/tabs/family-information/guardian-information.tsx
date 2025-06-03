@@ -1,4 +1,3 @@
-import { updateFamilyInformation } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -9,12 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
-import { FamilyInfo } from "@/types";
 import { guardianInformationSchema, GuardianInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useState } from "react";
@@ -22,11 +18,6 @@ import { useForm } from "react-hook-form";
 
 function GuardianInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (familyInformation: Partial<FamilyInfo>) => {
-      return await updateFamilyInformation(familyInformation);
-    },
-  });
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
 
   const form = useForm<GuardianInformationSchema>({
@@ -43,8 +34,6 @@ function GuardianInformation() {
         guardianInfo: { ...values },
       },
     });
-
-    mutate({ ...values, guardianBirthDay: values.guardianBirthDay as unknown as string });
   }
 
   return (
@@ -299,32 +288,14 @@ function GuardianInformation() {
           />
         </div>
 
-        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="30" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
-          )}
+        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
 
-        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="20" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Save
-              <Save />
-            </>
-          )}
+        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          Save
+          <Save />
         </Button>
       </form>
     </Form>

@@ -63,7 +63,7 @@ function NewStudentLayout() {
           </MaxWidthWrapper>
         </div>
         <MaxWidthWrapper className="max-w-screen-2xl">
-          <div className="min-h-screen w-full flex flex-col md:gap-12 items-center justify-center">
+          <div className="min-h-screen w-full flex flex-col md:gap-12 items-center justify-start">
             <div className="w-full overflow-x-auto">
               <NewStudentSteps />
             </div>

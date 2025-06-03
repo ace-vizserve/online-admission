@@ -47,8 +47,15 @@ function SiblingInformation() {
 
   function proceedToNextStep() {
     if (!formState.familyInfo?.motherInfo.isValid) {
-      toast.warning("Missing mother information details!", {
-        description: "Make sure to double check everything",
+      toast.warning("Mother's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
+      });
+      return;
+    }
+
+    if (!formState.familyInfo?.fatherInfo.isValid) {
+      toast.warning("Father's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
       });
       return;
     }
@@ -152,7 +159,7 @@ function SiblingInformation() {
                                 ))}
                               </SelectContent>
                             </Select>
-                            <FormDescription>Enter father's religion</FormDescription>
+                            <FormDescription>Enter sibling's religion</FormDescription>
                             <FormMessage />
                           </FormItem>
                           {(siblingOtherReligions[index] ||
@@ -218,16 +225,17 @@ function SiblingInformation() {
                 variant={"secondary"}
                 className="hidden lg:flex w-full p-8 gap-2 uppercase"
                 type="submit">
-                Save
+                Confirm & Save
                 <Save />
               </Button>
 
               <Button variant={"secondary"} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-                Save
+                Confirm & Save
                 <Save />
               </Button>
 
               <Button
+                disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
                 onClick={proceedToNextStep}
                 size={"lg"}
                 className="hidden lg:flex w-full p-8 gap-2 uppercase"
@@ -236,7 +244,11 @@ function SiblingInformation() {
                 <ArrowRight />
               </Button>
 
-              <Button onClick={proceedToNextStep} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="button">
+              <Button
+                disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
+                onClick={proceedToNextStep}
+                className="flex lg:hidden w-full p-6 gap-2 uppercase"
+                type="button">
                 Proceed to Next Step
                 <ArrowRight />
               </Button>

@@ -1,3 +1,4 @@
+import { mergeAndUploadPDF } from "@/actions/private";
 import { supabase } from "@/lib/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type FileError, type FileRejection, useDropzone } from "react-dropzone";
@@ -46,6 +47,8 @@ type UseSupabaseUploadOptions = {
    * When set to false, an error is thrown if the object already exists. Defaults to `false`
    */
   upsert?: boolean;
+
+  mergeFiles: boolean;
 };
 
 type UseSupabaseUploadReturn = ReturnType<typeof useSupabaseUpload>;
@@ -59,6 +62,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     maxFiles = 1,
     cacheControl = 3600,
     upsert = false,
+    mergeFiles,
   } = options;
 
   const [files, setFiles] = useState<FileWithPreview[]>([]);
@@ -111,8 +115,6 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   const onUpload = useCallback(async () => {
     setLoading(true);
 
-    // [Joshen] This is to support handling partial successes
-    // If any files didn't upload for any reason, hitting "Upload" again will only upload the files that had errors
     const filesWithErrors = errors.map((x) => x.name);
     const filesToUpload =
       filesWithErrors.length > 0
@@ -122,29 +124,58 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
           ]
         : files;
 
-    const responses = await Promise.all(
-      filesToUpload.map(async (file) => {
-        const timestamp = Date.now();
-        const filePath = path ? `${path}/${file.name}-${timestamp}` : `${file.name}-${timestamp}`;
+    const responses = [];
 
-        const { error, data } = await supabase.storage.from(bucketName).upload(filePath, file, {
-          cacheControl: cacheControl.toString(),
-          upsert,
-        });
-        if (error) {
-          return { name: file.name, message: error.message };
-        } else {
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from(bucketName).getPublicUrl(data.path);
+    if (mergeFiles && filesToUpload.length > 1) {
+      const mergedFile = await mergeAndUploadPDF(filesToUpload);
+      if (!mergedFile) {
+        setLoading(false);
+        return;
+      }
 
-          return { name: file.name, message: undefined, filePath: publicUrl };
-        }
-      })
-    );
+      const timestamp = Date.now();
+      const filePath = path ? `${path}/${timestamp}-${mergedFile.name}` : `${timestamp}-${mergedFile.name}`;
+
+      const { error, data } = await supabase.storage.from(bucketName).upload(filePath, mergedFile, {
+        cacheControl: cacheControl.toString(),
+        upsert,
+      });
+
+      if (error) {
+        responses.push({ name: mergedFile.name, message: error.message });
+      } else {
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(bucketName).getPublicUrl(data.path);
+
+        responses.push({ name: mergedFile.name, message: undefined, filePath: publicUrl });
+      }
+    } else {
+      const parallelUploads = await Promise.all(
+        filesToUpload.map(async (file) => {
+          const timestamp = Date.now();
+          const filePath = path ? `${path}/${timestamp}-${file.name}` : `${timestamp}-${file.name}`;
+
+          const { error, data } = await supabase.storage.from(bucketName).upload(filePath, file, {
+            cacheControl: cacheControl.toString(),
+            upsert,
+          });
+          if (error) {
+            return { name: file.name, message: error.message };
+          } else {
+            const {
+              data: { publicUrl },
+            } = supabase.storage.from(bucketName).getPublicUrl(data.path);
+
+            return { name: file.name, message: undefined, filePath: publicUrl };
+          }
+        })
+      );
+
+      responses.push(...parallelUploads);
+    }
 
     const responseErrors = responses.filter((x) => x.message !== undefined);
-    // if there were errors previously, this function tried to upload the files again so we should clear/overwrite the existing errors.
     setErrors(responseErrors);
 
     const responseSuccesses = responses.filter((x) => x.message === undefined);
@@ -152,7 +183,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     setSuccesses(newSuccesses);
 
     setLoading(false);
-  }, [files, path, bucketName, errors, successes]);
+  }, [files, path, bucketName, errors, successes, mergeFiles]);
 
   useEffect(() => {
     if (files.length === 0) {

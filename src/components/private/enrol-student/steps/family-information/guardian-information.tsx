@@ -26,7 +26,6 @@ function GuardianInformation() {
   const navigate = useNavigate();
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
-
   const form = useForm<GuardianInformationSchema>({
     resolver: zodResolver(guardianInformationSchema),
     defaultValues: {
@@ -59,8 +58,15 @@ function GuardianInformation() {
 
   function proceedToNextStep() {
     if (!formState.familyInfo?.motherInfo.isValid) {
-      toast.warning("Missing mother information details!", {
-        description: "Make sure to double check everything",
+      toast.warning("Mother's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
+      });
+      return;
+    }
+
+    if (!formState.familyInfo?.fatherInfo.isValid) {
+      toast.warning("Father's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
       });
       return;
     }
@@ -200,7 +206,7 @@ function GuardianInformation() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>Enter father's religion</FormDescription>
+                    <FormDescription>Enter guardian's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
                   {(isOtherReligion || formState.familyInfo?.guardianInfo?.guardianOtherReligion) && (
@@ -324,16 +330,17 @@ function GuardianInformation() {
 
         <div className="flex flex-col gap-4">
           <Button size={"lg"} variant={"secondary"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-            Save
+            Confirm & Save
             <Save />
           </Button>
 
           <Button variant={"secondary"} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-            Save
+            Confirm & Save
             <Save />
           </Button>
 
           <Button
+            disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
             onClick={proceedToNextStep}
             size={"lg"}
             className="hidden lg:flex w-full p-8 gap-2 uppercase"
@@ -342,7 +349,11 @@ function GuardianInformation() {
             <ArrowRight />
           </Button>
 
-          <Button onClick={proceedToNextStep} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="button">
+          <Button
+            disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
+            onClick={proceedToNextStep}
+            className="flex lg:hidden w-full p-6 gap-2 uppercase"
+            type="button">
             Proceed to Next Step
             <ArrowRight />
           </Button>

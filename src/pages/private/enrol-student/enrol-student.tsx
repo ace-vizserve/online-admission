@@ -1,7 +1,8 @@
-import { getEnrolledStudents } from "@/actions/private";
+import { getEnrolledStudents, lookupNewEnrolledStudent } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,15 +15,16 @@ import { Field, Radio, RadioGroup } from "@headlessui/react";
 import { useQuery } from "@tanstack/react-query";
 import { DotPulse, Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { ArrowLeft, ChevronRight, UserPlus2, UserRoundPlus } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, UserPlus2, UserRoundPlus } from "lucide-react";
 import { memo, useCallback, useState, useTransition } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import AcademicYearSelector from "./academic-year-selector";
 
 function EnrolStudent() {
   const { title, description } = ENROL_NEW_STUDENT_TITLE_DESCRIPTION;
-
+  const [isCheckingEnrollment, setIsCheckingEnrollment] = useState<boolean>(false);
+  const navigate = useNavigate();
   const { data, isPending } = useQuery({
     queryKey: ["enrolled-students"],
     queryFn: getEnrolledStudents,
@@ -38,17 +40,35 @@ function EnrolStudent() {
     setSelected(student);
   }, []);
 
-  function existingEnrollment() {
-    toast.warning("Enrollment not allowed for A.Y. 2025!", {
-      description: "This student is already enrolled. To continue, select a different year or add a new student.",
-    });
-  }
-
   function goBack() {
     setTransition(() => {
       clearState();
       sessionStorage.clear();
     });
+  }
+
+  async function checkEnrollmentExists() {
+    if (!selected) return;
+    try {
+      setIsCheckingEnrollment(true);
+      const result = await lookupNewEnrolledStudent({
+        studentNumber: selected.studentNumber,
+        academicYear,
+      });
+
+      if (result) {
+        throw new Error("Student already enrolled!");
+      }
+
+      navigate(`/enrol-student/${selected?.enroleeNumber}/student-info?academicYear=${academicYear}`);
+    } catch (error) {
+      const err = error as Error;
+      toast.warning(err.message, {
+        description: `A matching student record is already enrolled for A.Y. ${academicYear.split("y")[1]}`,
+      });
+    } finally {
+      setIsCheckingEnrollment(false);
+    }
   }
 
   if (isLoading) {
@@ -63,7 +83,7 @@ function EnrolStudent() {
     <>
       <PageMetaData title={title} description={description} />
 
-      <div className="w-full sticky lg:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+      <div className="w-full fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl">
           <Link
             onClick={goBack}
@@ -79,13 +99,16 @@ function EnrolStudent() {
       {academicYear === "" ? (
         <AcademicYearSelector setSelectedAy={setAcademicYear} />
       ) : (
-        <div className="w-full h-screen flex items-center justify-center bg-muted">
+        <div className="w-full h-screen pt-16 md:pt-20 flex items-center justify-center bg-muted">
           <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
             <CardHeader className="text-center px-2">
               <CardTitle className="text-lg">Select a student</CardTitle>
               <CardDescription className="text-sm">
                 Selecting a student will proceed with the enrolment process
               </CardDescription>
+              <Badge className="mt-2 w-max mx-auto uppercase right-4 rounded-full">
+                Selected year {academicYear.split("y")[1]}
+              </Badge>
             </CardHeader>
             <Separator />
             <CardContent className="px-2">
@@ -103,23 +126,22 @@ function EnrolStudent() {
               </ScrollArea>
             </CardContent>
             <CardFooter className="flex items-center flex-col gap-2 px-4">
-              {academicYear === "ay2025" ? (
-                <Button className="w-full gap-2" onClick={existingEnrollment} variant={"outline"} size={"lg"}>
-                  Enrol student <ChevronRight />
-                </Button>
-              ) : (
-                <Link
-                  to={`/enrol-student/${selected?.enroleeNumber}/student-info?academicYear=${academicYear}`}
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "lg",
-                    className: cn("gap-2 w-full", {
-                      "opacity-70 pointer-events-none": selected == null,
-                    }),
-                  })}>
-                  Enrol student <ChevronRight />
-                </Link>
-              )}
+              <Button
+                disabled={isCheckingEnrollment}
+                onClick={async () => await checkEnrollmentExists()}
+                variant={"outline"}
+                size={"lg"}
+                className={cn("gap-2 w-full cursor-pointer", {
+                  "opacity-70 pointer-events-none": selected == null,
+                })}>
+                {isCheckingEnrollment ? (
+                  <DotPulse size="30" speed="1.3" color="#111A2E" />
+                ) : (
+                  <>
+                    Enrol student <ArrowUpRight />
+                  </>
+                )}
+              </Button>
 
               <Link
                 to={`/enrol-student/new/student-info?academicYear=${academicYear}`}
