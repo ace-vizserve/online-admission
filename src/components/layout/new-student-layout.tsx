@@ -84,9 +84,9 @@ function SubmitApplicationDialog() {
   const navigate = useNavigate();
 
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-  const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
-  const { formState, clearState } = useEnrolNewStudentContext();
+  const { formState } = useEnrolNewStudentContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
       return await submitEnrollment(enrollmentDetails, academicYear);
@@ -97,8 +97,6 @@ function SubmitApplicationDialog() {
       });
     },
     onSettled() {
-      clearState();
-      clearAcademicYearState();
       clearEnrolNewStudentTabState();
       sessionStorage.clear();
     },

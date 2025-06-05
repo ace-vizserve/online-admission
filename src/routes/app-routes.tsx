@@ -3,14 +3,12 @@ import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
-// import UploadFiles from "@/components/private/uploaded/upload-files";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
 import NotFound from "@/pages/not-found";
 import AdmissionGuidelines from "@/pages/private/admission-guidelines";
-import { Checkout } from "@/pages/private/Checkout";
 import Dashboard from "@/pages/private/dashboard";
 import Documents from "@/pages/private/documents";
 import ApplicationSubmitted from "@/pages/private/enrol-student/application-submitted";
@@ -24,8 +22,8 @@ import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-i
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
 import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requirements";
 import { Enrollment } from "@/pages/private/Enrollment";
-// import { SchoolYear } from "@/pages/private/school-year";
 import SingleEnrol from "@/pages/private/Single-enrol";
+import StudentPhoto from "@/pages/private/student-photo";
 import StudentProfile from "@/pages/private/student-profile";
 import Uploaded from "@/pages/private/uploaded";
 import Homepage from "@/pages/public/home-page";
@@ -83,14 +81,7 @@ function AppRoutes() {
             </UnauthenticatedGuard>
           }
         />
-        <Route
-          path="/checkout"
-          element={
-            <UnauthenticatedGuard>
-              <Checkout />
-            </UnauthenticatedGuard>
-          }
-        />
+
         {/* Parent Routes */}
         <Route path="admission" element={<AdmissionLayout />}>
           <Route
@@ -104,7 +95,6 @@ function AppRoutes() {
           />
 
           <Route
-            index
             path="guidelines"
             element={
               <AuthGuard>
@@ -114,7 +104,6 @@ function AppRoutes() {
           />
 
           <Route
-            index
             path="students/:id"
             element={
               <AuthGuard>
@@ -124,7 +113,15 @@ function AppRoutes() {
           />
 
           <Route
-            index
+            path="students/:id/photo"
+            element={
+              <AuthGuard>
+                <StudentPhoto />
+              </AuthGuard>
+            }
+          />
+
+          <Route
             path="enrolment"
             element={
               <AuthGuard>
@@ -134,7 +131,6 @@ function AppRoutes() {
           />
 
           <Route
-            index
             path="single-student/:id"
             element={
               <AuthGuard>
@@ -144,7 +140,6 @@ function AppRoutes() {
           />
 
           <Route
-            index
             path="documents"
             element={
               <AuthGuard>
@@ -154,7 +149,6 @@ function AppRoutes() {
           />
 
           <Route
-            index
             path="student-list/:id"
             element={
               <AuthGuard>
@@ -163,18 +157,7 @@ function AppRoutes() {
             }
           />
 
-          {/* <Route
-            index
-            path="student-file/:id"
-            element={
-              <AuthGuard>
-                <UploadFiles/>
-              </AuthGuard>
-            }
-          /> */}
-
           <Route
-            index
             path="document-file/:id"
             element={
               <AuthGuard>
@@ -183,20 +166,9 @@ function AppRoutes() {
             }
           />
 
-          {/* <Route
-            index
-            path="documents/student-enrolment/:id"
-            element={
-              <AuthGuard>
-                <SchoolYear />
-              </AuthGuard>
-            }
-          /> */}
-
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route
-          index
           path="enrol-student"
           element={
             <AuthGuard>
@@ -216,7 +188,6 @@ function AppRoutes() {
             }
           />
           <Route
-            index
             path="/enrol-student/:id/family-info"
             element={
               <AuthGuard>
@@ -225,7 +196,6 @@ function AppRoutes() {
             }
           />
           <Route
-            index
             path="/enrol-student/:id/enrollment-info"
             element={
               <AuthGuard>
@@ -234,7 +204,6 @@ function AppRoutes() {
             }
           />
           <Route
-            index
             path="/enrol-student/:id/documents"
             element={
               <AuthGuard>
@@ -244,10 +213,9 @@ function AppRoutes() {
           />
         </Route>
 
-        <Route element={<NewStudentLayout />}>
+        <Route path="enrol-student/new" element={<NewStudentLayout />}>
           <Route
-            index
-            path="/enrol-student/new/student-info"
+            path="student-info"
             element={
               <AuthGuard>
                 <StudentInformation />
@@ -256,7 +224,7 @@ function AppRoutes() {
           />
           <Route
             index
-            path="/enrol-student/new/family-info"
+            path="family-info"
             element={
               <AuthGuard>
                 <FamilyInformation />
@@ -264,8 +232,7 @@ function AppRoutes() {
             }
           />
           <Route
-            index
-            path="/enrol-student/new/enrollment-info"
+            path="enrollment-info"
             element={
               <AuthGuard>
                 <EnrollmentInformation />
@@ -273,8 +240,7 @@ function AppRoutes() {
             }
           />
           <Route
-            index
-            path="/enrol-student/new/upload-requirements"
+            path="upload-requirements"
             element={
               <AuthGuard>
                 <UploadRequirements />
@@ -284,7 +250,6 @@ function AppRoutes() {
         </Route>
 
         <Route
-          index
           path="/application-submitted"
           element={
             <AuthGuard>

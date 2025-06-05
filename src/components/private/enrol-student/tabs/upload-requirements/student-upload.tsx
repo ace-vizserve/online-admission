@@ -21,7 +21,7 @@ import StudentFileUploaderDialog from "./student-file-uploader-dialog";
 function StudentUpload() {
   const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const { data, isFetching, isSuccess } = useQuery({
+  const { data, isPending, isSuccess } = useQuery({
     queryKey: ["student-documents", params.id],
     queryFn: async () => {
       return await getPreviousStudentDocuments(params.id!);
@@ -51,8 +51,7 @@ function StudentUpload() {
           ...formState.uploadRequirements?.parentGuardianUploadRequirements,
         } as ParentGuardianUploadRequirementsSchema,
         studentUploadRequirements: {
-          ...formState.uploadRequirements?.studentUploadRequirements,
-          ...(data?.studentUploadRequirements ?? {}),
+          ...data?.studentUploadRequirements,
         } as unknown as StudentUploadRequirementsSchema,
       },
     });
@@ -87,7 +86,11 @@ function StudentUpload() {
     });
   }
 
-  if (isFetching) {
+  if (isPending) {
+    return <Loader />;
+  }
+
+  if (Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length < 1) {
     return <Loader />;
   }
 

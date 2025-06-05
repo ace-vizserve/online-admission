@@ -19,9 +19,8 @@ import {
 } from "@/types";
 import { AuthError } from "@supabase/supabase-js";
 import { isBefore } from "date-fns";
-import { toast } from "sonner";
-
 import PDFMerger from "pdf-merger-js";
+import { toast } from "sonner";
 
 export async function getSectionCardsDetails() {
   try {
@@ -465,8 +464,11 @@ export async function getFamilyInformation(enroleeNumber?: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let familyInformation: any;
+
     let familyInformationQuery = supabase
-      .from("ay2025_enrolment_applications")
+      .from("ay2026_enrolment_applications")
       .select("*")
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
 
@@ -474,13 +476,37 @@ export async function getFamilyInformation(enroleeNumber?: string) {
       familyInformationQuery = familyInformationQuery.eq("enroleeNumber", enroleeNumber);
     }
 
-    const { data: familyInformation, error: familyInformationError } = await familyInformationQuery
+    const { data: ay2026FamilyInformation, error: ay2026FamilyInformationError } = await familyInformationQuery
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (familyInformationError) {
-      throw new Error(familyInformationError.message);
+    if (ay2026FamilyInformationError) {
+      throw new Error(ay2026FamilyInformationError.message);
+    }
+
+    if (ay2026FamilyInformation) {
+      familyInformation = ay2026FamilyInformation;
+    } else {
+      let familyInformationQuery = supabase
+        .from("ay2025_enrolment_applications")
+        .select("*")
+        .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+
+      if (enroleeNumber) {
+        familyInformationQuery = familyInformationQuery.eq("enroleeNumber", enroleeNumber);
+      }
+
+      const { data: ay2025FamilyInformation, error: ay2025FamilyInformationError } = await familyInformationQuery
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      familyInformation = ay2025FamilyInformation;
+
+      if (ay2025FamilyInformationError) {
+        throw new Error(ay2025FamilyInformationError.message);
+      }
     }
 
     const motherInfo: Record<string, unknown> = {};
@@ -813,19 +839,19 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     delete enrollmentInfo.isValid;
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo) {
-      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}, ${
-        familyInfo?.fatherMiddleName?.toUpperCase() ?? ""
-      }, `;
+      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}${
+        familyInfo?.fatherMiddleName ? `, ${familyInfo.fatherMiddleName.toUpperCase()}` : ""
+      }`;
     }
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo) {
-      familyInfo.guardianFullName = `${familyInfo.guardianLastName.toUpperCase()}, ${familyInfo.guardianFirstName.toUpperCase()}, ${
-        familyInfo?.guardianMiddleName?.toUpperCase() ?? ""
-      }, `;
+      familyInfo.guardianFullName = `${familyInfo.guardianLastName.toUpperCase()}, ${familyInfo.guardianFirstName.toUpperCase()}${
+        familyInfo?.guardianMiddleName ? `, ${familyInfo.guardianMiddleName.toUpperCase()}` : ""
+      }`;
     }
 
-    familyInfo.motherFullName = `${familyInfo.motherLastName.toUpperCase()}, ${familyInfo.motherFirstName.toUpperCase()}, ${
-      familyInfo?.motherMiddleName?.toUpperCase() ?? ""
+    familyInfo.motherFullName = `${familyInfo.motherLastName.toUpperCase()}, ${familyInfo.motherFirstName.toUpperCase()}${
+      familyInfo?.motherMiddleName ? `, ${familyInfo.motherMiddleName.toUpperCase()}` : ""
     }`;
 
     delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo;
@@ -840,7 +866,9 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       .insert({
         ...enrollmentDetails.studentInfo.studentDetails,
         ...enrollmentDetails.studentInfo.addressContact,
-        enroleeFullName: `${lastName}, ${firstName}, ${middleName}`,
+        enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
+          middleName ? `, ${middleName.toUpperCase()}` : ""
+        }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
         category: "New",
         pass: passType,
@@ -1085,7 +1113,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
 
     if (Object.keys(guardianEnrollmentDocuments).length > 1) {
       const { guardianPassType, guardianPassExpiry, guardianPassportNumber, guardianPassportExpiry } =
-        fatherEnrollmentDocuments;
+        guardianEnrollmentDocuments;
 
       const { error: updateEnrollmentFatherDocumentApplicationError } = await supabase
         .from(`${academicYear}_enrolment_applications`)
@@ -1142,7 +1170,9 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       .insert({
         enroleeNumber: data.enroleeNumber,
         enrolmentDate: today,
-        enroleeName: `${lastName}, ${firstName}, ${middleName}`,
+        enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
+          middleName ? `, ${middleName.toUpperCase()}` : ""
+        }`,
         enroleeType: "New",
         applicationStatus: "Submitted",
       })
@@ -1255,19 +1285,19 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     delete enrollmentInfo.isValid;
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo) {
-      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}, ${
-        familyInfo?.fatherMiddleName?.toUpperCase() ?? ""
-      }, `;
+      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}${
+        familyInfo?.fatherMiddleName ? `, ${familyInfo.fatherMiddleName.toUpperCase()}` : ""
+      }`;
     }
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo) {
-      familyInfo.guardianFullName = `${familyInfo.guardianLastName.toUpperCase()}, ${familyInfo.guardianFirstName.toUpperCase()}, ${
-        familyInfo?.guardianMiddleName?.toUpperCase() ?? ""
-      }, `;
+      familyInfo.guardianFullName = `${familyInfo.guardianLastName.toUpperCase()}, ${familyInfo.guardianFirstName.toUpperCase()}${
+        familyInfo?.guardianMiddleName ? `, ${familyInfo.guardianMiddleName.toUpperCase()}` : ""
+      }`;
     }
 
-    familyInfo.motherFullName = `${familyInfo.motherLastName.toUpperCase()}, ${familyInfo.motherFirstName.toUpperCase()}, ${
-      familyInfo?.motherMiddleName?.toUpperCase() ?? ""
+    familyInfo.motherFullName = `${familyInfo.motherLastName.toUpperCase()}, ${familyInfo.motherFirstName.toUpperCase()}${
+      familyInfo?.motherMiddleName ? `, ${familyInfo.motherMiddleName.toUpperCase()}` : ""
     }`;
 
     delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo;
@@ -1283,7 +1313,9 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         studentNumber: studentNumber?.studentNumber,
         ...enrollmentDetails.studentInfo.studentDetails,
         ...enrollmentDetails.studentInfo.addressContact,
-        enroleeFullName: `${lastName}, ${firstName}, ${middleName}`,
+        enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
+          middleName ? `, ${middleName.toUpperCase()}` : ""
+        }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
         category: "Current",
         pass: passType,
@@ -1452,7 +1484,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     if (Object.keys(fatherEnrollmentDocuments).length > 1) {
       const { fatherPassType, fatherPassExpiry, fatherPassportNumber, fatherPassportExpiry } =
-        motherEnrollmentDocuments;
+        fatherEnrollmentDocuments;
 
       const { error: updateEnrollmentMotherDocumentApplicationError } = await supabase
         .from("ay2026_enrolment_applications")
@@ -1511,7 +1543,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     if (Object.keys(guardianEnrollmentDocuments).length > 1) {
       const { guardianPassType, guardianPassExpiry, guardianPassportNumber, guardianPassportExpiry } =
-        motherEnrollmentDocuments;
+        guardianEnrollmentDocuments;
 
       const { error: updateEnrollmentMotherDocumentApplicationError } = await supabase
         .from("ay2026_enrolment_applications")
@@ -1568,7 +1600,9 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       .insert({
         enroleeNumber: data.enroleeNumber,
         enrolmentDate: today,
-        enroleeName: `${lastName}, ${firstName}, ${middleName}`,
+        enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
+          middleName ? `, ${middleName.toUpperCase()}` : ""
+        }`,
         enroleeType: "Current",
         applicationStatus: "Submitted",
       })
@@ -1827,31 +1861,53 @@ export async function mergeAndUploadPDF(files: File[]) {
   }
 }
 
-export async function uploadFileToBucket(files: File[], academicYear: string) {
+export async function uploadFileToBucket(isImage: boolean, files: File[], academicYear: string) {
   try {
-    const mergedFile = await mergeAndUploadPDF(files);
+    if (isImage) {
+      const file = files[0];
 
-    if (!mergedFile) {
-      throw new Error("No file to upload!");
+      const { data: fileUpload, error: uploadError } = await supabase.storage
+        .from("parent-portal")
+        .upload(`${academicYear}/documents/${Date.now()}_${file.name}`, file, {
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(uploadError.message);
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("parent-portal").getPublicUrl(fileUpload.path);
+
+      toast.success("Document uploaded successfully!");
+
+      return { imagePath: publicUrl };
+    } else {
+      const mergedFile = await mergeAndUploadPDF(files);
+
+      if (!mergedFile) {
+        throw new Error("No file to upload!");
+      }
+
+      const { data: fileUpload, error: uploadError } = await supabase.storage
+        .from("parent-portal")
+        .upload(`${academicYear}/documents/${Date.now()}_${mergedFile.name}`, mergedFile, {
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(uploadError.message);
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("parent-portal").getPublicUrl(fileUpload.path);
+
+      toast.success("Document uploaded successfully!");
+
+      return { imagePath: publicUrl };
     }
-
-    const { data: fileUpload, error: uploadError } = await supabase.storage
-      .from("parent-portal")
-      .upload(`${academicYear}/documents/${Date.now()}_${mergedFile.name}`, mergedFile, {
-        upsert: false,
-      });
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("parent-portal").getPublicUrl(fileUpload.path);
-
-    toast.success("Document uploaded successfully!");
-
-    return { imagePath: publicUrl };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);

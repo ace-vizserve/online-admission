@@ -197,9 +197,11 @@ function StudentDetails() {
                     <FormLabel>Religion</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        if (value === "other") {
+                        if (value === "Other") {
                           setIsOtherReligion(true);
                         } else {
+                          form.reset({ ...form.getValues(), religionOther: undefined });
+                          if (formState.studentInfo) formState.studentInfo.studentDetails.religionOther = undefined;
                           setIsOtherReligion(false);
                         }
 
@@ -222,16 +224,15 @@ function StudentDetails() {
                     <FormDescription>Your student's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {isOtherReligion && (
+                  {(formState.studentInfo?.studentDetails.religionOther || isOtherReligion) && (
                     <FormField
                       control={form.control}
-                      name="otherReligion"
+                      name="religionOther"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
                             <Input placeholder="Please specify religion" {...field} />
                           </FormControl>
-
                           <FormMessage />
                         </FormItem>
                       )}

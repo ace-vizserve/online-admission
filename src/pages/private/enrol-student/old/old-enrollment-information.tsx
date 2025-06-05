@@ -26,6 +26,7 @@ import {
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
 } from "@/data";
+import useSession from "@/hooks/use-session";
 import { getNextGradeLevel } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,10 +56,12 @@ const STANDARD_CLASS_LEVELS = ["Primary 6", "Secondary 1", "Secondary 2", "Secon
 
 function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
+  const { session } = useSession();
   const params = useParams();
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
-    queryKey: ["current-discounts"],
+    queryKey: ["current-discounts", session?.user.email],
     queryFn: getCurrentStudentDiscounts,
+    enabled: session != null,
   });
   const { data, isPending, isSuccess } = useQuery({
     queryKey: ["enrollment-information", params.id],
@@ -252,7 +255,10 @@ function OldEnrollmentInformation() {
                     name="additionalLearningNeeds"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Additional learning or Special needs</FormLabel>
+                        <FormLabel>
+                          Additional learning or Special needs{" "}
+                          <span className="text-muted-foreground text-xs">(optional)</span>
+                        </FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>

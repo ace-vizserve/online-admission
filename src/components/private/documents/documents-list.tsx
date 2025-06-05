@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import useSession from "@/hooks/use-session";
 import { TStudent } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
@@ -119,9 +120,11 @@ export const columns: ColumnDef<TStudent>[] = [
 ];
 
 function DocumentsList() {
+  const { session } = useSession();
   const { data, isPending } = useQuery({
-    queryKey: ["documents-list"],
+    queryKey: ["documents-list", session?.user.email],
     queryFn: getStudentList,
+    enabled: session != null,
   });
 
   if (isPending) {

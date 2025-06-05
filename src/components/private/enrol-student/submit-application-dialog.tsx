@@ -15,6 +15,8 @@ import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { EnrolOldStudentFormState } from "@/types";
 import { useMutation } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
+import { DotPulse } from "ldrs/react";
+import "ldrs/react/DotPulse.css";
 import { CheckCircle2, Send } from "lucide-react";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router-dom";
@@ -82,10 +84,10 @@ function SubmitApplicationDialog() {
         return;
       }
 
-      const { medical, passExpiry, passportExpiry } = formState.uploadRequirements.studentUploadRequirements;
+      const { passExpiry, passportExpiry, idPicture } = formState.uploadRequirements.studentUploadRequirements;
 
-      if (!medical) {
-        throw new Error("Medical Exam result is required!");
+      if (!idPicture) {
+        throw new Error("Student ID Picture is required!");
       }
 
       if (!passExpiry || isBefore(passExpiry, new Date())) {
@@ -126,8 +128,17 @@ function SubmitApplicationDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="gap-2 bg-green-600 hover:bg-green-500">
-          Send Application <Send />
+        <Button disabled={isPending} className="gap-2 bg-green-600 hover:bg-green-500">
+          {isPending ? (
+            <>
+              Sending
+              <DotPulse size="30" speed="1.3" color="white" />
+            </>
+          ) : (
+            <>
+              Send Application <Send />
+            </>
+          )}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -145,10 +156,7 @@ function SubmitApplicationDialog() {
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            disabled={isPending}
-            className="!bg-green-600 hover:!bg-green-500"
-            onClick={() => verifyEnrollmentDetails()}>
+          <AlertDialogAction className="!bg-green-600 hover:!bg-green-500" onClick={() => verifyEnrollmentDetails()}>
             Continue
           </AlertDialogAction>
         </AlertDialogFooter>

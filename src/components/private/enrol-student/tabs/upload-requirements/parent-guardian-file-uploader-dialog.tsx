@@ -79,7 +79,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
-      return await uploadFileToBucket(file, academicYear);
+      return await uploadFileToBucket(false, file, academicYear);
     },
     onSuccess(data) {
       onValueChange(null);
@@ -169,7 +169,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             <DialogHeader className="text-start">
               <DialogTitle>{label}</DialogTitle>
               <DialogDescription>
-                Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG, and PDF.
+                Upload a clear and recent photo. Accepted formats: <span className="font-semibold">PDF</span>
               </DialogDescription>
             </DialogHeader>
 
@@ -220,7 +220,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
                               <span className="font-semibold">Click to upload</span> or drag and drop
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
                           </div>
                         </FileInput>
 
@@ -696,7 +695,7 @@ function ParentGuardianFileUploaderDrawer({
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
-      return await uploadFileToBucket(file, academicYear);
+      return await uploadFileToBucket(false, file, academicYear);
     },
     onSuccess(data) {
       onValueChange(null);
@@ -780,7 +779,7 @@ function ParentGuardianFileUploaderDrawer({
           <DrawerHeader className="text-start px-0">
             <DrawerTitle>{label}</DrawerTitle>
             <DrawerDescription className="text-xs">
-              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+              Upload a clear and recent photo. Accepted formats: <span className="font-semibold">PDF</span>
             </DrawerDescription>
           </DrawerHeader>
 
@@ -831,7 +830,6 @@ function ParentGuardianFileUploaderDrawer({
                           <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
                             <span className="font-semibold">Click to upload</span> or drag and drop
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
                         </div>
                       </FileInput>
 

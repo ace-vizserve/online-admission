@@ -1,5 +1,4 @@
 import { getStudentDetails } from "@/actions/private";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StudentDetails } from "@/types";
@@ -11,6 +10,7 @@ import { Link } from "react-router";
 import FamilyInformation from "./family-information";
 import StudentDocuments from "./student-documents";
 import StudentInformation from "./student-information";
+import StudentPicture from "./student-picture";
 
 type ProfileProps = {
   enroleeNumber: string;
@@ -42,8 +42,6 @@ function Profile({ enroleeNumber }: ProfileProps) {
     },
   });
 
-  console.log(data);
-
   if (isPending) {
     return (
       <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
@@ -70,10 +68,7 @@ function Profile({ enroleeNumber }: ProfileProps) {
       className="w-full flex flex-col xl:flex-row items-start gap-4 justify-center py-4 lg:py-6">
       <TabsList className="w-full xl:w-[250px] flex flex-col gap-1 h-max !bg-white">
         <div className="w-full mt-4 mb-2 md:mb-4 lg:mb-8 space-y-4 px-4">
-          <Avatar className="size-28 mx-auto border">
-            <AvatarImage className="object-cover" src={data.studentIDPicture ?? "https://github.com/shadcn.png"} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <StudentPicture studentIDPicture={data.studentIDPicture} enroleeNumber={enroleeNumber} />
           <div className="text-center space-y-1">
             <p className="font-semibold text-black text-balance">{studentName}</p>
             <p className="text-sm text-muted-foreground font-semibold">Student # {studentNumber}</p>

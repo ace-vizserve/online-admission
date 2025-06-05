@@ -1,40 +1,58 @@
+import PageMetaData from "@/components/page-metadata";
 import { buttonVariants } from "@/components/ui/button";
+import { APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION } from "@/data";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router";
+import { useEffect } from "react";
 
 function ApplicationSubmitted() {
+  const { title, description } = APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION;
+  const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+
+  useEffect(() => {
+    return () => {
+      clearAcademicYearState();
+      sessionStorage.clear();
+    };
+  }, [clearAcademicYearState]);
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-      <div className="flex flex-col items-center gap-2">
-        <div className="relative animate-bounce">
-          <img src="/like.png" className="size-32 md:size-40 object-cover" />
-          <div className="absolute top-4 flex gap-2 -rotate-45">
-            <div className="w-1 h-4 bg-yellow-400 rounded-full" />
-            <div className="w-1 h-4 bg-yellow-400 rounded-full" />
-            <div className="w-1 h-4 bg-yellow-400 rounded-full" />
+    <>
+      <PageMetaData title={title} description={description} />
+      <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
+        <div className="flex flex-col items-center gap-2">
+          <div className="relative animate-bounce">
+            <img src="/like.png" className="size-32 md:size-40 object-cover" />
+            <div className="absolute top-4 flex gap-2 -rotate-45">
+              <div className="w-1 h-4 bg-yellow-400 rounded-full" />
+              <div className="w-1 h-4 bg-yellow-400 rounded-full" />
+              <div className="w-1 h-4 bg-yellow-400 rounded-full" />
+            </div>
+
+            <div className="absolute top-4 right-0 flex gap-2 rotate-45">
+              <div className="w-1 h-4 bg-yellow-400 rounded-full" />
+              <div className="w-1 h-4 bg-yellow-400 rounded-full" />
+              <div className="w-1 h-4 bg-yellow-400 rounded-full" />
+            </div>
           </div>
 
-          <div className="absolute top-4 right-0 flex gap-2 rotate-45">
-            <div className="w-1 h-4 bg-yellow-400 rounded-full" />
-            <div className="w-1 h-4 bg-yellow-400 rounded-full" />
-            <div className="w-1 h-4 bg-yellow-400 rounded-full" />
-          </div>
+          <h1 className="text-2xl lg:text-3xl font-bold">Your application has been received!</h1>
+
+          <p className="text-sm lg:text-base text-muted-foreground">
+            We’re reviewing it and will get in touch with you within a few days.
+          </p>
+
+          <a
+            href={"/admission/dashboard"}
+            className={buttonVariants({
+              className: "mt-4 gap-2",
+              size: "lg",
+            })}>
+            <ArrowLeft /> Back to Dashboard
+          </a>
         </div>
-
-        <h1 className="text-2xl lg:text-3xl font-bold">We’ve received your application!</h1>
-
-        <p className="text-sm lg:text-base text-muted-foreground">We will process it and reach out to you in a days.</p>
-
-        <Link
-          to={"/admission/dashboard"}
-          className={buttonVariants({
-            className: "mt-4 gap-2",
-            size: "lg",
-          })}>
-          <ArrowLeft /> Back to Dashboard
-        </Link>
       </div>
-    </div>
+    </>
   );
 }
 

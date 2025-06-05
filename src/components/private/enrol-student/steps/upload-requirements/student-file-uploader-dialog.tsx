@@ -56,7 +56,9 @@ const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 const NOT_FILE_INPUTS = ["passExpiry", "passType", "passportExpiry", "passportNumber"];
 
-const MULTIPLE_FILE_UPLOADS = ["medical", "passport", "pass", "birthCert"];
+const MULTIPLE_FILE_UPLOADS = ["medical", "passport", "pass", "birthCert", "educCert"];
+
+const OPTIONAL_DOCS = ["medical", "educCert"];
 
 const StudentFileUploaderDialog = memo(function ({
   form,
@@ -72,7 +74,8 @@ const StudentFileUploaderDialog = memo(function ({
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
-      return await uploadFileToBucket(file, academicYear);
+      const isImage = file.length == 1;
+      return await uploadFileToBucket(isImage, file, academicYear);
     },
     onSuccess(data) {
       onValueChange(null);
@@ -121,8 +124,6 @@ const StudentFileUploaderDialog = memo(function ({
   function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
 
-    const OPTIONAL_DOCS = ["medical", "educCert"];
-
     setFormState({
       uploadRequirements: {
         parentGuardianUploadRequirements: {
@@ -135,8 +136,12 @@ const StudentFileUploaderDialog = memo(function ({
       },
     });
 
-    form.resetField(name);
+    form.reset({
+      ...form.getValues(),
+      [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
+    });
   }
+
   if (isDesktop) {
     return (
       <div
@@ -168,7 +173,11 @@ const StudentFileUploaderDialog = memo(function ({
             <DialogHeader className="text-start">
               <DialogTitle>{label}</DialogTitle>
               <DialogDescription>
-                Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+                Upload a clear and recent document. Accepted formats:{" "}
+                <span className="font-semibold">
+                  {" "}
+                  {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}
+                </span>
               </DialogDescription>
             </DialogHeader>
 
@@ -230,7 +239,6 @@ const StudentFileUploaderDialog = memo(function ({
                             <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
                               <span className="font-semibold">Click to upload</span> or drag and drop
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
                           </div>
                         </FileInput>
 
@@ -248,7 +256,10 @@ const StudentFileUploaderDialog = memo(function ({
                               <Trash2
                                 className="h-4 w-4"
                                 onClick={() => {
-                                  form.setValue(name, "");
+                                  form.reset({
+                                    ...form.getValues(),
+                                    [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
+                                  });
                                   onValueChange(null);
                                   setFormState({
                                     ...formState,
@@ -256,7 +267,7 @@ const StudentFileUploaderDialog = memo(function ({
                                       ...formState.uploadRequirements!,
                                       studentUploadRequirements: {
                                         ...formState.uploadRequirements!.studentUploadRequirements,
-                                        [name]: "",
+                                        [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
                                       },
                                     },
                                   });
@@ -454,7 +465,8 @@ function StudentFileUploaderDrawer({
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
-      return await uploadFileToBucket(file, academicYear);
+      const isImage = file.length == 1;
+      return await uploadFileToBucket(isImage, file, academicYear);
     },
     onSuccess(data) {
       onValueChange(null);
@@ -500,8 +512,6 @@ function StudentFileUploaderDrawer({
   function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
 
-    const OPTIONAL_DOCS = ["medical", "educCert"];
-
     setFormState({
       uploadRequirements: {
         parentGuardianUploadRequirements: {
@@ -514,7 +524,10 @@ function StudentFileUploaderDrawer({
       },
     });
 
-    form.resetField(name);
+    form.reset({
+      ...form.getValues(),
+      [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
+    });
   }
 
   return (
@@ -547,7 +560,11 @@ function StudentFileUploaderDrawer({
           <DrawerHeader className="text-start px-0">
             <DrawerTitle>{label}</DrawerTitle>
             <DrawerDescription className="text-xs">
-              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+              Upload a clear and recent document. Accepted formats:{" "}
+              <span className="font-semibold">
+                {" "}
+                {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}
+              </span>
             </DrawerDescription>
           </DrawerHeader>
 
@@ -611,7 +628,6 @@ function StudentFileUploaderDrawer({
                           <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
                             <span className="font-semibold">Click to upload</span> or drag and drop
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG, PDF</p>
                         </div>
                       </FileInput>
 
@@ -629,7 +645,10 @@ function StudentFileUploaderDrawer({
                             <Trash2
                               className="h-4 w-4"
                               onClick={() => {
-                                form.setValue(name, "");
+                                form.reset({
+                                  ...form.getValues(),
+                                  [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
+                                });
                                 onValueChange(null);
                                 setFormState({
                                   ...formState,
@@ -637,7 +656,7 @@ function StudentFileUploaderDrawer({
                                     ...formState.uploadRequirements!,
                                     studentUploadRequirements: {
                                       ...formState.uploadRequirements!.studentUploadRequirements,
-                                      [name]: "",
+                                      [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
                                     },
                                   },
                                 });

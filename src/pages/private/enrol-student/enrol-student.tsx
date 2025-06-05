@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrolledStudent } from "@/types";
 import { useSelectAcademicYear } from "@/zustand-store";
@@ -22,12 +23,14 @@ import { toast } from "sonner";
 import AcademicYearSelector from "./academic-year-selector";
 
 function EnrolStudent() {
+  const { session } = useSession();
   const { title, description } = ENROL_NEW_STUDENT_TITLE_DESCRIPTION;
   const [isCheckingEnrollment, setIsCheckingEnrollment] = useState<boolean>(false);
   const navigate = useNavigate();
   const { data, isPending } = useQuery({
-    queryKey: ["enrolled-students"],
+    queryKey: ["enrolled-students", session?.user.email],
     queryFn: getEnrolledStudents,
+    enabled: session != null,
   });
   const [selected, setSelected] = useState<EnrolledStudent | null>(data?.studentsList[0] ?? null);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
