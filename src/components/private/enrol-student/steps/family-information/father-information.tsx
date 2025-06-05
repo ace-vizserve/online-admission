@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -26,8 +27,12 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function FatherInformation() {
+  const { session } = useSession();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const isFatherAccount = session?.user.user_metadata.relationship === "father";
+
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const form = useForm<FatherInformationSchema>({
@@ -47,6 +52,17 @@ function FatherInformation() {
         message: "You've entered father details but marked them as not applicable. Please resolve the conflict.",
       });
       return;
+    }
+
+    if (!values.noFatherInfo && isFatherAccount) {
+      const accountEmail = session.user.email;
+
+      if (values.fatherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        form.setError("fatherEmail", {
+          message: "Please enter your account email to correctly link the student to your account.",
+        });
+        return;
+      }
     }
 
     setFormState({
@@ -111,7 +127,7 @@ function FatherInformation() {
       });
     } else {
       await queryClient.refetchQueries({
-        queryKey: ["new-family-information"],
+        queryKey: ["new-family-information", session?.user.email],
       });
       const familyInfo = queryClient.getQueryData(["new-family-information"]) as EnrolNewStudentFormState["familyInfo"];
       form.reset({ ...(familyInfo?.fatherInfo ?? {}), noFatherInfo: false });

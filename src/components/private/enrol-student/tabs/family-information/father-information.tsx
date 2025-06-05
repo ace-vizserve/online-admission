@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -27,10 +28,14 @@ import { useParams } from "react-router";
 import { toast } from "sonner";
 
 function FatherInformation() {
+  const { session } = useSession();
   const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const queryClient = useQueryClient();
+
+  const isFatherAccount = session?.user.user_metadata.relationship === "father";
+
   const form = useForm<FatherInformationSchema>({
     resolver: zodResolver(fatherInformationSchema),
     defaultValues: {
@@ -47,6 +52,16 @@ function FatherInformation() {
         message: "You've entered father details but marked them as not applicable. Please resolve the conflict.",
       });
       return;
+    }
+
+    if (!values.noFatherInfo && isFatherAccount) {
+      const accountEmail = session.user.email;
+      if (values.fatherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        form.setError("fatherEmail", {
+          message: "Please enter your account email to correctly link the student to your account.",
+        });
+        return;
+      }
     }
 
     setFormState({

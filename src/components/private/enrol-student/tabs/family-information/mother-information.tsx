@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { religions } from "@/data";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { motherInformationSchema, MotherInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,8 +19,12 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function MotherInformation() {
+  const { session } = useSession();
   const { formState, setFormState } = useEnrolOldStudentContext();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
+
+  const isMotherAccount = session?.user.user_metadata.relationship === "mother";
+
   const form = useForm<MotherInformationSchema>({
     resolver: zodResolver(motherInformationSchema),
     defaultValues: {
@@ -34,6 +39,16 @@ function MotherInformation() {
   }, [form, formState.familyInfo?.motherInfo]);
 
   function onSubmit(values: MotherInformationSchema) {
+    if (isMotherAccount) {
+      const accountEmail = session.user.email;
+      if (values.motherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        form.setError("motherEmail", {
+          message: "Please enter your account email to correctly link the student to your account.",
+        });
+        return;
+      }
+    }
+
     setFormState({
       familyInfo: {
         ...formState.familyInfo!,

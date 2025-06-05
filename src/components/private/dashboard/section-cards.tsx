@@ -3,14 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import useSession from "@/hooks/use-session";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, GraduationCap, UserPlus, Users } from "lucide-react";
 import { Link } from "react-router";
 
 export function SectionCards() {
+  const { session } = useSession();
   const { data, isPending } = useQuery({
-    queryKey: ["section-cards"],
+    queryKey: ["section-cards", session?.user.email],
     queryFn: getSectionCardsDetails,
+    enabled: session != null,
   });
 
   return (
@@ -54,7 +57,7 @@ export function SectionCards() {
                 </div>
 
                 <Badge className="text-[0.7rem]" variant={"outline"}>
-                  S.Y. {new Date().getFullYear()} - {new Date().getFullYear() + 1}
+                  A.Y. {new Date().getFullYear()} - {new Date().getFullYear() + 1}
                 </Badge>
               </div>
               <CardTitle className="text-4xl font-bold tabular-nums text-primary">

@@ -26,6 +26,7 @@ import {
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
 } from "@/data";
+import useSession from "@/hooks/use-session";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
@@ -53,12 +54,14 @@ const ENRICHMENT_CLASS_LEVELS = ["Young Starters"];
 const STANDARD_CLASS_LEVELS = ["Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
 
 function EnrollmentInformation() {
+  const { session } = useSession();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
   const navigate = useNavigate();
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
-    queryKey: ["new-discounts"],
+    queryKey: ["new-discounts", session?.user.email],
     queryFn: getNewStudentDiscounts,
+    enabled: session != null,
   });
   const [isPending, setTransition] = useTransition();
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
@@ -220,7 +223,10 @@ function EnrollmentInformation() {
                     name="additionalLearningNeeds"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Additional learning or Special needs</FormLabel>
+                        <FormLabel>
+                          Additional learning or Special needs{" "}
+                          <span className="text-xs text-muted-foreground">(optional)</span>
+                        </FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>

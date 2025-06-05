@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { motherInformationSchema, MotherInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,9 +19,12 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function MotherInformation() {
+  const { session } = useSession();
   const navigate = useNavigate();
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
+
+  const isMotherAccount = session?.user.user_metadata.relationship === "mother";
 
   const form = useForm<MotherInformationSchema>({
     resolver: zodResolver(motherInformationSchema),
@@ -31,6 +35,16 @@ function MotherInformation() {
   });
 
   function onSubmit(values: MotherInformationSchema) {
+    if (isMotherAccount) {
+      const accountEmail = session.user.email;
+      if (values.motherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        form.setError("motherEmail", {
+          message: "Please enter your account email to correctly link the student to your account.",
+        });
+        return;
+      }
+    }
+
     setFormState({
       ...formState,
       familyInfo: {
@@ -330,7 +344,7 @@ function MotherInformation() {
           </Button>
 
           <Button
-            disabled={!formState.familyInfo?.motherInfo.isValid}
+            disabled={!formState.familyInfo?.motherInfo?.isValid}
             onClick={proceedToNextStep}
             size={"lg"}
             className="hidden lg:flex w-full p-8 gap-2 uppercase"
@@ -340,7 +354,7 @@ function MotherInformation() {
           </Button>
 
           <Button
-            disabled={!formState.familyInfo?.motherInfo.isValid}
+            disabled={!formState.familyInfo?.motherInfo?.isValid}
             onClick={proceedToNextStep}
             className="flex lg:hidden w-full p-6 gap-2 uppercase"
             type="button">

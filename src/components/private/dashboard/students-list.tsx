@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { TStudent } from "@/types";
 import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -121,9 +122,11 @@ export const columns: ColumnDef<TStudent>[] = [
 ];
 
 function StudentsList() {
+  const { session } = useSession();
   const { data, isPending, refetch, isRefetching } = useQuery({
-    queryKey: ["students-list"],
+    queryKey: ["students-list", session?.user.email],
     queryFn: getStudentList,
+    enabled: session != null,
   });
 
   if (isPending) {
@@ -166,6 +169,7 @@ type StudentsListTableProps = {
 };
 
 function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsListTableProps) {
+  const { session } = useSession();
   const queryClient = useQueryClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -193,7 +197,7 @@ function StudentsListTable({ studentsList, isRefetching, refetch }: StudentsList
 
   function updateDashboardDetails() {
     refetch();
-    queryClient.invalidateQueries({ queryKey: ["section-cards"] });
+    queryClient.invalidateQueries({ queryKey: ["section-cards", session?.user.email] });
   }
 
   return (

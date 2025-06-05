@@ -1,7 +1,6 @@
 import { getFamilyDocuments, getStudentDetails } from "@/actions/private";
 import FamilyDocuments from "@/components/private/documents/family-files";
 import StudentDocuments from "@/components/private/documents/student-files";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StudentDocumentsList } from "@/types";
@@ -12,6 +11,7 @@ import { FolderOpen, Plus, User, Users } from "lucide-react";
 import { Link } from "react-router";
 import OldFamilyInfo from "../documents/old-family-info";
 import SingleDocuments from "../documents/single-documents";
+import StudentPicture from "../student-profile/student-picture";
 
 type ProfileProps = {
   enroleeNumber: string;
@@ -72,7 +72,7 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
   }
 
   const studentName = `${data.studentInformation?.lastName}, ${data.studentInformation?.firstName} ${
-    data.studentInformation.middleName?.charAt(0) ?? ""
+    data.studentInformation?.middleName?.charAt(0) ?? ""
   }`;
 
   const studentNumber = data.studentInformation?.studentNumber ?? "N/A";
@@ -84,10 +84,7 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
       className="w-full flex flex-col xl:flex-row items-start gap-4 justify-center py-4 lg:py-6">
       <TabsList className="w-full xl:w-[250px] flex flex-col gap-1 h-max !bg-white">
         <div className="w-full mt-4 mb-2 md:mb-4 lg:mb-8 space-y-4 px-4">
-          <Avatar className="size-28 mx-auto border">
-            <AvatarImage className="object-cover" src={data.studentIDPicture ?? "https://github.com/shadcn.png"} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <StudentPicture studentIDPicture={data.studentIDPicture} enroleeNumber={enroleeNumber} />
           <div className="text-center space-y-1">
             <p className="font-semibold text-black text-balance">{studentName}</p>
             <p className="text-sm text-muted-foreground font-semibold">Student # {studentNumber}</p>

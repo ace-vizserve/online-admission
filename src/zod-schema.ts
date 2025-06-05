@@ -68,18 +68,18 @@ export const studentDetailsSchema = z
     religion: z.string().min(1, {
       message: "Religion is required",
     }),
-    otherReligion: z.string().optional(),
+    religionOther: z.string().optional(),
     nric: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
   })
   .superRefine((schema, ctx) => {
     if (schema.religion === "Other") {
-      if (!schema.otherReligion) {
+      if (!schema.religionOther) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Please specify religion",
-          path: ["studentOtherReligion"],
+          path: ["religionOther"],
         });
       }
     }

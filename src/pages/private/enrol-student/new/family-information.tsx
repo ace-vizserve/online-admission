@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
+import useSession from "@/hooks/use-session";
 import { EnrolNewStudentFormState } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
@@ -64,13 +65,14 @@ function FamilyInformation() {
 }
 
 function FamilyInformationTabs() {
+  const { session } = useSession();
   const { formState, setFormState } = useEnrolNewStudentContext();
   const { data, isPending, isSuccess, fetchStatus } = useQuery({
-    queryKey: ["new-family-information"],
+    queryKey: ["new-family-information", session?.user.email],
     queryFn: async () => {
       return await getFamilyInformation();
     },
-    enabled: Object.keys(formState.familyInfo ?? {}).length < 1,
+    enabled: session != null && Object.keys(formState.familyInfo ?? {}).length < 1,
   });
 
   useEffect(() => {

@@ -23,6 +23,8 @@ export function NavUser() {
   const isOpen = useSecuritySettingsSheetStore((state) => state.isOpen);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
+  const passwordChanged = session?.user.user_metadata?.password_changed as boolean | undefined;
+
   useEffect(() => {
     if (!isOpen) {
       document.body.style.pointerEvents = "";
@@ -42,7 +44,13 @@ export function NavUser() {
                   <span className="truncate font-semibold capitalize">{session?.user.user_metadata.fullName}</span>
                   <span className="truncate text-xs">{session?.user.email}</span>
                 </div>
-                <ChevronsUpDown className="ml-auto size-4" />
+                <div className="relative">
+                  {passwordChanged != null && !passwordChanged ? (
+                    <span className="animate-pulse -left-1 -top-1 absolute bg-red-600 size-1.5 rounded-full" />
+                  ) : null}
+
+                  <ChevronsUpDown className="ml-auto size-4" />
+                </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -60,9 +68,14 @@ export function NavUser() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="cursor-pointer" onClick={() => setIsOpen(true)}>
-                  <Settings />
-                  Security Settings
+                <DropdownMenuItem className="cursor-pointer justify-between" onClick={() => setIsOpen(true)}>
+                  <div className="flex items-center justify-center gap-2">
+                    <Settings />
+                    Security Settings
+                  </div>
+                  {passwordChanged != null && !passwordChanged ? (
+                    <span className="bg-red-600 size-2 rounded-full" />
+                  ) : null}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
 

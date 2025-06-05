@@ -20,7 +20,7 @@ import { toast } from "sonner";
 
 function StudentDetails() {
   const { formState, setFormState } = useEnrolNewStudentContext();
-  const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
+  const [isreligionOther, setIsreligionOther] = useState<boolean>(false);
   const [isValidatingNric, setIsValidatingNric] = useState<boolean>(false);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
@@ -219,10 +219,12 @@ function StudentDetails() {
                     <FormLabel>Religion</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        if (value === "other") {
-                          setIsOtherReligion(true);
+                        if (value === "Other") {
+                          setIsreligionOther(true);
                         } else {
-                          setIsOtherReligion(false);
+                          form.reset({ ...form.getValues(), religionOther: undefined });
+                          if (formState.studentInfo) formState.studentInfo.studentDetails.religionOther = undefined;
+                          setIsreligionOther(false);
                         }
 
                         field.onChange(value);
@@ -244,10 +246,10 @@ function StudentDetails() {
                     <FormDescription>Your student's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(formState.studentInfo?.studentDetails.otherReligion || isOtherReligion) && (
+                  {(formState.studentInfo?.studentDetails.religionOther || isreligionOther) && (
                     <FormField
                       control={form.control}
-                      name="otherReligion"
+                      name="religionOther"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
