@@ -48,6 +48,12 @@ export const LOGIN_PAGE_TITLE_DESCRIPTION = {
     "Log in to your HFSE parent account to continue your child’s application, upload required documents, and monitor admission status.",
 };
 
+export const REGISTRATION_PAGE_TITLE_DESCRIPTION = {
+  title: "Parent Registration | HFSE Online Admissions Portal",
+  description:
+    "Create your HFSE parent account to start a new student application, upload required documents, and track admission progress.",
+};
+
 export const PARENTS_DASHBOARD_TITLE_DESCRIPTION = {
   title: "Parent Dashboard | Manage Your HFSE Admissions",
   description:
