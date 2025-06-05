@@ -136,10 +136,7 @@ const StudentFileUploaderDialog = memo(function ({
       },
     });
 
-    form.reset({
-      ...form.getValues(),
-      [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
-    });
+    form.setValue(name, OPTIONAL_DOCS.includes(name) ? undefined : "");
   }
 
   if (isDesktop) {
@@ -524,10 +521,7 @@ function StudentFileUploaderDrawer({
       },
     });
 
-    form.reset({
-      ...form.getValues(),
-      [name]: OPTIONAL_DOCS.includes(name) ? undefined : "",
-    });
+    form.setValue(name, OPTIONAL_DOCS.includes(name) ? undefined : "");
   }
 
   return (

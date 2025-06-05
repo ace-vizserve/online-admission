@@ -122,7 +122,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
   function changeDocument() {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
-    form.resetField(name);
 
     setFormState({
       uploadRequirements: {
@@ -136,6 +135,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
         },
       },
     });
+
+    form.setValue(name, "", { shouldValidate: true });
   }
 
   if (isDesktop) {
@@ -733,7 +734,6 @@ function ParentGuardianFileUploaderDrawer({
 
   function changeDocument() {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
-    form.resetField(name);
 
     setFormState({
       uploadRequirements: {
@@ -747,6 +747,8 @@ function ParentGuardianFileUploaderDrawer({
         },
       },
     });
+
+    form.setValue(name, "", { shouldValidate: true });
   }
 
   return (
