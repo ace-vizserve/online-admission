@@ -13,7 +13,7 @@ function StudentPicture({ studentIDPicture, enroleeNumber }: StudentPictureProps
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Avatar className="size-28 mx-auto hover:brightness-90">
+        <Avatar className="size-28 mx-auto hover:brightness-95 border">
           <AvatarImage
             className="object-cover cursor-pointer"
             src={studentIDPicture ?? "https://github.com/shadcn.png"}

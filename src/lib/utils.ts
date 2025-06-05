@@ -1,8 +1,10 @@
 import { classLevels } from "@/data";
 import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
+import { ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
 import { clsx, type ClassValue } from "clsx";
 import { differenceInYears, parseISO } from "date-fns";
+import { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import { supabase } from "./client";
@@ -13,6 +15,20 @@ export function cn(...inputs: ClassValue[]) {
 
 export function wait(time: number) {
   return new Promise((res) => setTimeout(res, time));
+}
+
+export function documentErrors(
+  role: "guardian" | "mother" | "father",
+  errors: FieldErrors<ParentGuardianUploadRequirementsSchema>
+) {
+  const includesPassportError = Object.keys(errors).filter(
+    (key) => key.includes(`${role}PassportExpiry"`) || key.includes(`${role}PassportNumber`)
+  );
+  const includesPassError = Object.keys(errors).filter(
+    (key) => key.includes(`${role}PassType`) || key.includes(`${role}PassExpiry`)
+  );
+
+  return { includesPassportError, includesPassError };
 }
 
 export function removeEmptyKeys(obj: Record<string, unknown>) {

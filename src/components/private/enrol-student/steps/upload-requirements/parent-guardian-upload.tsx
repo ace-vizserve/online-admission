@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { documentErrors } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
@@ -63,7 +64,40 @@ function ParentGuardianUpload() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 lg:space-y-8 w-full mx-auto">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          const { includesPassError: includesMotherPassError, includesPassportError: includesMotherPassportError } =
+            documentErrors("mother", errors);
+
+          if (includesMotherPassportError.length > 0) {
+            form.setError("motherPassport", {});
+          }
+
+          if (includesMotherPassError.length > 0) {
+            form.setError("motherPass", {});
+          }
+
+          const { includesPassError: includesFatherPassError, includesPassportError: includesFatherPassportError } =
+            documentErrors("father", errors);
+
+          if (includesFatherPassportError.length > 0) {
+            form.setError("fatherPassport", {});
+          }
+          if (includesFatherPassError.length > 0) {
+            form.setError("fatherPass", {});
+          }
+
+          const { includesPassError: includesGuardianPassError, includesPassportError: includesGuardianPassportError } =
+            documentErrors("guardian", errors);
+
+          if (includesGuardianPassportError.length > 0) {
+            form.setError("guardianPassport", {});
+          }
+          if (includesGuardianPassError.length > 0) {
+            form.setError("guardianPass", {});
+          }
+        })}
+        className="space-y-6 lg:space-y-8 w-full mx-auto">
         <h1 className="max-w-4xl mx-auto font-semibold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
           <ParentGuardianFileUploaderDialog

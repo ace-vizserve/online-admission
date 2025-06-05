@@ -63,7 +63,24 @@ function StudentUpload() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full mx-auto">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          const includesPassportError = Object.keys(errors).filter(
+            (key) => key.includes("passportExpiry") || key.includes("passportNumber")
+          );
+          const includesPassError = Object.keys(errors).filter(
+            (key) => key.includes("passType") || key.includes("passExpiry")
+          );
+
+          if (includesPassportError.length > 0) {
+            form.setError("passport", {});
+          }
+
+          if (includesPassError.length > 0) {
+            form.setError("pass", {});
+          }
+        })}
+        className="space-y-4 w-full mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           <StudentFileUploaderDialog
             formState={formState}
