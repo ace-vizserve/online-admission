@@ -191,6 +191,8 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       expiryFields.forEach(({ field, statusField }) => {
         if (doc[field] && isBefore(new Date(doc[field]), now)) {
           updates[statusField] = "Expired";
+        } else {
+          updates[statusField] = "Valid";
         }
       });
 
@@ -263,6 +265,8 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       expiryFields.forEach(({ field, statusField }) => {
         if (doc[field] && isBefore(new Date(doc[field]), now)) {
           updates[statusField] = "Expired";
+        } else {
+          updates[statusField] = "Valid";
         }
       });
 
@@ -276,7 +280,7 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       }
     }
 
-    const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0];
+    const { passportNumber, pass: passType } = studentInformation[0];
 
     const { father, guardian, mother, ...siblings } = extractFamilyInfo(studentInformation);
 
@@ -288,6 +292,8 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       medical,
       medicalStatus,
       passport,
+      passportExpiry,
+      passExpiry,
       passportStatus,
       birthCert,
       birthCertStatus,

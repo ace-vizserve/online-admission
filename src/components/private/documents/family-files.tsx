@@ -58,42 +58,48 @@ function RenderFamilyDocCard({
   return (
     <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
       <div className="w-full flex relative">
-        <StatusBadge className="absolute -top-2" status={(status as StatusProps) || "Missing"} />
+        <StatusBadge className="absolute -top-2" status={status && !isMissing ? (status as StatusProps) : "Missing"} />
         {!isMissing && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
-                <EllipsisVertical />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-72">
-              <div className="grid gap-4">
-                <div className="space-y-1">
-                  <h4 className="font-medium text-sm">{label}</h4>
-                  <p className="text-xs text-muted-foreground">See the details of the {label}.</p>
+          <>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
+                  <EllipsisVertical />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72">
+                <div className="grid gap-4">
+                  <div className="space-y-1">
+                    <h4 className="font-medium text-sm">{label}</h4>
+                    <p className="text-xs text-muted-foreground">See the details of the {label}.</p>
+                  </div>
+                  <div className="grid gap-2">
+                    {typeLabel && (
+                      <div className="grid grid-cols-3 items-center gap-4">
+                        <span className="text-xs">Type/Number</span>
+                        <Input
+                          defaultValue={typeLabel ? typeLabel : "N/A"}
+                          className="col-span-2 h-8 capitalize"
+                          readOnly
+                        />
+                      </div>
+                    )}
+                    {expiry && (
+                      <div className="grid grid-cols-3 items-center gap-4">
+                        <span className="text-xs">Expires at</span>
+                        <Input
+                          tabIndex={-1}
+                          defaultValue={expiry ? formatDate(new Date(expiry), "PPP") : "N/A"}
+                          className="col-span-2 h-8"
+                          readOnly
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="grid gap-2">
-                  {typeLabel && (
-                    <div className="grid grid-cols-3 items-center gap-4">
-                      <span className="text-xs">Type/Number</span>
-                      <Input defaultValue={typeLabel} className="col-span-2 h-8 capitalize" readOnly />
-                    </div>
-                  )}
-                  {expiry && (
-                    <div className="grid grid-cols-3 items-center gap-4">
-                      <span className="text-xs">Expires at</span>
-                      <Input
-                        tabIndex={-1}
-                        defaultValue={formatDate(new Date(expiry), "PPP")}
-                        className="col-span-2 h-8"
-                        readOnly
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          </>
         )}
         <div className="pt-4 w-max mx-auto">
           <img src={fileSvg} className="size-10" />
@@ -101,9 +107,14 @@ function RenderFamilyDocCard({
       </div>
       <p className="text-muted-foreground font-medium text-sm">{label}</p>
       {isMissing ? (
-        <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-          View document <EyeClosed />
-        </Button>
+        <div className="flex flex-col gap-2 w-full">
+          <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+            View document <EyeClosed />
+          </Button>
+          <Button disabled className="gap-2 text-xs w-full">
+            Reupload <RotateCcw />
+          </Button>
+        </div>
       ) : (
         <div className="flex flex-col gap-2 w-full">
           <Link
@@ -131,6 +142,8 @@ function RenderFamilyDocCard({
 }
 
 function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDocument }) {
+  console.log(documents);
+
   const motherCards = [
     {
       role: "mother",

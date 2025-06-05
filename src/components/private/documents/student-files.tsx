@@ -60,20 +60,25 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
       <h2 className="font-bold text-lg">Documents That Expire</h2>
 
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
-        {Object.values(passDocument).some((v) => v == null) ? (
+        {Object.values(passDocument).every((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
             <p className="text-muted-foreground font-medium text-sm">Pass</p>
 
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
+            <div className="flex flex-col gap-2 w-full">
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
@@ -96,7 +101,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                         <Label className="text-xs">Pass Type</Label>
                         <Input
                           id="passType"
-                          defaultValue={passDocument.passType!.replace("_", " ")}
+                          defaultValue={passDocument.passType ? passDocument.passType?.replace("_", " ") : "N/A"}
                           className="col-span-2 h-8 capitalize"
                           tabIndex={-1}
                           readOnly
@@ -104,20 +109,30 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                       </div>
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Expires at</Label>
-                        <Input
-                          tabIndex={-1}
-                          id="passExpirationDate"
-                          defaultValue={formatDate(new Date(passDocument.passExpiry!), "PPP")}
-                          className="col-span-2 h-8"
-                          readOnly
-                        />
+                        {passDocument.passExpiry ? (
+                          <Input
+                            id="passExpirationDate"
+                            defaultValue={formatDate(new Date(passDocument.passExpiry), "PPP")}
+                            className="col-span-2 h-8"
+                            tabIndex={-1}
+                            readOnly
+                          />
+                        ) : (
+                          <Input
+                            id="passExpirationDate"
+                            defaultValue={"N/A"}
+                            className="col-span-2 h-8"
+                            tabIndex={-1}
+                            readOnly
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
@@ -150,20 +165,25 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
           </div>
         )}
 
-        {Object.values(passportDocument).some((v) => v == null) ? (
+        {Object.values(passportDocument).every((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
             <p className="text-muted-foreground font-medium text-sm">Passport</p>
 
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
+            <div className="flex flex-col gap-2 w-full">
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
@@ -185,25 +205,35 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Passport #</Label>
                         <div className="flex items-center col-span-2 ">
-                          <PassportInput defaultValue={passportDocument.passportNumber ?? ""} readOnly />
+                          <PassportInput defaultValue={passportDocument.passportNumber ?? "N/A"} readOnly />
                         </div>
                       </div>
                       <div className="grid grid-cols-3 items-center gap-4">
                         <Label className="text-xs">Expires at</Label>
-                        <Input
-                          tabIndex={-1}
-                          id="passExpirationDate"
-                          defaultValue={formatDate(new Date(passportDocument.passportExpiry!), "PPP")}
-                          className="col-span-2 h-8"
-                          readOnly
-                        />
+                        {passportDocument.passportExpiry ? (
+                          <Input
+                            id="passportExpiry"
+                            defaultValue={formatDate(new Date(passportDocument.passportExpiry), "PPP")}
+                            className="col-span-2 h-8"
+                            tabIndex={-1}
+                            readOnly
+                          />
+                        ) : (
+                          <Input
+                            id="passportExpiry"
+                            defaultValue={"N/A"}
+                            className="col-span-2 h-8"
+                            tabIndex={-1}
+                            readOnly
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
@@ -246,22 +276,27 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
             <p className="text-muted-foreground font-medium text-sm">Form 12</p>
 
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
+            <div className="flex flex-col gap-2 w-full">
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={form12Document.form12Status as StatusProps} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
@@ -289,22 +324,27 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
             <p className="text-muted-foreground font-medium text-sm">Medical Exam</p>
 
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
+            <div className="flex flex-col gap-2 w-full">
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={medicalCertDocument.medicalStatus as StatusProps} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
@@ -340,22 +380,27 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
             <p className="text-muted-foreground font-medium text-sm">Birth Certificate</p>
 
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
+            <div className="flex flex-col gap-2 w-full">
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={birthCertDocument.birthCertStatus as StatusProps} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
@@ -391,22 +436,27 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
             <p className="text-muted-foreground font-medium text-sm">Transcript of Records</p>
 
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
+            <div className="flex flex-col gap-2 w-full">
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={eduCertDocument.educCertStatus as StatusProps} />
 
-              <div className="pt-4 w-max mx-auto">
+              <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>

@@ -47,7 +47,15 @@ function StatusBadge({ status, className }: { status: StatusProps; className?: s
       );
 
     default:
-      break;
+      return (
+        <Badge
+          className={cn(
+            "bg-blue-600/10 dark:bg-blue-600/20 hover:bg-blue-600/10 text-blue-500 shadow-none rounded-full",
+            className
+          )}>
+          <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mr-2 capitalize" /> {status}
+        </Badge>
+      );
   }
 }
 
