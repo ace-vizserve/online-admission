@@ -127,6 +127,10 @@ export async function updatePassword({ password }: { password: string }) {
   try {
     const { error } = await supabase.auth.updateUser({
       password,
+      data: {
+        password_changed: true,
+        temporary_password: null,
+      },
     });
 
     if (error) {

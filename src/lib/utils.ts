@@ -265,7 +265,8 @@ export async function getStudentsList(parentEmail: string) {
     const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
       .from("ay2026_enrolment_applications")
       .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`);
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .eq("applicationStatus", "Registered");
 
     if (ay2026studentInformationError) {
       throw new Error(ay2026studentInformationError.message);
@@ -275,6 +276,7 @@ export async function getStudentsList(parentEmail: string) {
       .from("ay2025_enrolment_applications")
       .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .eq("applicationStatus", "Registered")
       .order("enroleeNumber", { ascending: false });
 
     if (ay2025studentInformationError) {
