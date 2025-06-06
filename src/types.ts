@@ -267,6 +267,7 @@ export type TStudent = {
   age: number;
   mothersName: string;
   fathersName: string;
+  enrollmentStatus: string;
   studentNumber: string;
 };
 

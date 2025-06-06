@@ -1,54 +1,31 @@
-# React + TypeScript + Vite
+# HFSE Online Admission Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The **HFSE Online Admission Web App** is a modern, user-friendly platform designed for the parents of HFSE International School students to manage student enrollment and re-enrollment. The app simplifies the admission process by allowing parents to submit required documents, update student information, and track application status—all in one place.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 👪 **Parent Portal** – Secure login and signup for parents to manage one or more children.
+- 📄 **Student Enrollment** – Submit new student applications with necessary personal and academic details.
+- 🔁 **Re-enrollment System** – Reuse and update previously submitted student data for a new school year.
+- 🗂 **Document Uploads** – Upload and preview required enrollment documents (e.g. passport, birth certificate, ID photos).
+- ✅ **Progress Validation** – Forms with real-time validation and progress-based navigation.
+- 🔒 **Supabase Integration** – Secure backend for authentication, storage, and database handling.
 
-## Expanding the ESLint configuration
+## 🛠 Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React + Vite + TypeScript
+- **UI Components**: ShadCN UI + Tailwind CSS
+- **State Management**: Zustand
+- **Form Handling**: React Hook Form + Zod
+- **Backend**: Supabase (Auth, Database, Storage)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## 📁 Project Structure (simplified)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+src/
+├── components/ # Reusable UI components
+├── features/ # Feature-specific logic (e.g. FileUploaders, Forms)
+├── hooks/ # Custom hooks (e.g. useSupabaseUpload)
+├── lib/ # Utility functions and constants
+├── pages/ # Route-based pages
+├── stores/ # Zustand stores
+└── types/ # Shared TypeScript types

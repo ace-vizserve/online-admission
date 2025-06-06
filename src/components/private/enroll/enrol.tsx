@@ -11,10 +11,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, RefreshCcw, User, UserPlus } from "lucide-react";
+import { ArrowUpDown, ClipboardList, MoreHorizontal, RefreshCcw, UserPlus } from "lucide-react";
 import * as React from "react";
 
 import { getStudentList } from "@/actions/private";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,6 +35,39 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 export const columns: ColumnDef<TStudent>[] = [
+  {
+    accessorKey: "enrollmentStatus",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Enrolment Status
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      if (row.getValue("enrollmentStatus") === "Currently Enroled") {
+        return (
+          <div className="pl-3">
+            <Badge className="bg-emerald-600/10 dark:bg-emerald-600/20 hover:bg-emerald-600/10 text-emerald-500 shadow-none rounded-full">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" /> Currently Enroled
+            </Badge>
+          </div>
+        );
+      }
+
+      return (
+        <div className="pl-3">
+          <Badge className="bg-blue-600/10 dark:bg-blue-600/20 hover:bg-blue-600/10 text-blue-500 shadow-none rounded-full">
+            <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mr-2 capitalize" /> Pre-Enroled for 2026
+          </Badge>
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "studentName",
     header: ({ column }) => {
@@ -62,7 +96,7 @@ export const columns: ColumnDef<TStudent>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-xs tabular-nums pl-1">{row.getValue("age")} years old</div>,
+    cell: ({ row }) => <div className="text-xs tabular-nums pl-3">{row.getValue("age")} years old</div>,
   },
   {
     accessorKey: "mothersName",
@@ -94,6 +128,7 @@ export const columns: ColumnDef<TStudent>[] = [
     },
     cell: ({ row }) => <div className="text-xs pl-3">{row.getValue("fathersName")}</div>,
   },
+
   {
     id: "actions",
     enableHiding: false,
@@ -111,7 +146,7 @@ export const columns: ColumnDef<TStudent>[] = [
           <DropdownMenuContent className="mt-2">
             <Link to={`/admission/single-student/${student.studentNumber}`}>
               <DropdownMenuItem className="text-xs">
-                <User className="mr-1" /> View Enrolments
+                <ClipboardList className="mr-1" /> View Enrolments
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

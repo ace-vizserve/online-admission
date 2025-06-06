@@ -83,7 +83,10 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={passDocument.passStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={passDocument.passStatus ? (passDocument.passStatus as StatusProps) : "Missing"}
+              />
               <Popover>
                 <PopoverTrigger asChild>
                   <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
@@ -150,7 +153,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               </Link>
 
               <StudentFileUploaderDialog
-                status={passDocument.passStatus!}
+                status={passDocument?.passStatus ?? "Missing"}
                 academicYear={academicYear!}
                 documentType="pass"
                 enroleeNumber={params.id!}
@@ -188,7 +191,10 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={passportDocument.passportStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={passportDocument.passportStatus ? (passportDocument.passportStatus as StatusProps) : "Missing"}
+              />
               <Popover>
                 <PopoverTrigger asChild>
                   <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
@@ -251,7 +257,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               </Link>
 
               <StudentFileUploaderDialog
-                status={passportDocument.passportStatus!}
+                status={passportDocument?.passportStatus ?? "Missing"}
                 academicYear={academicYear!}
                 documentType="passport"
                 enroleeNumber={params.id!}
@@ -474,7 +480,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               </Link>
 
               <StudentFileUploaderDialog
-                status={eduCertDocument.educCertStatus!}
+                status={eduCertDocument?.educCertStatus ?? "Missing"}
                 academicYear={academicYear!}
                 documentType="eduCert"
                 enroleeNumber={params.id!}

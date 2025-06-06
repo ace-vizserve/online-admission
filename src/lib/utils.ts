@@ -283,7 +283,7 @@ export async function getStudentsList(parentEmail: string) {
       throw new Error(ay2025studentInformationError.message);
     }
 
-    const mapStudents = (data: typeof ay2025studentInformation) =>
+    const mapStudents = (data: typeof ay2025studentInformation, academicYear: string) =>
       data.map((info) => ({
         enroleeNumber: info.enroleeNumber,
         studentName: info.enroleeFullName,
@@ -291,9 +291,13 @@ export async function getStudentsList(parentEmail: string) {
         mothersName: info.motherFullName ?? "--",
         fathersName: info.fatherFullName ?? "--",
         studentNumber: info.studentNumber,
+        enrollmentStatus: academicYear === "2026" ? "Pre-Enroled for 2026" : "Currently Enroled",
       }));
 
-    const allStudents = [...mapStudents(ay2026studentInformation), ...mapStudents(ay2025studentInformation)];
+    const allStudents = [
+      ...mapStudents(ay2026studentInformation, "2026"),
+      ...mapStudents(ay2025studentInformation, "2025"),
+    ];
 
     const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
       if (!acc.some((o) => o.studentNumber === obj.studentNumber)) {
@@ -301,6 +305,8 @@ export async function getStudentsList(parentEmail: string) {
       }
       return acc;
     }, []);
+
+    console.log(studentsList);
 
     return studentsList;
   } catch (error) {
@@ -369,6 +375,27 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
       throw new Error(ay2026studentInformationError.message);
     }
 
+    const { data: ay2026studentEnrollment, error: ay2026studentEnrollmentError } = await supabase
+      .from("ay2026_enrolment_status")
+      .select("applicationRemarks, enroleeNumber, applicationStatus")
+      .in(
+        "enroleeNumber",
+        ay2026studentInformation.map((v) => v.enroleeNumber)
+      );
+
+    if (ay2026studentEnrollmentError) {
+      throw new Error(ay2026studentEnrollmentError.message);
+    }
+
+    const ay2026Enrollment = ay2026studentInformation.map((info) => {
+      const enrollmentStatus = ay2026studentEnrollment.find((v) => v.enroleeNumber == info.enroleeNumber);
+
+      return {
+        ...info,
+        ...(enrollmentStatus ?? {}),
+      };
+    });
+
     const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
       .from("ay2025_enrolment_applications")
       .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
@@ -380,8 +407,30 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
       throw new Error(ay2025studentInformationError.message);
     }
 
-    const mapStudents = (data: typeof ay2025studentInformation, academicYear: string) =>
+    const { data: ay2025studentEnrollment, error: ay2025studentEnrollmentError } = await supabase
+      .from("ay2025_enrolment_status")
+      .select("applicationRemarks, enroleeNumber, applicationStatus")
+      .in(
+        "enroleeNumber",
+        ay2025studentInformation.map((v) => v.enroleeNumber)
+      );
+
+    if (ay2025studentEnrollmentError) {
+      throw new Error(ay2025studentEnrollmentError.message);
+    }
+
+    const ay2025Enrollment = ay2025studentInformation.map((info) => {
+      const enrollmentStatus = ay2025studentEnrollment.find((v) => v.enroleeNumber == info.enroleeNumber);
+
+      return {
+        ...info,
+        ...(enrollmentStatus ?? {}),
+      };
+    });
+
+    const mapStudents = (data: typeof ay2025Enrollment, academicYear: string) =>
       data.map((info) => ({
+        remarks: info.applicationRemarks ?? "N/A",
         studentNumber: info.studentNumber,
         studentName: info.enroleeFullName,
         academicYear,
@@ -390,10 +439,7 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
         enroleeNumber: info.enroleeNumber,
       }));
 
-    const studentsList = [
-      ...mapStudents(ay2026studentInformation, "2026"),
-      ...mapStudents(ay2025studentInformation, "2025"),
-    ];
+    const studentsList = [...mapStudents(ay2026Enrollment, "2026"), ...mapStudents(ay2025Enrollment, "2025")];
 
     const enrollmentStudentList = studentsList.reduce((acc: typeof studentsList, obj) => {
       if (!acc.some((o) => o.enroleeNumber === obj.enroleeNumber)) {

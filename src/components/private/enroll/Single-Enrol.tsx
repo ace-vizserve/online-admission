@@ -9,10 +9,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, RefreshCcw, User, UserPlus } from "lucide-react";
+import { ArrowUpDown, FileText, MoreHorizontal, RefreshCcw, UserPlus } from "lucide-react";
 import * as React from "react";
 
 import { getStudentEnrollmentsList } from "@/actions/private";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -43,7 +44,11 @@ export const columns: ColumnDef<levelYear>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("academicYear")}</div>,
+    cell: ({ row }) => (
+      <div className="pl-4">
+        <Badge className="capitalize text-xs rounded-full">{row.getValue("academicYear")}</Badge>
+      </div>
+    ),
   },
   {
     accessorKey: "gradeLevel",
@@ -73,7 +78,46 @@ export const columns: ColumnDef<levelYear>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("status")}</div>,
+    cell: ({ row }) => {
+      if ((row.getValue("status") as string).toLowerCase() === "cancelled") {
+        return (
+          <div className="pl-3">
+            <Badge className="bg-red-600/10 dark:bg-red-600/20 hover:bg-red-600/10 text-red-500 shadow-none rounded-full capitalize">
+              <div className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2" /> Cancelled
+            </Badge>
+          </div>
+        );
+      }
+
+      return (
+        <div className="pl-3">
+          <Badge className="bg-emerald-600/10 dark:bg-emerald-600/20 hover:bg-emerald-600/10 text-emerald-500 shadow-none rounded-full capitalize">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" /> Submitted
+          </Badge>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "remarks",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Remarks
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="pl-3">
+        <Badge variant={"secondary"} className="capitalize text-xs rounded-full">
+          {row.getValue("remarks")}
+        </Badge>
+      </div>
+    ),
   },
   {
     id: "actions",
@@ -92,7 +136,7 @@ export const columns: ColumnDef<levelYear>[] = [
           <DropdownMenuContent className="mt-2">
             <Link to={`/admission/document-file/${student.enroleeNumber}?academicYear=ay${student.academicYear}`}>
               <DropdownMenuItem className="text-xs">
-                <User className="mr-1" /> View Enrolment Information
+                <FileText className="mr-1" /> View Enrolment Details
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

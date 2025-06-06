@@ -777,7 +777,7 @@ function ParentGuardianFileUploaderDrawer({
           </Button>
         </DrawerTrigger>
 
-        <DrawerContent className="px-4">
+        <DrawerContent className="px-4 space-y-4">
           <DrawerHeader className="text-start px-0">
             <DrawerTitle>{label}</DrawerTitle>
             <DrawerDescription className="text-xs">
