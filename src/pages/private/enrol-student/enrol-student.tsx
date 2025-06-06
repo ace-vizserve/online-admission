@@ -2,10 +2,11 @@ import { getEnrolledStudents, lookupNewEnrolledStudent } from "@/actions/private
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
@@ -109,9 +110,7 @@ function EnrolStudent() {
               <CardDescription className="text-sm">
                 Selecting a student will proceed with the enrolment process
               </CardDescription>
-              <Badge className="mt-2 w-max mx-auto uppercase right-4 rounded-full">
-                Selected year {academicYear.split("y")[1]}
-              </Badge>
+              <AcademicYearDropdown />
             </CardHeader>
             <Separator />
             <CardContent className="px-2">
@@ -202,6 +201,28 @@ const StudentsList = memo(function ({ selected, setSelected, studentList }: Stud
     </RadioGroup>
   );
 });
+
+function AcademicYearDropdown() {
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
+
+  return (
+    <Select value={academicYear} onValueChange={setAcademicYear}>
+      <SelectTrigger className="text-indigo-600 mt-2 w-max mx-auto text-xs font-semibold" size="sm">
+        <Label className="text-xs font-semibold">Academic Year</Label>
+        <SelectValue placeholder="Choose academic year" />
+      </SelectTrigger>
+      <SelectContent className="[&_div:focus]:bg-indigo-600 [&_div:focus]:text-white">
+        <SelectItem className="text-xs font-semibold" value="ay2025">
+          2025
+        </SelectItem>
+        <SelectItem className="text-xs font-semibold" value="ay2026">
+          2026
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
 
 function NoStudents() {
   return (
