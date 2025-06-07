@@ -45,10 +45,44 @@ export const columns: ColumnDef<levelYear>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="pl-4">
+      <div className="pl-3">
         <Badge className="capitalize text-xs rounded-full">{row.getValue("academicYear")}</Badge>
       </div>
     ),
+  },
+
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant={"ghost"}
+          className="cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Application Status
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      if ((row.getValue("status") as string).toLowerCase() === "cancelled") {
+        return (
+          <div className="pl-2">
+            <Badge className="bg-red-600/10 dark:bg-red-600/20 hover:bg-red-600/10 text-red-500 shadow-none rounded-full capitalize">
+              <div className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2" /> Cancelled
+            </Badge>
+          </div>
+        );
+      }
+
+      return (
+        <div className="pl-2">
+          <Badge className="bg-emerald-600/10 dark:bg-emerald-600/20 hover:bg-emerald-600/10 text-emerald-500 shadow-none rounded-full capitalize">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" /> Submitted
+          </Badge>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "gradeLevel",
@@ -66,39 +100,6 @@ export const columns: ColumnDef<levelYear>[] = [
     cell: ({ row }) => <div className="capitalize text-xs pl-3">{row.getValue("gradeLevel")}</div>,
   },
   {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant={"ghost"}
-          className="cursor-pointer"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Status
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      if ((row.getValue("status") as string).toLowerCase() === "cancelled") {
-        return (
-          <div className="pl-3">
-            <Badge className="bg-red-600/10 dark:bg-red-600/20 hover:bg-red-600/10 text-red-500 shadow-none rounded-full capitalize">
-              <div className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2" /> Cancelled
-            </Badge>
-          </div>
-        );
-      }
-
-      return (
-        <div className="pl-3">
-          <Badge className="bg-emerald-600/10 dark:bg-emerald-600/20 hover:bg-emerald-600/10 text-emerald-500 shadow-none rounded-full capitalize">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" /> Submitted
-          </Badge>
-        </div>
-      );
-    },
-  },
-  {
     accessorKey: "remarks",
     header: ({ column }) => {
       return (
@@ -106,7 +107,7 @@ export const columns: ColumnDef<levelYear>[] = [
           variant={"ghost"}
           className="cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Remarks
+          Application Remarks
           <ArrowUpDown />
         </Button>
       );

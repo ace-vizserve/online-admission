@@ -49,18 +49,18 @@ export const columns: ColumnDef<TStudent>[] = [
       );
     },
     cell: ({ row }) => {
-      if (row.getValue("enrollmentStatus") === "Currently Enroled") {
+      if (row.getValue("enrollmentStatus") === "Registered") {
         return (
-          <div className="pl-3">
+          <div className="pl-2">
             <Badge className="bg-emerald-600/10 dark:bg-emerald-600/20 hover:bg-emerald-600/10 text-emerald-500 shadow-none rounded-full">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" /> Currently Enroled
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" /> Registered for 2025
             </Badge>
           </div>
         );
       }
 
       return (
-        <div className="pl-3">
+        <div className="pl-2">
           <Badge className="bg-blue-600/10 dark:bg-blue-600/20 hover:bg-blue-600/10 text-blue-500 shadow-none rounded-full">
             <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mr-2 capitalize" /> Pre-Enroled for 2026
           </Badge>
@@ -81,7 +81,7 @@ export const columns: ColumnDef<TStudent>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="capitalize text-xs pl-4">{row.getValue("studentName")}</div>,
+    cell: ({ row }) => <div className="capitalize text-xs pl-3">{row.getValue("studentName")}</div>,
   },
   {
     accessorKey: "age",
