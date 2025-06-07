@@ -291,7 +291,7 @@ export async function getStudentsList(parentEmail: string) {
         mothersName: info.motherFullName ?? "--",
         fathersName: info.fatherFullName ?? "--",
         studentNumber: info.studentNumber,
-        enrollmentStatus: academicYear === "2026" ? "Pre-Enroled for 2026" : "Currently Enroled",
+        enrollmentStatus: academicYear === "2026" ? "Pre-Enroled for 2026" : "Registered",
       }));
 
     const allStudents = [
