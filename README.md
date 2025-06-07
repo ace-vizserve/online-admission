@@ -22,10 +22,20 @@ The **HFSE Online Admission Web App** is a modern, user-friendly platform design
 ## 📁 Project Structure (simplified)
 
 src/
-├── components/ # Reusable UI components
-├── features/ # Feature-specific logic (e.g. FileUploaders, Forms)
-├── hooks/ # Custom hooks (e.g. useSupabaseUpload)
-├── lib/ # Utility functions and constants
-├── pages/ # Route-based pages
-├── stores/ # Zustand stores
-└── types/ # Shared TypeScript types
+├───actions
+├───assets
+├───components
+│ ├───auth
+│ ├───layout
+│ ├───private
+│ ├───public
+│ └───ui
+├───context
+├───data
+├───hooks
+├───lib
+├───pages
+│ ├───auth
+│ ├───private
+│ └───public
+└───routes
