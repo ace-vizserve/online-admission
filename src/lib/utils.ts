@@ -306,8 +306,6 @@ export async function getStudentsList(parentEmail: string) {
       return acc;
     }, []);
 
-    console.log(studentsList);
-
     return studentsList;
   } catch (error) {
     const err = error as AuthError;
