@@ -71,7 +71,9 @@ function EnrollmentInformation() {
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
       ...formState.enrollmentInfo,
-      contractSignatory: formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo ? "Father" : "",
+      contractSignatory: formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo
+        ? "Father"
+        : "Mother",
     },
   });
 

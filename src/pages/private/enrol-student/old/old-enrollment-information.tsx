@@ -80,7 +80,7 @@ function OldEnrollmentInformation() {
         !formState.familyInfo?.fatherInfo?.noFatherInfo &&
         formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo
           ? "Father"
-          : "",
+          : "Mother",
     },
   });
 
