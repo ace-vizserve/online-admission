@@ -21,21 +21,23 @@ The **HFSE Online Admission Web App** is a modern, user-friendly platform design
 
 ## 📁 Project Structure (simplified)
 
+```
 src/
-├───actions
-├───assets
-├───components
-│ ├───auth
-│ ├───layout
-│ ├───private
-│ ├───public
-│ └───ui
-├───context
-├───data
-├───hooks
-├───lib
-├───pages
-│ ├───auth
-│ ├───private
-│ └───public
-└───routes
+├── actions
+├── assets
+├── components
+│   ├── auth
+│   ├── layout
+│   ├── private
+│   ├── public
+│   └── ui
+├── context
+├── data
+├── hooks
+├── lib
+├── pages
+│   ├── auth
+│   ├── private
+│   └── public
+└── routes
+```
