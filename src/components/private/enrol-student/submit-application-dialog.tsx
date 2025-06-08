@@ -19,7 +19,6 @@ import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CheckCircle2, Send } from "lucide-react";
 import { useParams } from "react-router";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 function checkExpiry(label: string, expiry: Date | null | undefined, type: "passport" | "pass") {
@@ -29,7 +28,6 @@ function checkExpiry(label: string, expiry: Date | null | undefined, type: "pass
 }
 
 function SubmitApplicationDialog() {
-  const navigate = useNavigate();
   const params = useParams();
   const { formState, clearState } = useEnrolOldStudentContext();
   const { mutate, isPending } = useMutation({
@@ -37,9 +35,7 @@ function SubmitApplicationDialog() {
       return await submitExistingEnrollment(formState as EnrolOldStudentFormState, params.id!);
     },
     onSuccess() {
-      navigate("/application-submitted", {
-        replace: true,
-      });
+      window.location.href = "/application-submitted";
     },
     onSettled() {
       clearState();

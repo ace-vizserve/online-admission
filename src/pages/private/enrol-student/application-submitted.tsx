@@ -1,20 +1,11 @@
 import PageMetaData from "@/components/page-metadata";
 import { buttonVariants } from "@/components/ui/button";
 import { APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION } from "@/data";
-import { useSelectAcademicYear } from "@/zustand-store";
 import { ArrowLeft } from "lucide-react";
-import { useEffect } from "react";
+import { Link } from "react-router";
 
 function ApplicationSubmitted() {
   const { title, description } = APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION;
-  const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
-
-  useEffect(() => {
-    return () => {
-      clearAcademicYearState();
-      sessionStorage.clear();
-    };
-  }, [clearAcademicYearState]);
 
   return (
     <>
@@ -42,14 +33,14 @@ function ApplicationSubmitted() {
             We’re reviewing it and will get in touch with you within a few days.
           </p>
 
-          <a
-            href={"/admission/dashboard"}
+          <Link
+            to={"/admission/dashboard"}
             className={buttonVariants({
               className: "mt-4 gap-2",
               size: "lg",
             })}>
             <ArrowLeft /> Back to Dashboard
-          </a>
+          </Link>
         </div>
       </div>
     </>

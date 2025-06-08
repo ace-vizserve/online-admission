@@ -26,7 +26,6 @@ import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
 import { useCallback, useEffect, useTransition } from "react";
-import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function NewStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
@@ -53,36 +52,31 @@ function NewStudentLayout() {
   }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
 
   return (
-    <>
-      <BeforeUnloadWarning />
-      <EnrolNewStudentContextProvider>
-        <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
-          <MaxWidthWrapper className="w-full flex justify-between items-center max-w-screen-2xl">
-            <ExitApplicationDialog />
-            <SubmitApplicationDialog />
-          </MaxWidthWrapper>
-        </div>
-        <MaxWidthWrapper className="max-w-screen-2xl">
-          <div className="min-h-screen w-full flex flex-col md:gap-12 items-center justify-start">
-            <div className="w-full overflow-x-auto">
-              <NewStudentSteps />
-            </div>
-            <div
-              className={cn("w-full opacity-100 scale-100 transition-all", {
-                "scale-95 opacity-70": isPending,
-              })}>
-              <Outlet />
-            </div>
-          </div>
+    <EnrolNewStudentContextProvider>
+      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+        <MaxWidthWrapper className="w-full flex justify-between items-center max-w-screen-2xl">
+          <ExitApplicationDialog />
+          <SubmitApplicationDialog />
         </MaxWidthWrapper>
-      </EnrolNewStudentContextProvider>
-    </>
+      </div>
+      <MaxWidthWrapper className="max-w-screen-2xl">
+        <div className="min-h-screen w-full flex flex-col md:gap-12 items-center justify-start">
+          <div className="w-full overflow-x-auto">
+            <NewStudentSteps />
+          </div>
+          <div
+            className={cn("w-full opacity-100 scale-100 transition-all", {
+              "scale-95 opacity-70": isPending,
+            })}>
+            <Outlet />
+          </div>
+        </div>
+      </MaxWidthWrapper>
+    </EnrolNewStudentContextProvider>
   );
 }
 
 function SubmitApplicationDialog() {
-  const navigate = useNavigate();
-
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
@@ -92,9 +86,7 @@ function SubmitApplicationDialog() {
       return await submitEnrollment(enrollmentDetails, academicYear);
     },
     onSuccess() {
-      navigate("/application-submitted", {
-        replace: true,
-      });
+      window.location.href = "/application-submitted";
     },
     onSettled() {
       clearEnrolNewStudentTabState();

@@ -105,7 +105,8 @@ const StudentFileUploaderDialog = memo(function ({
     accept:
       name === "idPicture"
         ? {
-            "image/*": [],
+            "image/png": [],
+            "image/jpeg": [],
           }
         : {
             "application/pdf": [],
@@ -494,7 +495,8 @@ function StudentFileUploaderDrawer({
     accept:
       name === "idPicture"
         ? {
-            "image/*": [],
+            "image/png": [],
+            "image/jpeg": [],
           }
         : {
             "application/pdf": [],
