@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { OctagonAlert } from "lucide-react";
 import { useCallback, useEffect, useTransition } from "react";
-import BeforeUnloadWarning from "../private/enrol-student/before-unload-warning";
 
 function OldStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
@@ -49,31 +48,28 @@ function OldStudentLayout() {
   }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
 
   return (
-    <>
-      <BeforeUnloadWarning />
-      <EnrolOldStudentContextProvider>
-        <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
-          <MaxWidthWrapper className="w-full max-w-screen-2xl flex items-center justify-between ">
-            <ExitApplicationDialog />
-            <SubmitApplicationDialog />
-          </MaxWidthWrapper>
-        </div>
-
-        <MaxWidthWrapper className="max-w-screen-2xl ">
-          <div className="min-h-screen w-full flex flex-col md:gap-12 items-center justify-start">
-            <div className="w-full overflow-x-auto">
-              <OldStudentSteps />
-            </div>
-            <div
-              className={cn("w-full opacity-100 scale-100 transition-all", {
-                "scale-95 opacity-70": isPending,
-              })}>
-              <Outlet />
-            </div>
-          </div>
+    <EnrolOldStudentContextProvider>
+      <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+        <MaxWidthWrapper className="w-full max-w-screen-2xl flex items-center justify-between ">
+          <ExitApplicationDialog />
+          <SubmitApplicationDialog />
         </MaxWidthWrapper>
-      </EnrolOldStudentContextProvider>
-    </>
+      </div>
+
+      <MaxWidthWrapper className="max-w-screen-2xl ">
+        <div className="min-h-screen w-full flex flex-col md:gap-12 items-center justify-start">
+          <div className="w-full overflow-x-auto">
+            <OldStudentSteps />
+          </div>
+          <div
+            className={cn("w-full opacity-100 scale-100 transition-all", {
+              "scale-95 opacity-70": isPending,
+            })}>
+            <Outlet />
+          </div>
+        </div>
+      </MaxWidthWrapper>
+    </EnrolOldStudentContextProvider>
   );
 }
 
