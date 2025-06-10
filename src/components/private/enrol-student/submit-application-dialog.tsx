@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { canEnrollStudent } from "@/lib/utils";
 import { EnrolOldStudentFormState } from "@/types";
 import { useMutation } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
@@ -45,6 +46,15 @@ function SubmitApplicationDialog() {
 
   async function verifyEnrollmentDetails() {
     try {
+      const isEligibleForEnrollment = await canEnrollStudent(params.id!);
+
+      if (!isEligibleForEnrollment) {
+        toast.info("Enrollment not allowed!", {
+          description: "The student has completed Secondary 4, the final year of secondary school",
+        });
+        return;
+      }
+
       if (formState.familyInfo == null) {
         toast.info("Review Family Information!", {
           description: "Please double-check all family details before submitting",
@@ -62,13 +72,6 @@ function SubmitApplicationDialog() {
       if (!formState.enrollmentInfo.isValid) {
         toast.warning("Fill up the enrollment information tab", {
           description: "Kindly double check every details before submitting",
-        });
-        return;
-      }
-
-      if (formState.enrollmentInfo.levelApplied === "Secondary 4") {
-        toast.info("Enrollment not allowed!", {
-          description: "The student has completed Secondary 4, the final year of secondary school",
         });
         return;
       }

@@ -91,6 +91,14 @@ function OldEnrollmentInformation() {
   }, [data, form, isSuccess]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
+    if (values.levelApplied !== getNextGradeLevel(data!.levelApplied)) {
+      toast.warning("Invalid Grade Level!", {
+        description: "The grade level entered doesn't align with the student's expected progression",
+      });
+      form.setError("levelApplied", { message: "Please select the correct next academic year." });
+      return;
+    }
+
     setFormState({
       enrollmentInfo: { ...values, isValid: true },
     });
