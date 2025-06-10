@@ -42,6 +42,29 @@ export function removeEmptyKeys(obj: Record<string, unknown>) {
   return cleaned;
 }
 
+export async function canEnrollStudent(enroleeNumber: string) {
+  try {
+    const { data, error } = await supabase
+      .from("ay2025_enrolment_applications")
+      .select("levelApplied")
+      .eq("enroleeNumber", enroleeNumber)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("No student found!");
+    }
+
+    return data.levelApplied !== "Secondary 4";
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
 export async function listAllUsers() {
   try {
     const authenticatedUsers = [];

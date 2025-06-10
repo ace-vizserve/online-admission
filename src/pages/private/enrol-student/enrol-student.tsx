@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
-import { cn } from "@/lib/utils";
+import { canEnrollStudent, cn } from "@/lib/utils";
 import { EnrolledStudent } from "@/types";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { Field, Radio, RadioGroup } from "@headlessui/react";
@@ -61,14 +61,26 @@ function EnrolStudent() {
       });
 
       if (result) {
-        throw new Error("Student already enrolled!");
+        toast.warning("Student already enrolled!", {
+          description: `A matching student record is already enrolled for A.Y. ${academicYear.split("y")[1]}`,
+        });
+        return;
+      }
+
+      const isEligibleForEnrollment = await canEnrollStudent(selected.enroleeNumber);
+
+      if (!isEligibleForEnrollment) {
+        toast.info("Enrollment not allowed!", {
+          description: "The student has completed Secondary 4, the final year of secondary school",
+        });
+        return;
       }
 
       navigate(`/enrol-student/${selected?.enroleeNumber}/student-info?academicYear=${academicYear}`);
     } catch (error) {
       const err = error as Error;
       toast.warning(err.message, {
-        description: `A matching student record is already enrolled for A.Y. ${academicYear.split("y")[1]}`,
+        description: "An unknown error occurred",
       });
     } finally {
       setIsCheckingEnrollment(false);
