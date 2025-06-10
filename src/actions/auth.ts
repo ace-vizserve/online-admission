@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/admin-client";
 import { supabase } from "@/lib/client";
+import { listAllUsers } from "@/lib/utils";
 import { LoginSchema, RegistrationSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -35,9 +36,7 @@ export async function userLogout() {
 
 export async function userRegister({ firstName, lastName, relationship, email, password }: RegistrationSchema) {
   try {
-    const {
-      data: { users },
-    } = await supabaseAdmin.auth.admin.listUsers();
+    const users = await listAllUsers();
 
     const emailExist = users.find((user) => user.email === email);
 

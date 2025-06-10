@@ -7,6 +7,7 @@ import { differenceInYears, parseISO } from "date-fns";
 import { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
+import { supabaseAdmin } from "./admin-client";
 import { supabase } from "./client";
 
 export function cn(...inputs: ClassValue[]) {
@@ -39,6 +40,37 @@ export function removeEmptyKeys(obj: Record<string, unknown>) {
     }
   });
   return cleaned;
+}
+
+export async function listAllUsers() {
+  try {
+    const authenticatedUsers = [];
+    let page = 1;
+    const usersPerPage = 1000;
+
+    while (true) {
+      const {
+        data: { users },
+      } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage: usersPerPage,
+      });
+
+      authenticatedUsers.push(...users);
+
+      if (users.length < usersPerPage) {
+        break;
+      }
+
+      page++;
+    }
+
+    return authenticatedUsers;
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+    return [];
+  }
 }
 
 export function replaceNulls<T extends Record<string, unknown>>(obj: T): T {
