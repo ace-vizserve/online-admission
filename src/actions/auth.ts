@@ -1,4 +1,3 @@
-import { supabaseAdmin } from "@/lib/admin-client";
 import { supabase } from "@/lib/client";
 import { listAllUsers } from "@/lib/utils";
 import { LoginSchema, RegistrationSchema } from "@/zod-schema";
@@ -72,9 +71,7 @@ export async function userRegister({ firstName, lastName, relationship, email, p
 
 export async function sendPasswordResetLink({ email }: { email: string }) {
   try {
-    const {
-      data: { users },
-    } = await supabaseAdmin.auth.admin.listUsers();
+    const users = await listAllUsers();
 
     const emailExist = users.find((user) => user.email === email);
 

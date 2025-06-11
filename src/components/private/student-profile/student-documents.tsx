@@ -51,7 +51,10 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={passDocument.passStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={passDocument.passStatus ? (passDocument.passStatus as StatusProps) : "Missing"}
+              />
               <Popover>
                 <PopoverTrigger asChild>
                   <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
@@ -105,16 +108,21 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
               </div>
             </div>
             <p className="text-muted-foreground font-medium text-sm">Pass</p>
-
-            <Link
-              to={passDocument.pass!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            {passDocument.pass ? (
+              <Link
+                to={passDocument.pass}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+            ) : (
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+            )}
           </div>
         )}
 
@@ -136,7 +144,10 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={passportDocument.passportStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={passportDocument.passportStatus ? (passportDocument.passportStatus as StatusProps) : "Missing"}
+              />
               <Popover>
                 <PopoverTrigger asChild>
                   <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
@@ -187,15 +198,21 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
             </div>
             <p className="text-muted-foreground font-medium text-sm">Passport</p>
 
-            <Link
-              to={passportDocument.passport!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            {passportDocument.passport ? (
+              <Link
+                to={passportDocument.passport!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+            ) : (
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+            )}
           </div>
         )}
       </div>

@@ -142,15 +142,21 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             <p className="text-muted-foreground font-medium text-sm">Pass</p>
 
             <div className="flex flex-col gap-2 w-full">
-              <Link
-                to={passDocument.pass!}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
+              {passDocument.pass ? (
+                <Link
+                  to={passDocument.pass}
+                  target="_blank"
+                  className={buttonVariants({
+                    className: "gap-2 text-xs  w-full",
+                    variant: "secondary",
+                  })}>
+                  View document <Eye />
+                </Link>
+              ) : (
+                <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                  View document <EyeClosed />
+                </Button>
+              )}
 
               <StudentFileUploaderDialog
                 status={passDocument?.passStatus ?? "Missing"}
@@ -246,15 +252,21 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
             <p className="text-muted-foreground font-medium text-sm">Passport</p>
 
             <div className="flex flex-col gap-2 w-full">
-              <Link
-                to={passportDocument.passport!}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
+              {passportDocument.passport ? (
+                <Link
+                  to={passportDocument.passport!}
+                  target="_blank"
+                  className={buttonVariants({
+                    className: "gap-2 text-xs  w-full",
+                    variant: "secondary",
+                  })}>
+                  View document <Eye />
+                </Link>
+              ) : (
+                <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                  View document <EyeClosed />
+                </Button>
+              )}
 
               <StudentFileUploaderDialog
                 status={passportDocument?.passportStatus ?? "Missing"}
@@ -263,8 +275,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                 enroleeNumber={params.id!}
                 label="Student's Passport"
                 payload={{
-                  pass: passportDocument.passport!,
-                  passExpiry: passportDocument.passportExpiry! as Date,
+                  passport: passportDocument.passport!,
+                  passportExpiry: passportDocument.passportExpiry! as Date,
                   passportNumber: passportDocument.passportNumber!,
                 }}
               />
