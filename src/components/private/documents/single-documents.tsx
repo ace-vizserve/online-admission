@@ -1,3 +1,4 @@
+import InputWithIcon from "@/components/private/student-profile/input-with-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -20,7 +21,6 @@ import {
   Users,
   VenetianMask,
 } from "lucide-react";
-import InputWithIcon from "@/components/private/student-profile/input-with-icon";
 
 function SingleDocuments({ label, studentInformation }: { label: string; studentInformation: Student }) {
   const {
@@ -41,6 +41,7 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
     preferredName,
     primaryLanguage,
     religion,
+    religionOther,
   } = studentInformation;
 
   const age = differenceInYears(new Date(), new Date(birthDay));
@@ -188,7 +189,10 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
             </div>
             <div className="space-y-2">
               <Label>Religion</Label>
-              <InputWithIcon value={religion} svgIcon={<BookOpenCheck className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                value={religion != "Other" ? religion : religionOther!}
+                svgIcon={<BookOpenCheck className="text-muted-foreground size-4" />}
+              />
             </div>
           </div>
         </CardContent>
@@ -198,4 +202,4 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
 }
 
 export default SingleDocuments;
-// 
+//

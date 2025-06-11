@@ -112,54 +112,41 @@ export const studentAddressContactSchema = z.object({
   }),
 });
 
-export const guardianInformationSchema = z
-  .object({
-    guardianFirstName: z.string().min(1, {
-      message: "Guardian's first name is required",
-    }),
-    guardianMiddleName: z.string().optional(),
-    guardianLastName: z.string().min(1, {
-      message: "Guardian's last name is required",
-    }),
-    guardianPreferredName: z.string().min(1, {
-      message: "Preferred name is required",
-    }),
-    guardianBirthDay: z.coerce.date({
-      required_error: "Guardian's date of birth is required",
-      invalid_type_error: "Please enter a valid date",
-    }),
-    guardianNationality: z.string(),
-    guardianReligion: z.string().min(1, {
-      message: "Religion is required",
-    }),
-    guardianOtherReligion: z.string().optional(),
-    guardianNric: z.string().min(1, {
-      message: "NRIC/FIN is required",
-    }),
-    guardianMobile: z.string().min(1, {
-      message: "Mobile phone number is required",
-    }),
-    guardianEmail: z.string().email({
-      message: "Please enter a valid email address",
-    }),
-    guardianCompanyName: z.string().min(1, {
-      message: "Company name is required",
-    }),
-    guardianPosition: z.string().min(1, {
-      message: "Position at work is required",
-    }),
-  })
-  .superRefine((schema, ctx) => {
-    if (schema.guardianReligion === "Other") {
-      if (!schema.guardianOtherReligion) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please specify religion",
-          path: ["guardianOtherReligion"],
-        });
-      }
-    }
-  });
+export const guardianInformationSchema = z.object({
+  guardianFirstName: z.string().min(1, {
+    message: "Guardian's first name is required",
+  }),
+  guardianMiddleName: z.string().optional(),
+  guardianLastName: z.string().min(1, {
+    message: "Guardian's last name is required",
+  }),
+  guardianPreferredName: z.string().min(1, {
+    message: "Preferred name is required",
+  }),
+  guardianBirthDay: z.coerce.date({
+    required_error: "Guardian's date of birth is required",
+    invalid_type_error: "Please enter a valid date",
+  }),
+  guardianNationality: z.string(),
+  guardianReligion: z.string().min(1, {
+    message: "Religion is required",
+  }),
+  guardianNric: z.string().min(1, {
+    message: "NRIC/FIN is required",
+  }),
+  guardianMobile: z.string().min(1, {
+    message: "Mobile phone number is required",
+  }),
+  guardianEmail: z.string().email({
+    message: "Please enter a valid email address",
+  }),
+  guardianCompanyName: z.string().min(1, {
+    message: "Company name is required",
+  }),
+  guardianPosition: z.string().min(1, {
+    message: "Position at work is required",
+  }),
+});
 
 export const fatherInformationSchema = z
   .object({
@@ -176,7 +163,6 @@ export const fatherInformationSchema = z
       .optional(),
     fatherNationality: z.string().optional(),
     fatherReligion: z.string().optional(),
-    fatherOtherReligion: z.string().optional(),
     fatherNric: z.string().optional(),
     fatherMobile: z.string().optional(),
     fatherEmail: z
@@ -215,67 +201,44 @@ export const fatherInformationSchema = z
         }
       }
     }
-
-    if (schema.fatherReligion === "Other") {
-      if (!schema.fatherOtherReligion) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please specify religion",
-          path: ["fatherOtherReligion"],
-        });
-      }
-    }
   });
 
-export const motherInformationSchema = z
-  .object({
-    isValid: z.boolean().default(false).optional(),
-    motherFirstName: z.string().min(1, {
-      message: "Mother's first name is required",
-    }),
-    motherMiddleName: z.string().optional(),
-    motherLastName: z.string().min(1, {
-      message: "Mother's last name is required",
-    }),
-    motherPreferredName: z.string().min(1, {
-      message: "Preferred name is required",
-    }),
-    motherBirthDay: z.coerce.date({
-      required_error: "Mother's date of birth is required",
-      invalid_type_error: "Please enter a valid date",
-    }),
-    motherNationality: z.string(),
-    motherReligion: z.string().min(1, {
-      message: "Religion is required",
-    }),
-    motherOtherReligion: z.string().optional(),
-    motherNric: z.string().min(1, {
-      message: "NRIC/FIN is required",
-    }),
-    motherMobile: z.string().min(1, {
-      message: "Mobile phone number is required",
-    }),
-    motherEmail: z.string().email({
-      message: "Please enter a valid email address",
-    }),
-    motherCompanyName: z.string().min(1, {
-      message: "Company name is required",
-    }),
-    motherPosition: z.string().min(1, {
-      message: "Position at work is required",
-    }),
-  })
-  .superRefine((schema, ctx) => {
-    if (schema.motherReligion === "Other") {
-      if (!schema.motherOtherReligion) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please specify religion",
-          path: ["motherOtherReligion"],
-        });
-      }
-    }
-  });
+export const motherInformationSchema = z.object({
+  isValid: z.boolean().default(false).optional(),
+  motherFirstName: z.string().min(1, {
+    message: "Mother's first name is required",
+  }),
+  motherMiddleName: z.string().optional(),
+  motherLastName: z.string().min(1, {
+    message: "Mother's last name is required",
+  }),
+  motherPreferredName: z.string().min(1, {
+    message: "Preferred name is required",
+  }),
+  motherBirthDay: z.coerce.date({
+    required_error: "Mother's date of birth is required",
+    invalid_type_error: "Please enter a valid date",
+  }),
+  motherNationality: z.string(),
+  motherReligion: z.string().min(1, {
+    message: "Religion is required",
+  }),
+  motherNric: z.string().min(1, {
+    message: "NRIC/FIN is required",
+  }),
+  motherMobile: z.string().min(1, {
+    message: "Mobile phone number is required",
+  }),
+  motherEmail: z.string().email({
+    message: "Please enter a valid email address",
+  }),
+  motherCompanyName: z.string().min(1, {
+    message: "Company name is required",
+  }),
+  motherPosition: z.string().min(1, {
+    message: "Position at work is required",
+  }),
+});
 
 export const siblingInformationSchema = z
   .object({

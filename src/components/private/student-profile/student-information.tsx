@@ -41,6 +41,7 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
     preferredName,
     primaryLanguage,
     religion,
+    religionOther,
   } = studentInformation;
 
   const age = differenceInYears(new Date(), new Date(birthDay));
@@ -188,7 +189,10 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
             </div>
             <div className="space-y-2">
               <Label>Religion</Label>
-              <InputWithIcon value={religion} svgIcon={<BookOpenCheck className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                value={religion != "Other" ? religion : religionOther!}
+                svgIcon={<BookOpenCheck className="text-muted-foreground size-4" />}
+              />
             </div>
           </div>
         </CardContent>

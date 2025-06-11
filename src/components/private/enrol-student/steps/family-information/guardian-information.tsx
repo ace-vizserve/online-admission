@@ -4,9 +4,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { religions } from "@/data";
 import { cn } from "@/lib/utils";
 import {
   guardianInformationSchema,
@@ -17,7 +15,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -25,7 +22,7 @@ import { toast } from "sonner";
 function GuardianInformation() {
   const navigate = useNavigate();
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
-  const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
+
   const form = useForm<GuardianInformationSchema>({
     resolver: zodResolver(guardianInformationSchema),
     defaultValues: {
@@ -182,47 +179,12 @@ function GuardianInformation() {
                 <div className="flex flex-col gap-2">
                   <FormItem>
                     <FormLabel>Religion</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        if (value === "other") {
-                          setIsOtherReligion(true);
-                        } else {
-                          setIsOtherReligion(false);
-                        }
-
-                        field.onChange(value);
-                      }}
-                      defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full lg:max-w-[240px]">
-                          <SelectValue placeholder="Select a religion" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {religions.map((religion) => (
-                          <SelectItem key={religion.value} value={religion.value}>
-                            {religion.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                     <FormDescription>Enter guardian's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(isOtherReligion || formState.familyInfo?.guardianInfo?.guardianOtherReligion) && (
-                    <FormField
-                      control={form.control}
-                      name="guardianOtherReligion"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormControl>
-                            <Input placeholder="Please specify religion" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
               )}
             />

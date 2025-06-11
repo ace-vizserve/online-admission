@@ -149,6 +149,7 @@ export function extractStudentInfo(studentInformation: Student[]) {
     preferredName: info.preferredName,
     primaryLanguage: info.primaryLanguage,
     religion: info.religion,
+    religionOther: info.religionOther ?? null,
     enroleePhoto: info.enroleePhoto,
   };
 

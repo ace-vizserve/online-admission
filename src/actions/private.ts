@@ -443,6 +443,7 @@ export async function getStudentInformation(enroleeNumber: string) {
       gender: studentInformation.gender,
       primaryLanguage: studentInformation.primaryLanguage,
       religion: studentInformation.religion,
+      religionOther: studentInformation.religionOther ?? null,
       nric: studentInformation.nric,
     };
 
@@ -805,21 +806,6 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
 
     if (familyInfo.guardianMiddleName == null) {
       delete familyInfo.guardianMiddleName;
-    }
-
-    if (familyInfo.motherOtherReligion) {
-      familyInfo.motherReligion = familyInfo.motherOtherReligion;
-      delete familyInfo.motherOtherReligion;
-    }
-
-    if (familyInfo.fatherOtherReligion) {
-      familyInfo.fatherReligion = familyInfo.fatherOtherReligion;
-      delete familyInfo.fatherOtherReligion;
-    }
-
-    if (familyInfo.guardianOtherReligion) {
-      familyInfo.guardianReligion = familyInfo.guardianOtherReligion;
-      delete familyInfo.guardianOtherReligion;
     }
 
     delete familyInfo.isValid;
@@ -1251,21 +1237,6 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     if (familyInfo.guardianMiddleName == null) {
       delete familyInfo.guardianMiddleName;
-    }
-
-    if (familyInfo.motherOtherReligion) {
-      familyInfo.motherReligion = familyInfo.motherOtherReligion;
-      delete familyInfo.motherOtherReligion;
-    }
-
-    if (familyInfo.fatherOtherReligion) {
-      familyInfo.fatherReligion = familyInfo.fatherOtherReligion;
-      delete familyInfo.fatherOtherReligion;
-    }
-
-    if (familyInfo.guardianOtherReligion) {
-      familyInfo.guardianReligion = familyInfo.guardianOtherReligion;
-      delete familyInfo.guardianOtherReligion;
     }
 
     delete familyInfo.isValid;

@@ -4,9 +4,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { religions } from "@/data";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { motherInformationSchema, MotherInformationSchema } from "@/zod-schema";
@@ -14,14 +12,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function MotherInformation() {
   const { session } = useSession();
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const [isOtherReligion, setIsOtherReligion] = useState<boolean>(false);
 
   const isMotherAccount = session?.user.user_metadata.relationship === "mother";
 
@@ -167,47 +164,12 @@ function MotherInformation() {
                 <div className="flex flex-col gap-2">
                   <FormItem>
                     <FormLabel>Religion</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        if (value === "other") {
-                          setIsOtherReligion(true);
-                        } else {
-                          setIsOtherReligion(false);
-                        }
-
-                        field.onChange(value);
-                      }}
-                      defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full lg:max-w-[240px]">
-                          <SelectValue placeholder="Select a religion" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {religions.map((religion) => (
-                          <SelectItem key={religion.value} value={religion.value}>
-                            {religion.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                     <FormDescription>Enter mother's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(isOtherReligion || formState.familyInfo?.motherInfo?.motherOtherReligion) && (
-                    <FormField
-                      control={form.control}
-                      name="motherOtherReligion"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormControl>
-                            <Input placeholder="Please specify religion" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
               )}
             />
