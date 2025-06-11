@@ -4,15 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { religions } from "@/data";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ArrowRight, CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
-import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -20,7 +17,7 @@ import { toast } from "sonner";
 function SiblingInformation() {
   const navigate = useNavigate();
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
-  const [siblingOtherReligions, setSiblingOtherReligions] = useState<Record<number, boolean>>({});
+
   const form = useForm<SiblingInformationSchema>({
     resolver: zodResolver(siblingInformationSchema),
     defaultValues: {
@@ -129,6 +126,7 @@ function SiblingInformation() {
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name={`siblings.${index}.siblingReligion`}
@@ -136,47 +134,12 @@ function SiblingInformation() {
                         <div className="flex flex-col gap-2">
                           <FormItem>
                             <FormLabel>Religion</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                setSiblingOtherReligions((prev) => ({
-                                  ...prev,
-                                  [index]: value === "other",
-                                }));
-
-                                field.onChange(value);
-                              }}
-                              defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="w-full lg:max-w-[240px]">
-                                  <SelectValue placeholder="Select a religion" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {religions.map((religion) => (
-                                  <SelectItem key={religion.value} value={religion.value}>
-                                    {religion.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
                             <FormDescription>Enter sibling's religion</FormDescription>
                             <FormMessage />
                           </FormItem>
-                          {(siblingOtherReligions[index] ||
-                            formState.familyInfo?.siblingsInfo?.siblings[index]?.siblingOtherReligion) && (
-                            <FormField
-                              control={form.control}
-                              name={`siblings.${index}.siblingOtherReligion`}
-                              render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                  <FormControl>
-                                    <Input placeholder="Please specify religion" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )}
                         </div>
                       )}
                     />

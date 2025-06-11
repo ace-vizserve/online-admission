@@ -50,6 +50,7 @@ export type Student = {
   preferredName: string;
   primaryLanguage: string;
   religion: string;
+  religionOther?: string;
   enroleePhoto: string;
 };
 

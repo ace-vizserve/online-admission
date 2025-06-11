@@ -4,9 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { religions } from "@/data";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -113,25 +111,16 @@ function SiblingInformation() {
                       control={form.control}
                       name={`siblings.${index}.siblingReligion`}
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Religion</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <div className="flex flex-col gap-2">
+                          <FormItem>
+                            <FormLabel>Religion</FormLabel>
                             <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select a religion" />
-                              </SelectTrigger>
+                              <Input {...field} />
                             </FormControl>
-                            <SelectContent>
-                              {religions.map((religion) => (
-                                <SelectItem key={religion.value} value={religion.value}>
-                                  {religion.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>Enter the student's sibling religion.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
+                            <FormDescription>Enter sibling's religion</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        </div>
                       )}
                     />
                   </div>

@@ -142,8 +142,6 @@ function RenderFamilyDocCard({
 }
 
 function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDocument }) {
-  console.log(documents);
-
   const motherCards = [
     {
       role: "mother",
