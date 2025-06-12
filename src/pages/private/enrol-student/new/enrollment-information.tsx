@@ -157,7 +157,11 @@ function EnrollmentInformation() {
                     name="classType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Class Type</FormLabel>
+                        <div className="relative flex justify-between items-center">
+                          <FormLabel>Class Type</FormLabel>
+
+                          <ClassTypeTooltip />
+                        </div>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -170,6 +174,10 @@ function EnrollmentInformation() {
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
                                 Standard Class (ENGLISH + TAGALOG)
+                              </SelectItem>
+                            ) : selectedLevel == "" ? (
+                              <SelectItem disabled value={"None"}>
+                                Select a class level
                               </SelectItem>
                             ) : (
                               classTypes.slice(-4).map((type) => (
@@ -209,6 +217,12 @@ function EnrollmentInformation() {
 
                             {WHOLE_DAY_CLASS_LEVEL.includes(selectedLevel) && (
                               <SelectItem value={"Whole Day"}>Whole Day</SelectItem>
+                            )}
+
+                            {selectedLevel == "" && (
+                              <SelectItem disabled value={"None"}>
+                                Select a class level
+                              </SelectItem>
                             )}
                           </SelectContent>
                         </Select>
@@ -270,7 +284,7 @@ function EnrollmentInformation() {
                     name="availUniform"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="h-9">School Uniform</FormLabel>
+                        <FormLabel>School Uniform</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -293,7 +307,7 @@ function EnrollmentInformation() {
                     name="availStudentCare"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="h-9">Student Care</FormLabel>
+                        <FormLabel>Student Care</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -502,6 +516,21 @@ function EnrollmentInformation() {
   );
 }
 
+function ClassTypeTooltip() {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <CircleHelp className="stroke-blue-600 stroke-2 size-4" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Class offerings are subject to minimum enrolment</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function CDFDetailsDialog() {
   return (
     <Dialog>
@@ -509,9 +538,7 @@ function CDFDetailsDialog() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <Button size="icon" variant="ghost" type="button">
-                <CircleHelp className="stroke-blue-600 stroke-2" />
-              </Button>
+              <CircleHelp className="stroke-blue-600 stroke-2 size-4" />
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent>

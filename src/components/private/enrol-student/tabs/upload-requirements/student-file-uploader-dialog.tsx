@@ -345,7 +345,7 @@ const StudentFileUploaderDialog = memo(function ({
                                 "w-full pl-3 text-left font-normal",
                                 !field.value && "text-muted-foreground"
                               )}>
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              {field.value ? format(field.value, "d MMMM yyyy'") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
@@ -403,7 +403,7 @@ const StudentFileUploaderDialog = memo(function ({
                                 "w-full pl-3 text-left font-normal",
                                 !field.value && "text-muted-foreground"
                               )}>
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              {field.value ? format(field.value, "d MMMM yyyy'") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
@@ -729,7 +729,7 @@ function StudentFileUploaderDrawer({
                               "w-full pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
                             )}>
-                            {field.value ? format(field.value, "PPP") : <span>Pass expiration date</span>}
+                            {field.value ? format(field.value, "d MMMM yyyy'") : <span>Pass expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -789,7 +789,7 @@ function StudentFileUploaderDrawer({
                               "w-full pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
                             )}>
-                            {field.value ? format(field.value, "PPP") : <span>Passport expiration date</span>}
+                            {field.value ? format(field.value, "d MMMM yyyy'") : <span>Passport expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>

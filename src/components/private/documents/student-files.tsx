@@ -740,7 +740,7 @@ function StudentFileUploaderDialog({
                   <Button
                     variant={"outline"}
                     className={cn("w-full pl-3 text-left font-normal", !passExpiry && "text-muted-foreground")}>
-                    {passExpiry ? format(passExpiry, "PPP") : <span>Pick a date</span>}
+                    {passExpiry ? format(passExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
