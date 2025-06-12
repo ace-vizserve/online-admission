@@ -1,4 +1,3 @@
-import { checkNricExists } from "@/actions/private";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -10,7 +9,6 @@ import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
-import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
@@ -21,8 +19,6 @@ import { toast } from "sonner";
 function StudentDetails() {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const [isreligionOther, setIsreligionOther] = useState<boolean>(false);
-  const [isValidatingNric, setIsValidatingNric] = useState<boolean>(false);
-  const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   const form = useForm<StudentDetailsSchema>({
     resolver: zodResolver(studentDetailsSchema),
@@ -33,20 +29,6 @@ function StudentDetails() {
 
   async function onSubmit(values: StudentDetailsSchema) {
     try {
-      setIsValidatingNric(true);
-      const isNricTaken = await checkNricExists(values.nric, academicYear);
-
-      if (isNricTaken) {
-        toast.info("NRIC already taken", {
-          description: "This NRIC is already in use. Please double-check or enter a different one.",
-        });
-        form.setError("nric", {
-          type: "manual",
-          message: "NRIC is already taken",
-        });
-        return;
-      }
-
       const age = differenceInYears(new Date(), values.birthDay);
 
       if (age < 6) {
@@ -72,8 +54,6 @@ function StudentDetails() {
       });
     } catch (error) {
       console.log(error);
-    } finally {
-      setIsValidatingNric(false);
     }
   }
 
@@ -162,7 +142,7 @@ function StudentDetails() {
                           "w-full lg:w-[240px] pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}>
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                        {field.value ? format(field.value, "d MMMM yyyy") : <span>Pick a date</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
@@ -286,9 +266,6 @@ function StudentDetails() {
             render={({ field }) => (
               <FormItem className="relative">
                 <FormLabel>NRIC / FIN</FormLabel>
-                {isValidatingNric && (
-                  <div className="absolute top-1 right-0 w-4 h-4 border-[2px] border-secondary border-t-primary rounded-full animate-spin" />
-                )}
 
                 <FormControl>
                   <Input {...field} />
@@ -300,16 +277,12 @@ function StudentDetails() {
           />
         </div>
 
-        <Button
-          disabled={isValidatingNric}
-          size={"lg"}
-          className="hidden lg:flex w-full p-8 gap-2 uppercase"
-          type="submit">
+        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
           Save
           <Save />
         </Button>
 
-        <Button disabled={isValidatingNric} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
           Save
           <Save />
         </Button>

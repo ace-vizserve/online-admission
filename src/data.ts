@@ -263,9 +263,9 @@ export const preferredSchedule = [
 ] as const;
 
 export const campusDevelopmentFee = [
-  { label: "Option 1", value: "Option 1" },
-  { label: "Option 2", value: "Option 2" },
-  { label: "Option 3", value: "Option 3" },
+  { label: "Option 1 – Full payment (S$1,350 upfront)", value: "Option 1" },
+  { label: "Option 2 – Partial + Monthly (S$250 + S$100/mo)", value: "Option 2" },
+  { label: "Option 3 – Monthly only (S$125/mo)", value: "Option 3" },
 ] as const;
 
 export const languages = [
