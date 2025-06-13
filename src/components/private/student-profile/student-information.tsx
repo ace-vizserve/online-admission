@@ -85,7 +85,7 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
             <div className="space-y-2">
               <Label>Date of Birth</Label>
               <InputWithIcon
-                value={formatDate(new Date(birthDay), "PPP")}
+                value={formatDate(new Date(birthDay), "dd/MM/yyyy")}
                 svgIcon={<Cake className="text-muted-foreground size-4" />}
               />
             </div>

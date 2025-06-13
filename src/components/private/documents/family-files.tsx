@@ -89,7 +89,7 @@ function RenderFamilyDocCard({
                         <span className="text-xs">Expires at</span>
                         <Input
                           tabIndex={-1}
-                          defaultValue={expiry ? formatDate(new Date(expiry), "d MMMM yyyy'") : "N/A"}
+                          defaultValue={expiry ? formatDate(new Date(expiry), "dd/MM/yyyy") : "N/A"}
                           className="col-span-2 h-8"
                           readOnly
                         />
@@ -518,7 +518,7 @@ function ParentGuardianFileUploaderDialog({
                   <Button
                     variant={"outline"}
                     className={cn("w-full pl-3 text-left font-normal", !motherPassExpiry && "text-muted-foreground")}>
-                    {motherPassExpiry ? format(motherPassExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
+                    {motherPassExpiry ? format(motherPassExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -555,7 +555,7 @@ function ParentGuardianFileUploaderDialog({
                       "w-full pl-3 text-left font-normal",
                       !motherPassportExpiry && "text-muted-foreground"
                     )}>
-                    {motherPassportExpiry ? format(motherPassportExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
+                    {motherPassportExpiry ? format(motherPassportExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -595,7 +595,7 @@ function ParentGuardianFileUploaderDialog({
                   <Button
                     variant={"outline"}
                     className={cn("w-full pl-3 text-left font-normal", !fatherPassExpiry && "text-muted-foreground")}>
-                    {fatherPassExpiry ? format(fatherPassExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
+                    {fatherPassExpiry ? format(fatherPassExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -632,7 +632,7 @@ function ParentGuardianFileUploaderDialog({
                       "w-full pl-3 text-left font-normal",
                       !motherPassportExpiry && "text-muted-foreground"
                     )}>
-                    {fatherPassportExpiry ? format(fatherPassportExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
+                    {fatherPassportExpiry ? format(fatherPassportExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -672,7 +672,7 @@ function ParentGuardianFileUploaderDialog({
                   <Button
                     variant={"outline"}
                     className={cn("w-full pl-3 text-left font-normal", !guardianPassExpiry && "text-muted-foreground")}>
-                    {guardianPassExpiry ? format(guardianPassExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
+                    {guardianPassExpiry ? format(guardianPassExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -709,7 +709,7 @@ function ParentGuardianFileUploaderDialog({
                       "w-full pl-3 text-left font-normal",
                       !guardianPassportExpiry && "text-muted-foreground"
                     )}>
-                    {guardianPassportExpiry ? format(guardianPassportExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
+                    {guardianPassportExpiry ? format(guardianPassportExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>

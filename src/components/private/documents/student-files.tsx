@@ -115,7 +115,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                         {passDocument.passExpiry ? (
                           <Input
                             id="passExpirationDate"
-                            defaultValue={formatDate(new Date(passDocument.passExpiry), "PPP")}
+                            defaultValue={formatDate(new Date(passDocument.passExpiry), "dd/MM/yyyy")}
                             className="col-span-2 h-8"
                             tabIndex={-1}
                             readOnly
@@ -225,7 +225,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                         {passportDocument.passportExpiry ? (
                           <Input
                             id="passportExpiry"
-                            defaultValue={formatDate(new Date(passportDocument.passportExpiry), "PPP")}
+                            defaultValue={formatDate(new Date(passportDocument.passportExpiry), "dd/MM/yyyy")}
                             className="col-span-2 h-8"
                             tabIndex={-1}
                             readOnly
@@ -740,7 +740,7 @@ function StudentFileUploaderDialog({
                   <Button
                     variant={"outline"}
                     className={cn("w-full pl-3 text-left font-normal", !passExpiry && "text-muted-foreground")}>
-                    {passExpiry ? format(passExpiry, "d MMMM yyyy'") : <span>Pick a date</span>}
+                    {passExpiry ? format(passExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -774,7 +774,7 @@ function StudentFileUploaderDialog({
                   <Button
                     variant={"outline"}
                     className={cn("w-full pl-3 text-left font-normal", !passportExpiry && "text-muted-foreground")}>
-                    {passportExpiry ? format(passportExpiry, "PPP") : <span>Pick a date</span>}
+                    {passportExpiry ? format(passportExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>

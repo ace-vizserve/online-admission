@@ -83,7 +83,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                         {passDocument.passExpiry ? (
                           <Input
                             id="passExpirationDate"
-                            defaultValue={formatDate(new Date(passDocument.passExpiry), "PPP")}
+                            defaultValue={formatDate(new Date(passDocument.passExpiry), "dd/MM/yyyy")}
                             className="col-span-2 h-8"
                             tabIndex={-1}
                             readOnly
@@ -172,7 +172,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                         {passportDocument.passportExpiry ? (
                           <Input
                             id="passportExpiry"
-                            defaultValue={formatDate(new Date(passportDocument.passportExpiry), "PPP")}
+                            defaultValue={formatDate(new Date(passportDocument.passportExpiry), "dd/MM/yyyy")}
                             className="col-span-2 h-8"
                             tabIndex={-1}
                             readOnly

@@ -157,11 +157,8 @@ function EnrollmentInformation() {
                     name="classType"
                     render={({ field }) => (
                       <FormItem>
-                        <div className="relative flex justify-between items-center">
-                          <FormLabel>Class Type</FormLabel>
+                        <FormLabel>Class Type</FormLabel>
 
-                          <ClassTypeTooltip />
-                        </div>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -188,7 +185,11 @@ function EnrollmentInformation() {
                             )}
                           </SelectContent>
                         </Select>
-                        <FormDescription>Choose the type of class (e.g., Enrichment Class).</FormDescription>
+                        <FormDescription>
+                          <span className="font-medium text-red-600">Note:</span> Classes will open only if enough
+                          students enrol.
+                        </FormDescription>
+
                         <FormMessage />
                       </FormItem>
                     )}
@@ -513,21 +514,6 @@ function EnrollmentInformation() {
         </Card>
       </div>
     </>
-  );
-}
-
-function ClassTypeTooltip() {
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <CircleHelp className="stroke-blue-600 stroke-2 size-4" />
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Class offerings are subject to minimum enrolment</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   );
 }
 

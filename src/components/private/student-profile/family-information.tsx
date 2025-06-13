@@ -101,7 +101,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
-                    value={fatherBirthDay ? formatDate(fatherBirthDay, "PPP") : "N/A"}
+                    value={fatherBirthDay ? formatDate(fatherBirthDay, "dd/MM/yyyy") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -115,8 +115,6 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
               </div>
             </CardContent>
           </Card>
-
-          <Separator />
 
           <Card className="p-0 border-none shadow-none">
             <CardHeader className="p-0">
@@ -148,8 +146,6 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
               </div>
             </CardContent>
           </Card>
-
-          <Separator />
 
           <Card className="p-0 border-none shadow-none">
             <CardHeader className="p-0">
@@ -226,7 +222,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
-                    value={motherBirthDay ? formatDate(motherBirthDay, "PPP") : "N/A"}
+                    value={motherBirthDay ? formatDate(motherBirthDay, "dd/MM/yyyy") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -240,8 +236,6 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
               </div>
             </CardContent>
           </Card>
-
-          <Separator />
 
           <Card className="p-0 border-none shadow-none">
             <CardHeader className="p-0">
@@ -273,8 +267,6 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
               </div>
             </CardContent>
           </Card>
-
-          <Separator />
 
           <Card className="p-0 border-none shadow-none">
             <CardHeader className="p-0">
@@ -351,7 +343,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
-                    value={guardianBirthDay ? formatDate(guardianBirthDay, "PPP") : "N/A"}
+                    value={guardianBirthDay ? formatDate(guardianBirthDay, "dd/MM/yyyy") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -365,8 +357,6 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
               </div>
             </CardContent>
           </Card>
-
-          <Separator />
 
           <Card className="p-0 border-none shadow-none">
             <CardHeader className="p-0">
@@ -398,8 +388,6 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
               </div>
             </CardContent>
           </Card>
-
-          <Separator />
 
           <Card className="p-0 border-none shadow-none">
             <CardHeader className="p-0">
@@ -455,7 +443,9 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                     <div className="space-y-2">
                       <Label>Birthday</Label>
                       <InputWithIcon
-                        value={sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "PPP") : "N/A"}
+                        value={
+                          sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "dd/MM/yyyy") : "N/A"
+                        }
                         svgIcon={<Cake className="text-muted-foreground size-4" />}
                       />
                     </div>
