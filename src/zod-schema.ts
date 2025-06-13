@@ -95,15 +95,19 @@ export const studentAddressContactSchema = z.object({
     .min(6, { message: "Postal code must be exactly 6 digits" })
     .max(6, { message: "Postal code must be exactly 6 digits" }),
   nationality: z.string(),
-  homePhone: z.string().min(1, {
-    message: "Home phone number is required",
-  }),
+  homePhone: z
+    .string()
+    .min(1, { message: "Home phone number is required" })
+    .regex(/^\+?\d+$/, { message: "Home phone number must contain digits only" }),
   contactPerson: z.string().min(1, {
     message: "Contact person is required",
   }),
-  contactPersonNumber: z.string().min(1, {
-    message: "Contact person's number is required",
-  }),
+  contactPersonNumber: z
+    .string()
+    .min(1, {
+      message: "Contact person's number is required",
+    })
+    .regex(/^\+?\d+$/, { message: "Contact person number must contain digits only" }),
   livingWithWhom: z.string().min(1, {
     message: "Please indicate who the student is living with",
   }),
@@ -134,9 +138,12 @@ export const guardianInformationSchema = z.object({
   guardianNric: z.string().min(1, {
     message: "NRIC/FIN is required",
   }),
-  guardianMobile: z.string().min(1, {
-    message: "Mobile phone number is required",
-  }),
+  guardianMobile: z
+    .string()
+    .min(1, {
+      message: "Mobile phone number is required",
+    })
+    .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Guardian's mobile number must contain only digits" }),
   guardianEmail: z.string().email({
     message: "Please enter a valid email address",
   }),
@@ -164,7 +171,10 @@ export const fatherInformationSchema = z
     fatherNationality: z.string().optional(),
     fatherReligion: z.string().optional(),
     fatherNric: z.string().optional(),
-    fatherMobile: z.string().optional(),
+    fatherMobile: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Father's mobile number must contain only digits" }),
     fatherEmail: z
       .string()
       .transform((val) => (val === "" ? undefined : val))
@@ -226,9 +236,12 @@ export const motherInformationSchema = z.object({
   motherNric: z.string().min(1, {
     message: "NRIC/FIN is required",
   }),
-  motherMobile: z.string().min(1, {
-    message: "Mobile phone number is required",
-  }),
+  motherMobile: z
+    .string()
+    .min(1, {
+      message: "Mobile phone number is required",
+    })
+    .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Mother's mobile number must contain only digits" }),
   motherEmail: z.string().email({
     message: "Please enter a valid email address",
   }),
@@ -305,9 +318,12 @@ export const enrollmentInformationSchema = z
     discount: z.array(z.string().optional()).optional(),
     referrerName: z.string().optional(),
     referrerMobile: z.string().optional(),
-    contractSignatory: z.string().min(1, {
-      message: "Parent contract signatory is required",
-    }),
+    contractSignatory: z
+      .string()
+      .min(1, {
+        message: "Parent contract signatory is required",
+      })
+      .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Referrer's mobile number must contain only digits" }),
   })
   .superRefine((schema, ctx) => {
     if (schema.referrerName) {
