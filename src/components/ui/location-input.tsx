@@ -61,7 +61,7 @@ interface LocationSelectorProps {
   disabled?: boolean;
   onCountryChange?: (country: CountryProps | null) => void;
   onStateChange?: (state: StateProps | null) => void;
-  selectedNationality?: string;
+  currentCountry?: string;
 }
 
 const LocationSelector = ({
@@ -69,7 +69,7 @@ const LocationSelector = ({
   onCountryChange,
   onStateChange,
   showStates,
-  selectedNationality,
+  currentCountry,
 }: LocationSelectorProps) => {
   const [selectedCountry, setSelectedCountry] = useState<CountryProps | null>(null);
   const [selectedState, setSelectedState] = useState<StateProps | null>(null);
@@ -80,14 +80,14 @@ const LocationSelector = ({
   const statesData = states as StateProps[];
 
   useEffect(() => {
-    if (selectedNationality && !selectedCountry) {
-      const matched = countriesData.find((c) => c.nationality.toLowerCase() === selectedNationality.toLowerCase());
+    if (currentCountry && !selectedCountry) {
+      const matched = countriesData.find((c) => c.name.toLowerCase() === currentCountry.toLowerCase());
       if (matched) {
         setSelectedCountry(matched);
         onCountryChange?.(matched);
       }
     }
-  }, [selectedNationality, countriesData, selectedCountry, onCountryChange]);
+  }, [currentCountry, countriesData, selectedCountry, onCountryChange]);
 
   // Cast imported JSON data to their respective types
 

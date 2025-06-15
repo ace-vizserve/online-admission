@@ -109,8 +109,8 @@ function StudentAddressContact() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    selectedNationality={formState.studentInfo?.addressContact.nationality}
-                    onCountryChange={(value) => field.onChange(value?.nationality)}
+                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
                 <FormDescription>Select the country that best represents the student's nationality.</FormDescription>
