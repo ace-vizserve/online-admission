@@ -70,7 +70,7 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
 
             <div className="space-y-2">
               <Label>Middle Name</Label>
-              <InputWithIcon value={middleName ?? "N/A"} svgIcon={<User className="text-muted-foreground size-4" />} />
+              <InputWithIcon value={middleName || "N/A"} svgIcon={<User className="text-muted-foreground size-4" />} />
             </div>
             <div className="space-y-2">
               <Label>Last Name</Label>
