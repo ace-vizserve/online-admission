@@ -66,7 +66,7 @@ function NewStudentLayout() {
           </div>
           <div
             className={cn("w-full opacity-100 scale-100 transition-[opacity_transform]", {
-              "scale-90 opacity-70": isPending,
+              "scale-95 opacity-70": isPending,
             })}>
             <Outlet />
           </div>
