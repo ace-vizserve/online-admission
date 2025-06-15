@@ -158,8 +158,8 @@ function GuardianInformation() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    selectedNationality={formState.familyInfo?.guardianInfo?.guardianNationality}
-                    onCountryChange={(value) => field.onChange(value?.nationality)}
+                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
                 <FormDescription>Select the country that best represents the guardian's nationality.</FormDescription>

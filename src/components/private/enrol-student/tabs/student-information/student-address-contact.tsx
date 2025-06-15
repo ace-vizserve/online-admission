@@ -80,7 +80,7 @@ function StudentAddressContact() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    selectedNationality={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.studentInfo?.addressContact.nationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>

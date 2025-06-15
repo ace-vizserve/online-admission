@@ -200,9 +200,9 @@ function MotherInformation() {
                 <FormLabel>Select Nationality</FormLabel>
                 <FormControl>
                   <LocationSelector
-                    selectedNationality={formState.familyInfo?.motherInfo?.motherNationality}
                     showStates={false}
-                    onCountryChange={(value) => field.onChange(value?.nationality)}
+                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
                 <FormDescription>Select the country that best represents the mother's nationality.</FormDescription>
