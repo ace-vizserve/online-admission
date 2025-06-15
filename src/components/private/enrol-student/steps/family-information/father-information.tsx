@@ -42,11 +42,22 @@ function FatherInformation() {
   });
 
   function onSubmit(values: FatherInformationSchema) {
-    const insertedValues = Object.values(values).filter((v) => typeof v !== "boolean" && v != "" && v != undefined);
+    const insertedValues = Object.keys(values).filter((v) => {
+      const key = v as keyof FatherInformationSchema;
+      return values[key] != undefined && typeof values[key] != "boolean" && values[key] != "";
+    }) as [keyof FatherInformationSchema];
 
     if (insertedValues.length > 0 && values.noFatherInfo) {
+      for (const key of insertedValues) {
+        form.setError(key, {});
+      }
+
+      toast.warning("Conflict detected!", {
+        description: "Some father's details are filled, but marked as not applicable. Please review.",
+      });
+
       form.setError("noFatherInfo", {
-        message: "You've entered father details but marked them as not applicable. Please resolve the conflict.",
+        message: "You've entered father details but marked them as not applicable.",
       });
       return;
     }
@@ -94,7 +105,7 @@ function FatherInformation() {
         fatherPreferredName: "",
         fatherBirthDay: undefined,
         fatherNationality: "",
-        fatherReligion: undefined,
+        fatherReligion: "",
         fatherNric: "",
         fatherMobile: "",
         fatherEmail: "",
