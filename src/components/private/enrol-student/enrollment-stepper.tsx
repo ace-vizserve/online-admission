@@ -7,25 +7,23 @@ type Props = {
 export default function EnrollmentStepper({ setShowEnrollmentProcess }: Props) {
   return (
     <Stepper
-      className="bg-white mx-auto w-full max-w-4xl md:rounded-xl shadow-lg"
-      disableStepIndicators
+      className="mx-auto w-full max-w-3xl"
       initialStep={1}
       onFinalStepCompleted={() => setShowEnrollmentProcess(false)}
       backButtonText="Previous"
       nextButtonText="Next">
       <Step>
         <div className="text-center space-y-8">
-          <h2 className="text-balance text-2xl md:text-3xl font-semibold">📘 HFSE Online Enrolment Process</h2>
+          <h2 className="text-balance text-2xl md:text-3xl font-bold">📘 HFSE Online Enrolment Process</h2>
           <p className="text-sm md:text-base text-balance -tracking-tighter">
-            Welcome to the HFSE Online Admission Portal! Please follow the steps below to complete your child’s
-            enrolment.
+            Welcome to the HFSE Online Admission Portal! Please follow the steps to complete your child’s enrolment.
           </p>
         </div>
       </Step>
 
       <Step>
         <div className="text-center space-y-8">
-          <h2 className="text-balance text-2xl md:text-3xl font-semibold">📝 Step 1 – Fill Out the Enrolment Form</h2>
+          <h2 className="text-balance text-2xl md:text-3xl font-bold">📝 Step 1 – Fill Out the Enrolment Form</h2>
           <p className="text-sm md:text-base text-balance -tracking-tighter">
             Provide accurate student, academic, and family details. Ensure all required fields are completed.
           </p>
@@ -34,7 +32,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess }: Props) {
 
       <Step>
         <div className="space-y-8">
-          <h2 className="text-balance text-center text-2xl md:text-3xl font-semibold">
+          <h2 className="text-balance text-center text-2xl md:text-3xl font-bold">
             📄 Step 2 – Upload Required Documents
           </h2>
           <div className="w-full -tracking-tighter space-y-4">
@@ -84,9 +82,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess }: Props) {
 
       <Step>
         <div className="space-y-8">
-          <h2 className="text-balance text-center text-2xl md:text-3xl font-semibold">
-            ✅ Acknowledge Enrolment Process
-          </h2>
+          <h2 className="text-balance text-center text-2xl md:text-3xl font-bold">✅ Acknowledge Enrolment Process</h2>
           <p className="text-sm md:text-base -tracking-tighter">
             By continuing, you confirm that you have read and understood the enrolment process, including all
             requirements, steps, and applicable terms.
