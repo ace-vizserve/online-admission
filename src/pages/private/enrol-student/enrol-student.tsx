@@ -246,11 +246,11 @@ function AcademicYearDropdown() {
 
   return (
     <Select value={academicYear} onValueChange={setAcademicYear}>
-      <SelectTrigger className="text-blue-600 mt-2 w-max mx-auto text-xs font-semibold" size="sm">
+      <SelectTrigger className="text-green-500 mt-2 w-max mx-auto text-xs font-semibold" size="sm">
         <Label className="text-xs font-semibold">Academic Year</Label>
         <SelectValue placeholder="Choose academic year" />
       </SelectTrigger>
-      <SelectContent className="[&_div:focus]:text-blue-600">
+      <SelectContent className="[&_div:focus]:text-green-500">
         <SelectItem className="text-xs font-semibold" value="ay2025">
           2025
         </SelectItem>
