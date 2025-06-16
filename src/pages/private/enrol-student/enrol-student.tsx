@@ -1,6 +1,7 @@
 import { getEnrolledStudents, lookupNewEnrolledStudent } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
+import EnrollmentStepper from "@/components/private/enrol-student/enrollment-stepper";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { DotPulse, Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { ArrowLeft, ArrowUpRight, UserPlus2, UserRoundPlus } from "lucide-react";
+import { motion } from "motion/react";
 import { memo, useCallback, useState, useTransition } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -25,6 +27,7 @@ import AcademicYearSelector from "./academic-year-selector";
 
 function EnrolStudent() {
   const { session } = useSession();
+  const [showEnrollmentProcess, setShowEnrollmentProcess] = useState<boolean>(true);
   const { title, description } = ENROL_NEW_STUDENT_TITLE_DESCRIPTION;
   const [isCheckingEnrollment, setIsCheckingEnrollment] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -115,58 +118,81 @@ function EnrolStudent() {
       {academicYear === "" ? (
         <AcademicYearSelector setSelectedAy={setAcademicYear} />
       ) : (
-        <div className="w-full h-screen pt-16 md:pt-20 flex items-center justify-center bg-muted">
-          <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
-            <CardHeader className="text-center px-2">
-              <CardTitle className="text-lg">Select a student</CardTitle>
-              <CardDescription className="text-sm">
-                Selecting a student will proceed with the enrolment process
-              </CardDescription>
-              <AcademicYearDropdown />
-            </CardHeader>
-            <Separator />
-            <CardContent className="px-2">
-              <ScrollArea className="h-60">
-                {isPending ? (
-                  <div className="flex h-72 w-full flex-col gap-2 items-center justify-center rounded-md border border-dashed bg-muted text-muted-foreground">
-                    <p className="text-xs text-muted-foreground animate-pulse">Fetching students...</p>
-                    <Tailspin size="20" stroke="3" speed="0.9" color="#262E40" />
-                  </div>
-                ) : data?.studentsList != null && data.studentsList.length > 0 ? (
-                  <StudentsList selected={selected} setSelected={selectStudent} studentList={data.studentsList} />
-                ) : (
-                  <NoStudents />
-                )}
-              </ScrollArea>
-            </CardContent>
-            <CardFooter className="flex items-center flex-col gap-2 px-4">
-              <Button
-                disabled={isCheckingEnrollment}
-                onClick={async () => await checkEnrollmentExists()}
-                variant={"outline"}
-                size={"lg"}
-                className={cn("gap-2 w-full cursor-pointer", {
-                  "opacity-70 pointer-events-none": selected == null,
-                })}>
-                {isCheckingEnrollment ? (
-                  <DotPulse size="30" speed="1.3" color="#111A2E" />
-                ) : (
-                  <>
-                    Enrol student <ArrowUpRight />
-                  </>
-                )}
-              </Button>
+        <div className="w-full h-screen overflow-hidden pt-16 md:pt-20 flex items-center justify-center bg-muted">
+          {showEnrollmentProcess ? (
+            <EnrollmentStepper setShowEnrollmentProcess={setShowEnrollmentProcess} />
+          ) : (
+            <motion.div
+              initial={{
+                y: 40,
+                scale: 0.95,
+                opacity: 0,
+              }}
+              animate={{
+                y: 0,
+                scale: 1,
+                opacity: 1,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 120,
+                damping: 14,
+                duration: 0.1,
+              }}
+              className="w-full">
+              <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
+                <CardHeader className="text-center px-2">
+                  <CardTitle className="text-lg">Select a student</CardTitle>
+                  <CardDescription className="text-sm">
+                    Selecting a student will proceed with the enrolment process
+                  </CardDescription>
+                  <AcademicYearDropdown />
+                </CardHeader>
+                <Separator />
+                <CardContent className="px-2">
+                  <ScrollArea className="h-60">
+                    {isPending ? (
+                      <div className="flex h-72 w-full flex-col gap-2 items-center justify-center rounded-md border border-dashed bg-muted text-muted-foreground">
+                        <p className="text-xs text-muted-foreground animate-pulse">Fetching students...</p>
+                        <Tailspin size="20" stroke="3" speed="0.9" color="#262E40" />
+                      </div>
+                    ) : data?.studentsList != null && data.studentsList.length > 0 ? (
+                      <StudentsList selected={selected} setSelected={selectStudent} studentList={data.studentsList} />
+                    ) : (
+                      <NoStudents />
+                    )}
+                  </ScrollArea>
+                </CardContent>
+                <CardFooter className="flex items-center flex-col gap-2 px-4">
+                  <Button
+                    disabled={isCheckingEnrollment}
+                    onClick={async () => await checkEnrollmentExists()}
+                    variant={"outline"}
+                    size={"lg"}
+                    className={cn("gap-2 w-full cursor-pointer", {
+                      "opacity-70 pointer-events-none": selected == null,
+                    })}>
+                    {isCheckingEnrollment ? (
+                      <DotPulse size="30" speed="1.3" color="#111A2E" />
+                    ) : (
+                      <>
+                        Enrol student <ArrowUpRight />
+                      </>
+                    )}
+                  </Button>
 
-              <Link
-                to={`/enrol-student/new/student-info?academicYear=${academicYear}`}
-                className={buttonVariants({
-                  size: "lg",
-                  className: "gap-2 w-full",
-                })}>
-                Add new student <UserPlus2 />
-              </Link>
-            </CardFooter>
-          </Card>
+                  <Link
+                    to={`/enrol-student/new/student-info?academicYear=${academicYear}`}
+                    className={buttonVariants({
+                      size: "lg",
+                      className: "gap-2 w-full",
+                    })}>
+                    Add new student <UserPlus2 />
+                  </Link>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          )}
         </div>
       )}
     </>
