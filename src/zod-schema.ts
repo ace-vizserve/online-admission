@@ -317,13 +317,13 @@ export const enrollmentInformationSchema = z
     }),
     discount: z.array(z.string().optional()).optional(),
     referrerName: z.string().optional(),
-    referrerMobile: z.string().optional(),
-    contractSignatory: z
+    referrerMobile: z
       .string()
-      .min(1, {
-        message: "Parent contract signatory is required",
-      })
+      .optional()
       .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Referrer's mobile number must contain only digits" }),
+    contractSignatory: z.string().min(1, {
+      message: "Parent contract signatory is required",
+    }),
   })
   .superRefine((schema, ctx) => {
     if (schema.referrerName) {

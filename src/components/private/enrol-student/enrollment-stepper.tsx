@@ -39,16 +39,16 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess }: Props) {
             <div className="text-sm md:text-base space-y-2">
               <p className="font-semibold">🧒 Student Documents</p>
               <p>
-                Please prepare the following documents for your child: an ID picture, birth certificate, education
-                certificate (to follow), medical examination form (to follow), Singapore pass details with a valid
-                expiry date, and passport information.
+                Please prepare the following documents for your child: ID picture, birth certificate, pass type with a
+                valid expiry date, and passport information. The education certificate and medical examination form may
+                be submitted at a later time.
               </p>
             </div>
             <div className="text-sm md:text-base space-y-2">
               <p className="font-semibold">👨‍👩‍👧 Parent/Guardian Documents</p>
               <p>
-                Parents or guardians are required to submit their Singapore pass details and passport information, both
-                showing valid expiry dates.
+                Parents or guardians are required to submit their pass type and passport information, both showing valid
+                expiry dates.
               </p>
             </div>
           </div>
@@ -57,14 +57,14 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess }: Props) {
 
       <Step>
         <div className="space-y-8">
-          <h2 className="text-balance text-2xl md:text-3xl text-center font-semibold">
+          <h2 className="text-balance text-2xl md:text-3xl text-center font-bold">
             🎁 Promo & Discount Terms and Conditions
           </h2>
           <div className="space-y-3">
             <p className="text-sm md:text-base -tracking-tighter">
-              Promotions and discounts apply only to the selected academic year and cannot be transferred or combined
-              with other offers unless explicitly stated. To qualify for any promotion, all stated requirements must be
-              met before the specified deadline and are subject to review by the Admissions Team.
+              Promotions and discounts are valid only for the selected academic year and may vary based on the enrollee
+              type (new or current). All requirements must be met before the deadline and are subject to Admissions Team
+              approval.
             </p>
 
             <p className="text-sm md:text-base -tracking-tighter">
