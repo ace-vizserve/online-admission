@@ -158,7 +158,7 @@ export default function Stepper({
                   <label
                     htmlFor="terms"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I’ve read and agree to the enrollment terms
+                    I’ve read and agree to the enrolment terms
                   </label>
                 </div>
               ) : (
