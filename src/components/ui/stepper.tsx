@@ -123,8 +123,11 @@ export default function Stepper({
 
         {!isCompleted && (
           <div className={`px-8 pb-8 ${footerClassName}`}>
-            <div className={`mt-10 flex ${currentStep !== 1 ? "justify-between" : "justify-end"}`}>
-              {!isLastStep && currentStep !== 1 && (
+            <div
+              className={`mt-10 flex ${currentStep !== 1 ? "justify-between" : "justify-end"} ${
+                isLastStep ? "flex-col-reverse gap-4" : "flex-row gap-0"
+              }`}>
+              {currentStep !== 1 && (
                 <Button
                   size={"lg"}
                   variant={"ghost"}

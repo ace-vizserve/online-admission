@@ -75,7 +75,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess }: Props) {
           <p className="mt-3 text-xs md:text-sm text-muted-foreground">
             For promo inquiries, you may contact us at:
             <br />
-            <strong>admissions@hfse.edu.sg</strong> or <strong>documents.admissions.hfse@gmail.com</strong>
+            <strong>admissions@hfse.edu.sg</strong>
           </p>
         </div>
       </Step>
