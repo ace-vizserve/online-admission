@@ -1190,7 +1190,6 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     const {
       birthCert,
-
       idPicture,
       medical,
       pass,

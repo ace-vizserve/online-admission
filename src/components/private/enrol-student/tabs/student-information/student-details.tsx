@@ -179,7 +179,7 @@ function StudentDetails() {
                     ))}
                   </RadioGroup>
                 </FormControl>
-                <FormDescription>Select your gender</FormDescription>
+                <FormDescription>Your student's gender</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -231,7 +231,7 @@ function StudentDetails() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
-                            <Input placeholder="Please specify religion" {...field} />
+                            <Input placeholder="Please specify religion" {...field} value={field.value ?? ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

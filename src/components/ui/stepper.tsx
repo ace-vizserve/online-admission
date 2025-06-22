@@ -149,7 +149,7 @@ export default function Stepper({
                     className="size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                     onCheckedChange={async (checked) => {
                       if (checked) {
-                        await wait(500);
+                        await wait(150);
                         handleComplete();
                       }
                     }}

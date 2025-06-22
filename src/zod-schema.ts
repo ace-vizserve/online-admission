@@ -68,7 +68,7 @@ export const studentDetailsSchema = z
     religion: z.string().min(1, {
       message: "Religion is required",
     }),
-    religionOther: z.string().optional(),
+    religionOther: z.string().optional().nullable(),
     nric: z.string().min(1, {
       message: "NRIC/FIN is required",
     }),
