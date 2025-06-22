@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import useSession from "@/hooks/use-session";
 import { EnrolOldStudentFormState } from "@/types";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
@@ -29,6 +30,8 @@ function checkExpiry(label: string, expiry: Date | null | undefined, type: "pass
 
 function SubmitApplicationDialog() {
   const params = useParams();
+  const { session } = useSession();
+  const queryClient = useQueryClient();
   const { formState, clearState } = useEnrolOldStudentContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
@@ -38,6 +41,15 @@ function SubmitApplicationDialog() {
       window.location.href = "/application-submitted";
     },
     onSettled() {
+      queryClient.invalidateQueries({
+        queryKey: ["section-cards", session?.user.email],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["students-list", session?.user.email],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["student-enrollments-list", session?.user.email],
+      });
       clearState();
       sessionStorage.clear();
     },

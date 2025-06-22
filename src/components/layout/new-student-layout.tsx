@@ -18,10 +18,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "@/types";
 import { useEnrolNewStudentTabStateStore, useSelectAcademicYear } from "@/zustand-store";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
@@ -78,7 +79,8 @@ function NewStudentLayout() {
 
 function SubmitApplicationDialog() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
+  const queryClient = useQueryClient();
+  const { session } = useSession();
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
   const { formState } = useEnrolNewStudentContext();
   const { mutate, isPending } = useMutation({
@@ -89,6 +91,15 @@ function SubmitApplicationDialog() {
       window.location.href = "/application-submitted";
     },
     onSettled() {
+      queryClient.invalidateQueries({
+        queryKey: ["section-cards", session?.user.email],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["students-list", session?.user.email],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["student-enrollments-list", session?.user.email],
+      });
       clearEnrolNewStudentTabState();
       sessionStorage.clear();
     },
