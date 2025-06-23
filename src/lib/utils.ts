@@ -362,7 +362,7 @@ export async function getStudentsList(parentEmail: string) {
       return acc;
     }, []);
 
-    return studentsList;
+    return studentsList.reverse();
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -371,18 +371,6 @@ export async function getStudentsList(parentEmail: string) {
 
 export async function getCurrentAYEnrolledStudents(parentEmail: string) {
   try {
-    const { error: totalChildrenError, data: totalChildren } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeNumber, enroleeFullName")
-      .not("applicationStatus", "is", "null")
-      .neq("applicationStatus", "DELETED")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .order("enroleeNumber", { ascending: false });
-
-    if (totalChildrenError) {
-      throw new Error(totalChildrenError.message);
-    }
-
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase
       .from("ay2025_enrolment_applications")
       .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber")
@@ -394,18 +382,11 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
       throw new Error(currentEnrolledError.message);
     }
 
-    const seenTotalChildrenNames = new Set();
     const seenCurrentEnrolled = new Set();
 
-    totalChildren.filter((student) => {
-      if (seenTotalChildrenNames.has(student.enroleeFullName)) return false;
-      seenTotalChildrenNames.add(student.enroleeFullName);
-      return true;
-    });
-
     const filteredCurrentEnrolled = currentEnrolled.filter((student) => {
-      if (seenCurrentEnrolled.has(student.enroleeFullName)) return false;
-      seenCurrentEnrolled.add(student.enroleeFullName);
+      if (seenCurrentEnrolled.has(student.studentNumber)) return false;
+      seenCurrentEnrolled.add(student.studentNumber);
       return true;
     });
 
@@ -495,12 +476,13 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
 
     const studentsList = [...mapStudents(ay2026Enrollment, "2026"), ...mapStudents(ay2025Enrollment, "2025")];
 
-    const enrollmentStudentList = studentsList.reduce((acc: typeof studentsList, obj) => {
-      if (!acc.some((o) => o.enroleeNumber === obj.enroleeNumber)) {
-        acc.push(obj);
-      }
-      return acc;
-    }, []);
+    const seenTotalChildren = new Set();
+
+    const enrollmentStudentList = studentsList.filter((student) => {
+      if (seenTotalChildren.has(student.gradeLevel)) return false;
+      seenTotalChildren.add(student.gradeLevel);
+      return true;
+    });
 
     return enrollmentStudentList;
   } catch (error) {

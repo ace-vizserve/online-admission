@@ -1,4 +1,5 @@
 import { cn, wait } from "@/lib/utils";
+import { CheckedState } from "@radix-ui/react-checkbox";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import React, { Children, HTMLAttributes, ReactNode, useLayoutEffect, useRef, useState } from "react";
@@ -44,6 +45,7 @@ export default function Stepper({
   ...rest
 }: StepperProps) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
+  const [isFirstPageChecked, setIsFirstPageChecked] = useState<CheckedState>(false);
   const [direction, setDirection] = useState<number>(0);
   const stepsArray = Children.toArray(children);
   const totalSteps = stepsArray.length;
@@ -80,7 +82,19 @@ export default function Stepper({
 
   return (
     <div className="flex min-h-full flex-1 flex-col items-center justify-center p-4" {...rest}>
-      <div className={`mx-auto w-full max-w-4xl ${stepCircleContainerClassName}`}>
+      <motion.div
+        initial={{
+          opacity: 0,
+          scale: 0.8,
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+        }}
+        transition={{
+          type: "spring",
+        }}
+        className={`mx-auto w-full max-w-4xl ${stepCircleContainerClassName}`}>
         <div
           className={`${stepContainerClassName} flex w-full max-w-sm mx-auto justify-center items-center p-8 space-x-2`}>
           {stepsArray.map((_, index) => {
@@ -123,58 +137,70 @@ export default function Stepper({
 
         {!isCompleted && (
           <div className={`px-8 pb-8 ${footerClassName}`}>
-            <div
-              className={`mt-10 flex ${currentStep !== 1 ? "justify-between" : "justify-end"} ${
-                isLastStep ? "flex-col-reverse gap-4" : "flex-row gap-0"
-              }`}>
-              {currentStep !== 1 && (
-                <Button
-                  size={"lg"}
-                  variant={"ghost"}
-                  onClick={handleBack}
-                  className={`duration-350 transition gap-2 ${
-                    currentStep === 1
-                      ? "pointer-events-none opacity-50 text-neutral-400"
-                      : "text-neutral-400 hover:text-neutral-700"
-                  }`}
-                  {...backButtonProps}>
-                  <ArrowLeft />
-
-                  {backButtonText}
-                </Button>
-              )}
+            <div className={`mt-10 flex justify-between`}>
               {isLastStep ? (
-                <div className="w-full flex justify-center items-center space-x-2">
-                  <Checkbox
-                    className="size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                    onCheckedChange={async (checked) => {
-                      if (checked) {
-                        await wait(150);
-                        handleComplete();
-                      }
-                    }}
-                    id="terms"
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I’ve read and agree to the enrolment terms
-                  </label>
+                <div className="w-full flex flex-col-reverse gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                  <Button
+                    variant={"ghost"}
+                    onClick={handleBack}
+                    className={`duration-350 transition gap-2 ${
+                      currentStep === 1
+                        ? "pointer-events-none opacity-50 text-neutral-400"
+                        : "text-neutral-400 hover:text-neutral-700"
+                    }`}
+                    {...backButtonProps}>
+                    <ArrowLeft />
+
+                    {backButtonText}
+                  </Button>
+                  <div className="flex justify-center items-center space-x-2">
+                    <Checkbox
+                      className="size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      onCheckedChange={async (checked) => {
+                        if (checked) {
+                          await wait(250);
+                          handleComplete();
+                        }
+                      }}
+                      id="terms"
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I/We agree to the enrolment promo and discount terms
+                    </label>
+                  </div>
                 </div>
               ) : (
-                <Button
-                  size={"lg"}
-                  onClick={isLastStep ? handleComplete : handleNext}
-                  className=" bg-green-600 text-white transition hover:bg-green-500 active:bg-green-600 gap-2"
-                  {...nextButtonProps}>
-                  {nextButtonText}
-                  <ArrowRight />
-                </Button>
+                <div className="w-full flex flex-col gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                  <div className="flex justify-center items-center space-x-2">
+                    <Checkbox
+                      className="size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      checked={isFirstPageChecked}
+                      onCheckedChange={setIsFirstPageChecked}
+                      id="terms"
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I/We agree to the enrolment terms
+                    </label>
+                  </div>
+
+                  <Button
+                    disabled={!isFirstPageChecked}
+                    onClick={handleNext}
+                    className=" bg-green-600 text-white transition hover:bg-green-500 active:bg-green-600 gap-2"
+                    {...nextButtonProps}>
+                    {nextButtonText}
+                    <ArrowRight />
+                  </Button>
+                </div>
               )}
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -194,21 +220,33 @@ function StepContentWrapper({
   children,
   className = "",
 }: StepContentWrapperProps) {
-  const [parentHeight, setParentHeight] = useState<number>(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [height, setHeight] = useState<number | "auto">("auto");
+
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      const newHeight = containerRef.current.offsetHeight;
+      setHeight(newHeight);
+    }
+  }, [children, currentStep]);
+
+  const handleAnimationComplete = () => {
+    // After animation completes, allow the height to be auto for flexibility
+    setHeight("auto");
+  };
 
   return (
     <motion.div
       style={{ position: "relative", overflow: "hidden" }}
-      animate={{ height: isCompleted ? 0 : parentHeight }}
+      animate={{ height: isCompleted ? 0 : height }}
       transition={{ type: "spring", duration: 0.4 }}
+      onAnimationComplete={handleAnimationComplete}
       className={className}>
       <AnimatePresence initial={false} mode="sync" custom={direction}>
         {!isCompleted && (
-          <>
-            <SlideTransition key={currentStep} direction={direction} onHeightReady={(h) => setParentHeight(h)}>
-              {children}
-            </SlideTransition>
-          </>
+          <SlideTransition key={currentStep} direction={direction}>
+            {children}
+          </SlideTransition>
         )}
       </AnimatePresence>
     </motion.div>
@@ -218,45 +256,38 @@ function StepContentWrapper({
 interface SlideTransitionProps {
   children: ReactNode;
   direction: number;
-  onHeightReady: (height: number) => void;
 }
 
-function SlideTransition({ children, direction, onHeightReady }: SlideTransitionProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useLayoutEffect(() => {
-    if (containerRef.current) {
-      onHeightReady(containerRef.current.offsetHeight);
-    }
-  }, [children, onHeightReady]);
-
+function SlideTransition({ children, direction }: SlideTransitionProps) {
   return (
     <motion.div
-      ref={containerRef}
+      className="w-full"
       custom={direction}
-      variants={stepVariants}
+      variants={slideVariants}
       initial="enter"
       animate="center"
       exit="exit"
-      transition={{ duration: 0.4 }}
-      style={{ position: "absolute", left: 0, right: 0, top: 0 }}>
+      transition={{ duration: 0.4, ease: "easeInOut" }}>
       {children}
     </motion.div>
   );
 }
 
-const stepVariants: Variants = {
-  enter: (dir: number) => ({
-    x: dir >= 0 ? "-100%" : "100%",
+const slideVariants: Variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
     opacity: 0,
+    position: "absolute",
   }),
   center: {
-    x: "0%",
+    x: 0,
     opacity: 1,
+    position: "relative",
   },
-  exit: (dir: number) => ({
-    x: dir >= 0 ? "50%" : "-50%",
+  exit: (direction: number) => ({
+    x: direction > 0 ? "-100%" : "100%",
     opacity: 0,
+    position: "absolute",
   }),
 };
 
@@ -265,7 +296,7 @@ interface StepProps {
 }
 
 export function Step({ children }: StepProps) {
-  return <div className="px-8">{children}</div>;
+  return <div>{children}</div>;
 }
 
 interface StepIndicatorProps {
