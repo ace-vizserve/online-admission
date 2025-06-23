@@ -22,7 +22,10 @@ function StudentPhoto() {
       <Button onClick={goBack} size={"sm"} className="cursor-pointer top-6 left-6 gap-2 absolute">
         <ArrowLeft /> Go back
       </Button>
-      <img src={url} className="w-max h-max aspect-square object-cover rounded-md" />
+      <img
+        src={url}
+        className="w-max h-max aspect-square object-cover rounded-md max-h-[440px] max-w-[440px] border shadow-xl"
+      />
     </div>
   );
 }

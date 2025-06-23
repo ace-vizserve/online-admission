@@ -124,13 +124,11 @@ function EnrolStudent() {
           ) : (
             <motion.div
               initial={{
-                y: 40,
-                scale: 0.95,
+                y: 30,
                 opacity: 0,
               }}
               animate={{
                 y: 0,
-                scale: 1,
                 opacity: 1,
               }}
               transition={{

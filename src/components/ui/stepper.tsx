@@ -139,7 +139,7 @@ export default function Stepper({
           <div className={`px-8 pb-8 ${footerClassName}`}>
             <div className={`mt-10 flex justify-between`}>
               {isLastStep ? (
-                <div className="w-full flex flex-col-reverse gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                <div className="w-full flex flex-col-reverse gap-6 md:flex-row md:gap-0 justify-between items-center space-x-2">
                   <Button
                     variant={"ghost"}
                     onClick={handleBack}
@@ -172,7 +172,7 @@ export default function Stepper({
                   </div>
                 </div>
               ) : (
-                <div className="w-full flex flex-col gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                <div className="w-full flex flex-col gap-6 md:flex-row md:gap-0 justify-between items-center space-x-2">
                   <div className="flex justify-center items-center space-x-2">
                     <Checkbox
                       className="size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"

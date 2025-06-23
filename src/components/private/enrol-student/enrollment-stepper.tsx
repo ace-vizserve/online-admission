@@ -1,5 +1,5 @@
-import discountPriceTag from "@/assets/discount-price-tag.jpg";
-import enrollmentProcess from "@/assets/enrollment-process.png";
+import discountPriceTag from "@/assets/discount-price-tag.png";
+import enrollmentProcess from "@/assets/enrollment-process.jpg";
 import Stepper, { Step } from "@/components/ui/stepper";
 import "inner-image-zoom/lib/styles.min.css";
 import InnerImageZoom from "react-inner-image-zoom";
@@ -20,8 +20,8 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
       nextButtonText="Next">
       <Step>
         <div className="space-y-4">
-          <div>
-            <InnerImageZoom hideCloseButton src={enrollmentProcess} className="rounded-md object-cover" />
+          <div className="w-11/12 mx-auto">
+            <InnerImageZoom hideCloseButton src={enrollmentProcess} className="w-full h-auto rounded-md" />
           </div>
           <p className="text-sm text-balance -tracking-tighter">
             I/We acknowledge that I/we have read and understood the enrolment process for Academic Year{" "}
@@ -38,7 +38,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
 
       <Step>
         <div className="space-y-4">
-          <img src={discountPriceTag} className="max-h-52 mx-auto rounded-full border object-contain" />
+          <img src={discountPriceTag} className="max-h-52 mx-auto object-cover" />
 
           <p className="text-sm text-balance -tracking-tighter">
             I/We acknowledge that I/we have read and understood the terms and conditions of the school’s promos and

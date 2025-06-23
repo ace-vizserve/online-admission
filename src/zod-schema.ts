@@ -69,9 +69,12 @@ export const studentDetailsSchema = z
       message: "Religion is required",
     }),
     religionOther: z.string().optional().nullable(),
-    nric: z.string().min(1, {
-      message: "NRIC/FIN is required",
-    }),
+    nric: z
+      .string()
+      .min(9, {
+        message: "NRIC/FIN must be exactly 9 characters",
+      })
+      .regex(/^[STFGM]\d{7}[A-Z]$/, { message: "Invalid NRIC or FIN format" }),
   })
   .superRefine((schema, ctx) => {
     if (schema.religion === "Other") {
@@ -135,9 +138,12 @@ export const guardianInformationSchema = z.object({
   guardianReligion: z.string().min(1, {
     message: "Religion is required",
   }),
-  guardianNric: z.string().min(1, {
-    message: "NRIC/FIN is required",
-  }),
+  guardianNric: z
+    .string()
+    .min(9, {
+      message: "NRIC/FIN must be exactly 9 characters",
+    })
+    .regex(/^[STFGM]\d{7}[A-Z]$/, { message: "Invalid NRIC or FIN format" }),
   guardianMobile: z
     .string()
     .min(1, {
@@ -170,7 +176,16 @@ export const fatherInformationSchema = z
       .optional(),
     fatherNationality: z.string().optional(),
     fatherReligion: z.string().optional(),
-    fatherNric: z.string().optional(),
+    fatherNric: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .optional()
+      .refine((val) => val === undefined || val.length === 9, {
+        message: "NRIC/FIN must be exactly 9 characters",
+      })
+      .refine((val) => val === undefined || /^[STFGM]\d{7}[A-Z]$/.test(val), {
+        message: "Invalid NRIC or FIN format",
+      }),
     fatherMobile: z
       .string()
       .optional()
@@ -233,9 +248,12 @@ export const motherInformationSchema = z.object({
   motherReligion: z.string().min(1, {
     message: "Religion is required",
   }),
-  motherNric: z.string().min(1, {
-    message: "NRIC/FIN is required",
-  }),
+  motherNric: z
+    .string()
+    .min(9, {
+      message: "NRIC/FIN must be exactly 9 characters",
+    })
+    .regex(/^[STFGM]\d{7}[A-Z]$/, { message: "Invalid NRIC or FIN format" }),
   motherMobile: z
     .string()
     .min(1, {
