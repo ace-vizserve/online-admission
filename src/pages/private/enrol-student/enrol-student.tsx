@@ -102,7 +102,7 @@ function EnrolStudent() {
     <>
       <PageMetaData title={title} description={description} />
 
-      <div className="w-full fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+      <div className={"w-full fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b"}>
         <MaxWidthWrapper className="w-full max-w-screen-2xl">
           <Link
             onClick={goBack}
@@ -120,7 +120,7 @@ function EnrolStudent() {
       ) : (
         <div className="w-full h-screen overflow-hidden pt-16 md:pt-20 flex items-center justify-center bg-muted">
           {showEnrollmentProcess ? (
-            <EnrollmentStepper setShowEnrollmentProcess={setShowEnrollmentProcess} />
+            <EnrollmentStepper academicYear={academicYear} setShowEnrollmentProcess={setShowEnrollmentProcess} />
           ) : (
             <motion.div
               initial={{

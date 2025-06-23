@@ -36,11 +36,12 @@ function OldStudentInformation() {
 
   const { formState, setFormState } = useEnrolOldStudentContext();
 
-  const { data, isSuccess, isPending } = useQuery({
+  const { data, isSuccess, isPending, fetchStatus } = useQuery({
     queryKey: ["student-information", params.id],
     queryFn: async () => {
       return await getStudentInformation(params.id!);
     },
+    enabled: Object.keys(formState.studentInfo ?? {}).length < 1,
   });
 
   useEffect(() => {
@@ -51,11 +52,11 @@ function OldStudentInformation() {
     });
   }, [data, isSuccess, setFormState]);
 
-  if (isPending) {
+  if (fetchStatus === "fetching" && isPending) {
     return <Loader />;
   }
 
-  if (!Object.keys(formState.studentInfo ?? {}).length) {
+  if (formState.studentInfo == null) {
     return <Loader />;
   }
 

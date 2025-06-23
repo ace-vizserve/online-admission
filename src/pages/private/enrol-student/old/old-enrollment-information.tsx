@@ -71,7 +71,9 @@ function OldEnrollmentInformation() {
   });
   const { formState, setFormState } = useEnrolOldStudentContext();
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
-  const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(false);
+  const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
+    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
+  );
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
