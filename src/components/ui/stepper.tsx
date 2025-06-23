@@ -20,6 +20,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   backButtonText?: string;
   nextButtonText?: string;
   disableStepIndicators?: boolean;
+  hideStepIndicators?: boolean;
   renderStepIndicator?: (props: {
     step: number;
     currentStep: number;
@@ -41,6 +42,7 @@ export default function Stepper({
   backButtonText = "Back",
   nextButtonText = "Continue",
   disableStepIndicators = false,
+  hideStepIndicators = false,
   renderStepIndicator,
   ...rest
 }: StepperProps) {
@@ -97,34 +99,35 @@ export default function Stepper({
         className={`mx-auto w-full max-w-4xl ${stepCircleContainerClassName}`}>
         <div
           className={`${stepContainerClassName} flex w-full max-w-sm mx-auto justify-center items-center p-8 space-x-2`}>
-          {stepsArray.map((_, index) => {
-            const stepNumber = index + 1;
+          {!hideStepIndicators &&
+            stepsArray.map((_, index) => {
+              const stepNumber = index + 1;
 
-            return (
-              <React.Fragment key={stepNumber}>
-                {renderStepIndicator ? (
-                  renderStepIndicator({
-                    step: stepNumber,
-                    currentStep,
-                    onStepClick: (clicked) => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    },
-                  })
-                ) : (
-                  <StepIndicator
-                    step={stepNumber}
-                    disableStepIndicators={disableStepIndicators}
-                    currentStep={currentStep}
-                    onClickStep={(clicked) => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    }}
-                  />
-                )}
-              </React.Fragment>
-            );
-          })}
+              return (
+                <React.Fragment key={stepNumber}>
+                  {renderStepIndicator ? (
+                    renderStepIndicator({
+                      step: stepNumber,
+                      currentStep,
+                      onStepClick: (clicked) => {
+                        setDirection(clicked > currentStep ? 1 : -1);
+                        updateStep(clicked);
+                      },
+                    })
+                  ) : (
+                    <StepIndicator
+                      step={stepNumber}
+                      disableStepIndicators={disableStepIndicators}
+                      currentStep={currentStep}
+                      onClickStep={(clicked) => {
+                        setDirection(clicked > currentStep ? 1 : -1);
+                        updateStep(clicked);
+                      }}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
         </div>
 
         <StepContentWrapper
