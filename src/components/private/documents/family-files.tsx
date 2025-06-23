@@ -245,22 +245,22 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
       </div>
       <h2 className="font-bold text-lg">Mother's Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
-        {motherCards.map((props) => (
-          <RenderFamilyDocCard {...props} />
+        {motherCards.map((props, idx) => (
+          <RenderFamilyDocCard key={idx} {...props} />
         ))}
       </div>
       <Separator className="my-4" />
       <h2 className="font-bold text-lg">Father's Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
-        {fatherCards.map((props) => (
-          <RenderFamilyDocCard {...props} />
+        {fatherCards.map((props, idx) => (
+          <RenderFamilyDocCard key={idx} {...props} />
         ))}
       </div>
       <Separator className="my-4" />
       <h2 className="font-bold text-lg">Guardian's Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4">
-        {guardianCards.map((props) => (
-          <RenderFamilyDocCard {...props} />
+        {guardianCards.map((props, idx) => (
+          <RenderFamilyDocCard key={idx} {...props} />
         ))}
       </div>
     </div>
