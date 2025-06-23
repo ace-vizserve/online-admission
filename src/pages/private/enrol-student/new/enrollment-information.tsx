@@ -407,6 +407,7 @@ function EnrollmentInformation() {
                                   key={0}
                                   variant={"inverted"}
                                   options={newStudentDiscounts?.discountCodes ?? []}
+                                  defaultValue={formState.enrollmentInfo?.discount as string[] | undefined}
                                   onValueChange={(value) => {
                                     if (value.includes("Referred by someone")) {
                                       setIsSelectedReferredBySomeone(true);
@@ -431,6 +432,7 @@ function EnrollmentInformation() {
                                   key={1}
                                   variant={"inverted"}
                                   options={newStudentDiscounts?.discountCodes ?? []}
+                                  defaultValue={formState.enrollmentInfo?.discount as string[] | undefined}
                                   onValueChange={(value) => {
                                     if (value.includes("Referred by someone")) {
                                       setIsSelectedReferredBySomeone(true);

@@ -30,7 +30,7 @@ function StudentPicture({ studentIDPicture, enroleeNumber }: StudentPictureProps
             variant: "ghost",
           })}>
           <Image />
-          See ID Picture
+          <span className="text-xs font-semibold"> See ID Picture</span>
         </Link>
       </PopoverContent>
     </Popover>
