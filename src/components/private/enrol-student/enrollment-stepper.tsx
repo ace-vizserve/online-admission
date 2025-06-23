@@ -15,7 +15,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
       className="mx-auto w-full max-w-3xl"
       initialStep={1}
       onFinalStepCompleted={() => setShowEnrollmentProcess(false)}
-      disableStepIndicators
+      hideStepIndicators
       backButtonText="Previous"
       nextButtonText="Next">
       <Step>
