@@ -1,10 +1,10 @@
 import PageMetaData from "@/components/page-metadata";
 import { SectionCards } from "@/components/private/dashboard/section-cards";
 import StudentsList from "@/components/private/dashboard/students-list";
-import { USER_DASHBOARD_TITLE_DESCRIPTION } from "@/data";
+import { PARENTS_DASHBOARD_TITLE_DESCRIPTION } from "@/data";
 
 function Dashboard() {
-  const { title, description } = USER_DASHBOARD_TITLE_DESCRIPTION;
+  const { title, description } = PARENTS_DASHBOARD_TITLE_DESCRIPTION;
 
   return (
     <>

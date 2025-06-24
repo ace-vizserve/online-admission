@@ -45,6 +45,7 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
   } = studentInformation;
 
   const age = differenceInYears(new Date(), new Date(birthDay));
+  const maskedNric = nric.slice(0, 3) + "****" + nric.slice(7);
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
@@ -168,7 +169,7 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
             </div>
             <div className="space-y-2">
               <Label>NRIC/FIN</Label>
-              <InputWithIcon value={nric} svgIcon={<BadgeInfo className="text-muted-foreground size-4" />} />
+              <InputWithIcon value={maskedNric} svgIcon={<BadgeInfo className="text-muted-foreground size-4" />} />
             </div>
             <div className="space-y-2">
               <Label>Parent Marital Status</Label>

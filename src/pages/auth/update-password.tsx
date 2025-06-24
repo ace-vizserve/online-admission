@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
-import { FORGOT_PASSWORD_TITLE_DESCRIPTION } from "@/data";
+import { UPDATE_PASSWORD_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
 import { UpdatePasswordSchema, updatePasswordSchema } from "@/zod-schema";
 import { usePasswordResetStore } from "@/zustand-store";
@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { Navigate } from "react-router";
 
 function UpdatePassword() {
+  const { title, description } = UPDATE_PASSWORD_TITLE_DESCRIPTION;
   const { passwordResetState } = useSession();
   const setPasswordResetState = usePasswordResetStore((state) => state.setPasswordResetState);
   const { mutate, isPending } = useMutation({
@@ -26,7 +27,6 @@ function UpdatePassword() {
     },
   });
 
-  const { title, description } = FORGOT_PASSWORD_TITLE_DESCRIPTION;
   const form = useForm<UpdatePasswordSchema>({
     defaultValues: {
       password: "",

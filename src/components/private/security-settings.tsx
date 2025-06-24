@@ -77,13 +77,7 @@ function SecuritySettings() {
                     <FormItem className="grid gap-2">
                       <FormLabel id="new-password">New Password</FormLabel>
                       <FormControl>
-                        <PasswordInput
-                          className="placeholder:text-sm"
-                          autoFocus
-                          id="new-password"
-                          placeholder="Enter your new password"
-                          {...field}
-                        />
+                        <PasswordInput autoFocus id="new-password" placeholder="Enter your new password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -133,13 +127,7 @@ function SecuritySettings() {
                   <FormItem className="grid gap-2">
                     <FormLabel id="new-password">New Password</FormLabel>
                     <FormControl>
-                      <PasswordInput
-                        className="placeholder:text-sm"
-                        autoFocus
-                        id="new-password"
-                        placeholder="Enter your new password"
-                        {...field}
-                      />
+                      <PasswordInput autoFocus id="new-password" placeholder="Enter your new password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

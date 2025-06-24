@@ -1,7 +1,10 @@
+import PageMetaData from "@/components/page-metadata";
 import UploadFiles from "@/components/private/uploaded/upload-files";
+import { STUDENT_PROFILE_TITLE_DESCRIPTION } from "@/data";
 import { useParams } from "react-router";
 
 function Uploaded() {
+  const { title, description } = STUDENT_PROFILE_TITLE_DESCRIPTION;
   const params = useParams();
 
   if (!params.id) {
@@ -10,6 +13,7 @@ function Uploaded() {
 
   return (
     <>
+      <PageMetaData title={title} description={description} />
       <div className="max-w-screen-2xl mx-auto w-full py-7 md:py-14 px-4 md:px-6">
         <UploadFiles enroleeNumber={params.id} />
       </div>

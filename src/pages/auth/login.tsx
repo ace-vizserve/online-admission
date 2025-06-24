@@ -20,15 +20,17 @@ import { Link } from "react-router";
 
 function Login() {
   const { title, description } = LOGIN_PAGE_TITLE_DESCRIPTION;
-  const { mutate, isPending } = useMutation({
-    mutationFn: userLogin,
-  });
-
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
+    },
+  });
+  const { mutate, isPending } = useMutation({
+    mutationFn: userLogin,
+    onSuccess() {
+      form.reset();
     },
   });
 

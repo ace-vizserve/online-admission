@@ -1,10 +1,10 @@
 import PageMetaData from "@/components/page-metadata";
 import SingleEnrol from "@/components/private/enroll/Single-Enrol";
-import { STUDENT_PROFILE_TITLE_DESCRIPTION } from "@/data";
+import { ENROLMENT_PAGE_FOR_STUDENT } from "@/data";
 import { useParams } from "react-router";
 
 function SingleEnroll() {
-  const { title, description } = STUDENT_PROFILE_TITLE_DESCRIPTION;
+  const { title, description } = ENROLMENT_PAGE_FOR_STUDENT;
   const params = useParams();
 
   if (!params.id) {

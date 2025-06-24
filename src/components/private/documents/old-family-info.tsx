@@ -50,6 +50,10 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
 
   const siblings = extractSiblings(familyInformation);
 
+  const maskedFatherNric = fatherNric ? fatherNric.slice(0, 3) + "****" + fatherNric.slice(7) : undefined;
+  const maskedGuardianNric = guardianNric ? guardianNric.slice(0, 3) + "****" + guardianNric.slice(7) : undefined;
+  const maskedMotherNric = motherNric?.slice(0, 3) + "****" + motherNric?.slice(7);
+
   return (
     <div className="space-y-8 py-6 xl:py-0">
       <div className="space-y-2">
@@ -156,7 +160,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
                 <div className="space-y-2">
                   <Label>NRIC/FIN</Label>
                   <InputWithIcon
-                    value={fatherNric ?? "N/A"}
+                    value={maskedFatherNric ?? "N/A"}
                     svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -277,7 +281,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
                 <div className="space-y-2">
                   <Label>NRIC/FIN</Label>
                   <InputWithIcon
-                    value={motherNric ?? "N/A"}
+                    value={maskedMotherNric ?? "N/A"}
                     svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
                   />
                 </div>
@@ -398,7 +402,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
                 <div className="space-y-2">
                   <Label>NRIC/FIN</Label>
                   <InputWithIcon
-                    value={guardianNric ?? "N/A"}
+                    value={maskedGuardianNric ?? "N/A"}
                     svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
                   />
                 </div>

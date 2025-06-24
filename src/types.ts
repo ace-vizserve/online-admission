@@ -472,5 +472,5 @@ export type ParentGuardianReuploadProps = {
   enroleeNumber: string;
   academicYear: string;
   documentType: string;
-  payload: ParentGuardianDocumentUpdatePayload;
+  payload: Record<string, unknown>;
 };

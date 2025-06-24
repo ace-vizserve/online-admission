@@ -190,11 +190,7 @@ export default function Stepper({
                     </label>
                   </div>
 
-                  <Button
-                    disabled={!isFirstPageChecked}
-                    onClick={handleNext}
-                    className=" bg-green-600 text-white transition hover:bg-green-500 active:bg-green-600 gap-2"
-                    {...nextButtonProps}>
+                  <Button disabled={!isFirstPageChecked} onClick={handleNext} className="gap-2" {...nextButtonProps}>
                     {nextButtonText}
                     <ArrowRight />
                   </Button>
