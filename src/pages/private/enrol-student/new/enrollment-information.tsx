@@ -94,7 +94,7 @@ function EnrollmentInformation() {
       ...formState,
       enrollmentInfo: values,
     });
-    toast.success("Enrollment information details saved!", {
+    toast.success("Enrolment information details saved!", {
       description: "Proceeding to the next step...",
     });
     setCompletedTabs("/enrol-student/new/enrollment-info");
@@ -112,7 +112,7 @@ function EnrollmentInformation() {
         <Card className="w-full mx-auto border-none shadow-none">
           <CardHeader>
             <CardTitle className="text-center text-xl lg:text-2xl text-primary">
-              Input the necessary enrollment information
+              Input the necessary enrolment information
             </CardTitle>
           </CardHeader>
           <CardContent className="px-0">

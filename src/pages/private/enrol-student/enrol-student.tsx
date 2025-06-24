@@ -73,7 +73,7 @@ function EnrolStudent() {
       const isEligibleForEnrollment = await canEnrollStudent(selected.enroleeNumber);
 
       if (!isEligibleForEnrollment) {
-        toast.info("Enrollment not allowed!", {
+        toast.info("Enrolment not allowed!", {
           description: "The student has completed Secondary 4, the final year of secondary school",
         });
         return;
@@ -93,7 +93,7 @@ function EnrolStudent() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <DotPulse size="50" speed="1.3" color="#111A2E" />
+        <DotPulse size="50" speed="1.3" color="#1F45C7" />
       </div>
     );
   }
@@ -171,7 +171,7 @@ function EnrolStudent() {
                       "opacity-70 pointer-events-none": selected == null,
                     })}>
                     {isCheckingEnrollment ? (
-                      <DotPulse size="30" speed="1.3" color="#111A2E" />
+                      <DotPulse size="30" speed="1.3" color="#1F45C7" />
                     ) : (
                       <>
                         Enrol student <ArrowUpRight />

@@ -104,7 +104,7 @@ function OldEnrollmentInformation() {
     setFormState({
       enrollmentInfo: { ...values, isValid: true },
     });
-    toast.success("Enrollment information details saved!", {
+    toast.success("Enrolment information details saved!", {
       description: "Make sure to double check everything",
     });
   }
@@ -120,7 +120,7 @@ function OldEnrollmentInformation() {
         <Card className="w-full mx-auto border-none shadow-none">
           <CardHeader className="gap-8 p-0">
             <CardTitle className="text-balance text-center text-2xl text-primary">
-              Input the necessary enrollment information
+              Input the necessary enrolment information
             </CardTitle>
             <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
               <CircleFadingArrowUpIcon className="h-4 w-4 !text-blue-500" />
