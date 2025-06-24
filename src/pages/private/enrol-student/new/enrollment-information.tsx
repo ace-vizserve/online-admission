@@ -359,7 +359,7 @@ function EnrollmentInformation() {
                   />
                 </div>
 
-                <div className="max-w-2xl mx-auto space-y-4 bg-emerald-400 p-6 rounded-2xl border border-muted shadow-sm">
+                <div className="max-w-2xl mx-auto space-y-4 bg-secondary p-6 rounded-2xl border border-muted shadow-sm">
                   <FormField
                     control={form.control}
                     name="contractSignatory"
