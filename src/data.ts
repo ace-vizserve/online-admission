@@ -39,7 +39,7 @@ export const FAQ_PAGE_TITLE_DESCRIPTION = {
 export const CONTACT_US_PAGE_TITLE_DESCRIPTION = {
   title: "Contact Admissions | HFSE International School",
   description:
-    "Need assistance with your child’s application? Reach out to the HFSE Admissions Team for help with registration, document submission, or enrollment concerns.",
+    "Need assistance with your child’s application? Reach out to the HFSE Admissions Team for help with registration, document submission, or enrolment concerns.",
 };
 
 export const LOGIN_PAGE_TITLE_DESCRIPTION = {
@@ -51,49 +51,49 @@ export const LOGIN_PAGE_TITLE_DESCRIPTION = {
 export const REGISTRATION_PAGE_TITLE_DESCRIPTION = {
   title: "Create Parent Account | HFSE Admissions Portal",
   description:
-    "Register for a parent account to begin your child’s application at HFSE International School. Upload required documents and track enrollment progress with ease.",
+    "Register for a parent account to begin your child’s application at HFSE International School. Upload required documents and track enrolment progress with ease.",
 };
 
 export const PARENTS_DASHBOARD_TITLE_DESCRIPTION = {
   title: "Parent Dashboard | HFSE Admissions Portal",
   description:
-    "Access your personalized dashboard to manage student applications, upload documents, receive updates, and monitor your child’s enrollment progress at HFSE.",
+    "Access your personalized dashboard to manage student applications, upload documents, receive updates, and monitor your child’s enrolment progress at HFSE.",
 };
 
 export const FORGOT_PASSWORD_TITLE_DESCRIPTION = {
   title: "Reset Password | HFSE Admissions Portal",
   description:
-    "Forgot your password? Reset it here to regain access to your HFSE Parent Account and continue managing your child’s enrollment.",
+    "Forgot your password? Reset it here to regain access to your HFSE Parent Account and continue managing your child’s enrolment.",
 };
 
 export const UPDATE_PASSWORD_TITLE_DESCRIPTION = {
   title: "Update Password | HFSE Admissions Portal",
   description:
-    "Securely update your HFSE Parent Account password. Keep your account protected while managing your child’s online enrollment and application requirements.",
+    "Securely update your HFSE Parent Account password. Keep your account protected while managing your child’s online enrolment and application requirements.",
 };
 
 export const PARENT_PORTAL_REGISTRATION = {
   title: "Parent Registration | HFSE Admissions Portal",
   description:
-    "Create a parent account to start your child’s application at HFSE International School. Register, upload documents, and manage the enrollment process online.",
+    "Create a parent account to start your child’s application at HFSE International School. Register, upload documents, and manage the enrolment process online.",
 };
 
 export const STUDENT_PROFILE_TITLE_DESCRIPTION = {
   title: "Student Profile | HFSE International School",
   description:
-    "View your child’s personal details, enrollment information, and submitted documents through the HFSE Online Admissions Portal.",
+    "View your child’s personal details, enrolment information, and submitted documents through the HFSE Online Admissions Portal.",
 };
 
 export const ENROL_NEW_STUDENT_TITLE_DESCRIPTION = {
   title: "Enrol a Student | HFSE International School",
   description:
-    "Begin a new student enrollment at HFSE International School. Complete the required information and upload documents for review.",
+    "Begin a new student enrolment at HFSE International School. Complete the required information and upload documents for review.",
 };
 
 export const ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION = {
   title: "Student Information | Enrolment | HFSE International School",
   description:
-    "Enter your child’s personal details to begin the enrollment process at HFSE. Ensure accuracy for a smooth application experience.",
+    "Enter your child’s personal details to begin the enrolment process at HFSE. Ensure accuracy for a smooth application experience.",
 };
 
 export const ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION = {
@@ -102,32 +102,32 @@ export const ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION = {
 };
 
 export const ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION = {
-  title: "Enrollment Information | Enrolment | HFSE International School",
-  description: "Provide enrollment details to proceed with your child’s application at HFSE International School.",
+  title: "Enrolment Information | Enrolment | HFSE International School",
+  description: "Provide enrolment details to proceed with your child’s application at HFSE International School.",
 };
 
 export const ENROL_NEW_STUDENT_UPLOAD_REQUIREMENTS_TITLE_DESCRIPTION = {
   title: "Upload Documents | Enrolment | HFSE International School",
   description:
-    "Submit required documents such as academic records and identification to complete your child’s enrollment at HFSE.",
+    "Submit required documents such as academic records and identification to complete your child’s enrolment at HFSE.",
 };
 
 export const ENROL_NEW_STUDENT_REVIEW_SUBMIT_TITLE_DESCRIPTION = {
   title: "Review & Submit | Enrolment | HFSE International School",
   description:
-    "Double-check all information before submitting your child’s enrollment application to HFSE International School.",
+    "Double-check all information before submitting your child’s enrolment application to HFSE International School.",
 };
 
 export const ENROL_NEW_STUDENT_SUCCESS_TITLE_DESCRIPTION = {
-  title: "Enrollment Submitted | HFSE International School",
+  title: "Enrolment Submitted | HFSE International School",
   description:
-    "Congratulations! Your child’s enrollment at HFSE International School has been submitted successfully. You will receive updates soon.",
+    "Congratulations! Your child’s enrolment at HFSE International School has been submitted successfully. You will receive updates soon.",
 };
 
 export const ENROLMENT_PAGE_FOR_STUDENT = {
-  title: "Student Enrollment Records | HFSE International School",
+  title: "Student Enrolment Records | HFSE International School",
   description:
-    "Browse historical enrollment records from HFSE International School. Discover insights into our growing and diverse student community.",
+    "Browse historical enrolment records from HFSE International School. Discover insights into our growing and diverse student community.",
 };
 
 export const faq = [
@@ -137,7 +137,7 @@ export const faq = [
       "Create a parent account on the HFSE Admissions Portal. Once registered, you can add your child’s details, upload the required documents, and track the application status.",
   },
   {
-    question: "What documents are required for enrollment?",
+    question: "What documents are required for enrolment?",
     answer:
       "Required documents may vary by grade level but generally include: birth certificate, recent report card, certificate of good moral character, ID photo, and other relevant academic records.",
   },
@@ -159,7 +159,7 @@ export const faq = [
   {
     question: "Is there an admission deadline?",
     answer:
-      "Yes. HFSE follows an academic calendar. Enrollment periods and deadlines will be posted on the portal and sent to you via email upon registration.",
+      "Yes. HFSE follows an academic calendar. Enrolment periods and deadlines will be posted on the portal and sent to you via email upon registration.",
   },
 ];
 
@@ -191,7 +191,7 @@ export const features = [
   },
   {
     icon: CheckCircle,
-    title: "Complete Enrollment",
+    title: "Complete Enrolment",
     description:
       "Once all requirements are fulfilled, finalize your child’s admission and prepare for their learning journey.",
   },

@@ -7,25 +7,25 @@ import { useNavigate } from "react-router";
 const STEPS = [
   {
     name: "Student Information",
-    description: "Student details",
+    description: "Student profile and personal data",
     url: "/enrol-student/new/student-info",
     label: "studentInfo",
   },
   {
     name: "Family Information",
-    description: "Family information",
+    description: "Parent/Guardian and sibling details",
     url: "/enrol-student/new/family-info",
     label: "familyInfo",
   },
   {
-    name: "Enrollment Information",
-    description: "Student Enrolment details",
+    name: "Enrolment Information",
+    description: "Academic level and enrolment type",
     url: "/enrol-student/new/enrollment-info",
     label: "enrollmentInfo",
   },
   {
     name: "Upload Requirements",
-    description: "Submit documents",
+    description: "Upload required enrolment documents",
     url: "/enrol-student/new/upload-requirements",
     label: "uploadRequirements",
   },

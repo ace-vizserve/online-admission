@@ -58,7 +58,7 @@ export async function getStudentEnrollmentsList(studentNumber: string) {
 
     const enrollmentStudentList = await getStudentEnrollments(studentNumber, session.user.email!);
 
-    return { studentsList: enrollmentStudentList };
+    return { studentsList: enrollmentStudentList?.reverse() };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);

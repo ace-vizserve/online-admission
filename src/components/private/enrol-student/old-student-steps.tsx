@@ -58,7 +58,7 @@ function OldStudentSteps() {
           })
         }>
         <div className="space-y-1 text-center px-6 py-4">
-          <p className="text-sm font-semibold">Enrollment Information</p>
+          <p className="text-sm font-semibold">Enrolment Information</p>
           <p className="text-xs text-muted-foreground">Review Student Enrolment details</p>
         </div>
       </NavLink>
@@ -76,7 +76,7 @@ function OldStudentSteps() {
           })
         }>
         <div className="space-y-1 text-center px-6 py-4">
-          <p className="text-sm font-semibold">Your Documents</p>
+          <p className="text-sm font-semibold">Upload Requirements</p>
           <p className="text-xs text-muted-foreground">Review your documents</p>
         </div>
       </NavLink>
