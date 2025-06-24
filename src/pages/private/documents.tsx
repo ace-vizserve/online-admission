@@ -1,10 +1,10 @@
 import PageMetaData from "@/components/page-metadata";
 import { SectionCards } from "@/components/private/dashboard/section-cards";
 import DocumentsList from "@/components/private/documents/documents-list";
-import { USER_DASHBOARD_TITLE_DESCRIPTION } from "@/data";
+import { PARENTS_DASHBOARD_TITLE_DESCRIPTION } from "@/data";
 
 function Documents() {
-  const { title, description } = USER_DASHBOARD_TITLE_DESCRIPTION;
+  const { title, description } = PARENTS_DASHBOARD_TITLE_DESCRIPTION;
   return (
     <>
       <PageMetaData title={title} description={description} />

@@ -21,9 +21,6 @@ import { Link } from "react-router";
 
 function Registration() {
   const { title, description } = REGISTRATION_PAGE_TITLE_DESCRIPTION;
-  const { mutate, isPending } = useMutation({
-    mutationFn: userRegister,
-  });
   const form = useForm<RegistrationSchema>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
@@ -33,6 +30,12 @@ function Registration() {
       email: "",
       password: "",
       confirmPassword: "",
+    },
+  });
+  const { mutate, isPending } = useMutation({
+    mutationFn: userRegister,
+    onSuccess() {
+      form.reset();
     },
   });
 

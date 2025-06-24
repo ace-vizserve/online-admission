@@ -484,7 +484,7 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
       return true;
     });
 
-    return enrollmentStudentList;
+    return enrollmentStudentList.reverse();
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);

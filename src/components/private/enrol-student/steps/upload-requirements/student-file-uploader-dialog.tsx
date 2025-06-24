@@ -751,11 +751,7 @@ function StudentFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput
-                        {...field}
-                        className="placeholder:text-sm"
-                        placeholder="Enter your passport number"
-                      />
+                      <PassportInput {...field} placeholder="Enter your passport number" />
                     </FormControl>
 
                     <FormMessage />

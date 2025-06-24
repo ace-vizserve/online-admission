@@ -15,16 +15,18 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 
 function ForgotPassword() {
-  const { mutate, isPending } = useMutation({
-    mutationFn: sendPasswordResetLink,
-  });
-
   const { title, description } = FORGOT_PASSWORD_TITLE_DESCRIPTION;
   const form = useForm<ForgotPasswordSchema>({
     defaultValues: {
       email: "",
     },
     resolver: zodResolver(forgotPasswordSchema),
+  });
+  const { mutate, isPending } = useMutation({
+    mutationFn: sendPasswordResetLink,
+    onSuccess() {
+      form.reset();
+    },
   });
 
   function onSubmit(values: ForgotPasswordSchema) {

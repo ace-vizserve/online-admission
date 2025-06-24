@@ -970,7 +970,7 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput className="placeholder:text-sm" {...field} placeholder="Enter  passport number" />
+                      <PassportInput {...field} placeholder="Enter  passport number" />
                     </FormControl>
 
                     <FormMessage />
@@ -1092,7 +1092,7 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput className="placeholder:text-sm" {...field} placeholder="Enter  passport number" />
+                      <PassportInput {...field} placeholder="Enter  passport number" />
                     </FormControl>
 
                     <FormMessage />
@@ -1215,7 +1215,7 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput className="placeholder:text-sm" {...field} placeholder="Enter  passport number" />
+                      <PassportInput {...field} placeholder="Enter  passport number" />
                     </FormControl>
 
                     <FormMessage />

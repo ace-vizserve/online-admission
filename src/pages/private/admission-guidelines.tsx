@@ -20,7 +20,7 @@ function AdmissionGuidelines() {
             to={ADMISSION_GUIDELINES_URL}
             target="_blank"
             className={buttonVariants({
-              className: "gap-2 !bg-[#FD8735] hover:!bg-[#fd6e35]",
+              variant: "secondary",
             })}>
             Download PDF <Download />
           </Link>

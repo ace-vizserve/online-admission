@@ -1714,7 +1714,7 @@ export async function studentReuploadDocuments({
         appUpdates["passportExpiry"] = payload.passportExpiry;
 
         docUpdates["passport"] = payload.passport;
-        docUpdates["passportExpiry"] = payload.passExpiry;
+        docUpdates["passportExpiry"] = payload.passportExpiry;
         docUpdates["passportStatus"] = "Valid";
         break;
       case "educCert":
@@ -1770,21 +1770,23 @@ export async function parentGuardianReuploadDocuments({
 
     switch (documentType) {
       case `${role}Pass`:
-        appUpdates[`${role}Pass`] = payload.motherPassType;
-        appUpdates[`${role}PassExpiry`] = payload.motherPassExpiry;
+        appUpdates[`${role}Pass`] = payload[`${role}PassType`];
+        appUpdates[`${role}PassExpiry`] = payload[`${role}PassExpiry`];
 
-        docUpdates[`${role}Pass`] = payload.motherPass;
-        docUpdates[`${role}PassExpiry`] = payload.motherPassExpiry;
+        docUpdates[`${role}Pass`] = payload[`${role}Pass`];
+        docUpdates[`${role}PassExpiry`] = payload[`${role}PassExpiry`];
         docUpdates[`${role}PassStatus`] = "Valid";
         break;
-      case `${role}Passport`:
-        appUpdates[`${role}Passport`] = payload.motherPassportNumber;
-        appUpdates[`${role}PassportExpiry`] = payload.motherPassportExpiry;
 
-        docUpdates[`${role}Passport`] = payload.motherPassport;
-        docUpdates[`${role}PassportExpiry`] = payload.motherPassportExpiry;
+      case `${role}Passport`:
+        appUpdates[`${role}Passport`] = payload[`${role}PassportNumber`];
+        appUpdates[`${role}PassportExpiry`] = payload[`${role}PassportExpiry`];
+
+        docUpdates[`${role}Passport`] = payload[`${role}Passport`];
+        docUpdates[`${role}PassportExpiry`] = payload[`${role}PassportExpiry`];
         docUpdates[`${role}PassportStatus`] = "Valid";
         break;
+
       default:
         break;
     }

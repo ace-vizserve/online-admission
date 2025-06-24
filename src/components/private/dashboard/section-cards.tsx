@@ -53,10 +53,10 @@ export function SectionCards() {
                   <div className="rounded-md bg-primary p-2">
                     <GraduationCap className="stroke-white size-5" />
                   </div>
-                  <CardDescription className="font-medium">Enrolled Students</CardDescription>
+                  <CardDescription className="font-medium">Enroled Students</CardDescription>
                 </div>
 
-                <Badge className="text-[0.7rem]" variant={"outline"}>
+                <Badge variant={"outline"} className="text-[0.7rem]">
                   A.Y. {new Date().getFullYear()} - {new Date().getFullYear() + 1}
                 </Badge>
               </div>
