@@ -8,13 +8,13 @@ const academicYears = [
     value: "ay2025",
     name: "AY 2025",
     label: "Academic Year 2025",
-    description: "Enroll your child for the ongoing school year.",
+    description: "Enrol your child for the ongoing school year.",
     details: [
       "Classes are currently ongoing",
-      "Late enrollment still accepted",
+      "Late enrolment still accepted",
       "Ideal for students transferring mid-year",
     ],
-    buttonText: "Enroll for AY 2025",
+    buttonText: "Enrol for AY 2025",
   },
   {
     value: "ay2026",
