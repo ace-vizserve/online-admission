@@ -1,10 +1,11 @@
-import logo from "@/assets/hfse-logo.png";
+import logo from "@/assets/hfse-logo.webp";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
 function Logo({ className }: { className?: string }) {
   return (
     <motion.img
+      fetchPriority="high"
       initial={{
         opacity: 0,
       }}

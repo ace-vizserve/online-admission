@@ -1,4 +1,4 @@
-import students from "@/assets/landing-page/students.png";
+import students from "@/assets/students.webp";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
