@@ -1,5 +1,5 @@
 import { userLogin } from "@/actions/auth";
-import students from "@/assets/students-login.png";
+import students from "@/assets/students-login.webp";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
@@ -126,6 +126,7 @@ function Login() {
           </MaxWidthWrapper>
           <div className="bg-muted hidden lg:flex lg:items-center lg:justify-center">
             <motion.img
+              fetchPriority="high"
               initial={{
                 opacity: 0,
                 translateY: 40,
