@@ -65,7 +65,9 @@ function EnrollmentInformation() {
   });
   const [isPending, setTransition] = useTransition();
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
-  const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(false);
+  const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
+    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
+  );
 
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
@@ -158,7 +160,6 @@ function EnrollmentInformation() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Class Type</FormLabel>
-
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
