@@ -33,9 +33,13 @@ function MotherInformation() {
   function onSubmit(values: MotherInformationSchema) {
     if (isMotherAccount) {
       const accountEmail = session.user.email;
+
       if (values.motherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        toast.warning("Mother's email mismatch!", {
+          description: "Please enter your account email to correctly link the student to your account.",
+        });
         form.setError("motherEmail", {
-          message: "Please enter your account email to correctly link the student to your account.",
+          message: "Email must match your account to link the student.",
         });
         return;
       }

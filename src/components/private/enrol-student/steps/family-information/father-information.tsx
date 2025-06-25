@@ -66,8 +66,11 @@ function FatherInformation() {
       const accountEmail = session.user.email;
 
       if (values.fatherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        toast.warning("Father's email mismatch!", {
+          description: "Please enter your account email to correctly link the student to your account.",
+        });
         form.setError("fatherEmail", {
-          message: "Please enter your account email to correctly link the student to your account.",
+          message: "Email must match your account to link the student.",
         });
         return;
       }
