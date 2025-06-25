@@ -142,7 +142,7 @@ function EnrolStudent() {
                 <CardHeader className="text-center px-2">
                   <CardTitle className="text-lg">Select a student</CardTitle>
                   <CardDescription className="text-sm">
-                    Selecting a student will proceed with the enrolment process
+                    Only <strong>2025</strong> enrolees are listed. Select a student to continue.
                   </CardDescription>
                   <AcademicYearDropdown />
                 </CardHeader>

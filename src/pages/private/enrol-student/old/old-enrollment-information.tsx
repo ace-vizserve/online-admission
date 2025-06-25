@@ -493,7 +493,8 @@ function OldEnrollmentInformation() {
                     )}
                   </div>
 
-                  {isSelectedReferredBySomeone && (
+                  {(isSelectedReferredBySomeone ||
+                    formState.enrollmentInfo?.discount?.includes("Referred by someone")) && (
                     <>
                       <FormField
                         control={form.control}

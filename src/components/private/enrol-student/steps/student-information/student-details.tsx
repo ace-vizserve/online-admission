@@ -31,11 +31,11 @@ function StudentDetails() {
     try {
       const age = differenceInYears(new Date(), values.birthDay);
 
-      if (age < 6) {
-        toast.info("Child must be at least 6 years old to enroll");
+      if (age < 4) {
+        toast.info("Child must be at least 4 years old to enroll");
         form.setError("birthDay", {
           type: "manual",
-          message: "Child must be at least 6 years old",
+          message: "Child must be at least 4 years old",
         });
         return;
       }
