@@ -39,8 +39,6 @@ function SubmitApplicationDialog() {
     },
     onSuccess() {
       window.location.href = "/application-submitted";
-    },
-    onSettled() {
       queryClient.invalidateQueries({
         queryKey: ["section-cards", session?.user.email],
       });
@@ -52,6 +50,11 @@ function SubmitApplicationDialog() {
       });
       clearState();
       sessionStorage.clear();
+    },
+    onError() {
+      toast.error("Uh oh! Something went wrong", {
+        description: "An unknown error occurred. Please try again.",
+      });
     },
   });
 

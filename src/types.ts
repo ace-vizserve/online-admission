@@ -37,7 +37,7 @@ export type Student = {
   firstName: string;
   lastName: string;
   middleName?: string;
-  birthDay: string;
+  birthDay: Date;
   contactPerson: string;
   contactPersonNumber: string;
   gender: string;
@@ -238,6 +238,10 @@ export type StudentDocument = {
     }
   ];
   permanentDocuments: [
+    {
+      idPicture: string | null;
+      idPictureStatus: string | null;
+    },
     {
       form12: string | null;
       form12Status: string | null;

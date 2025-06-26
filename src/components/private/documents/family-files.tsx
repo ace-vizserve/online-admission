@@ -485,7 +485,7 @@ function ParentGuardianFileUploaderDialog({
           <DialogHeader className="text-start">
             <DialogTitle>{label}</DialogTitle>
             <DialogDescription>
-              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+              Upload a clear and recent photo. Accepted formats: <strong>PDF</strong>
             </DialogDescription>
           </DialogHeader>
 

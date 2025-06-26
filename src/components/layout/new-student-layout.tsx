@@ -27,6 +27,7 @@ import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
 import { useCallback, useEffect, useTransition } from "react";
+import { toast } from "sonner";
 
 function NewStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
@@ -89,8 +90,6 @@ function SubmitApplicationDialog() {
     },
     onSuccess() {
       window.location.href = "/application-submitted";
-    },
-    onSettled() {
       queryClient.invalidateQueries({
         queryKey: ["section-cards", session?.user.email],
       });
@@ -102,6 +101,11 @@ function SubmitApplicationDialog() {
       });
       clearEnrolNewStudentTabState();
       sessionStorage.clear();
+    },
+    onError() {
+      toast.error("Uh oh! Something went wrong", {
+        description: "An unknown error occurred. Please try again.",
+      });
     },
   });
 

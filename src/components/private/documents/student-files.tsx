@@ -43,10 +43,11 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
   const passportDocument = documents.documentsThatExpire[0];
   const passDocument = documents.documentsThatExpire[1];
 
-  const form12Document = documents.permanentDocuments[0];
-  const medicalCertDocument = documents.permanentDocuments[1];
-  const birthCertDocument = documents.permanentDocuments[2];
-  const eduCertDocument = documents.permanentDocuments[3];
+  const idPicture = documents.permanentDocuments[0];
+  const form12Document = documents.permanentDocuments[1];
+  const medicalCertDocument = documents.permanentDocuments[2];
+  const birthCertDocument = documents.permanentDocuments[3];
+  const eduCertDocument = documents.permanentDocuments[4];
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
@@ -289,6 +290,62 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
 
       <h2 className="font-bold text-lg">Permanent Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
+        {Object.values(idPicture).some((v) => v == null) ? (
+          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
+            <div className="w-full flex relative">
+              <StatusBadge className="absolute -top-2" status={"Missing"} />
+
+              <div className="pt-6 w-max mx-auto">
+                <img src={fileSvg} className="size-10" />
+              </div>
+            </div>
+            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
+
+            <div className="flex flex-col gap-2 w-full">
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+              <Button disabled className="gap-2 text-xs w-full">
+                Reupload <RotateCcw />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
+            <div className="w-full flex relative">
+              <StatusBadge className="absolute -top-2" status={idPicture.idPictureStatus as StatusProps} />
+
+              <div className="pt-6 w-max mx-auto">
+                <img src={fileSvg} className="size-10" />
+              </div>
+            </div>
+            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
+
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                to={idPicture.idPicture!}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+
+              <StudentFileUploaderDialog
+                status={idPicture.idPictureStatus!}
+                academicYear={academicYear!}
+                documentType="idPicture"
+                enroleeNumber={params.id!}
+                label="Student's ID Picture"
+                payload={{
+                  idPicture: idPicture.idPicture!,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {Object.values(form12Document).some((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
@@ -494,7 +551,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               <StudentFileUploaderDialog
                 status={eduCertDocument?.educCertStatus ?? "Missing"}
                 academicYear={academicYear!}
-                documentType="eduCert"
+                documentType="educCert"
                 enroleeNumber={params.id!}
                 label="Student's Transcript of Records"
                 payload={{
@@ -528,6 +585,8 @@ function StudentFileUploaderDialog({
     },
   });
 
+  const [idPicture, setIdPicture] = useState("");
+
   const [pass, setPass] = useState("");
   const [passType, setPassType] = useState("");
   const [passExpiry, setPassExpiry] = useState<Date | undefined>();
@@ -547,14 +606,18 @@ function StudentFileUploaderDialog({
   const props = useSupabaseUpload({
     bucketName: "parent-portal",
     path: `${academicYear}/documents`,
-    allowedMimeTypes: ["application/pdf"],
-    maxFiles: documentType === "medical" ? 4 : 1,
+    allowedMimeTypes: documentType !== "idPicture" ? ["application/pdf"] : ["image/*"],
+    maxFiles: documentType !== "idPicture" ? 4 : 1,
     maxFileSize: 1000 * 1000 * 4,
-    mergeFiles: documentType === "medical" ? true : false,
+    mergeFiles: documentType !== "idPicture" ? true : false,
   });
 
   useEffect(() => {
     if (!props.isSuccess) return;
+
+    if (documentType == "idPicture") {
+      setIdPicture(props.successes[0]);
+    }
 
     if (documentType == "pass") {
       setPass(props.successes[0]);
@@ -576,7 +639,7 @@ function StudentFileUploaderDialog({
       setMedical(props.successes[0]);
     }
 
-    if (documentType == "eduCert") {
+    if (documentType == "educCert") {
       setEducCert(props.successes[0]);
     }
   }, [documentType, props.isSuccess, props.successes]);
@@ -657,13 +720,23 @@ function StudentFileUploaderDialog({
         };
         break;
 
-      case "eduCert":
+      case "educCert":
         if (!educCert) {
           toast.error("Please upload the educational certificate.");
           return;
         }
         filePayload = {
           educCert,
+        };
+        break;
+
+      case "idPicture":
+        if (!idPicture) {
+          toast.error("Please upload the Student ID Picture.");
+          return;
+        }
+        filePayload = {
+          idPicture,
         };
         break;
     }
@@ -683,7 +756,8 @@ function StudentFileUploaderDialog({
           <DialogHeader className="text-start">
             <DialogTitle>{label}</DialogTitle>
             <DialogDescription>
-              Upload a clear and recent photo. Accepted formats: PNG, JPG, or JPEG and PDF.
+              Upload a clear and recent photo. Accepted formats:{" "}
+              <strong>{documentType == "idPicture" ? "PNG, JPG, or JPEG" : "PDF"}</strong>
             </DialogDescription>
           </DialogHeader>
 

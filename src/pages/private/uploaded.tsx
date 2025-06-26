@@ -8,7 +8,7 @@ function Uploaded() {
   const params = useParams();
 
   if (!params.id) {
-    return <h1>Student number is not defined!</h1>;
+    return <h1>Enrolee number is not defined!</h1>;
   }
 
   return (

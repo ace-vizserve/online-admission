@@ -16,10 +16,11 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
   const passportDocument = documents.documentsThatExpire[0];
   const passDocument = documents.documentsThatExpire[1];
 
-  const form12Document = documents.permanentDocuments[0];
-  const medicalCertDocument = documents.permanentDocuments[1];
-  const birthCertDocument = documents.permanentDocuments[2];
-  const eduCertDocument = documents.permanentDocuments[3];
+  const idPicture = documents.permanentDocuments[0];
+  const form12Document = documents.permanentDocuments[1];
+  const medicalCertDocument = documents.permanentDocuments[2];
+  const birthCertDocument = documents.permanentDocuments[3];
+  const eduCertDocument = documents.permanentDocuments[4];
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
@@ -221,6 +222,44 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
 
       <h2 className="font-bold text-lg">Permanent Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
+        {Object.values(idPicture).some((v) => v == null) ? (
+          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
+            <div className="w-full flex relative">
+              <StatusBadge className="absolute -top-2" status={"Missing"} />
+
+              <div className="pt-6 w-max mx-auto">
+                <img src={fileSvg} className="size-10" />
+              </div>
+            </div>
+            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
+
+            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+              View document <EyeClosed />
+            </Button>
+          </div>
+        ) : (
+          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
+            <div className="w-full flex relative">
+              <StatusBadge className="absolute -top-2" status={idPicture.idPictureStatus as StatusProps} />
+
+              <div className="pt-6 w-max mx-auto">
+                <img src={fileSvg} className="size-10" />
+              </div>
+            </div>
+            <p className="text-muted-foreground font-medium text-sm">Form 12</p>
+
+            <Link
+              to={idPicture.idPicture!}
+              target="_blank"
+              className={buttonVariants({
+                className: "gap-2 text-xs  w-full",
+                variant: "secondary",
+              })}>
+              View document <Eye />
+            </Link>
+          </div>
+        )}
+
         {Object.values(form12Document).some((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">

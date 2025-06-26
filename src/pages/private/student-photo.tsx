@@ -18,14 +18,13 @@ function StudentPhoto() {
   };
 
   return (
-    <div className="relative h-screen w-full flex items-center justify-center px-4 md:px-0">
-      <Button onClick={goBack} size={"sm"} className="cursor-pointer top-6 left-6 gap-2 absolute">
+    <div className="relative h-screen w-full flex flex-col space-y-4 p-4 md:p-6">
+      <Button onClick={goBack} size="sm" className="cursor-pointer w-max">
         <ArrowLeft /> Go back
       </Button>
-      <img
-        src={url}
-        className="w-max h-max aspect-square object-cover rounded-lg max-h-[440px] max-w-full border shadow-xl"
-      />
+      <div className="flex-1 overflow-hidden">
+        <img src={url} alt="Uploaded preview" className="w-full h-full object-cover rounded-xl border" />
+      </div>
     </div>
   );
 }
