@@ -638,6 +638,21 @@ export const parentGuardianUploadRequirementsSchema = z
     }
   });
 
+export const studentAddressContactAndInformationSchema = z.intersection(
+  studentDetailsSchema,
+  studentAddressContactSchema
+);
+
+const fatherSchema = fatherInformationSchema._def.schema.partial();
+
+const parentGuardianSchema = fatherSchema
+  .merge(motherInformationSchema.partial())
+  .merge(guardianInformationSchema.partial());
+
+export const familyInformationSchema = z.intersection(parentGuardianSchema, siblingInformationSchema);
+
+export type StudentAddressContactAndInformationSchema = z.infer<typeof studentAddressContactAndInformationSchema>;
+export type FamilyInformationSchema = Omit<z.infer<typeof familyInformationSchema>, "isValid" | "noFatherInfo">;
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 export type UpdatePasswordSchema = z.infer<typeof updatePasswordSchema>;

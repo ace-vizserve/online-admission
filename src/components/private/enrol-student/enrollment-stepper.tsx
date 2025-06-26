@@ -1,5 +1,5 @@
 import discountPriceTag from "@/assets/discount-price-tag.png";
-import enrollmentProcess from "@/assets/enrollment-process.jpg";
+import enrollmentProcess from "@/assets/enrollment-process.webp";
 import Stepper, { Step } from "@/components/ui/stepper";
 import "inner-image-zoom/lib/styles.min.css";
 import InnerImageZoom from "react-inner-image-zoom";

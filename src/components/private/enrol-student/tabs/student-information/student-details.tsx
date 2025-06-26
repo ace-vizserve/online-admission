@@ -68,7 +68,7 @@ function StudentDetails() {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
-                <FormDescription>This is your student's legal last name.</FormDescription>
+                <FormDescription>This is your student's legal first name.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

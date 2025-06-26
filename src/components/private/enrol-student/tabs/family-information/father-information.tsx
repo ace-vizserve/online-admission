@@ -298,7 +298,6 @@ function FatherInformation() {
                 </FormControl>
                 <FormDescription>Select the country that best represents the father's nationality.</FormDescription>
                 <FormMessage />
-                <FormMessage />
               </FormItem>
             )}
           />

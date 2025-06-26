@@ -17,6 +17,7 @@ import {
   Student,
   StudentReuploadProps,
 } from "@/types";
+import { FamilyInformationSchema, StudentAddressContactAndInformationSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
 import { isBefore } from "date-fns";
 import PDFMerger from "pdf-merger-js";
@@ -189,10 +190,16 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       ];
 
       expiryFields.forEach(({ field, statusField }) => {
-        if (doc[field] && isBefore(new Date(doc[field]), now)) {
-          updates[statusField] = "Expired";
-        } else {
-          updates[statusField] = "Valid";
+        const expiryDate = doc[field];
+        const isRejected = doc[statusField] === "Rejected";
+
+        if (!isRejected) {
+          if (!expiryDate) {
+            updates[statusField] = "Uploaded";
+          } else {
+            const isExpired = isBefore(new Date(expiryDate), now);
+            updates[statusField] = isExpired ? "Expired" : "Valid";
+          }
         }
       });
 
@@ -230,6 +237,7 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
     if (!documents || documents.length === 0) {
       documents = [
         {
+          idPicture: null,
           form12: null,
           form12Status: null,
           medical: null,
@@ -263,10 +271,16 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       ];
 
       expiryFields.forEach(({ field, statusField }) => {
-        if (doc[field] && isBefore(new Date(doc[field]), now)) {
-          updates[statusField] = "Expired";
-        } else {
-          updates[statusField] = "Valid";
+        const expiryDate = doc[field];
+        const isRejected = doc[statusField] === "Rejected";
+
+        if (!isRejected) {
+          if (!expiryDate) {
+            updates[statusField] = "Uploaded";
+          } else {
+            const isExpired = isBefore(new Date(expiryDate), now);
+            updates[statusField] = isExpired ? "Expired" : "Valid";
+          }
         }
       });
 
@@ -287,6 +301,8 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
     const studentInfo = extractStudentInfo(studentInformation);
 
     const {
+      idPicture,
+      idPictureStatus,
       form12,
       form12Status,
       medical,
@@ -329,6 +345,7 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
           },
         ],
         permanentDocuments: [
+          { idPicture, idPictureStatus },
           {
             form12,
             form12Status,
@@ -1176,7 +1193,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     }
   } catch (error) {
     const err = error as AuthError;
-    toast.error(err.message);
+    throw err;
   }
 }
 
@@ -1590,7 +1607,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     }
   } catch (error) {
     const err = error as AuthError;
-    toast.error(err.message);
+    throw err;
   }
 }
 
@@ -1716,6 +1733,12 @@ export async function studentReuploadDocuments({
         docUpdates["passport"] = payload.passport;
         docUpdates["passportExpiry"] = payload.passportExpiry;
         docUpdates["passportStatus"] = "Valid";
+        break;
+      case "idPicture":
+        appUpdates["enroleePhoto"] = payload.idPicture;
+
+        docUpdates["idPicture"] = payload.idPicture;
+        docUpdates["idPictureStatus"] = "Uploaded";
         break;
       case "educCert":
         docUpdates["educCert"] = payload.educCert;
@@ -1886,6 +1909,50 @@ export async function uploadFileToBucket(isImage: boolean, files: File[], academ
 
       return { imagePath: publicUrl };
     }
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
+export async function updateEnrollmentApplicationDetails({
+  academicYear,
+  enrollmentDetails,
+  enroleeNumber,
+}: {
+  academicYear: string;
+  enroleeNumber: string;
+  enrollmentDetails: Partial<StudentAddressContactAndInformationSchema & FamilyInformationSchema>;
+}) {
+  try {
+    const { middleName, siblings } = enrollmentDetails;
+
+    if (middleName === "N/A") {
+      delete enrollmentDetails.middleName;
+    }
+
+    let flattenedSiblings: Record<string, unknown> = {};
+
+    if (siblings && siblings.length) {
+      flattenedSiblings = flattenSiblings(siblings);
+      delete enrollmentDetails.siblings;
+    }
+
+    const { error } = await supabase
+      .from(`${academicYear}_enrolment_applications`)
+      .update({
+        ...enrollmentDetails,
+        ...flattenedSiblings,
+      })
+      .eq("enroleeNumber", enroleeNumber);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    toast.success("Student information saved!", {
+      description: "Enrollment details have been updated successfully",
+    });
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);

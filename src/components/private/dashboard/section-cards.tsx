@@ -21,51 +21,7 @@ export function SectionCards() {
       {isPending ? (
         <Loader />
       ) : (
-        <div className="order-2 flex flex-col lg:flex-row gap-4 w-full">
-          <Card className="w-full max-w-full xl:max-w-[370px]">
-            <CardHeader className="relative flex flex-col gap-2">
-              <div className="w-full flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <div className="rounded-md bg-primary p-2">
-                    <Users className="stroke-white size-5" />
-                  </div>
-                  <CardDescription className="font-medium">My Children</CardDescription>
-                </div>
-                <Link
-                  className={buttonVariants({
-                    variant: "link",
-                    size: "sm",
-                  })}
-                  to="/admission/enrolment"
-                  title="View details">
-                  <ExternalLink className="size-4" />
-                </Link>
-              </div>
-
-              <CardTitle className="text-4xl font-bold tabular-nums text-primary">{data?.totalChildren}</CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card className="w-full max-w-full xl:max-w-[370px]">
-            <CardHeader className="relative flex flex-col gap-2">
-              <div className="w-full flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <div className="rounded-md bg-primary p-2">
-                    <GraduationCap className="stroke-white size-5" />
-                  </div>
-                  <CardDescription className="font-medium">Enroled Students</CardDescription>
-                </div>
-
-                <Badge variant={"outline"} className="text-[0.7rem]">
-                  A.Y. {new Date().getFullYear()} - {new Date().getFullYear() + 1}
-                </Badge>
-              </div>
-              <CardTitle className="text-4xl font-bold tabular-nums text-primary">
-                {data?.currentEnrolledStudents}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
+        <DashboardCards currentEnrolledStudents={data?.currentEnrolledStudents} totalChildren={data?.totalChildren} />
       )}
 
       <Link
@@ -86,6 +42,59 @@ export function SectionCards() {
         Enrol Student
         <UserPlus className="size-5" />
       </Link>
+    </div>
+  );
+}
+
+type DashboardCardsProps = {
+  totalChildren: number | undefined;
+  currentEnrolledStudents: number | undefined;
+};
+
+function DashboardCards({ currentEnrolledStudents, totalChildren }: DashboardCardsProps) {
+  return (
+    <div className="order-2 flex flex-col lg:flex-row gap-4 w-full">
+      <Card className="w-full max-w-full xl:max-w-[370px]">
+        <CardHeader className="relative flex flex-col gap-2">
+          <div className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="rounded-md bg-primary p-2">
+                <Users className="stroke-white size-5" />
+              </div>
+              <CardDescription className="font-medium">My Children</CardDescription>
+            </div>
+            <Link
+              className={buttonVariants({
+                variant: "link",
+                size: "sm",
+              })}
+              to="/admission/enrolment"
+              title="View details">
+              <ExternalLink className="size-4" />
+            </Link>
+          </div>
+
+          <CardTitle className="text-4xl font-bold tabular-nums text-primary">{totalChildren}</CardTitle>
+        </CardHeader>
+      </Card>
+
+      <Card className="w-full max-w-full xl:max-w-[370px]">
+        <CardHeader className="relative flex flex-col gap-2">
+          <div className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="rounded-md bg-primary p-2">
+                <GraduationCap className="stroke-white size-5" />
+              </div>
+              <CardDescription className="font-medium">Enroled Students</CardDescription>
+            </div>
+
+            <Badge variant={"outline"} className="text-[0.7rem]">
+              A.Y. {new Date().getFullYear()} - {new Date().getFullYear() + 1}
+            </Badge>
+          </div>
+          <CardTitle className="text-4xl font-bold tabular-nums text-primary">{currentEnrolledStudents}</CardTitle>
+        </CardHeader>
+      </Card>
     </div>
   );
 }
