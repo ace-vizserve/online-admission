@@ -66,22 +66,30 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>First Name</Label>
-              <InputWithIcon value={firstName} svgIcon={<User className="text-muted-foreground size-4" />} />
+              <InputWithIcon readOnly value={firstName} svgIcon={<User className="text-muted-foreground size-4" />} />
             </div>
 
             <div className="space-y-2">
               <Label>Middle Name</Label>
-              <InputWithIcon value={middleName || "N/A"} svgIcon={<User className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={middleName || "N/A"}
+                svgIcon={<User className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>Last Name</Label>
-              <InputWithIcon value={lastName} svgIcon={<User className="text-muted-foreground size-4" />} />
+              <InputWithIcon readOnly value={lastName} svgIcon={<User className="text-muted-foreground size-4" />} />
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Preferred Name</Label>
-              <InputWithIcon value={preferredName} svgIcon={<Smile className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={preferredName}
+                svgIcon={<Smile className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>Date of Birth</Label>
@@ -111,7 +119,11 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Contact Person</Label>
-              <InputWithIcon value={contactPerson} svgIcon={<Phone className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={contactPerson}
+                svgIcon={<Phone className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>Contact Number</Label>
@@ -122,7 +134,7 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
             </div>
             <div className="space-y-2">
               <Label>Home Phone</Label>
-              <InputWithIcon value={homePhone} svgIcon={<Phone className="text-muted-foreground size-4" />} />
+              <InputWithIcon readOnly value={homePhone} svgIcon={<Phone className="text-muted-foreground size-4" />} />
             </div>
           </div>
         </CardContent>
@@ -145,11 +157,19 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
             </div>
             <div className="space-y-2">
               <Label>Postal Code</Label>
-              <InputWithIcon value={postalCode} svgIcon={<MapPin className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={postalCode}
+                svgIcon={<MapPin className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>Living With</Label>
-              <InputWithIcon value={livingWithWhom} svgIcon={<Users className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={livingWithWhom}
+                svgIcon={<Users className="text-muted-foreground size-4" />}
+              />
             </div>
           </div>
         </CardContent>
@@ -165,11 +185,19 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Gender</Label>
-              <InputWithIcon value={gender} svgIcon={<VenetianMask className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={gender}
+                svgIcon={<VenetianMask className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>NRIC/FIN</Label>
-              <InputWithIcon value={maskedNric} svgIcon={<BadgeInfo className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={maskedNric}
+                svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>Parent Marital Status</Label>
@@ -182,11 +210,19 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Nationality</Label>
-              <InputWithIcon value={nationality} svgIcon={<Globe className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={nationality}
+                svgIcon={<Globe className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>Primary Language</Label>
-              <InputWithIcon value={primaryLanguage} svgIcon={<Languages className="text-muted-foreground size-4" />} />
+              <InputWithIcon
+                readOnly
+                value={primaryLanguage}
+                svgIcon={<Languages className="text-muted-foreground size-4" />}
+              />
             </div>
             <div className="space-y-2">
               <Label>Religion</Label>
