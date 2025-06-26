@@ -75,6 +75,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>First Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherFirstName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -82,6 +83,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Middle Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherMiddleName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -89,6 +91,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Last Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherLastName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -98,6 +101,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Preferred Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherPreferredName ?? "N/A"}
                     svgIcon={<Smile className="text-muted-foreground size-4" />}
                   />
@@ -105,6 +109,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherBirthDay ? formatDate(fatherBirthDay, "dd/MM/yyyy") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
@@ -112,6 +117,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Religion</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherReligion ?? "N/A"}
                     svgIcon={<Landmark className="text-muted-foreground size-4" />}
                   />
@@ -129,6 +135,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Email</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherEmail ?? "N/A"}
                     svgIcon={<Mail className="text-muted-foreground size-4" />}
                   />
@@ -136,6 +143,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Mobile Number</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherMobile ?? "N/A"}
                     svgIcon={<Phone className="text-muted-foreground size-4" />}
                   />
@@ -143,6 +151,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Nationality</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherNationality ?? "N/A"}
                     svgIcon={<Globe className="text-muted-foreground size-4" />}
                   />
@@ -160,6 +169,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>NRIC/FIN</Label>
                   <InputWithIcon
+                    readOnly
                     value={maskedFatherNric ?? "N/A"}
                     svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
                   />
@@ -167,6 +177,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Company</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherCompanyName ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
@@ -174,6 +185,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Position</Label>
                   <InputWithIcon
+                    readOnly
                     value={fatherPosition ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
@@ -196,6 +208,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>First Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherFirstName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -203,6 +216,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Middle Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherMiddleName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -210,6 +224,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Last Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherLastName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -219,6 +234,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Preferred Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherPreferredName ?? "N/A"}
                     svgIcon={<Smile className="text-muted-foreground size-4" />}
                   />
@@ -226,6 +242,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherBirthDay ? formatDate(motherBirthDay, "dd/MM/yyyy") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
@@ -233,6 +250,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Religion</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherReligion ?? "N/A"}
                     svgIcon={<Landmark className="text-muted-foreground size-4" />}
                   />
@@ -250,6 +268,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Email</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherEmail ?? "N/A"}
                     svgIcon={<Mail className="text-muted-foreground size-4" />}
                   />
@@ -257,6 +276,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Mobile Number</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherMobile ?? "N/A"}
                     svgIcon={<Phone className="text-muted-foreground size-4" />}
                   />
@@ -264,6 +284,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Nationality</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherNationality ?? "N/A"}
                     svgIcon={<Globe className="text-muted-foreground size-4" />}
                   />
@@ -281,6 +302,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>NRIC/FIN</Label>
                   <InputWithIcon
+                    readOnly
                     value={maskedMotherNric ?? "N/A"}
                     svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
                   />
@@ -288,6 +310,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Company</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherCompanyName ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
@@ -295,6 +318,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Position</Label>
                   <InputWithIcon
+                    readOnly
                     value={motherPosition ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
@@ -317,6 +341,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>First Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianFirstName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -324,6 +349,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Middle Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianMiddleName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -331,6 +357,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Last Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianLastName ?? "N/A"}
                     svgIcon={<User className="text-muted-foreground size-4" />}
                   />
@@ -340,6 +367,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Preferred Name</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianPreferredName ?? "N/A"}
                     svgIcon={<Smile className="text-muted-foreground size-4" />}
                   />
@@ -347,6 +375,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianBirthDay ? formatDate(guardianBirthDay, "dd/MM/yyyy") : "N/A"}
                     svgIcon={<Cake className="text-muted-foreground size-4" />}
                   />
@@ -354,6 +383,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Religion</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianReligion ?? "N/A"}
                     svgIcon={<Landmark className="text-muted-foreground size-4" />}
                   />
@@ -371,6 +401,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Email</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianEmail ?? "N/A"}
                     svgIcon={<Mail className="text-muted-foreground size-4" />}
                   />
@@ -378,6 +409,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Mobile Number</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianMobile ?? "N/A"}
                     svgIcon={<Phone className="text-muted-foreground size-4" />}
                   />
@@ -385,6 +417,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Nationality</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianNationality ?? "N/A"}
                     svgIcon={<Globe className="text-muted-foreground size-4" />}
                   />
@@ -402,6 +435,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>NRIC/FIN</Label>
                   <InputWithIcon
+                    readOnly
                     value={maskedGuardianNric ?? "N/A"}
                     svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
                   />
@@ -409,6 +443,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Company</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianCompanyName ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
@@ -416,6 +451,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
                 <div className="space-y-2">
                   <Label>Position</Label>
                   <InputWithIcon
+                    readOnly
                     value={guardianPosition ?? "N/A"}
                     svgIcon={<Briefcase className="text-muted-foreground size-4" />}
                   />
