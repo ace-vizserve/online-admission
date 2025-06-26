@@ -52,7 +52,7 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
         <div className="space-y-2">
           <h1 className="font-bold text-2xl md:text-3xl">{editMode ? "Edit Student Information" : label}</h1>
           <p className="text-sm text-muted-foreground">
-            Review the student's personal and household details. All fields are read-only unless edit mode is enabled.
+            Student's personal and household info. Read-only unless edit mode is on.
           </p>
         </div>
 
