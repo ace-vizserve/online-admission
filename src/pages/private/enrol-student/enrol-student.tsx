@@ -139,10 +139,10 @@ function EnrolStudent() {
               }}
               className="w-full">
               <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
-                <CardHeader className="text-center px-2">
+                <CardHeader className="text-center">
                   <CardTitle className="text-lg">Select a student</CardTitle>
                   <CardDescription className="text-sm">
-                    Only <strong>2025</strong> enrolees are listed. Select a student to continue.
+                    All registered students for <strong>AY 2025</strong> are listed below.
                   </CardDescription>
                   <AcademicYearDropdown />
                 </CardHeader>

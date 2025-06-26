@@ -58,8 +58,10 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
 
         <div className="w-full md:max-w-xs flex items-center justify-between gap-3 rounded-lg border p-3">
           <div className="flex flex-col gap-1">
-            <p className="text-sm font-medium leading-none">Switch to edit mode</p>
-            <p className="text-xs text-muted-foreground">Enable editing of student information.</p>
+            <p className="text-sm font-medium leading-none">Switch to {editMode ? "view" : "edit"} mode</p>
+            <p className="text-xs text-muted-foreground">
+              Enable {editMode ? "viewing" : "editing"} of student information.
+            </p>
           </div>
 
           <Switch checked={editMode} onCheckedChange={setEditMode} />
