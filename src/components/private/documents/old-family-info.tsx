@@ -47,8 +47,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
         <div className="space-y-2">
           <h1 className="font-bold text-2xl md:text-3xl">{editMode ? "Edit Family Information" : label}</h1>
           <p className="text-sm text-muted-foreground text-balance">
-            This section includes details about the student's parents, guardian, and siblings. All fields are read-only
-            unless edit mode is enabled.
+            View-only details about parents, guardian, and siblings. Enable edit mode to make changes.
           </p>
         </div>
 
@@ -56,7 +55,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium leading-none">Switch to {editMode ? "view" : "edit"} mode</p>
             <p className="text-xs text-muted-foreground">
-              Enable {editMode ? "viewing" : "editing"} of student's family information.
+              Enable&nbsp;{editMode ? "viewing" : "editing"}&nbsp;of&nbsp;student's&nbsp;family&nbsp;information.
             </p>
           </div>
 
