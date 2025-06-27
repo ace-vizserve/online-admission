@@ -71,7 +71,6 @@ const StudentFileUploaderDialog = memo(function ({
   setFormState,
 }: StudentFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       const isImage = file.length == 1;
@@ -181,7 +180,7 @@ const StudentFileUploaderDialog = memo(function ({
 
             {!formState.uploadRequirements?.studentUploadRequirements[name] && MULTIPLE_FILE_UPLOADS.includes(name) ? (
               <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-                Upload all pages containing relevant details
+                Upload up to 4 PDFs. Check all details before saving.
               </Badge>
             ) : null}
 
@@ -460,7 +459,6 @@ function StudentFileUploaderDrawer({
   value,
 }: StudentFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       const isImage = file.length == 1;
@@ -563,7 +561,7 @@ function StudentFileUploaderDrawer({
 
           {!formState.uploadRequirements?.studentUploadRequirements[name] && MULTIPLE_FILE_UPLOADS.includes(name) ? (
             <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-              Upload all pages containing relevant details
+              Upload up to 4 PDFs. Check all details before saving.
             </Badge>
           ) : null}
 

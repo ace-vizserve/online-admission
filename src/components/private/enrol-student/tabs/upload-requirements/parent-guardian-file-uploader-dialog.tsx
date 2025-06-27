@@ -76,7 +76,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   setFormState,
 }: ParentGuardianFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(false, file, academicYear);
@@ -174,11 +173,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               </DialogDescription>
             </DialogHeader>
 
-            {!formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
-              <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-                Upload all pages containing relevant details
-              </Badge>
-            ) : null}
+            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload up to 4 PDFs. Check all details before saving.
+            </Badge>
 
             {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
               <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
@@ -693,7 +690,6 @@ function ParentGuardianFileUploaderDrawer({
   value,
 }: ParentGuardianFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(false, file, academicYear);
@@ -785,11 +781,9 @@ function ParentGuardianFileUploaderDrawer({
             </DrawerDescription>
           </DrawerHeader>
 
-          {!formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
-            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-              Upload all pages containing relevant details
-            </Badge>
-          ) : null}
+          <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+            Upload up to 4 PDFs. Check all details before saving.
+          </Badge>
 
           {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">

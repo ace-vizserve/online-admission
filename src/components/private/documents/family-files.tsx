@@ -280,13 +280,15 @@ function ParentGuardianFileUploaderDialog({
     mutationFn: async (payload: ParentGuardianDocumentUpdatePayload) => {
       return await parentGuardianReuploadDocuments({ academicYear, documentType, enroleeNumber, payload, role });
     },
-    onSettled() {
+    onSuccess() {
+      setIsOpen(false);
       queryClient.invalidateQueries({
         queryKey: ["family-documents", enroleeNumber],
       });
     },
   });
 
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [motherPass, setMotherPass] = useState("");
   const [motherPassType, setMotherPassType] = useState("");
   const [motherPassExpiry, setMotherPassExpiry] = useState<Date>();
@@ -474,7 +476,7 @@ function ParentGuardianFileUploaderDialog({
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button disabled={status == "Valid" || status == "Uploaded" || isPending} className="gap-2 text-xs w-full">
           Reupload <RotateCcw />
@@ -485,12 +487,12 @@ function ParentGuardianFileUploaderDialog({
           <DialogHeader className="text-start">
             <DialogTitle>{label}</DialogTitle>
             <DialogDescription>
-              Upload a clear and recent photo. Accepted formats: <strong>PDF</strong>
+              Upload a clear and recent document. Accepted formats: <strong>PDF</strong>
             </DialogDescription>
           </DialogHeader>
 
           <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-            Upload all pages containing relevant details
+            Upload up to 4 PDFs. Check all details before saving.
           </Badge>
 
           <Dropzone {...props}>

@@ -117,6 +117,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
       guardianMiddleName: guardianMiddleName ? guardianMiddleName : undefined,
       guardianMobile: guardianMobile ? String(guardianMobile) : undefined,
       siblings: siblings as unknown as FamilyInformationSchema["siblings"],
+      noFatherInfo: fatherEmail ? false : true,
     },
   });
 
@@ -163,7 +164,9 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                       name="fatherMiddleName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Middle Name</FormLabel>
+                          <FormLabel>
+                            Middle Name <span className="text-xs text-muted-foreground">(optional)</span>
+                          </FormLabel>
                           <FormControl>
                             <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
                           </FormControl>
@@ -417,7 +420,9 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                       name="motherMiddleName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Middle Name</FormLabel>
+                          <FormLabel>
+                            Middle Name <span className="text-xs text-muted-foreground">(optional)</span>
+                          </FormLabel>
                           <FormControl>
                             <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
                           </FormControl>
@@ -671,7 +676,9 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                       name="guardianMiddleName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Middle Name</FormLabel>
+                          <FormLabel>
+                            Middle Name <span className="text-xs text-muted-foreground">(optional)</span>
+                          </FormLabel>
                           <FormControl>
                             <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
                           </FormControl>
@@ -1038,11 +1045,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
           </>
         )}
 
-        <Button
-          disabled={form.formState.isDirty || isPending}
-          size={"lg"}
-          className="hidden lg:flex w-full p-8 gap-2 uppercase"
-          type="submit">
+        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
           {isPending ? (
             <>
               Saving
@@ -1056,10 +1059,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
           )}
         </Button>
 
-        <Button
-          disabled={form.formState.isDirty || isPending}
-          className="flex lg:hidden w-full p-6 gap-2 uppercase"
-          type="submit">
+        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
           {isPending ? (
             <>
               Saving

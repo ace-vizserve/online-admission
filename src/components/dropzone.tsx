@@ -177,11 +177,11 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
     <div className={cn("flex flex-col items-center gap-y-2", className)}>
       <Upload size={20} className="text-muted-foreground" />
       <p className="text-sm">
-        Upload{!!maxFiles && maxFiles > 1 ? ` ${maxFiles}` : ""} file
+        Upload file
         {!maxFiles || maxFiles > 1 ? "s" : ""}
       </p>
       <div className="flex flex-col items-center gap-y-1">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Drag and drop or{" "}
           <a
             onClick={() => inputRef.current?.click()}
@@ -191,7 +191,7 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
           to upload
         </p>
         {maxFileSize !== Number.POSITIVE_INFINITY && (
-          <p className="text-xs text-muted-foreground">Maximum file size: {formatBytes(maxFileSize, 2)}</p>
+          <p className="text-sm text-muted-foreground">Maximum file size: {formatBytes(maxFileSize, 2)}</p>
         )}
       </div>
     </div>

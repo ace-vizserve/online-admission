@@ -1927,6 +1927,9 @@ export async function updateEnrollmentApplicationDetails({
   try {
     const { middleName, siblings } = enrollmentDetails;
 
+    delete enrollmentDetails.noFatherInfo;
+    delete enrollmentDetails.isValid;
+
     if (middleName === "N/A") {
       delete enrollmentDetails.middleName;
     }
@@ -1935,8 +1938,9 @@ export async function updateEnrollmentApplicationDetails({
 
     if (siblings && siblings.length) {
       flattenedSiblings = flattenSiblings(siblings);
-      delete enrollmentDetails.siblings;
     }
+
+    delete enrollmentDetails.siblings;
 
     const { error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
@@ -1950,8 +1954,8 @@ export async function updateEnrollmentApplicationDetails({
       throw new Error(error.message);
     }
 
-    toast.success("Student information saved!", {
-      description: "Enrollment details have been updated successfully",
+    toast.success("Application updated!", {
+      description: "Enrollment application details have been saved successfully.",
     });
   } catch (error) {
     const err = error as AuthError;

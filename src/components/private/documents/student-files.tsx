@@ -578,12 +578,15 @@ function StudentFileUploaderDialog({
     mutationFn: async (payload: StudentDocumentUpdatePayload) => {
       return await studentReuploadDocuments({ academicYear, documentType, enroleeNumber, payload });
     },
-    onSettled() {
+    onSuccess() {
+      setIsOpen(false);
       queryClient.invalidateQueries({
         queryKey: ["student-documents", enroleeNumber],
       });
     },
   });
+
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const [idPicture, setIdPicture] = useState("");
 
@@ -745,7 +748,7 @@ function StudentFileUploaderDialog({
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button disabled={status == "Valid" || status == "Uploaded" || isPending} className="gap-2 text-xs w-full">
           Reupload <RotateCcw />
@@ -756,14 +759,16 @@ function StudentFileUploaderDialog({
           <DialogHeader className="text-start">
             <DialogTitle>{label}</DialogTitle>
             <DialogDescription>
-              Upload a clear and recent photo. Accepted formats:{" "}
+              Upload a clear and recent {documentType === "idPicture" ? "photo" : "document"}. Accepted formats:{" "}
               <strong>{documentType == "idPicture" ? "PNG, JPG, or JPEG" : "PDF"}</strong>
             </DialogDescription>
           </DialogHeader>
 
-          <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-            Upload all pages containing relevant details
-          </Badge>
+          {documentType !== "idPicture" && (
+            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload up to 4 PDFs. Check all details before saving.
+            </Badge>
+          )}
 
           {documentType === "form12" && (
             <Link

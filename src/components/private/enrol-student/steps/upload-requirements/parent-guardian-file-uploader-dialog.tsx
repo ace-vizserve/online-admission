@@ -174,11 +174,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               </DialogDescription>
             </DialogHeader>
 
-            {!formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
-              <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-                Upload all pages containing relevant details
-              </Badge>
-            ) : null}
+            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload up to 4 PDFs. Check all details before saving.
+            </Badge>
 
             {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
               <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
@@ -785,11 +783,9 @@ function ParentGuardianFileUploaderDrawer({
             </DrawerDescription>
           </DrawerHeader>
 
-          {!formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
-            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-              Upload all pages containing relevant details
-            </Badge>
-          ) : null}
+          <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+            Upload up to 4 PDFs. Check all details before saving.
+          </Badge>
 
           {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
