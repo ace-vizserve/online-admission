@@ -487,7 +487,7 @@ function ParentGuardianFileUploaderDialog({
           <DialogHeader className="text-start">
             <DialogTitle>{label}</DialogTitle>
             <DialogDescription>
-              Upload a clear and recent document. Accepted formats: <strong>PDF</strong>
+              Upload a clear and recent document in <strong>PDF</strong> format.
             </DialogDescription>
           </DialogHeader>
 
