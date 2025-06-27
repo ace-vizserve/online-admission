@@ -22,8 +22,14 @@ function StudentPhoto() {
       <Button onClick={goBack} size="sm" className="cursor-pointer w-max">
         <ArrowLeft /> Go back
       </Button>
-      <div className="flex-1 overflow-hidden">
-        <img src={url} alt="Uploaded preview" className="w-full h-full object-cover rounded-xl border" />
+      <div className="flex-1 grid items-center overflow-hidden">
+        <img
+          src={url}
+          alt="Uploaded preview"
+          sizes="(max-width: 600px) 480px,
+         800px"
+          className="mx-auto rounded-xl border"
+        />
       </div>
     </div>
   );

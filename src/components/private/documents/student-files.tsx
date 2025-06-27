@@ -754,7 +754,7 @@ function StudentFileUploaderDialog({
           Reupload <RotateCcw />
         </Button>
       </DialogTrigger>
-      <DialogContent className="!max-w-2xl">
+      <DialogContent className="!max-w-3xl">
         <form onSubmit={submitReupload} className="grid grid-cols-1 items-center space-y-4">
           <DialogHeader className="text-start">
             <DialogTitle>{label}</DialogTitle>
@@ -765,8 +765,8 @@ function StudentFileUploaderDialog({
           </DialogHeader>
 
           {documentType !== "idPicture" && (
-            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-              Upload up to 4 PDFs. Check all details before saving.
+            <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
             </Badge>
           )}
 

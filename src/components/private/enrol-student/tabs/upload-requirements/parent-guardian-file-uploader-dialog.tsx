@@ -165,7 +165,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="!max-w-2xl">
+          <DialogContent className="!max-w-3xl">
             <DialogHeader className="text-start">
               <DialogTitle>{label}</DialogTitle>
               <DialogDescription>
@@ -173,8 +173,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               </DialogDescription>
             </DialogHeader>
 
-            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-              Upload up to 4 PDFs. Check all details before saving.
+            <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
             </Badge>
 
             {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
@@ -774,15 +774,15 @@ function ParentGuardianFileUploaderDrawer({
         </DrawerTrigger>
 
         <DrawerContent className="px-4 space-y-4">
-          <DrawerHeader className="text-start px-0">
+          <DrawerHeader className="text-start px-0 mb-0">
             <DrawerTitle>{label}</DrawerTitle>
             <DrawerDescription className="text-xs">
               Upload a clear and recent photo. Accepted formats: <strong>PDF</strong>
             </DrawerDescription>
           </DrawerHeader>
 
-          <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-            Upload up to 4 PDFs. Check all details before saving.
+          <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+            Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
           </Badge>
 
           {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
