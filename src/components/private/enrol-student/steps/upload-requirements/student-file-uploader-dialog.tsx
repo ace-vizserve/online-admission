@@ -71,7 +71,6 @@ const StudentFileUploaderDialog = memo(function ({
   setFormState,
 }: StudentFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       const isImage = file.length == 1;
@@ -460,7 +459,6 @@ function StudentFileUploaderDrawer({
   value,
 }: StudentFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       const isImage = file.length == 1;

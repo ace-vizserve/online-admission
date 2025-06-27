@@ -76,7 +76,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   setFormState,
 }: ParentGuardianFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(false, file, academicYear);
@@ -691,7 +690,6 @@ function ParentGuardianFileUploaderDrawer({
   value,
 }: ParentGuardianFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
-
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(false, file, academicYear);
