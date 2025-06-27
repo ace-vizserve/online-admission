@@ -609,7 +609,7 @@ function StudentFileUploaderDialog({
   const props = useSupabaseUpload({
     bucketName: "parent-portal",
     path: `${academicYear}/documents`,
-    allowedMimeTypes: documentType !== "idPicture" ? ["application/pdf"] : ["image/*"],
+    allowedMimeTypes: documentType !== "idPicture" ? ["application/pdf"] : ["image/png", "image/jpeg"],
     maxFiles: documentType !== "idPicture" ? 4 : 1,
     maxFileSize: 1000 * 1000 * 4,
     mergeFiles: documentType !== "idPicture" ? true : false,
@@ -759,8 +759,8 @@ function StudentFileUploaderDialog({
           <DialogHeader className="text-start">
             <DialogTitle>{label}</DialogTitle>
             <DialogDescription>
-              Upload a clear and recent {documentType === "idPicture" ? "photo" : "document"}. Accepted formats:{" "}
-              <strong>{documentType == "idPicture" ? "PNG, JPG, or JPEG" : "PDF"}</strong>
+              Upload a clear and recent document in{" "}
+              <strong>{documentType == "idPicture" ? "PNG, JPG, or JPEG" : "PDF"}</strong> format.
             </DialogDescription>
           </DialogHeader>
 

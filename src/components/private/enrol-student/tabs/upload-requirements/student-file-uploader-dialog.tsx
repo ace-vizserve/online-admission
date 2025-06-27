@@ -103,7 +103,8 @@ const StudentFileUploaderDialog = memo(function ({
     accept:
       name === "idPicture"
         ? {
-            "image/*": [],
+            "image/png": [],
+            "image/jpeg": [],
           }
         : {
             "application/pdf": [],
@@ -169,8 +170,8 @@ const StudentFileUploaderDialog = memo(function ({
               <DialogTitle>{label} </DialogTitle>
 
               <DialogDescription>
-                Upload a clear and recent document. Accepted formats:{" "}
-                <strong>{MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong>
+                Upload a clear and recent document in{" "}
+                <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
               </DialogDescription>
             </DialogHeader>
 
@@ -489,7 +490,8 @@ function StudentFileUploaderDrawer({
     accept:
       name === "idPicture"
         ? {
-            "image/*": [],
+            "image/png": [],
+            "image/jpeg": [],
           }
         : {
             "application/pdf": [],
@@ -550,8 +552,8 @@ function StudentFileUploaderDrawer({
             <DrawerTitle>{label}</DrawerTitle>
 
             <DrawerDescription className="text-xs">
-              Upload a clear and recent document. Accepted formats:{" "}
-              <strong>{MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong>
+              Upload a clear and recent document in{" "}
+              <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
             </DrawerDescription>
           </DrawerHeader>
 

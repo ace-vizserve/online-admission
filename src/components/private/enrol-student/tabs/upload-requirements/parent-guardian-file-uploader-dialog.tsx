@@ -169,7 +169,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             <DialogHeader className="text-start">
               <DialogTitle>{label}</DialogTitle>
               <DialogDescription>
-                Upload a clear and recent photo. Accepted formats: <strong>PDF</strong>
+                Upload a clear and recent document in <strong>PDF</strong> format.
               </DialogDescription>
             </DialogHeader>
 
@@ -777,7 +777,7 @@ function ParentGuardianFileUploaderDrawer({
           <DrawerHeader className="text-start px-0 mb-0">
             <DrawerTitle>{label}</DrawerTitle>
             <DrawerDescription className="text-xs">
-              Upload a clear and recent photo. Accepted formats: <strong>PDF</strong>
+              Upload a clear and recent document in <strong>PDF</strong> format.
             </DrawerDescription>
           </DrawerHeader>
 
