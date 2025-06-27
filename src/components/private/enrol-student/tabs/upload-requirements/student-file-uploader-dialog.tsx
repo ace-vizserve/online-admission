@@ -164,7 +164,7 @@ const StudentFileUploaderDialog = memo(function ({
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="!max-w-2xl">
+          <DialogContent className="!max-w-3xl">
             <DialogHeader className="text-start">
               <DialogTitle>{label} </DialogTitle>
 
@@ -174,9 +174,10 @@ const StudentFileUploaderDialog = memo(function ({
               </DialogDescription>
             </DialogHeader>
 
-            {!formState.uploadRequirements?.studentUploadRequirements[name] && MULTIPLE_FILE_UPLOADS.includes(name) ? (
-              <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-                Upload up to 4 PDFs. Check all details before saving.
+            {MULTIPLE_FILE_UPLOADS.includes(name) ? (
+              <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+                Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save
+                Changes.
               </Badge>
             ) : null}
 
@@ -545,7 +546,7 @@ function StudentFileUploaderDrawer({
         </DrawerTrigger>
 
         <DrawerContent className="px-4 space-y-4">
-          <DrawerHeader className="text-start px-0">
+          <DrawerHeader className="text-start px-0 mb-0">
             <DrawerTitle>{label}</DrawerTitle>
 
             <DrawerDescription className="text-xs">
@@ -554,9 +555,9 @@ function StudentFileUploaderDrawer({
             </DrawerDescription>
           </DrawerHeader>
 
-          {!formState.uploadRequirements?.studentUploadRequirements[name] && MULTIPLE_FILE_UPLOADS.includes(name) ? (
-            <Badge className="w-max mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-              Upload up to 4 PDFs. Check all details before saving.
+          {MULTIPLE_FILE_UPLOADS.includes(name) ? (
+            <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+              Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
             </Badge>
           ) : null}
 
