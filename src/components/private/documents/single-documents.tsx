@@ -95,6 +95,9 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
       queryClient.invalidateQueries({
         queryKey: ["student-documents", params.id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["student-profile", params.id],
+      });
     },
   });
   const { nationality, middleName, birthDay, gender, contactPersonNumber, homePhone, postalCode, religionOther } =
