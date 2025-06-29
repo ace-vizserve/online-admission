@@ -42,6 +42,7 @@ import {
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
+import { toast } from "sonner";
 
 function SingleDocuments({ label, studentInformation }: { label: string; studentInformation: Student }) {
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -118,6 +119,19 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
   const age = differenceInYears(new Date(), birthDay);
 
   function onSubmit(values: StudentAddressContactAndInformationSchema) {
+    if (values.birthDay) {
+      const age = differenceInYears(new Date(), values.birthDay);
+
+      if (age < 4) {
+        toast.info("Child must be at least 4 years old to enroll");
+        form.setError("birthDay", {
+          type: "manual",
+          message: "Child must be at least 4 years old",
+        });
+        return;
+      }
+    }
+
     mutate(values);
   }
 
