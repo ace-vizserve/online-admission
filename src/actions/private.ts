@@ -1930,10 +1930,6 @@ export async function updateEnrollmentApplicationDetails({
     delete enrollmentDetails.noFatherInfo;
     delete enrollmentDetails.isValid;
 
-    if (middleName === "N/A") {
-      delete enrollmentDetails.middleName;
-    }
-
     let flattenedSiblings: Record<string, unknown> = {};
 
     if (siblings && siblings.length) {
@@ -1942,13 +1938,27 @@ export async function updateEnrollmentApplicationDetails({
 
     delete enrollmentDetails.siblings;
 
+    const { data: existingApp, error: fetchError } = await supabase
+      .from(`${academicYear}_enrolment_applications`)
+      .select("firstName, middleName, lastName")
+      .eq("enroleeNumber", enroleeNumber)
+      .single();
+
+    if (fetchError) {
+      throw new Error(fetchError.message);
+    }
+
+    const updatedFirstName = firstName ?? existingApp?.firstName;
+    const updatedMiddleName = middleName ?? existingApp?.middleName;
+    const updatedLastName = lastName ?? existingApp?.lastName;
+
     let fullName: string | null = null;
 
-    if (firstName && lastName) {
-      const mName = middleName && middleName !== "N/A" ? ` ${middleName}` : "";
-      fullName = middleName
-        ? `${lastName.toUpperCase()}, ${firstName.toUpperCase()}, ${mName.toUpperCase()}`
-        : `${lastName.toUpperCase()}, ${firstName.toUpperCase()}`;
+    if (updatedFirstName && updatedLastName) {
+      const mName = updatedMiddleName && updatedMiddleName !== "N/A" ? ` ${updatedMiddleName}` : undefined;
+      fullName = mName
+        ? `${updatedLastName.toUpperCase()}, ${updatedFirstName.toUpperCase()},${mName.toUpperCase()}`
+        : `${updatedLastName.toUpperCase()}, ${updatedFirstName.toUpperCase()}`;
     }
 
     const updates = {
