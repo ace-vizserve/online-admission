@@ -123,7 +123,7 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
       const age = differenceInYears(new Date(), values.birthDay);
 
       if (age < 4) {
-        toast.info("Child must be at least 4 years old to enroll");
+        toast.info("Child must be at least 4 years old to enrol");
         form.setError("birthDay", {
           type: "manual",
           message: "Child must be at least 4 years old",
