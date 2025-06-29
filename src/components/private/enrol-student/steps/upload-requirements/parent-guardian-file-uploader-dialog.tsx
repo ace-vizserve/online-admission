@@ -790,7 +790,7 @@ function ParentGuardianFileUploaderDrawer({
           {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
               <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
-                Change document
+                Change
               </Button>
               <div className="p-6 bg-white rounded-full">
                 <img src={fileSvg} className="size-14" />

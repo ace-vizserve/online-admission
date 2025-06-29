@@ -151,7 +151,9 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
                   name="middleName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Middle Name</FormLabel>
+                      <FormLabel>
+                        Middle Name <span className="text-xs text-muted-foreground">(optional)</span>
+                      </FormLabel>
                       <FormControl>
                         <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
                       </FormControl>

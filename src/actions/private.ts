@@ -1925,7 +1925,7 @@ export async function updateEnrollmentApplicationDetails({
   enrollmentDetails: Partial<StudentAddressContactAndInformationSchema & FamilyInformationSchema>;
 }) {
   try {
-    const { middleName, siblings } = enrollmentDetails;
+    const { firstName, middleName, lastName, siblings } = enrollmentDetails;
 
     delete enrollmentDetails.noFatherInfo;
     delete enrollmentDetails.isValid;
@@ -1942,16 +1942,43 @@ export async function updateEnrollmentApplicationDetails({
 
     delete enrollmentDetails.siblings;
 
+    let fullName: string | null = null;
+
+    if (firstName && lastName) {
+      const mName = middleName && middleName !== "N/A" ? ` ${middleName}` : "";
+      fullName = middleName
+        ? `${lastName.toUpperCase()}, ${firstName.toUpperCase()}, ${mName.toUpperCase()}`
+        : `${lastName.toUpperCase()}, ${firstName.toUpperCase()}`;
+    }
+
+    const updates = {
+      ...enrollmentDetails,
+      ...flattenedSiblings,
+      ...(fullName && {
+        enroleeFullName: fullName,
+      }),
+    };
+
     const { error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .update({
-        ...enrollmentDetails,
-        ...flattenedSiblings,
+        ...updates,
       })
       .eq("enroleeNumber", enroleeNumber);
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    if (fullName) {
+      const { error: statusError } = await supabase
+        .from(`${academicYear}_enrolment_status`)
+        .update({ enroleeName: fullName })
+        .eq("enroleeNumber", enroleeNumber);
+
+      if (statusError) {
+        throw new Error(statusError.message);
+      }
     }
 
     toast.success("Application updated!", {
