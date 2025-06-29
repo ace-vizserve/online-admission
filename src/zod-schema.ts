@@ -43,12 +43,7 @@ export const studentDetailsSchema = z
     firstName: z.string().min(1, {
       message: "First name is required",
     }),
-    middleName: z
-      .string()
-      .min(1, {
-        message: "Middle name is required",
-      })
-      .optional(),
+    middleName: z.string().optional(),
     lastName: z.string().min(1, {
       message: "Last name is required",
     }),

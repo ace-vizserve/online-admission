@@ -22,7 +22,7 @@ import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { parentGuardianPassTypes, studentPassTypes } from "@/data";
+import { studentPassTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { StudentFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
@@ -683,7 +683,7 @@ function StudentFileUploaderDrawer({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {parentGuardianPassTypes.map((passType) => (
+                        {studentPassTypes.map((passType) => (
                           <SelectItem key={passType.value} value={passType.value}>
                             {passType.label}
                           </SelectItem>
