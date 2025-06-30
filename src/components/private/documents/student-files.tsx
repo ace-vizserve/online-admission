@@ -51,7 +51,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
-      <div className="space-y-2">
+      <div className="w-full space-y-2">
         <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
         <p className="text-sm text-muted-foreground">
           This section includes details about the student's documents for this current school year.
