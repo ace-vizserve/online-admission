@@ -10,7 +10,7 @@ function ApplicationSubmitted() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
+      <div className="min-h-dvh flex flex-col items-center justify-center text-center p-4">
         <div className="flex flex-col items-center gap-2">
           <div className="relative animate-bounce">
             <img src="/like.png" className="size-32 md:size-40 object-cover" />

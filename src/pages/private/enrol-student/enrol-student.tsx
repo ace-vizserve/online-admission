@@ -92,7 +92,7 @@ function EnrolStudent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <DotPulse size="50" speed="1.3" color="#1F45C7" />
       </div>
     );
@@ -118,7 +118,7 @@ function EnrolStudent() {
       {academicYear === "" ? (
         <AcademicYearSelector setSelectedAy={setAcademicYear} />
       ) : (
-        <div className="w-full h-screen overflow-hidden pt-16 md:pt-20 flex items-center justify-center bg-muted">
+        <div className="w-full h-dvh overflow-hidden pt-16 md:pt-20 flex items-center justify-center bg-muted">
           {showEnrollmentProcess ? (
             <EnrollmentStepper academicYear={academicYear} setShowEnrollmentProcess={setShowEnrollmentProcess} />
           ) : (

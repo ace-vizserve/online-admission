@@ -18,7 +18,7 @@ function StudentPhoto() {
   };
 
   return (
-    <div className="relative h-screen w-full flex flex-col space-y-4 p-4 md:p-6">
+    <div className="relative h-dvh w-full flex flex-col space-y-4 p-4 md:p-6">
       <Button onClick={goBack} size="sm" className="cursor-pointer w-max">
         <ArrowLeft /> Go back
       </Button>
