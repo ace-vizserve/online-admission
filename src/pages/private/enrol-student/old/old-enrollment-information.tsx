@@ -39,18 +39,8 @@ import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 
-const MORNING_AFTERNOON_CLASS_LEVEL = [
-  "Young Starters",
-  "Primary 1",
-  "Primary 2",
-  "Primary 3",
-  "Primary 4",
-  "Primary 5",
-  "Primary 6",
-];
+const MORNING_AFTERNOON_CLASS_LEVEL = ["Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6"];
 const WHOLE_DAY_CLASS_LEVEL = ["Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
-
-const ENRICHMENT_CLASS_LEVELS = ["Young Starters"];
 
 const STANDARD_CLASS_LEVELS = ["Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
 
@@ -206,9 +196,7 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Enrichment Class"}>Enrichment Class</SelectItem>
-                            ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
+                            {STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
                                 Standard Class (ENGLISH + TAGALOG)
                               </SelectItem>
