@@ -246,7 +246,7 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
                 <img src={fileSvg} className="size-10" />
               </div>
             </div>
-            <p className="text-muted-foreground font-medium text-sm">Form 12</p>
+            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
 
             <Link
               to={idPicture.idPicture!}

@@ -232,7 +232,6 @@ export const religions = [
 ] as const;
 
 export const classLevels = [
-  { label: "Young Starters", value: "Young Starters" },
   { label: "Primary One", value: "Primary 1" },
   { label: "Primary Two", value: "Primary 2" },
   { label: "Primary Three", value: "Primary 3" },
