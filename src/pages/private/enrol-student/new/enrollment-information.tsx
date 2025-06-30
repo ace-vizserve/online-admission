@@ -82,6 +82,35 @@ function EnrollmentInformation() {
   }
 
   function onSubmit(values: EnrollmentInformationSchema) {
+    if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {
+      toast.warning("Schedule Mismatch!", {
+        description: "Only 'Whole Day' schedule is available for the selected grade level.",
+      });
+      form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
+      return;
+    }
+
+    if (MORNING_AFTERNOON_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule === "Whole Day") {
+      toast.warning("Schedule Not Available!", {
+        description: "'Whole Day' is only available for secondary students.",
+      });
+      form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
+      return;
+    }
+
+    if (
+      STANDARD_CLASS_LEVELS.includes(values.levelApplied) &&
+      values.classType !== "Standard Class (ENGLISH + TAGALOG)"
+    ) {
+      toast.warning("Class Type Mismatch!", {
+        description: "Only 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
+      });
+      form.setError("classType", {
+        message: "Please select 'Standard Class (ENGLISH + TAGALOG)' for this level.",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       enrollmentInfo: values,
