@@ -12,7 +12,7 @@ function Logo({ className }: { className?: string }) {
       animate={{
         opacity: 1,
       }}
-      className={cn("object-cover h-16 w-max md:h-24", className)}
+      className={cn("object-cover max-full h-auto max-h-24", className)}
       src={logo}
       alt="logo"
     />

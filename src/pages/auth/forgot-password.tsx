@@ -36,7 +36,7 @@ function ForgotPassword() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <div className="flex min-h-screen flex-col items-center justify-center">
+      <div className="flex min-h-dvh flex-col items-center justify-center">
         <Card className="w-full border-none shadow-none max-w-xl">
           <Logo className="mx-auto" />
           <CardHeader>

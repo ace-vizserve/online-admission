@@ -257,7 +257,7 @@ function SiblingInformation() {
 
 function EmptySibling() {
   return (
-    <Card className="h-screen max-h-[400px] bg-muted w-full max-w-5xl mx-auto mb-4">
+    <Card className="h-dvh max-h-[400px] bg-muted w-full max-w-5xl mx-auto mb-4">
       <CardContent className="h-full flex flex-col items-center justify-center text-center p-6">
         <PlusCircle className="w-8 h-8 mb-2" />
         <p className="mb-1 font-medium">No siblings added yet.</p>

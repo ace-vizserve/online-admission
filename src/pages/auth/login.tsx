@@ -42,7 +42,7 @@ function Login() {
     <>
       <PageMetaData title={title} description={description} />
 
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-dvh flex items-center justify-center">
         <div className="w-full h-full grid lg:grid-cols-2">
           <MaxWidthWrapper className="h-full w-full max-w-2xl flex items-center justify-center">
             <Card className="border-none shadow-none w-full max-w-xl">
