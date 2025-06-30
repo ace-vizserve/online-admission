@@ -44,7 +44,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
   return (
     <div className="space-y-8 py-6 xl:py-0">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="space-y-2">
+        <div className="w-full space-y-2">
           <h1 className="font-bold text-2xl md:text-3xl">{editMode ? "Edit Family Information" : label}</h1>
           <p className="text-sm text-muted-foreground text-balance">
             View-only details about parents, guardian, and siblings. Enable edit mode to make changes.
