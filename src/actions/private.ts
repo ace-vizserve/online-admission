@@ -14,7 +14,6 @@ import {
   EnrolNewStudentFormState,
   EnrolOldStudentFormState,
   ParentGuardianReuploadProps,
-  Student,
   StudentReuploadProps,
 } from "@/types";
 import { FamilyInformationSchema, StudentAddressContactAndInformationSchema } from "@/zod-schema";
@@ -748,31 +747,6 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
   }
 }
 
-export async function updateStudentInformation(studentInformation: Partial<Student>, studentID: string) {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const { error: updateError } = await supabase
-      .from("student_information")
-      .update({
-        ...studentInformation,
-      })
-      .or(`parent1.eq.${session?.user.id},parent2.eq.${session?.user.id}`)
-      .eq("studentID", studentID);
-
-    if (updateError) {
-      throw new Error(updateError.message);
-    }
-
-    toast.success("Student information has been saved!");
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-  }
-}
-
 export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormState, academicYear: string) {
   try {
     const {
@@ -847,7 +821,10 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
 
     delete enrollmentInfo.isValid;
 
-    if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo) {
+    if (
+      familyInfo.fatherLastName &&
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo
+    ) {
       familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}${
         familyInfo?.fatherMiddleName ? `, ${familyInfo.fatherMiddleName.toUpperCase()}` : ""
       }`;
@@ -879,7 +856,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: "New",
+        category: academicYear === "ay2026" ? "New" : "Current",
         pass: passType,
         passExpiry,
         passportNumber,
@@ -1278,7 +1255,10 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     delete enrollmentInfo.isValid;
 
-    if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo) {
+    if (
+      familyInfo.fatherLastName &&
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo
+    ) {
       familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}${
         familyInfo?.fatherMiddleName ? `, ${familyInfo.fatherMiddleName.toUpperCase()}` : ""
       }`;
@@ -1311,7 +1291,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: "Current",
+        category: "New",
         pass: passType,
         passExpiry,
         passportNumber,

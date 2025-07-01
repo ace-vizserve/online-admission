@@ -110,13 +110,6 @@ function SubmitApplicationDialog() {
   });
 
   function submitApplication() {
-    if (formState.enrollmentInfo == null) {
-      toast.warning("Fill up the enrollment information tab", {
-        description: "Kindly double check every details before submitting",
-      });
-      return;
-    }
-
     if (formState.uploadRequirements?.studentUploadRequirements == null) {
       toast.warning("Please upload the required documents in documents tab", {
         description: "Kindly double check every details before submitting",
