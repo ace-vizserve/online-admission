@@ -116,6 +116,7 @@ export async function authUpdatePassword({ password }: { password: string }) {
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
+    throw err;
   }
 }
 

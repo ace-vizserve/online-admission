@@ -25,6 +25,9 @@ function UpdatePassword() {
     onSuccess() {
       setPasswordResetState(false);
     },
+    onError() {
+      form.setError("password", {});
+    },
   });
 
   const form = useForm<UpdatePasswordSchema>({
