@@ -45,6 +45,8 @@ function StudentUpload() {
   useEffect(() => {
     if (!isSuccess || !data) return;
 
+    if (formState.uploadRequirements?.studentUploadRequirements.isValid) return;
+
     setFormState({
       uploadRequirements: {
         parentGuardianUploadRequirements: {
@@ -72,12 +74,11 @@ function StudentUpload() {
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     setFormState({
-      ...formState,
       uploadRequirements: {
-        studentUploadRequirements: values,
         parentGuardianUploadRequirements: {
-          ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+          ...(formState.uploadRequirements!.parentGuardianUploadRequirements ?? {}),
         },
+        studentUploadRequirements: { ...values, isValid: true },
       },
     });
 

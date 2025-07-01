@@ -113,12 +113,17 @@ function SubmitApplicationDialog() {
         guardianPassportExpiry,
       } = formState.uploadRequirements.parentGuardianUploadRequirements;
 
+      const { noFatherInfo } = formState.familyInfo.fatherInfo;
+
       checkExpiry("Mother", motherPassExpiry, "pass");
       checkExpiry("Mother", motherPassportExpiry, "passport");
-      checkExpiry("Father", fatherPassExpiry, "pass");
-      checkExpiry("Father", fatherPassportExpiry, "passport");
       checkExpiry("Guardian", guardianPassExpiry, "pass");
       checkExpiry("Guardian", guardianPassportExpiry, "passport");
+
+      if (!noFatherInfo) {
+        checkExpiry("Father", fatherPassExpiry, "pass");
+        checkExpiry("Father", fatherPassportExpiry, "passport");
+      }
 
       mutate();
     } catch (error) {

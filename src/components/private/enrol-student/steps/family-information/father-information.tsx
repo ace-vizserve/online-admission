@@ -402,32 +402,34 @@ function FatherInformation() {
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="noFatherInfo"
-          render={({ field }) => (
-            <FormItem className="my-8 w-full mx-auto max-w-lg rounded-lg border px-4 py-6">
-              <div className="w-full flex flex-row items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <FormLabel>Is the father's information not available?</FormLabel>
-                  <FormDescription className="text-pretty">
-                    Turn this on if you are unable to provide the father's details.
-                  </FormDescription>
+        {!isFatherAccount ? (
+          <FormField
+            control={form.control}
+            name="noFatherInfo"
+            render={({ field }) => (
+              <FormItem className="my-8 w-full mx-auto max-w-lg rounded-lg border px-4 py-6">
+                <div className="w-full flex flex-row items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <FormLabel>Is the father's information not available?</FormLabel>
+                    <FormDescription className="text-pretty">
+                      Turn this on if you are unable to provide the father's details.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={async (checked) => {
+                        field.onChange(checked);
+                        await hasFatherInfoToggle(checked);
+                      }}
+                    />
+                  </FormControl>
                 </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={async (checked) => {
-                      field.onChange(checked);
-                      await hasFatherInfoToggle(checked);
-                    }}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ) : null}
 
         <div className="flex flex-col gap-4">
           <Button size={"lg"} variant={"secondary"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">

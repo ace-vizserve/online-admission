@@ -884,7 +884,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         passExpiry,
         passportNumber,
         passportExpiry,
-        ...familyInfo,
+        ...removeEmptyKeys(familyInfo),
         ...enrollmentInfo,
         applicationStatus: "Registered",
       })
@@ -1316,7 +1316,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         passExpiry,
         passportNumber,
         passportExpiry,
-        ...familyInfo,
+        ...removeEmptyKeys(familyInfo),
         ...enrollmentInfo,
         applicationStatus: "Registered",
       })
