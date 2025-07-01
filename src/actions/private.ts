@@ -1177,6 +1177,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     const { error: enrollmentApplicationStatusError } = await supabase
       .from(`${academicYear}_enrolment_status`)
       .insert({
+        levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
         enroleeNumber: data.enroleeNumber,
         enrolmentDate: today,
         enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
@@ -1591,6 +1592,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     const { error: enrollmentApplicationStatusError } = await supabase
       .from("ay2026_enrolment_status")
       .insert({
+        levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
         enroleeNumber: data.enroleeNumber,
         enrolmentDate: today,
         enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
