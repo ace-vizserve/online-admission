@@ -53,7 +53,7 @@ function MotherInformation() {
     setFormState({
       familyInfo: {
         ...formState.familyInfo!,
-        motherInfo: { ...values, isValid: true },
+        motherInfo: { ...values, motherEmail: values.motherEmail.toLowerCase(), isValid: true },
       },
     });
 
@@ -73,7 +73,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>First name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother first name.</FormDescription>
                 <FormMessage />
@@ -90,7 +90,7 @@ function MotherInformation() {
                   Middle name <span className="text-xs text-muted-foreground">(optional)</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother middle name.</FormDescription>
                 <FormMessage />
@@ -107,7 +107,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Last name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother last name.</FormDescription>
                 <FormMessage />
@@ -122,7 +122,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Preferred name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother preferred name.</FormDescription>
                 <FormMessage />
@@ -207,7 +207,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>NRIC/FIN</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother NRIC/FIN.</FormDescription>
                 <FormMessage />
@@ -237,7 +237,7 @@ function MotherInformation() {
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
                   <FormControl>
-                    <Input placeholder="" type="email" {...field} />
+                    <Input type="email" {...field} />
                   </FormControl>
                   <FormDescription>Enter the student's mother email address.</FormDescription>
                   <FormMessage />
@@ -255,7 +255,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Work Company</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother work company.</FormDescription>
                 <FormMessage />
@@ -270,7 +270,7 @@ function MotherInformation() {
               <FormItem>
                 <FormLabel>Work Position</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="" {...field} />
+                  <Input type="" {...field} />
                 </FormControl>
                 <FormDescription>Enter the student's mother work position.</FormDescription>
                 <FormMessage />

@@ -79,7 +79,7 @@ function FatherInformation() {
       ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        fatherInfo: { ...values, isValid: true },
+        fatherInfo: { ...values, fatherEmail: values.fatherEmail?.toLowerCase(), isValid: true },
       },
       uploadRequirements: {
         parentGuardianUploadRequirements: {
@@ -341,7 +341,7 @@ function FatherInformation() {
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
                   <FormControl>
-                    <Input placeholder="" type="email" {...field} />
+                    <Input type="email" {...field} />
                   </FormControl>
                   <FormDescription>Enter the student's father email address.</FormDescription>
                   <FormMessage />

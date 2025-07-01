@@ -34,11 +34,24 @@ export function documentErrors(
 
 export function removeEmptyKeys(obj: Record<string, unknown>) {
   const cleaned: Record<string, unknown> = {};
+
+  const bigintFields = [
+    "contactPersonNumber",
+    "fatherMobile",
+    "motherMobile",
+    "guardianMobile",
+    "homePhone",
+    "postalCode",
+  ];
+
   Object.entries(obj).forEach(([key, value]) => {
-    if (value != null && value != "") {
-      cleaned[key] = value;
-    }
+    if (value === null || value === undefined || value === "" || value === "null") return;
+
+    if (bigintFields.includes(key) && isNaN(Number(value))) return;
+
+    cleaned[key] = value;
   });
+
   return cleaned;
 }
 

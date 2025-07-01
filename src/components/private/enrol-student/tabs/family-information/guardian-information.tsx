@@ -6,12 +6,18 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { cn } from "@/lib/utils";
-import { guardianInformationSchema, GuardianInformationSchema } from "@/zod-schema";
+import {
+  guardianInformationSchema,
+  GuardianInformationSchema,
+  ParentGuardianUploadRequirementsSchema,
+  StudentUploadRequirementsSchema,
+} from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 function GuardianInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
@@ -25,10 +31,24 @@ function GuardianInformation() {
 
   function onSubmit(values: GuardianInformationSchema) {
     setFormState({
+      ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        guardianInfo: { ...values },
+        guardianInfo: { ...values, guardianEmail: values.guardianEmail.toLowerCase() },
       },
+      uploadRequirements: {
+        studentUploadRequirements: {
+          ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+        },
+        parentGuardianUploadRequirements: {
+          ...(formState.uploadRequirements
+            ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          hasGuardianInfo: true,
+        },
+      },
+    });
+    toast.success("Guardian information details saved!", {
+      description: "Make sure to double check everything",
     });
   }
 
