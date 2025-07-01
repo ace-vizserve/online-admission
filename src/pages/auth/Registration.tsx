@@ -40,7 +40,7 @@ function Registration() {
   });
 
   function onSubmit(values: RegistrationSchema) {
-    mutate({ ...values });
+    mutate({ ...values, email: values.email.toLowerCase() });
   }
 
   return (
