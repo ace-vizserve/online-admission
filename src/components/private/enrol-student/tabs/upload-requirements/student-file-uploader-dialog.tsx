@@ -351,11 +351,7 @@ const StudentFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={field.onChange}
                           />
@@ -409,11 +405,7 @@ const StudentFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={field.onChange}
                           />
@@ -732,6 +724,7 @@ function StudentFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),
@@ -788,6 +781,7 @@ function StudentFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),
