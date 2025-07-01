@@ -35,7 +35,7 @@ function GuardianInformation() {
       ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        guardianInfo: { ...values },
+        guardianInfo: { ...values, guardianEmail: values.guardianEmail.toLowerCase() },
       },
       uploadRequirements: {
         studentUploadRequirements: {

@@ -49,7 +49,7 @@ function MotherInformation() {
       ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        motherInfo: { ...values, isValid: true },
+        motherInfo: { ...values, motherEmail: values.motherEmail.toLowerCase(), isValid: true },
       },
     });
 

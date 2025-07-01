@@ -80,7 +80,7 @@ function FatherInformation() {
       ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        fatherInfo: { ...values, isValid: true },
+        fatherInfo: { ...values, fatherEmail: values.fatherEmail?.toLowerCase(), isValid: true },
       },
       uploadRequirements: {
         parentGuardianUploadRequirements: {

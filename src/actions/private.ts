@@ -851,7 +851,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       .from(`${academicYear}_enrolment_applications`)
       .insert({
         ...enrollmentDetails.studentInfo.studentDetails,
-        ...enrollmentDetails.studentInfo.addressContact,
+        ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
         enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
@@ -1151,20 +1151,16 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
 
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
 
-    const { error: enrollmentApplicationStatusError } = await supabase
-      .from(`${academicYear}_enrolment_status`)
-      .insert({
-        levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
-        enroleeNumber: data.enroleeNumber,
-        enrolmentDate: today,
-        enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-          middleName ? `, ${middleName.toUpperCase()}` : ""
-        }`,
-        enroleeType: "New",
-        applicationStatus: "Submitted",
-      })
-      .select("id")
-      .single();
+    const { error: enrollmentApplicationStatusError } = await supabase.from(`${academicYear}_enrolment_status`).insert({
+      levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
+      enroleeNumber: data.enroleeNumber,
+      enrolmentDate: today,
+      enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
+        middleName ? `, ${middleName.toUpperCase()}` : ""
+      }`,
+      enroleeType: academicYear === "ay2026" ? "New" : "Current",
+      applicationStatus: "Submitted",
+    });
 
     if (enrollmentApplicationStatusError) {
       throw new Error(enrollmentApplicationStatusError.message);
@@ -1286,7 +1282,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       .insert({
         studentNumber: studentNumber?.studentNumber,
         ...enrollmentDetails.studentInfo.studentDetails,
-        ...enrollmentDetails.studentInfo.addressContact,
+        ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
         enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
@@ -1569,20 +1565,16 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
 
-    const { error: enrollmentApplicationStatusError } = await supabase
-      .from("ay2026_enrolment_status")
-      .insert({
-        levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
-        enroleeNumber: data.enroleeNumber,
-        enrolmentDate: today,
-        enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-          middleName ? `, ${middleName.toUpperCase()}` : ""
-        }`,
-        enroleeType: "Current",
-        applicationStatus: "Submitted",
-      })
-      .select("id")
-      .single();
+    const { error: enrollmentApplicationStatusError } = await supabase.from("ay2026_enrolment_status").insert({
+      levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
+      enroleeNumber: data.enroleeNumber,
+      enrolmentDate: today,
+      enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
+        middleName ? `, ${middleName.toUpperCase()}` : ""
+      }`,
+      enroleeType: "New",
+      applicationStatus: "Submitted",
+    });
 
     if (enrollmentApplicationStatusError) {
       throw new Error(enrollmentApplicationStatusError.message);

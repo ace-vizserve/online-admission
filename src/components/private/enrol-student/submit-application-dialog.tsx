@@ -60,6 +60,29 @@ function SubmitApplicationDialog() {
 
   async function verifyEnrollmentDetails() {
     try {
+      const { contactPersonNumber, homePhone, postalCode } = formState.studentInfo!.addressContact;
+
+      if (isNaN(Number(contactPersonNumber))) {
+        toast.warning("Invalid Contact Person Number!", {
+          description: "Please enter a valid mobile or telephone number for the contact person.",
+        });
+        return;
+      }
+
+      if (isNaN(Number(homePhone))) {
+        toast.warning("Invalid Home Phone Number!", {
+          description: "Please enter a valid home phone number.",
+        });
+        return;
+      }
+
+      if (isNaN(Number(postalCode))) {
+        toast.warning("Invalid Postal Code!", {
+          description: "Please enter a valid postal code.",
+        });
+        return;
+      }
+
       if (formState.familyInfo == null) {
         toast.info("Review Family Information!", {
           description: "Please double-check all family details before submitting",
@@ -115,12 +138,44 @@ function SubmitApplicationDialog() {
 
       const { noFatherInfo } = formState.familyInfo.fatherInfo;
 
+      const { hasGuardianInfo } = formState.uploadRequirements.parentGuardianUploadRequirements;
+
+      const { motherMobile } = formState.familyInfo.motherInfo;
+
+      if (isNaN(Number(motherMobile))) {
+        toast.warning("Invalid Mother Mobile!", {
+          description: "Please enter a valid mobile number.",
+        });
+        return;
+      }
+
       checkExpiry("Mother", motherPassExpiry, "pass");
       checkExpiry("Mother", motherPassportExpiry, "passport");
-      checkExpiry("Guardian", guardianPassExpiry, "pass");
-      checkExpiry("Guardian", guardianPassportExpiry, "passport");
+
+      if (hasGuardianInfo) {
+        const { guardianMobile } = formState.familyInfo.guardianInfo;
+
+        if (isNaN(Number(guardianMobile))) {
+          toast.warning("Invalid Guardian Mobile!", {
+            description: "Please enter a valid mobile number.",
+          });
+          return;
+        }
+
+        checkExpiry("Guardian", guardianPassExpiry, "pass");
+        checkExpiry("Guardian", guardianPassportExpiry, "passport");
+      }
 
       if (!noFatherInfo) {
+        const { fatherMobile } = formState.familyInfo.fatherInfo;
+
+        if (isNaN(Number(fatherMobile))) {
+          toast.warning("Invalid Father Mobile!", {
+            description: "Please enter a valid mobile number.",
+          });
+          return;
+        }
+
         checkExpiry("Father", fatherPassExpiry, "pass");
         checkExpiry("Father", fatherPassportExpiry, "passport");
       }
