@@ -52,7 +52,6 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
               ))}
             </ul>
             <Button
-              disabled={year.value === "ay2026"}
               onClick={() => setSelectedAy(year.value)}
               variant={year.isUpcoming ? "default" : "outline"}
               className="w-full mt-6 gap-2 cursor-pointer">
