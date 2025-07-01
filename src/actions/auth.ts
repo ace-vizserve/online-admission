@@ -73,7 +73,7 @@ export async function sendPasswordResetLink({ email }: { email: string }) {
   try {
     const users = await listAllUsers();
 
-    const emailExist = users.find((user) => user.email === email);
+    const emailExist = users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
 
     if (!emailExist) {
       throw new Error("An account with this email doesn't exists!");
