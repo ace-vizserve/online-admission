@@ -409,9 +409,16 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
                 View document <EyeClosed />
               </Button>
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
+              <StudentFileUploaderDialog
+                status={"Missing"}
+                academicYear={academicYear!}
+                documentType="medical"
+                enroleeNumber={params.id!}
+                label="Student's Medical"
+                payload={{
+                  medical: "",
+                }}
+              />
             </div>
           </div>
         ) : (
@@ -521,9 +528,16 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
                 View document <EyeClosed />
               </Button>
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
+              <StudentFileUploaderDialog
+                status={"Missing"}
+                academicYear={academicYear!}
+                documentType="educCert"
+                enroleeNumber={params.id!}
+                label="Student's Transcript of Records"
+                payload={{
+                  educCert: "",
+                }}
+              />
             </div>
           </div>
         ) : (
