@@ -396,7 +396,12 @@ function YearGrid({
             variant="ghost"
             onClick={() => {
               setNavView("days");
-              goToMonth(new Date(displayYears.from + i, (selected as Date | undefined)?.getMonth() ?? 0));
+              goToMonth(
+                new Date(
+                  displayYears.from + i,
+                  (selected as Date | undefined) ? new Date().getMonth() : (selected as unknown as Date).getMonth() ?? 0
+                )
+              );
             }}
             disabled={navView === "years" ? isDisabled : undefined}>
             {displayYears.from + i}

@@ -25,7 +25,7 @@ import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-di
 function ParentGuardianUpload() {
   const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const { data, isPending, isSuccess } = useQuery({
+  const { data, isPending, isSuccess, fetchStatus } = useQuery({
     queryKey: ["parent-guardian-documents", params.id],
     queryFn: async () => {
       return await getPreviousParentGuardianDocuments(params.id!);
@@ -48,6 +48,8 @@ function ParentGuardianUpload() {
 
   useEffect(() => {
     if (!isSuccess || !data) return;
+
+    if (formState.uploadRequirements?.parentGuardianUploadRequirements.isValid) return;
 
     setFormState({
       uploadRequirements: {
@@ -82,7 +84,7 @@ function ParentGuardianUpload() {
         studentUploadRequirements: {
           ...formState.uploadRequirements!.studentUploadRequirements,
         },
-        parentGuardianUploadRequirements: { ...values },
+        parentGuardianUploadRequirements: { ...values, isValid: true },
       },
     });
 
@@ -91,7 +93,7 @@ function ParentGuardianUpload() {
     });
   }
 
-  if (isPending) {
+  if (fetchStatus === "fetching" && isPending) {
     return <Loader />;
   }
 
