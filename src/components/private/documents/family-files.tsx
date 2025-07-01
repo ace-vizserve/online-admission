@@ -141,7 +141,15 @@ function RenderFamilyDocCard({
   );
 }
 
-function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDocument }) {
+function FamilyFiles({
+  label,
+  documents,
+  noFatherInfo,
+}: {
+  label: string;
+  documents?: FamilyDocument;
+  noFatherInfo?: boolean;
+}) {
   const motherCards = [
     {
       role: "mother",
@@ -249,13 +257,18 @@ function FamilyFiles({ label, documents }: { label: string; documents?: FamilyDo
           <RenderFamilyDocCard key={idx} {...props} />
         ))}
       </div>
-      <Separator className="my-4" />
-      <h2 className="font-bold text-lg">Father's Documents</h2>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
-        {fatherCards.map((props, idx) => (
-          <RenderFamilyDocCard key={idx} {...props} />
-        ))}
-      </div>
+
+      {noFatherInfo ? null : (
+        <>
+          <Separator className="my-4" />
+          <h2 className="font-bold text-lg">Father's Documents</h2>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
+            {fatherCards.map((props, idx) => (
+              <RenderFamilyDocCard key={idx} {...props} />
+            ))}
+          </div>
+        </>
+      )}
       <Separator className="my-4" />
       <h2 className="font-bold text-lg">Guardian's Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4">
