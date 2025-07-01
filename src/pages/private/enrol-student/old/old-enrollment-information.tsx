@@ -388,7 +388,7 @@ function OldEnrollmentInformation() {
                     render={({ field }) => (
                       <FormItem>
                         <div className="relative flex justify-between items-center">
-                          <FormLabel>Campus Development Fee</FormLabel>
+                          <FormLabel>Student Development Fund</FormLabel>
 
                           <CDFDetailsDialog />
                         </div>
@@ -578,14 +578,14 @@ function CDFDetailsDialog() {
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Click here to see CDF details</p>
+            <p>Click here to see SDF details</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
       <DialogContent className="!max-w-3xl">
         <DialogHeader className="text-start">
-          <DialogTitle>Campus Development Fees</DialogTitle>
+          <DialogTitle> Student Development Fund</DialogTitle>
           <DialogDescription>Kindly choose your preferred payment option below.</DialogDescription>
         </DialogHeader>
         <img src={cdfDetails} alt="CDF Details" className="object-cover aspect-video rounded-lg" />
