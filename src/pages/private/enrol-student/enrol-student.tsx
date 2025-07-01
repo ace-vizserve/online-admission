@@ -252,7 +252,7 @@ function AcademicYearDropdown() {
         <SelectItem className="text-xs font-semibold" value="ay2025">
           2025
         </SelectItem>
-        <SelectItem className="text-xs font-semibold" value="ay2026">
+        <SelectItem disabled className="text-xs font-semibold" value="ay2026">
           2026
         </SelectItem>
       </SelectContent>
