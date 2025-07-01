@@ -396,7 +396,26 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+
+                              if (date) {
+                                console.log(date);
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      motherPassportExpiry: date,
+                                    },
+                                  },
+                                });
+                              }
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
@@ -944,7 +963,10 @@ function ParentGuardianFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            console.log(date);
+                            field.onChange(date);
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
