@@ -332,6 +332,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
+                            defaultMonth={field.value}
                             disabled={[
                               {
                                 before: new Date(),
@@ -390,17 +391,13 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
+                            showYearSwitcher
                             onSelect={(date) => {
                               field.onChange(date);
 
                               if (date) {
-                                console.log(date);
                                 setFormState({
                                   uploadRequirements: {
                                     studentUploadRequirements: {
@@ -477,6 +474,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
+                            defaultMonth={field.value}
                             disabled={[
                               {
                                 before: new Date(),
@@ -535,6 +533,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
+                            defaultMonth={field.value}
                             disabled={[
                               {
                                 before: new Date(),
@@ -603,6 +602,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
+                            defaultMonth={field.value}
                             disabled={[
                               {
                                 before: new Date(),
@@ -661,6 +661,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
+                            defaultMonth={field.value}
                             disabled={[
                               {
                                 before: new Date(),
@@ -957,6 +958,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),
@@ -1015,6 +1017,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),
@@ -1082,6 +1085,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),
@@ -1138,6 +1142,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),
@@ -1205,6 +1210,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),
@@ -1261,6 +1267,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          defaultMonth={field.value}
                           disabled={[
                             {
                               before: new Date(),

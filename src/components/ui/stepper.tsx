@@ -97,8 +97,7 @@ export default function Stepper({
           type: "spring",
         }}
         className={`mx-auto w-full max-w-4xl ${stepCircleContainerClassName}`}>
-        <div
-          className={`${stepContainerClassName} flex w-full max-w-sm mx-auto justify-center items-center p-8 space-x-2`}>
+        <div className={`${stepContainerClassName} flex w-full max-w-sm mx-auto justify-center items-center space-x-2`}>
           {!hideStepIndicators &&
             stepsArray.map((_, index) => {
               const stepNumber = index + 1;

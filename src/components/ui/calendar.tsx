@@ -399,7 +399,9 @@ function YearGrid({
               goToMonth(
                 new Date(
                   displayYears.from + i,
-                  (selected as Date | undefined) ? new Date().getMonth() : (selected as unknown as Date).getMonth() ?? 0
+                  (selected as Date | undefined)
+                    ? new Date(selected as unknown as string).getMonth()
+                    : new Date().getMonth() ?? 0
                 )
               );
             }}

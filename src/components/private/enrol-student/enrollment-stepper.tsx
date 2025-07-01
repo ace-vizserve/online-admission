@@ -1,4 +1,4 @@
-import discountPriceTag from "@/assets/discount-price-tag.png";
+import discountPriceTag from "@/assets/discounts-promo-tac.webp";
 import enrollmentProcess from "@/assets/enrollment-process.webp";
 import Stepper, { Step } from "@/components/ui/stepper";
 import "inner-image-zoom/lib/styles.min.css";
@@ -20,7 +20,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
       nextButtonText="Next">
       <Step>
         <div className="space-y-4">
-          <div className="w-11/12 mx-auto">
+          <div className="w-full md:w-11/12 mx-auto">
             <InnerImageZoom hideCloseButton src={enrollmentProcess} className="w-full h-auto rounded-md" />
           </div>
           <p className="text-sm text-balance -tracking-tighter">
@@ -38,7 +38,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
 
       <Step>
         <div className="space-y-4">
-          <img src={discountPriceTag} className="max-h-52 mx-auto object-cover" />
+          <img src={discountPriceTag} className="max-h-72 md:max-h-96 mx-auto w-max object-cover" />
 
           <p className="text-sm text-balance -tracking-tighter">
             I/We acknowledge that I/we have read and understood the terms and conditions of the school’s promos and
