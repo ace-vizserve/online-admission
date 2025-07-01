@@ -310,7 +310,7 @@ function NoStudentsPanel() {
     <div className="rounded-md border bg-muted overflow-hidden w-full h-96 flex flex-col items-center justify-center gap-1.5 md:gap-3 my-7 md:my-14 text-center px-4">
       <h2 className="text-lg md:text-xl font-semibold">No students to show</h2>
       <p className="text-xs md:text-sm text-muted-foreground max-w-prose text-balance">
-        You haven’t added any student records yet. Start by adding a student to see their enrollment information here.
+        You haven’t added student records yet. Start by adding a student to see their enrolment information here.
       </p>
 
       <Link
