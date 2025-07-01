@@ -287,6 +287,20 @@ const StudentFileUploaderDialog = memo(function ({
               />
             )}
 
+            {value != null && value.length > 0 && (
+              <Button disabled={isPending} onClick={uploadFile} className="gap-2">
+                {isPending ? (
+                  <>
+                    Uploading <DotPulse size="30" speed="1.3" color="white" />
+                  </>
+                ) : (
+                  <>
+                    Upload file <Upload />
+                  </>
+                )}
+              </Button>
+            )}
+
             {name === "pass" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
                 <FormField
@@ -411,20 +425,6 @@ const StudentFileUploaderDialog = memo(function ({
                   )}
                 />
               </div>
-            )}
-
-            {value != null && value.length > 0 && (
-              <Button disabled={isPending} onClick={uploadFile} className="gap-2">
-                {isPending ? (
-                  <>
-                    Uploading <DotPulse size="30" speed="1.3" color="white" />
-                  </>
-                ) : (
-                  <>
-                    Upload file <Upload />
-                  </>
-                )}
-              </Button>
             )}
           </DialogContent>
         </Dialog>
@@ -669,6 +669,20 @@ function StudentFileUploaderDrawer({
             />
           )}
 
+          {value != null && value.length > 0 && (
+            <Button disabled={isPending} onClick={uploadFile} className="mt-2 gap-2">
+              {isPending ? (
+                <>
+                  Uploading <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Upload file <Upload />
+                </>
+              )}
+            </Button>
+          )}
+
           {name === "pass" && (
             <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
@@ -790,19 +804,7 @@ function StudentFileUploaderDrawer({
               />
             </div>
           )}
-          {value != null && value.length > 0 && (
-            <Button disabled={isPending} onClick={uploadFile} className="mt-2 gap-2">
-              {isPending ? (
-                <>
-                  Uploading <DotPulse size="30" speed="1.3" color="white" />
-                </>
-              ) : (
-                <>
-                  Upload file <Upload />
-                </>
-              )}
-            </Button>
-          )}
+
           <DrawerFooter className="px-0 py-4">
             <div className="h-4" />
           </DrawerFooter>

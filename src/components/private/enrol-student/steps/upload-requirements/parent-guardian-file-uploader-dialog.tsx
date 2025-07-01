@@ -269,6 +269,20 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               />
             )}
 
+            {value != null && value.length > 0 && (
+              <Button disabled={isPending} onClick={uploadFile} className="gap-2">
+                {isPending ? (
+                  <>
+                    Uploading <DotPulse size="30" speed="1.3" color="white" />
+                  </>
+                ) : (
+                  <>
+                    Upload file <Upload />
+                  </>
+                )}
+              </Button>
+            )}
+
             {name === "motherPass" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
                 <FormField
@@ -646,19 +660,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 />
               </div>
             )}
-            {value != null && value.length > 0 && (
-              <Button disabled={isPending} onClick={uploadFile} className="gap-2">
-                {isPending ? (
-                  <>
-                    Uploading <DotPulse size="30" speed="1.3" color="white" />
-                  </>
-                ) : (
-                  <>
-                    Upload file <Upload />
-                  </>
-                )}
-              </Button>
-            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -878,6 +879,19 @@ function ParentGuardianFileUploaderDrawer({
             />
           )}
 
+          {value != null && value.length > 0 && (
+            <Button disabled={isPending} onClick={uploadFile} className="mt-2 gap-2">
+              {isPending ? (
+                <>
+                  Uploading <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Upload file <Upload />
+                </>
+              )}
+            </Button>
+          )}
           {name === "motherPass" && (
             <div className="grid grid-cols-1 gap-2 w-full">
               <FormField
@@ -1245,19 +1259,6 @@ function ParentGuardianFileUploaderDrawer({
             </div>
           )}
 
-          {value != null && value.length > 0 && (
-            <Button disabled={isPending} onClick={uploadFile} className="mt-2 gap-2">
-              {isPending ? (
-                <>
-                  Uploading <DotPulse size="30" speed="1.3" color="white" />
-                </>
-              ) : (
-                <>
-                  Upload file <Upload />
-                </>
-              )}
-            </Button>
-          )}
           <DrawerFooter className="px-0"></DrawerFooter>
         </DrawerContent>
       </Drawer>
