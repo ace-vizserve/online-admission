@@ -113,7 +113,7 @@ function EnrollmentInformation() {
 
     setFormState({
       ...formState,
-      enrollmentInfo: { ...values, isValid: true },
+      enrollmentInfo: { ...values },
     });
     toast.success("Enrolment information details saved!", {
       description: "Proceeding to the next step...",
