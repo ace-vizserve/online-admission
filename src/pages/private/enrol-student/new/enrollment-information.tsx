@@ -159,7 +159,7 @@ function EnrollmentInformation() {
                           </FormControl>
                           <SelectContent>
                             <ScrollArea className="h-52">
-                              {classLevels.map((level) => (
+                              {classLevels.slice(1).map((level) => (
                                 <SelectItem key={level.value} value={level.value}>
                                   {level.label}
                                 </SelectItem>
