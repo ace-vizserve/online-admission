@@ -402,16 +402,18 @@ export async function getNewStudentDiscounts() {
   }
 }
 
-export async function getCurrentStudentDiscounts() {
+export async function getCurrentStudentDiscounts(levelApplied: string) {
   try {
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
+
+    console.log(levelApplied);
 
     const { data: currentStudentDiscounts, error: currentStudentDiscountsError } = await supabase
       .from("ay2026_discount_codes")
       .select("*")
       .lte("startDate", today)
       .gte("endDate", today)
-      .or("enroleeType.eq.Current, enroleeType.eq.Both");
+      .or(`enroleeType.eq.${levelApplied === "Primary 1" ? "New" : "Current"}, enroleeType.eq.Both`);
 
     if (currentStudentDiscountsError) {
       throw new Error(currentStudentDiscountsError.message);
@@ -856,7 +858,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: academicYear === "ay2026" ? "New" : "Current",
+        category: "New",
         pass: passType,
         passExpiry,
         passportNumber,
@@ -1158,7 +1160,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
         middleName ? `, ${middleName.toUpperCase()}` : ""
       }`,
-      enroleeType: academicYear === "ay2026" ? "New" : "Current",
+      enroleeType: "New",
       applicationStatus: "Submitted",
     });
 
@@ -1287,7 +1289,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: "New",
+        category: enrollmentDetails.enrollmentInfo.levelApplied === "Primary 1" ? "New" : "Current",
         pass: passType,
         passExpiry,
         passportNumber,
@@ -1572,7 +1574,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
         middleName ? `, ${middleName.toUpperCase()}` : ""
       }`,
-      enroleeType: "New",
+      enroleeType: enrollmentDetails.enrollmentInfo.levelApplied === "Primary 1" ? "New" : "Current",
       applicationStatus: "Submitted",
     });
 

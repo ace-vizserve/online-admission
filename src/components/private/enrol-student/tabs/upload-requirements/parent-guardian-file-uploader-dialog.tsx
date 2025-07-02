@@ -333,13 +333,25 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           <Calendar
                             mode="single"
                             defaultMonth={field.value}
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              if (date) {
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      motherPassExpiry: date,
+                                    },
+                                  },
+                                });
+                              }
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
@@ -393,7 +405,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             mode="single"
                             defaultMonth={field.value}
                             selected={field.value}
-                            showYearSwitcher
                             onSelect={(date) => {
                               field.onChange(date);
 
@@ -475,13 +486,25 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           <Calendar
                             mode="single"
                             defaultMonth={field.value}
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              if (date) {
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      fatherPassExpiry: date,
+                                    },
+                                  },
+                                });
+                              }
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
@@ -534,13 +557,25 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           <Calendar
                             mode="single"
                             defaultMonth={field.value}
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              if (date) {
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      fatherPassportExpiry: date,
+                                    },
+                                  },
+                                });
+                              }
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
@@ -603,13 +638,25 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           <Calendar
                             mode="single"
                             defaultMonth={field.value}
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              if (date) {
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      guardianPassExpiry: date,
+                                    },
+                                  },
+                                });
+                              }
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
@@ -662,13 +709,25 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           <Calendar
                             mode="single"
                             defaultMonth={field.value}
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              if (date) {
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      guardianPassportExpiry: date,
+                                    },
+                                  },
+                                });
+                              }
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
@@ -959,15 +1018,24 @@ function ParentGuardianFileUploaderDrawer({
                         <Calendar
                           mode="single"
                           defaultMonth={field.value}
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
                           selected={field.value}
                           onSelect={(date) => {
-                            console.log(date);
                             field.onChange(date);
+                            if (date) {
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    motherPassExpiry: date,
+                                  },
+                                },
+                              });
+                            }
                           }}
                         />
                       </PopoverContent>
@@ -1018,13 +1086,25 @@ function ParentGuardianFileUploaderDrawer({
                         <Calendar
                           mode="single"
                           defaultMonth={field.value}
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            field.onChange(date);
+                            if (date) {
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    motherPassportExpiry: date,
+                                  },
+                                },
+                              });
+                            }
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1086,13 +1166,25 @@ function ParentGuardianFileUploaderDrawer({
                         <Calendar
                           mode="single"
                           defaultMonth={field.value}
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            field.onChange(date);
+                            if (date) {
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    fatherPassExpiry: date,
+                                  },
+                                },
+                              });
+                            }
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1143,13 +1235,25 @@ function ParentGuardianFileUploaderDrawer({
                         <Calendar
                           mode="single"
                           defaultMonth={field.value}
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            field.onChange(date);
+                            if (date) {
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    fatherPassportExpiry: date,
+                                  },
+                                },
+                              });
+                            }
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1211,13 +1315,25 @@ function ParentGuardianFileUploaderDrawer({
                         <Calendar
                           mode="single"
                           defaultMonth={field.value}
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            field.onChange(date);
+                            if (date) {
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    guardianPassExpiry: date,
+                                  },
+                                },
+                              });
+                            }
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1268,13 +1384,25 @@ function ParentGuardianFileUploaderDrawer({
                         <Calendar
                           mode="single"
                           defaultMonth={field.value}
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            field.onChange(date);
+                            if (date) {
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    guardianPassportExpiry: date,
+                                  },
+                                },
+                              });
+                            }
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
