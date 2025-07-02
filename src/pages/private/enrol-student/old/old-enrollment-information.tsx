@@ -47,25 +47,26 @@ const STANDARD_CLASS_LEVELS = ["Primary 6", "Secondary 1", "Secondary 2", "Secon
 function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const { session } = useSession();
+  const { formState, setFormState } = useEnrolOldStudentContext();
+  const [selectedLevel, setSelectedLevel] = useState<string>("");
+  const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
+    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
+  );
   const params = useParams();
-  const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
-    queryKey: ["current-discounts", session?.user.email],
-    queryFn: async () => {
-      return await getCurrentStudentDiscounts(selectedLevel);
-    },
-    enabled: session != null,
-  });
   const { data, isPending, isSuccess } = useQuery({
     queryKey: ["enrollment-information", params.id],
     queryFn: async () => {
       return await getStudentEnrollmentInformation(params.id!);
     },
   });
-  const { formState, setFormState } = useEnrolOldStudentContext();
-  const [selectedLevel, setSelectedLevel] = useState<string>("");
-  const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
-    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
-  );
+  const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
+    queryKey: ["current-discounts", session?.user.email],
+    queryFn: async () => {
+      return await getCurrentStudentDiscounts(getNextGradeLevel(data?.levelApplied) ?? "");
+    },
+    enabled: session != null && isSuccess,
+  });
+
   const form = useForm<EnrollmentInformationSchema>({
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
