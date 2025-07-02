@@ -50,7 +50,9 @@ function OldEnrollmentInformation() {
   const params = useParams();
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
     queryKey: ["current-discounts", session?.user.email],
-    queryFn: getCurrentStudentDiscounts,
+    queryFn: async () => {
+      return await getCurrentStudentDiscounts(selectedLevel);
+    },
     enabled: session != null,
   });
   const { data, isPending, isSuccess } = useQuery({
@@ -196,7 +198,7 @@ function OldEnrollmentInformation() {
                           </FormControl>
                           <SelectContent>
                             <ScrollArea className="h-52">
-                              {classLevels.map((level) => (
+                              {classLevels.slice(1).map((level) => (
                                 <SelectItem key={level.value} value={level.value}>
                                   {level.label}
                                 </SelectItem>
