@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import useSession from "@/hooks/use-session";
 import { cn, extractSiblings, removeEmptyKeys } from "@/lib/utils";
 import { FamilyInfo } from "@/types";
 import { familyInformationSchema, FamilyInformationSchema } from "@/zod-schema";
@@ -37,6 +38,7 @@ import {
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
+import { toast } from "sonner";
 
 function OldFamilyInfo({ label, familyInformation }: { label: string; familyInformation: FamilyInfo }) {
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -74,6 +76,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
 
 function EditFamilyInformation({ familyInformation }: { familyInformation: FamilyInfo }) {
   const [searchParams] = useSearchParams();
+  const { session } = useSession();
   const params = useParams();
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
@@ -126,7 +129,39 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
     name: "siblings" as never,
   });
 
+  const isMotherAccount = session?.user.user_metadata.relationship === "mother";
+
+  const isFatherAccount = session?.user.user_metadata.relationship === "father";
+
   function onSubmit(values: FamilyInformationSchema) {
+    if (isMotherAccount) {
+      const accountEmail = session.user.email;
+
+      if (values.motherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        toast.warning("Mother's email mismatch!", {
+          description: "Please enter your account email to correctly link the student to your account.",
+        });
+        form.setError("motherEmail", {
+          message: "Email must match your account to link the student.",
+        });
+        return;
+      }
+    }
+
+    if (values.fatherEmail && isFatherAccount) {
+      const accountEmail = session.user.email;
+
+      if (values.fatherEmail?.toLowerCase() !== accountEmail?.toLowerCase()) {
+        toast.warning("Father's email mismatch!", {
+          description: "Please enter your account email to correctly link the student to your account.",
+        });
+        form.setError("fatherEmail", {
+          message: "Email must match your account to link the student.",
+        });
+        return;
+      }
+    }
+
     mutate(values);
   }
 
