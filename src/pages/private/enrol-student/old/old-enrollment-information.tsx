@@ -60,7 +60,7 @@ function OldEnrollmentInformation() {
     },
   });
   const { formState, setFormState } = useEnrolOldStudentContext();
-  const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
+  const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
     formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
   );
@@ -78,7 +78,7 @@ function OldEnrollmentInformation() {
 
   useEffect(() => {
     if (!isSuccess || !data) return;
-    setSelectedLevel(data.levelApplied);
+    setSelectedLevel(getNextGradeLevel(data.levelApplied) ?? "");
     form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
   }, [data, form, isSuccess]);
 
