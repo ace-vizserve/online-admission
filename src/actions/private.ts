@@ -454,7 +454,7 @@ export async function getStudentInformation(enroleeNumber: string) {
 
     const studentDetails = {
       firstName: studentInformation.firstName,
-      middleName: studentInformation.lastName ?? "",
+      middleName: studentInformation.middleName ?? "",
       lastName: studentInformation.lastName,
       birthDay: studentInformation.birthDay,
       preferredName: studentInformation.preferredName,
