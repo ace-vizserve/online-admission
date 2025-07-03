@@ -133,7 +133,7 @@ export default function Stepper({
           isCompleted={isCompleted}
           currentStep={currentStep}
           direction={direction}
-          className={`space-y-2 px-8 ${contentClassName}`}>
+          className={`space-y-2 px-6 md:px-8 ${contentClassName}`}>
           {stepsArray[currentStep - 1]}
         </StepContentWrapper>
 
@@ -168,7 +168,7 @@ export default function Stepper({
                     />
                     <label
                       htmlFor="terms"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      className="text-xs sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       I/We agree to the enrolment promo and discount terms
                     </label>
                   </div>
@@ -184,7 +184,7 @@ export default function Stepper({
                     />
                     <label
                       htmlFor="terms"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      className="text-xs sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       I/We agree to the enrolment terms
                     </label>
                   </div>
