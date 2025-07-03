@@ -102,7 +102,7 @@ function EnrolStudent() {
     <>
       <PageMetaData title={title} description={description} />
 
-      <div className={"w-full fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b"}>
+      <div className={"w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-16 md:h-20 flex items-center border-b"}>
         <MaxWidthWrapper className="w-full max-w-screen-2xl">
           <Link
             onClick={goBack}
