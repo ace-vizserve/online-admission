@@ -38,10 +38,25 @@ import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router";
 import { toast } from "sonner";
 
-const MORNING_AFTERNOON_CLASS_LEVEL = ["Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6"];
+const MORNING_AFTERNOON_CLASS_LEVEL = [
+  "Youngstarters | Little Stars",
+  "Youngstarters | Junior Stars",
+  "Youngstarters | Senior Stars",
+  "Primary 1",
+  "Primary 2",
+  "Primary 3",
+  "Primary 4",
+  "Primary 5",
+  "Primary 6",
+];
 const WHOLE_DAY_CLASS_LEVEL = ["Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
 
 const STANDARD_CLASS_LEVELS = ["Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
+const ENRICHMENT_CLASS_LEVELS = [
+  "Youngstarters | Little Stars",
+  "Youngstarters | Junior Stars",
+  "Youngstarters | Senior Stars",
+];
 
 function EnrollmentInformation() {
   const { session } = useSession();
@@ -111,6 +126,26 @@ function EnrollmentInformation() {
       return;
     }
 
+    if (ENRICHMENT_CLASS_LEVELS.includes(values.levelApplied) && values.classType !== "Enrichment Class") {
+      toast.warning("Class Type Mismatch!", {
+        description: "Only 'Enrichment Class' is available for this grade level.",
+      });
+      form.setError("classType", {
+        message: "Please select 'Enrichment Class' for this level.",
+      });
+      return;
+    }
+
+    if (!ENRICHMENT_CLASS_LEVELS.includes(values.levelApplied) && values.classType === "Enrichment Class") {
+      toast.warning("Class Type Mismatch!", {
+        description: "'Enrichment Class' is not available for the selected grade level.",
+      });
+      form.setError("classType", {
+        message: "Please select a valid class type for this grade level.",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       enrollmentInfo: { ...values },
@@ -159,7 +194,7 @@ function EnrollmentInformation() {
                           </FormControl>
                           <SelectContent>
                             <ScrollArea className="h-52">
-                              {classLevels.slice(1).map((level) => (
+                              {classLevels.map((level) => (
                                 <SelectItem key={level.value} value={level.value}>
                                   {level.label}
                                 </SelectItem>
@@ -186,7 +221,9 @@ function EnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
+                            {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value={"Enrichment Class"}>Enrichment Class</SelectItem>
+                            ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
                                 Standard Class (ENGLISH + TAGALOG)
                               </SelectItem>
