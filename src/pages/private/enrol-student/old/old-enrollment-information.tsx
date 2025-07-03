@@ -43,16 +43,16 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
   "Youngstarters | Little Stars",
   "Youngstarters | Junior Stars",
   "Youngstarters | Senior Stars",
-  "Primary 1",
-  "Primary 2",
-  "Primary 3",
-  "Primary 4",
-  "Primary 5",
-  "Primary 6",
+  "Primary One",
+  "Primary Two",
+  "Primary Three",
+  "Primary Four",
+  "Primary Five",
+  "Primary Six",
 ];
-const WHOLE_DAY_CLASS_LEVEL = ["Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
+const WHOLE_DAY_CLASS_LEVEL = ["Secondary One", "Secondary Two", "Secondary Three", "Secondary Four"];
 
-const STANDARD_CLASS_LEVELS = ["Primary 6", "Secondary 1", "Secondary 2", "Secondary 3", "Secondary 4"];
+const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary One", "Secondary Two", "Secondary Three", "Secondary Four"];
 const ENRICHMENT_CLASS_LEVELS = [
   "Youngstarters | Little Stars",
   "Youngstarters | Junior Stars",
