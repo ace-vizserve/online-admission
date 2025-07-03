@@ -1289,7 +1289,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: enrollmentDetails.enrollmentInfo.levelApplied === "Primary 1" ? "New" : "Current",
+        category: "Current",
         pass: passType,
         passExpiry,
         passportNumber,
@@ -1574,7 +1574,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
         middleName ? `, ${middleName.toUpperCase()}` : ""
       }`,
-      enroleeType: enrollmentDetails.enrollmentInfo.levelApplied === "Primary 1" ? "New" : "Current",
+      enroleeType: "Current",
       applicationStatus: "Submitted",
     });
 
