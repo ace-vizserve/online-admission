@@ -121,7 +121,7 @@ function EnrolStudent() {
       {academicYear === "" ? (
         <AcademicYearSelector setSelectedAy={setAcademicYear} />
       ) : (
-        <div className="w-full h-dvh p-16 md:pt-20 flex items-center justify-center bg-muted">
+        <div className="w-full h-dvh pt-0 md:pt-20 flex items-center justify-center bg-muted">
           {showEnrollmentProcess ? (
             <EnrollmentStepper academicYear={academicYear} setShowEnrollmentProcess={setShowEnrollmentProcess} />
           ) : (

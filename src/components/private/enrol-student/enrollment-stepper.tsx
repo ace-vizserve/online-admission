@@ -38,7 +38,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
 
       <Step>
         <div className="space-y-4">
-          <img src={discountPriceTag} className="max-h-72 md:max-h-96 mx-auto w-max object-cover" />
+          <img src={discountPriceTag} className="max-h-64 md:max-h-72 lg:max-h-96 mx-auto w-max object-cover" />
 
           <p className="text-sm text-balance -tracking-tighter">
             I/We acknowledge that I/we have read and understood the terms and conditions of the school’s promos and
