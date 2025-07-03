@@ -102,8 +102,11 @@ function EnrolStudent() {
     <>
       <PageMetaData title={title} description={description} />
 
-      <div className={"w-full fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b"}>
-        <MaxWidthWrapper className="w-full max-w-screen-2xl">
+      <div
+        className={
+          "w-full sticky md:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-16 md:h-20 flex items-center border-b"
+        }>
+        <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link
             onClick={goBack}
             to={"/admission/dashboard"}
@@ -118,7 +121,7 @@ function EnrolStudent() {
       {academicYear === "" ? (
         <AcademicYearSelector setSelectedAy={setAcademicYear} />
       ) : (
-        <div className="w-full h-dvh overflow-hidden pt-16 md:pt-20 flex items-center justify-center bg-muted">
+        <div className="w-full h-dvh pt-0 md:pt-20 flex items-center justify-center bg-muted">
           {showEnrollmentProcess ? (
             <EnrollmentStepper academicYear={academicYear} setShowEnrollmentProcess={setShowEnrollmentProcess} />
           ) : (
