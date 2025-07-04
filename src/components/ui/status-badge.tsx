@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Badge } from "./badge";
 
-export type StatusProps = "Uploaded" | "Valid" | "Expired" | "Missing";
+export type StatusProps = "Uploaded" | "Valid" | "Expired" | "Missing" | "Incomplete";
 
 function StatusBadge({ status, className }: { status: StatusProps; className?: string }) {
   switch (status) {
