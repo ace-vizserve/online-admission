@@ -18,6 +18,10 @@ export function wait(time: number) {
   return new Promise((res) => setTimeout(res, time));
 }
 
+export function capitalizeWords(str: string) {
+  return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
+
 export function documentErrors(
   role: "guardian" | "mother" | "father",
   errors: FieldErrors<ParentGuardianUploadRequirementsSchema>

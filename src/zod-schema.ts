@@ -1,5 +1,6 @@
 import { isBefore } from "date-fns";
 import { z } from "zod";
+import { capitalizeWords } from "./lib/utils";
 
 export const loginSchema = z.object({
   email: z.string().email(),
@@ -14,17 +15,10 @@ export const updatePasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
-export const studentEnrolSchema = z.object({
-  id: z.string(),
-  studentName: z.string(),
-  age: z.string(),
-  motherName: z.string(),
-  fatherName: z.string(),
-});
 export const registrationSchema = z
   .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    firstName: z.string().min(1, "First name is required").transform(capitalizeWords),
+    lastName: z.string().min(1, "Last name is required").transform(capitalizeWords),
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
@@ -40,16 +34,25 @@ export const registrationSchema = z
 export const studentDetailsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
-    firstName: z.string().min(1, {
-      message: "First name is required",
-    }),
-    middleName: z.string().optional(),
-    lastName: z.string().min(1, {
-      message: "Last name is required",
-    }),
-    preferredName: z.string().min(1, {
-      message: "Preferred name is required",
-    }),
+    firstName: z
+      .string()
+      .min(1, {
+        message: "First name is required",
+      })
+      .transform(capitalizeWords),
+    middleName: z.string().transform(capitalizeWords).optional(),
+    lastName: z
+      .string()
+      .min(1, {
+        message: "Last name is required",
+      })
+      .transform(capitalizeWords),
+    preferredName: z
+      .string()
+      .min(1, {
+        message: "Preferred name is required",
+      })
+      .transform(capitalizeWords),
     birthDay: z.coerce.date({
       required_error: "Birth date is required",
       invalid_type_error: "Please enter a valid date",
@@ -57,9 +60,12 @@ export const studentDetailsSchema = z
     gender: z.string().min(1, {
       message: "Please select a gender",
     }),
-    primaryLanguage: z.string().min(1, {
-      message: "Primary language is required",
-    }),
+    primaryLanguage: z
+      .string()
+      .min(1, {
+        message: "Primary language is required",
+      })
+      .transform(capitalizeWords),
     religion: z.string().min(1, {
       message: "Religion is required",
     }),
@@ -97,9 +103,12 @@ export const studentAddressContactSchema = z.object({
     .string()
     .min(1, { message: "Home phone number is required" })
     .regex(/^\+?\d+$/, { message: "Home phone number must contain digits only" }),
-  contactPerson: z.string().min(1, {
-    message: "Contact person is required",
-  }),
+  contactPerson: z
+    .string()
+    .min(1, {
+      message: "Contact person is required",
+    })
+    .transform(capitalizeWords),
   contactPersonNumber: z
     .string()
     .min(1, {
@@ -115,16 +124,25 @@ export const studentAddressContactSchema = z.object({
 });
 
 export const guardianInformationSchema = z.object({
-  guardianFirstName: z.string().min(1, {
-    message: "Guardian's first name is required",
-  }),
-  guardianMiddleName: z.string().optional(),
-  guardianLastName: z.string().min(1, {
-    message: "Guardian's last name is required",
-  }),
-  guardianPreferredName: z.string().min(1, {
-    message: "Preferred name is required",
-  }),
+  guardianFirstName: z
+    .string()
+    .min(1, {
+      message: "Guardian's first name is required",
+    })
+    .transform(capitalizeWords),
+  guardianMiddleName: z.string().transform(capitalizeWords).optional(),
+  guardianLastName: z
+    .string()
+    .min(1, {
+      message: "Guardian's last name is required",
+    })
+    .transform(capitalizeWords),
+  guardianPreferredName: z
+    .string()
+    .min(1, {
+      message: "Preferred name is required",
+    })
+    .transform(capitalizeWords),
   guardianBirthDay: z.coerce.date({
     required_error: "Guardian's date of birth is required",
     invalid_type_error: "Please enter a valid date",
@@ -148,22 +166,28 @@ export const guardianInformationSchema = z.object({
   guardianEmail: z.string().email({
     message: "Please enter a valid email address",
   }),
-  guardianCompanyName: z.string().min(1, {
-    message: "Company name is required",
-  }),
-  guardianPosition: z.string().min(1, {
-    message: "Position at work is required",
-  }),
+  guardianCompanyName: z
+    .string()
+    .min(1, {
+      message: "Company name is required",
+    })
+    .transform(capitalizeWords),
+  guardianPosition: z
+    .string()
+    .min(1, {
+      message: "Position at work is required",
+    })
+    .transform(capitalizeWords),
 });
 
 export const fatherInformationSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
     noFatherInfo: z.boolean().default(false).optional(),
-    fatherFirstName: z.string().optional(),
-    fatherMiddleName: z.string().optional(),
-    fatherLastName: z.string().optional(),
-    fatherPreferredName: z.string().optional(),
+    fatherFirstName: z.string().transform(capitalizeWords).optional(),
+    fatherMiddleName: z.string().transform(capitalizeWords).optional(),
+    fatherLastName: z.string().transform(capitalizeWords).optional(),
+    fatherPreferredName: z.string().transform(capitalizeWords).optional(),
     fatherBirthDay: z.coerce
       .date({
         invalid_type_error: "Please enter a valid date",
@@ -192,8 +216,8 @@ export const fatherInformationSchema = z
         message: "Please enter a valid email address",
       })
       .optional(),
-    fatherCompanyName: z.string().optional(),
-    fatherPosition: z.string().optional(),
+    fatherCompanyName: z.string().transform(capitalizeWords).optional(),
+    fatherPosition: z.string().transform(capitalizeWords).optional(),
   })
   .superRefine((schema, ctx) => {
     const requiredFields = [
@@ -225,16 +249,25 @@ export const fatherInformationSchema = z
 
 export const motherInformationSchema = z.object({
   isValid: z.boolean().default(false).optional(),
-  motherFirstName: z.string().min(1, {
-    message: "Mother's first name is required",
-  }),
-  motherMiddleName: z.string().optional(),
-  motherLastName: z.string().min(1, {
-    message: "Mother's last name is required",
-  }),
-  motherPreferredName: z.string().min(1, {
-    message: "Preferred name is required",
-  }),
+  motherFirstName: z
+    .string()
+    .min(1, {
+      message: "Mother's first name is required",
+    })
+    .transform(capitalizeWords),
+  motherMiddleName: z.string().transform(capitalizeWords).optional(),
+  motherLastName: z
+    .string()
+    .min(1, {
+      message: "Mother's last name is required",
+    })
+    .transform(capitalizeWords),
+  motherPreferredName: z
+    .string()
+    .min(1, {
+      message: "Preferred name is required",
+    })
+    .transform(capitalizeWords),
   motherBirthDay: z.coerce.date({
     required_error: "Mother's date of birth is required",
     invalid_type_error: "Please enter a valid date",
@@ -258,12 +291,18 @@ export const motherInformationSchema = z.object({
   motherEmail: z.string().email({
     message: "Please enter a valid email address",
   }),
-  motherCompanyName: z.string().min(1, {
-    message: "Company name is required",
-  }),
-  motherPosition: z.string().min(1, {
-    message: "Position at work is required",
-  }),
+  motherCompanyName: z
+    .string()
+    .min(1, {
+      message: "Company name is required",
+    })
+    .transform(capitalizeWords),
+  motherPosition: z
+    .string()
+    .min(1, {
+      message: "Position at work is required",
+    })
+    .transform(capitalizeWords),
 });
 
 export const siblingInformationSchema = z
@@ -271,9 +310,12 @@ export const siblingInformationSchema = z
     siblings: z.array(
       z.object({
         siblingOtherReligion: z.string().optional(),
-        siblingFullName: z.string().min(1, {
-          message: "Sibling's full name is required",
-        }),
+        siblingFullName: z
+          .string()
+          .min(1, {
+            message: "Sibling's full name is required",
+          })
+          .transform(capitalizeWords),
         siblingBirthDay: z.coerce.date({
           required_error: "Sibling's date of birth is required",
           invalid_type_error: "Please enter a valid date",
@@ -281,13 +323,18 @@ export const siblingInformationSchema = z
         siblingReligion: z.string().min(1, {
           message: "Sibling's religion is required",
         }),
-
-        siblingSchoolCompany: z.string().min(1, {
-          message: "School or company name is required",
-        }),
-        siblingEducationOccupation: z.string().min(1, {
-          message: "School level or position is required",
-        }),
+        siblingSchoolCompany: z
+          .string()
+          .min(1, {
+            message: "School or company name is required",
+          })
+          .transform(capitalizeWords),
+        siblingEducationOccupation: z
+          .string()
+          .min(1, {
+            message: "School level or position is required",
+          })
+          .transform(capitalizeWords),
       })
     ),
   })
@@ -658,4 +705,3 @@ export type EnrollmentInformationSchema = z.infer<typeof enrollmentInformationSc
 export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequirementsSchema>;
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
-export type StudentEnrolSchema = z.infer<typeof studentEnrolSchema>;
