@@ -23,6 +23,10 @@ import { useParams } from "react-router";
 import { toast } from "sonner";
 
 function checkExpiry(label: string, expiry: Date | null | undefined, type: "passport" | "pass") {
+  if (!expiry) {
+    throw new Error(`${label}'s ${type} expiry date is invalid.`);
+  }
+
   if (expiry && isBefore(expiry, new Date())) {
     throw new Error(`${label}'s ${type} has expired.`);
   }
