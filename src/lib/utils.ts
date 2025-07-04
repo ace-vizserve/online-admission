@@ -22,14 +22,13 @@ export function documentErrors(
   role: "guardian" | "mother" | "father",
   errors: FieldErrors<ParentGuardianUploadRequirementsSchema>
 ) {
-  const includesPassportError = Object.keys(errors).filter(
-    (key) => key.includes(`${role}PassportExpiry"`) || key.includes(`${role}PassportNumber`)
-  );
-  const includesPassError = Object.keys(errors).filter(
-    (key) => key.includes(`${role}PassType`) || key.includes(`${role}PassExpiry`)
+  const includesPassportError = Object.keys(errors).find(
+    (key) => key === `${role}PassportExpiry` || key === `${role}PassportNumber`
   );
 
-  return { includesPassportError, includesPassError };
+  const includesPassError = Object.keys(errors).find((key) => key === `${role}PassExpiry` || key === `${role}PassType`);
+
+  return { includesPassportError: Boolean(includesPassportError), includesPassError: Boolean(includesPassError) };
 }
 
 export function removeEmptyKeys(obj: Record<string, unknown>) {
