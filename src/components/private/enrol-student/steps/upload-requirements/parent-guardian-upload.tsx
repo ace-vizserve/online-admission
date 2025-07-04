@@ -69,31 +69,31 @@ function ParentGuardianUpload() {
           const { includesPassError: includesMotherPassError, includesPassportError: includesMotherPassportError } =
             documentErrors("mother", errors);
 
-          if (includesMotherPassportError.length > 0) {
+          if (includesMotherPassportError) {
             form.setError("motherPassport", {});
           }
 
-          if (includesMotherPassError.length > 0) {
+          if (includesMotherPassError) {
             form.setError("motherPass", {});
           }
 
           const { includesPassError: includesFatherPassError, includesPassportError: includesFatherPassportError } =
             documentErrors("father", errors);
 
-          if (includesFatherPassportError.length > 0) {
+          if (includesFatherPassportError) {
             form.setError("fatherPassport", {});
           }
-          if (includesFatherPassError.length > 0) {
+          if (includesFatherPassError) {
             form.setError("fatherPass", {});
           }
 
           const { includesPassError: includesGuardianPassError, includesPassportError: includesGuardianPassportError } =
             documentErrors("guardian", errors);
 
-          if (includesGuardianPassportError.length > 0) {
+          if (includesGuardianPassportError) {
             form.setError("guardianPassport", {});
           }
-          if (includesGuardianPassError.length > 0) {
+          if (includesGuardianPassError) {
             form.setError("guardianPass", {});
           }
         })}
