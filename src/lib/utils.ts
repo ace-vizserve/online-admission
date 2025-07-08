@@ -131,9 +131,9 @@ export const formatBytes = (
 };
 
 export function getNextGradeLevel(currentValue: string) {
-  if (currentValue === "Secondary 4") return "Secondary 4";
+  if (currentValue === "Secondary Four") return "Secondary Four";
 
-  if (currentValue === "Youngstarters") return "Primary 1";
+  if (currentValue === "Youngstarters") return "Primary One";
 
   const currentIndex = classLevels.findIndex((level) => level.value === currentValue);
   if (currentIndex === -1 || currentIndex + 1 >= classLevels.length) {
