@@ -15,6 +15,7 @@ const academicYears = [
       "Ideal for students transferring mid-year",
     ],
     buttonText: "Enrol for AY 2025",
+    // isClosed: true,
   },
   {
     value: "ay2026",
@@ -39,7 +40,15 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
         {academicYears.map((year) => (
           <div
             key={year.name}
-            className="bg-white transition-transform hover:-translate-y-1 hover:shadow-lg border rounded-lg p-6">
+            className="relative bg-white transition-transform hover:-translate-y-1 hover:shadow-lg border rounded-lg p-6">
+            {/* {year.isClosed && (
+              <Badge
+                variant={"destructive"}
+                className="text-[10px] font-bold absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 uppercase">
+                Enrolment Closed
+              </Badge>
+            )} */}
+
             <h3 className="text-lg font-semibold">{year.label}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{year.description}</p>
             <Separator className="my-4" />
@@ -52,6 +61,7 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
               ))}
             </ul>
             <Button
+              // disabled={year.isClosed}
               onClick={() => setSelectedAy(year.value)}
               variant={year.isUpcoming ? "default" : "outline"}
               className="w-full mt-6 gap-2 cursor-pointer">
