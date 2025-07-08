@@ -413,7 +413,7 @@ export async function getCurrentStudentDiscounts(levelApplied: string) {
       .select("*")
       .lte("startDate", today)
       .gte("endDate", today)
-      .or(`enroleeType.eq.${levelApplied === "Primary 1" ? "New" : "Current"}, enroleeType.eq.Both`);
+      .or("enroleeType.eq.Current, enroleeType.eq.Both");
 
     if (currentStudentDiscountsError) {
       throw new Error(currentStudentDiscountsError.message);
