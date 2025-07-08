@@ -115,9 +115,12 @@ export const studentAddressContactSchema = z.object({
       message: "Contact person's number is required",
     })
     .regex(/^\+?\d+$/, { message: "Contact person number must contain digits only" }),
-  livingWithWhom: z.string().min(1, {
-    message: "Please indicate who the student is living with",
-  }),
+  livingWithWhom: z
+    .string()
+    .min(1, {
+      message: "Please indicate who the student is living with",
+    })
+    .transform(capitalizeWords),
   parentMaritalStatus: z.string().min(1, {
     message: "Please select the parents' marital status",
   }),
