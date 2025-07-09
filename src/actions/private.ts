@@ -402,11 +402,9 @@ export async function getNewStudentDiscounts() {
   }
 }
 
-export async function getCurrentStudentDiscounts(levelApplied: string) {
+export async function getCurrentStudentDiscounts() {
   try {
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
-
-    console.log(levelApplied);
 
     const { data: currentStudentDiscounts, error: currentStudentDiscountsError } = await supabase
       .from("ay2026_discount_codes")

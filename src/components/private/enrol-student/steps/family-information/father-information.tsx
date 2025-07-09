@@ -183,8 +183,6 @@ function FatherInformation() {
     navigate("/enrol-student/new/enrollment-info");
   }
 
-  console.log(form.getValues("fatherNationality"));
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">

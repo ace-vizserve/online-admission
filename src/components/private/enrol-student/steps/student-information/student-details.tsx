@@ -27,34 +27,30 @@ function StudentDetails() {
     },
   });
 
-  async function onSubmit(values: StudentDetailsSchema) {
-    try {
-      const age = differenceInYears(new Date(), values.birthDay);
+  function onSubmit(values: StudentDetailsSchema) {
+    const age = differenceInYears(new Date(), values.birthDay);
 
-      if (age < 4) {
-        toast.info("Child must be at least 4 years old to enrol");
-        form.setError("birthDay", {
-          type: "manual",
-          message: "Child must be at least 4 years old",
-        });
-        return;
-      }
-
-      toast.success("Student details saved!", {
-        description: "You're now ready to fill out the Address & Contact tab.",
+    if (age < 4) {
+      toast.info("Child must be at least 4 years old to enrol");
+      form.setError("birthDay", {
+        type: "manual",
+        message: "Child must be at least 4 years old",
       });
-
-      setFormState({
-        studentInfo: {
-          addressContact: {
-            ...(formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema),
-          },
-          studentDetails: { ...values, isValid: true },
-        },
-      });
-    } catch (error) {
-      console.log(error);
+      return;
     }
+
+    toast.success("Student details saved!", {
+      description: "You're now ready to fill out the Address & Contact tab.",
+    });
+
+    setFormState({
+      studentInfo: {
+        addressContact: {
+          ...(formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema),
+        },
+        studentDetails: { ...values, isValid: true },
+      },
+    });
   }
 
   return (
