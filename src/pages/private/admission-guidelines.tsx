@@ -1,12 +1,9 @@
 import PageMetaData from "@/components/page-metadata";
-import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ADMISSION_GUIDELINES_TITLE_DESCRIPTION } from "@/data";
-import { Download } from "lucide-react";
-import { Link } from "react-router";
 
-const ADMISSION_GUIDELINES_URL = "https://isa.hfse.edu.sg/wp-content/uploads/2025/04/AY2025-Admission-Guidelines.pdf";
+// const ADMISSION_GUIDELINES_URL = import.meta.env.VITE_ADMISSION_GUIDELINES_URL as string;
 
 function AdmissionGuidelines() {
   const { title, description } = ADMISSION_GUIDELINES_TITLE_DESCRIPTION;
@@ -15,17 +12,19 @@ function AdmissionGuidelines() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="relative w-full max-w-4xl mx-auto flex flex-col gap-4 py-8 md:gap-6 md:py-12">
-        <div className="absolute top-3 md:top-5 right-0 w-max px-4 md:px-6">
+        {/* <div className="w-max ml-auto pr-6">
           <Link
             to={ADMISSION_GUIDELINES_URL}
             target="_blank"
             className={buttonVariants({
               variant: "secondary",
+              className: "ml-auto w-max",
             })}>
             Download PDF <Download />
           </Link>
-        </div>
-        <Card className="mt-6 md:mt-8 w-full border-none shadow-none">
+        </div> */}
+
+        <Card className="w-full border-none shadow-none">
           <CardHeader>
             <CardTitle className="text-4xl font-bold text-center">Admission Requirements</CardTitle>
           </CardHeader>
