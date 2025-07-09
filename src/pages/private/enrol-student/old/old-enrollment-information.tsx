@@ -76,9 +76,7 @@ function OldEnrollmentInformation() {
   });
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
     queryKey: ["current-discounts", session?.user.email],
-    queryFn: async () => {
-      return await getCurrentStudentDiscounts(getNextGradeLevel(data?.levelApplied) ?? "");
-    },
+    queryFn: getCurrentStudentDiscounts,
     enabled: session != null && isSuccess,
   });
 
