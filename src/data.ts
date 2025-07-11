@@ -207,7 +207,7 @@ export const maritalStatuses = [
 
 export const studentPassTypes = [
   { label: "Singaporean", value: "Singaporean" },
-  { label: "Singaporean PR", value: "Singaporean PR" },
+  { label: "Singapore PR", value: "Singapore PR" },
   { label: "Dependent Pass", value: "Dependent Pass" },
   { label: "Student Pass", value: "Student Pass" },
   { label: "Long Term Visit Pass", value: "Long Term Visit Pass" },
