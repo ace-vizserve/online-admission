@@ -32,6 +32,7 @@ function StudentDetails() {
   async function onSubmit(values: StudentDetailsSchema) {
     const age = differenceInYears(new Date(), values.birthDay);
 
+    console.log(age);
     if (age < 3) {
       toast.info("Child must be at least 3 years old to enrol");
       form.setError("birthDay", {
