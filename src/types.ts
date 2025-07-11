@@ -138,8 +138,6 @@ export type StudentDocuments = {
   created_at: string;
   studentNumber: string | null;
   enroleeNumber: string | null;
-  form12: string | null;
-  form12Status: string | null;
   medical: string | null;
   medicalStatus: string | null;
   passport: string | null;
@@ -242,10 +240,7 @@ export type StudentDocument = {
       idPicture: string | null;
       idPictureStatus: string | null;
     },
-    {
-      form12: string | null;
-      form12Status: string | null;
-    },
+
     {
       medical: string | null;
       medicalStatus: string | null;
@@ -453,7 +448,6 @@ export type DocumentsInformation = {
   idPicture: File | string;
   birthCert: File | string;
   transcript: File | string;
-  form12: File | string;
   medical: File | string;
   passport: File | string;
   pass: File | string;

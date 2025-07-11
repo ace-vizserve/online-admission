@@ -33,7 +33,6 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
-const form12Url = import.meta.env.VITE_FORM_12_URL as string;
 const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 function StudentFiles({ label, documents }: { label: string; documents: StudentDocument }) {
@@ -44,10 +43,9 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
   const passDocument = documents.documentsThatExpire[1];
 
   const idPicture = documents.permanentDocuments[0];
-  const form12Document = documents.permanentDocuments[1];
-  const medicalCertDocument = documents.permanentDocuments[2];
-  const birthCertDocument = documents.permanentDocuments[3];
-  const eduCertDocument = documents.permanentDocuments[4];
+  const medicalCertDocument = documents.permanentDocuments[1];
+  const birthCertDocument = documents.permanentDocuments[2];
+  const eduCertDocument = documents.permanentDocuments[3];
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
@@ -346,54 +344,6 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
           </div>
         )}
 
-        {Object.values(form12Document).some((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Form 12</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={form12Document.form12Status as StatusProps} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Form 12</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Link
-                to={form12Document.form12!}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
-            </div>
-          </div>
-        )}
-
         {Object.values(medicalCertDocument).some((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
@@ -614,8 +564,6 @@ function StudentFileUploaderDialog({
 
   const [birthCert, setBirthCert] = useState("");
 
-  const [form12, setForm12] = useState("");
-
   const [medical, setMedical] = useState("");
 
   const [educCert, setEducCert] = useState("");
@@ -646,10 +594,6 @@ function StudentFileUploaderDialog({
 
     if (documentType == "birthCert") {
       setBirthCert(props.successes[0]);
-    }
-
-    if (documentType == "form12") {
-      setForm12(props.successes[0]);
     }
 
     if (documentType == "medical") {
@@ -717,16 +661,6 @@ function StudentFileUploaderDialog({
         };
         break;
 
-      case "form12":
-        if (!form12) {
-          toast.error("Please upload Form 12.");
-          return;
-        }
-        filePayload = {
-          form12,
-        };
-        break;
-
       case "medical":
         if (!medical) {
           toast.error("Please upload the medical exam.");
@@ -782,18 +716,6 @@ function StudentFileUploaderDialog({
             <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
               Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
             </Badge>
-          )}
-
-          {documentType === "form12" && (
-            <Link
-              to={form12Url}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 w-max mx-auto text-xs",
-                variant: "outline",
-              })}>
-              Download Form 12 Form <Download />
-            </Link>
           )}
 
           {documentType === "medical" && (
