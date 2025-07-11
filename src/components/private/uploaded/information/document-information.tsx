@@ -22,7 +22,7 @@ const DocumentsInformation = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ay2025_enrolment_documents")
-        .select("idPicture, birthCert, form12, medical, passport, pass")
+        .select("idPicture, birthCert, medical, passport, pass")
         .eq("id", id)
         .single();
 
