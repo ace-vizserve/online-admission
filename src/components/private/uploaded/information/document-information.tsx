@@ -9,7 +9,6 @@ import { useParams } from "react-router";
 const documentFields = [
   { label: "Student ID Picture", key: "idPicture" },
   { label: "Birth Certificate", key: "birthCert" },
-  { label: "Form 12", key: "form12" },
   { label: "Medical Certificate", key: "medical" },
   { label: "Passport Copy", key: "passport" },
   { label: "Singapore Pass", key: "pass" },
@@ -31,7 +30,6 @@ const DocumentsInformation = () => {
       return {
         idPicture: data?.idPicture ?? "",
         birthCert: data?.birthCert ?? "",
-        form12: data?.form12 ?? "",
         medical: data?.medical ?? "",
         passport: data?.passport ?? "",
         pass: data?.pass ?? "",

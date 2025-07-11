@@ -133,7 +133,7 @@ export async function getStudentDocumentsList(enroleeNumber: string) {
     const { data } = await supabase
       .from("ay2025_enrolment_documents")
       .select(
-        "form12, form12Status, medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus"
+        "medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus"
       )
       .eq("enroleeNumber", enroleeNumber);
 
@@ -237,8 +237,6 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       documents = [
         {
           idPicture: null,
-          form12: null,
-          form12Status: null,
           medical: null,
           medicalStatus: null,
           passport: null,
@@ -302,8 +300,6 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
     const {
       idPicture,
       idPictureStatus,
-      form12,
-      form12Status,
       medical,
       medicalStatus,
       passport,
@@ -345,10 +341,6 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
         ],
         permanentDocuments: [
           { idPicture, idPictureStatus },
-          {
-            form12,
-            form12Status,
-          },
           {
             medical,
             medicalStatus,

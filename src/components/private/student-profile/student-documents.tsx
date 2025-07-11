@@ -1,5 +1,7 @@
+import fileSvg from "@/assets/file.svg";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
@@ -9,18 +11,14 @@ import { formatDate } from "date-fns";
 import { EllipsisVertical, Eye, EyeClosed } from "lucide-react";
 import { Link } from "react-router";
 
-import fileSvg from "@/assets/file.svg";
-import { PassportInput } from "@/components/ui/passport-input";
-
 function StudentDocuments({ label, documents }: { label: string; documents: StudentDocument }) {
   const passportDocument = documents.documentsThatExpire[0];
   const passDocument = documents.documentsThatExpire[1];
 
   const idPicture = documents.permanentDocuments[0];
-  const form12Document = documents.permanentDocuments[1];
-  const medicalCertDocument = documents.permanentDocuments[2];
-  const birthCertDocument = documents.permanentDocuments[3];
-  const eduCertDocument = documents.permanentDocuments[4];
+  const medicalCertDocument = documents.permanentDocuments[1];
+  const birthCertDocument = documents.permanentDocuments[2];
+  const eduCertDocument = documents.permanentDocuments[3];
 
   return (
     <div className="space-y-8 py-6 xl:py-0">
@@ -250,44 +248,6 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
 
             <Link
               to={idPicture.idPicture!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
-          </div>
-        )}
-
-        {Object.values(form12Document).some((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Form 12</p>
-
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={form12Document.form12Status as StatusProps} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Form 12</p>
-
-            <Link
-              to={form12Document.form12!}
               target="_blank"
               className={buttonVariants({
                 className: "gap-2 text-xs  w-full",

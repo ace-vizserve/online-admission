@@ -29,9 +29,9 @@ const data = {
       icon: ClipboardList,
     },
     // {
-    //   title: "Documents",
-    //   url: "/admission/documents",
-    //   icon: FolderOpen,
+    //   title: "User Guides",
+    //   url: "/admission/user-guide",
+    //   icon: BookOpenText,
     // },
   ],
 };
