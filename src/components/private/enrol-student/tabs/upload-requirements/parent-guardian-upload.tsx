@@ -154,7 +154,7 @@ function ParentGuardianUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Singapore Pass"
-            description="Upload the type of Pass the student holds."
+            description="Upload the type of Pass the mother holds."
             form={form}
             name="motherPass"
             value={motherPass}
