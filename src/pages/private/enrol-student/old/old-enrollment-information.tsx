@@ -379,7 +379,9 @@ function OldEnrollmentInformation() {
                     name="availUniform"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>School Uniform</FormLabel>
+                        <FormLabel>
+                          School Uniform <span className="text-xs text-muted-foreground">(includes all 3 sets)</span>
+                        </FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -391,7 +393,7 @@ function OldEnrollmentInformation() {
                             <SelectItem value="No">No</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormDescription>Will you avail a school uniform?</FormDescription>
+                        <FormDescription>Will you avail a school uniform? </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
