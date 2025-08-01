@@ -80,7 +80,7 @@ function AdmissionGuidelines() {
             <EducationLevelTable />
           </CardFooter>
         </Card>
-        <div>
+        <div className="px-6 pb-6">
           <div
             style={{
               position: "relative",
@@ -115,7 +115,7 @@ function AdmissionGuidelines() {
               href="https://www.canva.com/design/DAGsorqq-Co/lHEDFsXWfMrp4U8rsVQY-Q/view?utm_content=DAGsorqq-Co&utm_campaign=designshare&utm_medium=embeds&utm_source=link"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline font-medium">
+              className="text-sm md:text-base text-blue-600 hover:underline font-medium">
               Parent Portal User Guide
             </a>{" "}
             <span className="text-sm font-semibold text-secondary">by Creatives Team</span>
