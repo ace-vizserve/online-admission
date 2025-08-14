@@ -111,7 +111,7 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
 
     const { data, error: studentEnrollmentInformationError } = await supabase
       .from("ay2025_enrolment_applications")
-      .select("levelApplied")
+      .select("levelApplied, fatherEmail")
       .eq("enroleeNumber", enroleeNumber)
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
       .single();
@@ -120,7 +120,7 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
       throw new Error(studentEnrollmentInformationError.message);
     }
 
-    return { levelApplied: data.levelApplied };
+    return { levelApplied: data.levelApplied, fatherEmail: data.fatherEmail };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
