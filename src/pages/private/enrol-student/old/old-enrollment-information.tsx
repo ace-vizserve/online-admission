@@ -84,11 +84,7 @@ function OldEnrollmentInformation() {
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
       ...formState.enrollmentInfo,
-      contractSignatory:
-        !formState.familyInfo?.fatherInfo?.noFatherInfo &&
-        formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo
-          ? "Father"
-          : "Mother",
+      contractSignatory: data?.fatherEmail && !formState.familyInfo?.fatherInfo?.noFatherInfo ? "Father" : "Mother",
     },
   });
 
@@ -469,10 +465,9 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {!formState.familyInfo?.fatherInfo?.noFatherInfo &&
-                              formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo && (
-                                <SelectItem value={"Father"}>Father</SelectItem>
-                              )}
+                            {data?.fatherEmail && !formState.familyInfo?.fatherInfo?.noFatherInfo && (
+                              <SelectItem value={"Father"}>Father</SelectItem>
+                            )}
                             <SelectItem value={"Mother"}>Mother</SelectItem>
                           </SelectContent>
                         </Select>
