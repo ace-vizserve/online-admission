@@ -1,4 +1,4 @@
-import discountPriceTag from "@/assets/discounts-promo-tac.webp";
+import discountPriceTag from "@/assets/discount-codes/sept-discounts-promo-tac.webp";
 import enrollmentProcess from "@/assets/enrollment-process.webp";
 import Stepper, { Step } from "@/components/ui/stepper";
 import "inner-image-zoom/lib/styles.min.css";
