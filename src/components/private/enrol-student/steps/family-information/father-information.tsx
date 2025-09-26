@@ -1,3 +1,4 @@
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -18,15 +19,15 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
+import { ArrowRight, Calendar as CalendarIcon, Info, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function FatherInformation() {
   const { session } = useSession();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const isFatherAccount = session?.user.user_metadata.relationship === "father";
 
@@ -320,7 +321,7 @@ function FatherInformation() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.familyInfo?.fatherInfo.fatherNationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
@@ -412,32 +413,45 @@ function FatherInformation() {
         </div>
 
         {!isFatherAccount ? (
-          <FormField
-            control={form.control}
-            name="noFatherInfo"
-            render={({ field }) => (
-              <FormItem className="my-8 w-full mx-auto max-w-lg rounded-lg border px-4 py-6">
-                <div className="w-full flex flex-row items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <FormLabel>Is the father's information not available?</FormLabel>
-                    <FormDescription className="text-pretty">
-                      Turn this on if you are unable to provide the father's details.
-                    </FormDescription>
+          <div className="!space-y-4">
+            <FormField
+              control={form.control}
+              name="noFatherInfo"
+              render={({ field }) => (
+                <FormItem className="my-8 w-full mx-auto max-w-lg rounded-lg border px-4 py-6">
+                  <div className="w-full flex flex-row items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <FormLabel>Is the father's information not available?</FormLabel>
+                      <FormDescription className="text-pretty">
+                        Turn this on if you are unable to provide the father's details.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={async (checked) => {
+                          field.onChange(checked);
+                          await hasFatherInfoToggle(checked);
+                        }}
+                      />
+                    </FormControl>
                   </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={async (checked) => {
-                        field.onChange(checked);
-                        await hasFatherInfoToggle(checked);
-                      }}
-                    />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+              <Info className="h-4 w-4 !text-blue-500" />
+              <div className="space-y-1 text-pretty">
+                <AlertTitle className="text-xs text-blue-700 font-semibold">Important Information</AlertTitle>
+                <span className="text-xs text-blue-900">
+                  Always click the <span className="font-semibold">Save</span> button after applying any changes to
+                  ensure your updates are recorded.
+                </span>
+              </div>
+            </Alert>
+          </div>
         ) : null}
 
         <div className="flex flex-col gap-4">

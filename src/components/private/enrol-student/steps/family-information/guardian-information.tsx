@@ -1,11 +1,15 @@
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
+import { EnrolNewStudentFormState } from "@/types";
 import {
   guardianInformationSchema,
   GuardianInformationSchema,
@@ -13,13 +17,16 @@ import {
   StudentUploadRequirementsSchema,
 } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowRight, Calendar as CalendarIcon, Save } from "lucide-react";
+import { ArrowRight, Calendar as CalendarIcon, Info, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function GuardianInformation() {
+  const { session } = useSession();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
 
@@ -31,11 +38,31 @@ function GuardianInformation() {
   });
 
   function onSubmit(values: GuardianInformationSchema) {
+    const insertedValues = Object.keys(values).filter((v) => {
+      const key = v as keyof GuardianInformationSchema;
+      return values[key] != undefined && typeof values[key] != "boolean" && values[key] != "";
+    }) as [keyof GuardianInformationSchema];
+
+    if (insertedValues.length > 0 && values.noGuardianInfo) {
+      for (const key of insertedValues) {
+        form.setError(key, {});
+      }
+
+      toast.warning("Conflict detected!", {
+        description: "Some guardian's details are filled, but marked as not applicable. Please review.",
+      });
+
+      form.setError("noGuardianInfo", {
+        message: "You've entered guardian details but marked them as not applicable.",
+      });
+      return;
+    }
+
     setFormState({
       ...formState,
       familyInfo: {
         ...formState.familyInfo!,
-        guardianInfo: { ...values, guardianEmail: values.guardianEmail.toLowerCase() },
+        guardianInfo: { ...values, guardianEmail: values.guardianEmail?.toLowerCase() },
       },
       uploadRequirements: {
         studentUploadRequirements: {
@@ -71,6 +98,71 @@ function GuardianInformation() {
     setCompletedTabs("/enrol-student/new/family-info");
     setCurrentTab("/enrol-student/new/enrollment-info");
     navigate("/enrol-student/new/enrollment-info");
+  }
+
+  async function hasGuardianInfoToggle(checked: boolean) {
+    if (checked) {
+      form.reset({
+        ...form.getValues(),
+        guardianFirstName: "",
+        guardianMiddleName: "",
+        guardianLastName: "",
+        guardianPreferredName: "",
+        guardianBirthDay: undefined,
+        guardianNationality: "",
+        guardianReligion: "",
+        guardianNric: "",
+        guardianMobile: "",
+        guardianEmail: "",
+        guardianCompanyName: "",
+        guardianPosition: "",
+        noGuardianInfo: true,
+      });
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          guardianInfo: {
+            noGuardianInfo: true,
+          },
+        },
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            hasGuardianInfo: false,
+            ...(formState.uploadRequirements
+              ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          },
+          studentUploadRequirements: {
+            ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+          },
+        },
+      });
+    } else {
+      await queryClient.refetchQueries({
+        queryKey: ["new-family-information", session?.user.email],
+      });
+      const familyInfo = queryClient.getQueryData(["new-family-information"]) as EnrolNewStudentFormState["familyInfo"];
+      form.reset({ ...(familyInfo?.guardianInfo ?? {}), noGuardianInfo: false });
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          guardianInfo: {
+            noGuardianInfo: false,
+          },
+        },
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            hasGuardianInfo: true,
+            ...(formState.uploadRequirements
+              ?.parentGuardianUploadRequirements as unknown as ParentGuardianUploadRequirementsSchema),
+          },
+          studentUploadRequirements: {
+            ...(formState.uploadRequirements?.studentUploadRequirements as unknown as StudentUploadRequirementsSchema),
+          },
+        },
+      });
+    }
   }
 
   return (
@@ -209,7 +301,7 @@ function GuardianInformation() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.familyInfo?.guardianInfo?.guardianNationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
@@ -301,6 +393,45 @@ function GuardianInformation() {
           />
         </div>
 
+        <div className="!space-y-4">
+          <FormField
+            control={form.control}
+            name="noGuardianInfo"
+            render={({ field }) => (
+              <FormItem className="my-8 w-full mx-auto max-w-lg rounded-lg border px-4 py-6">
+                <div className="w-full flex flex-row items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <FormLabel>Is the guardian's information not available?</FormLabel>
+                    <FormDescription className="text-pretty">
+                      Turn this on if you are unable to provide the guardian's details.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={async (checked) => {
+                        field.onChange(checked);
+                        await hasGuardianInfoToggle(checked);
+                      }}
+                    />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+            <Info className="h-4 w-4 !text-blue-500" />
+            <div className="space-y-1 text-pretty">
+              <AlertTitle className="text-xs text-blue-700 font-semibold">Important Information</AlertTitle>
+              <span className="text-xs text-blue-900">
+                Always click the <span className="font-semibold">Save</span> button after applying any changes to ensure
+                your updates are recorded.
+              </span>
+            </div>
+          </Alert>
+        </div>
         <div className="flex flex-col gap-4">
           <Button size={"lg"} variant={"secondary"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
             Confirm & Save

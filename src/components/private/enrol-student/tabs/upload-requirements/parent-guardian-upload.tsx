@@ -59,6 +59,12 @@ function ParentGuardianUpload() {
         parentGuardianUploadRequirements: {
           ...formState.uploadRequirements?.parentGuardianUploadRequirements,
           ...(data!.parentGuardianUploadRequirements as ParentGuardianUploadRequirementsSchema),
+          hasFatherInfo:
+            formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo ??
+            data.parentGuardianUploadRequirements.hasFatherInfo,
+          hasGuardianInfo:
+            formState.uploadRequirements?.parentGuardianUploadRequirements.hasGuardianInfo ??
+            data.parentGuardianUploadRequirements.hasGuardianInfo,
         },
       },
     });
@@ -161,7 +167,7 @@ function ParentGuardianUpload() {
             onValueChange={setMotherPass}
           />
         </div>
-        {!formState.familyInfo?.fatherInfo?.noFatherInfo && data?.parentGuardianUploadRequirements.hasFatherInfo && (
+        {formState.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
@@ -190,7 +196,7 @@ function ParentGuardianUpload() {
             </div>
           </>
         )}
-        {data?.parentGuardianUploadRequirements.hasGuardianInfo && (
+        {formState.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>

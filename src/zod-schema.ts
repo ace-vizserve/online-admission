@@ -126,62 +126,72 @@ export const studentAddressContactSchema = z.object({
   }),
 });
 
-export const guardianInformationSchema = z.object({
-  guardianFirstName: z
-    .string()
-    .min(1, {
-      message: "Guardian's first name is required",
-    })
-    .transform(capitalizeWords),
-  guardianMiddleName: z.string().transform(capitalizeWords).optional(),
-  guardianLastName: z
-    .string()
-    .min(1, {
-      message: "Guardian's last name is required",
-    })
-    .transform(capitalizeWords),
-  guardianPreferredName: z
-    .string()
-    .min(1, {
-      message: "Preferred name is required",
-    })
-    .transform(capitalizeWords),
-  guardianBirthDay: z.coerce.date({
-    required_error: "Guardian's date of birth is required",
-    invalid_type_error: "Please enter a valid date",
-  }),
-  guardianNationality: z.string(),
-  guardianReligion: z.string().min(1, {
-    message: "Religion is required",
-  }),
-  guardianNric: z
-    .string()
-    .min(9, {
-      message: "NRIC/FIN must be exactly 9 characters",
-    })
-    .regex(/^[STFGM]\d{7}[A-Z]$/, { message: "Invalid NRIC or FIN format" }),
-  guardianMobile: z
-    .string()
-    .min(1, {
-      message: "Mobile phone number is required",
-    })
-    .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Guardian's mobile number must contain only digits" }),
-  guardianEmail: z.string().email({
-    message: "Please enter a valid email address",
-  }),
-  guardianCompanyName: z
-    .string()
-    .min(1, {
-      message: "Company name is required",
-    })
-    .transform(capitalizeWords),
-  guardianPosition: z
-    .string()
-    .min(1, {
-      message: "Position at work is required",
-    })
-    .transform(capitalizeWords),
-});
+export const guardianInformationSchema = z
+  .object({
+    guardianFirstName: z.string().transform(capitalizeWords).optional(),
+    guardianMiddleName: z.string().transform(capitalizeWords).optional(),
+    guardianLastName: z.string().transform(capitalizeWords).optional(),
+    guardianPreferredName: z.string().transform(capitalizeWords).optional(),
+    guardianBirthDay: z.coerce
+      .date({
+        required_error: "Guardian's date of birth is required",
+        invalid_type_error: "Please enter a valid date",
+      })
+      .optional(),
+    guardianNationality: z.string().optional(),
+    guardianReligion: z.string().transform(capitalizeWords).optional(),
+    guardianNric: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .optional()
+      .refine((val) => val === undefined || val.length === 9, {
+        message: "NRIC/FIN must be exactly 9 characters",
+      })
+      .refine((val) => val === undefined || /^[STFGM]\d{7}[A-Z]$/.test(val), {
+        message: "Invalid NRIC or FIN format",
+      }),
+    guardianMobile: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Guardian's mobile number must contain only digits" }),
+    guardianEmail: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => val === undefined || z.string().email().safeParse(val).success, {
+        message: "Please enter a valid email address",
+      })
+      .optional(),
+    guardianCompanyName: z.string().transform(capitalizeWords).optional(),
+    guardianPosition: z.string().transform(capitalizeWords).optional(),
+    noGuardianInfo: z.boolean().default(false).optional(),
+  })
+  .superRefine((schema, ctx) => {
+    const requiredFields = [
+      { key: "guardianFirstName", label: "Guardian's first name" },
+      { key: "guardianLastName", label: "Guardian's last name" },
+      { key: "guardianPreferredName", label: "Preferred name" },
+      { key: "guardianBirthDay", label: "Guardian's date of birth" },
+      { key: "guardianNationality", label: "Nationality" },
+      { key: "guardianReligion", label: "Religion" },
+      { key: "guardianNric", label: "NRIC/FIN" },
+      { key: "guardianMobile", label: "Mobile phone number" },
+      { key: "guardianEmail", label: "Email address" },
+      { key: "guardianCompanyName", label: "Company name" },
+      { key: "guardianPosition", label: "Position at work" },
+    ];
+
+    if (!schema.noGuardianInfo) {
+      for (const field of requiredFields) {
+        if (!schema[field.key as keyof typeof schema]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [field.key],
+            message: `${field.label} is required`,
+          });
+        }
+      }
+    }
+  });
 
 export const fatherInformationSchema = z
   .object({
@@ -197,7 +207,7 @@ export const fatherInformationSchema = z
       })
       .optional(),
     fatherNationality: z.string().optional(),
-    fatherReligion: z.string().optional(),
+    fatherReligion: z.string().transform(capitalizeWords).optional(),
     fatherNric: z
       .string()
       .transform((val) => (val === "" ? undefined : val))
@@ -690,7 +700,7 @@ export const studentAddressContactAndInformationSchema = z.intersection(
 
 const parentGuardianSchema = fatherInformationSchema
   .and(motherInformationSchema.partial())
-  .and(guardianInformationSchema.partial());
+  .and(guardianInformationSchema);
 export const familyInformationSchema = z.intersection(parentGuardianSchema, siblingInformationSchema);
 
 export type StudentAddressContactAndInformationSchema = z.infer<typeof studentAddressContactAndInformationSchema>;
