@@ -131,7 +131,7 @@ function InfoBox({
 }) {
   const { familyInformation, studentDocuments, studentInformation } = studentDetails;
 
-  const { fatherEmail } = familyInformation;
+  const { fatherEmail, guardianEmail } = familyInformation;
   switch (value) {
     case "student-information":
       return <SingleDocuments label={label} studentInformation={studentInformation} />;
@@ -140,7 +140,14 @@ function InfoBox({
     case "family-information":
       return <OldFamilyInfo label={label} familyInformation={familyInformation} />;
     case "family-documents": {
-      return <FamilyDocuments label={label} documents={familyDocuments} noFatherInfo={Boolean(!fatherEmail)} />;
+      return (
+        <FamilyDocuments
+          label={label}
+          documents={familyDocuments}
+          noFatherInfo={Boolean(!fatherEmail)}
+          noGuardianInfo={Boolean(!guardianEmail)}
+        />
+      );
     }
     default:
       return null;
