@@ -216,7 +216,7 @@ function MotherInformation() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.familyInfo?.motherInfo.motherNationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
@@ -238,7 +238,7 @@ function MotherInformation() {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
-                <FormDescription>Enter the student's mother NRIC/FIN.</FormDescription>
+                <FormDescription>Enter the mother's mother NRIC/FIN.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

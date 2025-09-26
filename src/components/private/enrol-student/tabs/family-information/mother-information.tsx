@@ -199,11 +199,11 @@ function MotherInformation() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.familyInfo?.motherInfo.motherNationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
-                <FormDescription>Select the country to determine the nationality.</FormDescription>
+                <FormDescription>Select the country that best represents the mother's nationality.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

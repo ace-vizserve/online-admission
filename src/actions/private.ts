@@ -823,7 +823,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     }
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo) {
-      familyInfo.guardianFullName = `${familyInfo.guardianLastName.toUpperCase()}, ${familyInfo.guardianFirstName.toUpperCase()}${
+      familyInfo.guardianFullName = `${familyInfo.guardianLastName?.toUpperCase()}, ${familyInfo.guardianFirstName?.toUpperCase()}${
         familyInfo?.guardianMiddleName ? `, ${familyInfo.guardianMiddleName.toUpperCase()}` : ""
       }`;
     }
@@ -1253,7 +1253,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     }
 
     if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo) {
-      familyInfo.guardianFullName = `${familyInfo.guardianLastName.toUpperCase()}, ${familyInfo.guardianFirstName.toUpperCase()}${
+      familyInfo.guardianFullName = `${familyInfo.guardianLastName?.toUpperCase()}, ${familyInfo.guardianFirstName?.toUpperCase()}${
         familyInfo?.guardianMiddleName ? `, ${familyInfo.guardianMiddleName.toUpperCase()}` : ""
       }`;
     }

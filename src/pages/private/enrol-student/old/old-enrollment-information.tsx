@@ -176,7 +176,7 @@ function OldEnrollmentInformation() {
             <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
               <CircleFadingArrowUpIcon className="h-4 w-4 !text-blue-500" />
               <div className="space-y-1 text-pretty">
-                <AlertTitle className="text-xs text-blue-700">
+                <AlertTitle className="text-xs text-blue-700 font-semibold">
                   {data?.levelApplied === "Secondary 4" ? "Level Completion" : "Next Grade Auto-Detected"}
                 </AlertTitle>
                 <span className="text-xs text-blue-900">
