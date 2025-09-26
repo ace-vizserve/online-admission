@@ -55,7 +55,6 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
           This section includes details about the student's documents for this current school year.
         </p>
       </div>
-
       <h2 className="font-bold text-lg">Documents That Expire</h2>
 
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
@@ -283,9 +282,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
           </div>
         )}
       </div>
-
       <Separator />
-
       <h2 className="font-bold text-lg">Permanent Documents</h2>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
         {Object.values(idPicture).some((v) => v == null) ? (
@@ -303,6 +300,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
                 View document <EyeClosed />
               </Button>
+
               <Button disabled className="gap-2 text-xs w-full">
                 Reupload <RotateCcw />
               </Button>
@@ -422,6 +420,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
                 View document <EyeClosed />
               </Button>
+
               <Button disabled className="gap-2 text-xs w-full">
                 Reupload <RotateCcw />
               </Button>
@@ -768,7 +767,14 @@ function StudentFileUploaderDialog({
                       },
                     ]}
                     selected={passExpiry}
-                    onSelect={setPassExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                      } else {
+                        setPassExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
@@ -802,7 +808,14 @@ function StudentFileUploaderDialog({
                       },
                     ]}
                     selected={passportExpiry}
-                    onSelect={setPassportExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setPassportExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                      } else {
+                        setPassportExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>

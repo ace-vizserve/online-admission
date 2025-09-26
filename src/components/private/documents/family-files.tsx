@@ -145,10 +145,12 @@ function FamilyFiles({
   label,
   documents,
   noFatherInfo,
+  noGuardianInfo,
 }: {
   label: string;
   documents?: FamilyDocument;
   noFatherInfo?: boolean;
+  noGuardianInfo?: boolean;
 }) {
   const motherCards = [
     {
@@ -269,13 +271,17 @@ function FamilyFiles({
           </div>
         </>
       )}
-      <Separator className="my-4" />
-      <h2 className="font-bold text-lg">Guardian's Documents</h2>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4">
-        {guardianCards.map((props, idx) => (
-          <RenderFamilyDocCard key={idx} {...props} />
-        ))}
-      </div>
+      {noGuardianInfo ? null : (
+        <>
+          <Separator className="my-4" />
+          <h2 className="font-bold text-lg">Guardian's Documents</h2>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4">
+            {guardianCards.map((props, idx) => (
+              <RenderFamilyDocCard key={idx} {...props} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -546,7 +552,14 @@ function ParentGuardianFileUploaderDialog({
                       },
                     ]}
                     selected={motherPassExpiry}
-                    onSelect={setMotherPassExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setMotherPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                      } else {
+                        setMotherPassExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
@@ -583,7 +596,16 @@ function ParentGuardianFileUploaderDialog({
                       },
                     ]}
                     selected={motherPassportExpiry}
-                    onSelect={setMotherPassportExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setMotherPassportExpiry(
+                          new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+                        );
+                      } else {
+                        setMotherPassportExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
@@ -623,7 +645,14 @@ function ParentGuardianFileUploaderDialog({
                       },
                     ]}
                     selected={fatherPassExpiry}
-                    onSelect={setFatherPassExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setFatherPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                      } else {
+                        setFatherPassExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
@@ -660,7 +689,16 @@ function ParentGuardianFileUploaderDialog({
                       },
                     ]}
                     selected={fatherPassportExpiry}
-                    onSelect={setFatherPassportExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setFatherPassportExpiry(
+                          new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+                        );
+                      } else {
+                        setFatherPassportExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
@@ -700,7 +738,14 @@ function ParentGuardianFileUploaderDialog({
                       },
                     ]}
                     selected={guardianPassExpiry}
-                    onSelect={setGuardianPassExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setGuardianPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                      } else {
+                        setGuardianPassExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
@@ -737,7 +782,16 @@ function ParentGuardianFileUploaderDialog({
                       },
                     ]}
                     selected={guardianPassportExpiry}
-                    onSelect={setGuardianPassportExpiry}
+                    onSelect={(date) => {
+                      if (date) {
+                        setGuardianPassportExpiry(
+                          new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+                        );
+                      } else {
+                        setGuardianPassportExpiry(date);
+                      }
+                    }}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
