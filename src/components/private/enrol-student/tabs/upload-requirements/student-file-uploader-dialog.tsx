@@ -350,12 +350,19 @@ const StudentFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
                             defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
-                              field.onChange(date);
                               if (date) {
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+
+                                field.onChange(fixedDate);
+
                                 setFormState({
                                   uploadRequirements: {
                                     parentGuardianUploadRequirements: {
@@ -365,10 +372,12 @@ const StudentFileUploaderDialog = memo(function ({
                                     studentUploadRequirements: {
                                       ...(formState.uploadRequirements?.studentUploadRequirements ??
                                         ({} as StudentUploadRequirementsSchema)),
-                                      passExpiry: date,
+                                      passExpiry: fixedDate,
                                     },
                                   },
                                 });
+                              } else {
+                                field.onChange(date);
                               }
                             }}
                           />
@@ -421,12 +430,19 @@ const StudentFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
                             defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
-                              field.onChange(date);
                               if (date) {
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+
+                                field.onChange(fixedDate);
+
                                 setFormState({
                                   uploadRequirements: {
                                     parentGuardianUploadRequirements: {
@@ -436,10 +452,12 @@ const StudentFileUploaderDialog = memo(function ({
                                     studentUploadRequirements: {
                                       ...(formState.uploadRequirements?.studentUploadRequirements ??
                                         ({} as StudentUploadRequirementsSchema)),
-                                      passportExpiry: date,
+                                      passportExpiry: fixedDate,
                                     },
                                   },
                                 });
+                              } else {
+                                field.onChange(date);
                               }
                             }}
                           />
@@ -757,12 +775,17 @@ function StudentFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
                           defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
-                            field.onChange(date);
                             if (date) {
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+                              field.onChange(fixedDate);
+
                               setFormState({
                                 uploadRequirements: {
                                   parentGuardianUploadRequirements: {
@@ -772,10 +795,12 @@ function StudentFileUploaderDrawer({
                                   studentUploadRequirements: {
                                     ...(formState.uploadRequirements?.studentUploadRequirements ??
                                       ({} as StudentUploadRequirementsSchema)),
-                                    passExpiry: date,
+                                    passExpiry: fixedDate,
                                   },
                                 },
                               });
+                            } else {
+                              field.onChange(date);
                             }
                           }}
                         />
@@ -826,12 +851,17 @@ function StudentFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
                           defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
-                            field.onChange(date);
                             if (date) {
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+                              field.onChange(fixedDate);
+
                               setFormState({
                                 uploadRequirements: {
                                   parentGuardianUploadRequirements: {
@@ -841,10 +871,12 @@ function StudentFileUploaderDrawer({
                                   studentUploadRequirements: {
                                     ...(formState.uploadRequirements?.studentUploadRequirements ??
                                       ({} as StudentUploadRequirementsSchema)),
-                                    passportExpiry: date,
+                                    passportExpiry: fixedDate,
                                   },
                                 },
                               });
+                            } else {
+                              field.onChange(date);
                             }
                           }}
                         />

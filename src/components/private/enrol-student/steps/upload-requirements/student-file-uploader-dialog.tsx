@@ -357,7 +357,14 @@ const StudentFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -415,7 +422,14 @@ const StudentFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -737,7 +751,14 @@ function StudentFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -793,7 +814,14 @@ function StudentFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>

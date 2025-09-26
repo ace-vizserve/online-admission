@@ -339,7 +339,14 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -397,7 +404,14 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -465,7 +479,14 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -523,7 +544,14 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -591,7 +619,14 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -649,7 +684,14 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               },
                             ]}
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -939,6 +981,7 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          startMonth={new Date()}
                           mode="single"
                           disabled={[
                             {
@@ -946,7 +989,14 @@ function ParentGuardianFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -994,6 +1044,7 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          startMonth={new Date()}
                           mode="single"
                           disabled={[
                             {
@@ -1001,7 +1052,14 @@ function ParentGuardianFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1061,6 +1119,7 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          startMonth={new Date()}
                           mode="single"
                           disabled={[
                             {
@@ -1068,7 +1127,14 @@ function ParentGuardianFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1117,6 +1183,7 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          startMonth={new Date()}
                           mode="single"
                           disabled={[
                             {
@@ -1124,7 +1191,14 @@ function ParentGuardianFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1184,6 +1258,7 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          startMonth={new Date()}
                           mode="single"
                           disabled={[
                             {
@@ -1191,7 +1266,14 @@ function ParentGuardianFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1240,6 +1322,7 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          startMonth={new Date()}
                           mode="single"
                           disabled={[
                             {
@@ -1247,7 +1330,14 @@ function ParentGuardianFileUploaderDrawer({
                             },
                           ]}
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (date) {
+                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            } else {
+                              field.onChange(date);
+                            }
+                          }}
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
