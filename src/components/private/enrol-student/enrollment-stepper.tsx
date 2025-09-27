@@ -31,7 +31,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
           <p className="text-xs md:text-sm text-muted-foreground">
             For inquiries and clarification, please contact our Admissions Officer:
             <br />
-            <strong>Ms. Gael at +65 8200 0062</strong>
+            <strong>Ms. Charlene at +65 8200 0062</strong>
           </p>
         </div>
       </Step>
@@ -48,7 +48,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
           <p className="text-xs md:text-sm text-muted-foreground">
             For inquiries and clarification, please contact our Admissions Officer:
             <br />
-            <strong>Ms. Gael at +65 8200 0062</strong>
+            <strong>Ms. Charlene at +65 8200 0062</strong>
           </p>
         </div>
       </Step>
