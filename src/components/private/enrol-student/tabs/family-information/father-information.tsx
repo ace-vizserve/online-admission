@@ -304,7 +304,7 @@ function FatherInformation() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.familyInfo?.fatherInfo.fatherNationality}
+                    currentCountry={formState.familyInfo?.fatherInfo?.fatherNationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
