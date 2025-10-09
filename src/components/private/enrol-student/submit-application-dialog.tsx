@@ -140,9 +140,9 @@ function SubmitApplicationDialog() {
         guardianPassportExpiry,
       } = formState.uploadRequirements.parentGuardianUploadRequirements;
 
-      const { noFatherInfo } = formState.familyInfo.fatherInfo;
+      const { noFatherInfo } = formState.familyInfo?.fatherInfo || {};
 
-      const { hasGuardianInfo } = formState.uploadRequirements.parentGuardianUploadRequirements;
+      const { noGuardianInfo } = formState.familyInfo?.guardianInfo || {};
 
       const { motherMobile } = formState.familyInfo.motherInfo;
 
@@ -156,7 +156,7 @@ function SubmitApplicationDialog() {
       checkExpiry("Mother", motherPassExpiry, "pass");
       checkExpiry("Mother", motherPassportExpiry, "passport");
 
-      if (hasGuardianInfo) {
+      if (typeof noGuardianInfo === "boolean" && !noGuardianInfo) {
         const { guardianMobile } = formState.familyInfo.guardianInfo;
 
         if (isNaN(Number(guardianMobile))) {
@@ -170,7 +170,7 @@ function SubmitApplicationDialog() {
         checkExpiry("Guardian", guardianPassportExpiry, "passport");
       }
 
-      if (!noFatherInfo) {
+      if (typeof noFatherInfo === "boolean" && !noFatherInfo) {
         const { fatherMobile } = formState.familyInfo.fatherInfo;
 
         if (isNaN(Number(fatherMobile))) {

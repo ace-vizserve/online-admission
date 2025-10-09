@@ -760,8 +760,9 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     delete enrollmentDetails.studentInfo.studentDetails.isValid;
     delete enrollmentDetails.studentInfo.addressContact.isValid;
     delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
-    delete enrollmentDetails.familyInfo.fatherInfo.isValid;
-    delete enrollmentDetails.familyInfo.fatherInfo.noFatherInfo;
+    delete enrollmentDetails.familyInfo?.fatherInfo?.isValid;
+    delete enrollmentDetails.familyInfo?.fatherInfo?.noFatherInfo;
+    delete enrollmentDetails.familyInfo?.guardianInfo?.noGuardianInfo;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -1190,8 +1191,9 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
     delete enrollmentDetails.studentInfo.studentDetails.isValid;
     delete enrollmentDetails.studentInfo.addressContact.isValid;
     delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
-    delete enrollmentDetails.familyInfo.fatherInfo.isValid;
-    delete enrollmentDetails.familyInfo.fatherInfo.noFatherInfo;
+    delete enrollmentDetails.familyInfo?.fatherInfo?.isValid;
+    delete enrollmentDetails.familyInfo?.fatherInfo?.noFatherInfo;
+    delete enrollmentDetails.familyInfo?.guardianInfo?.noGuardianInfo;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -1204,8 +1206,8 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       fatherFullName: "",
       guardianFullName: "",
       ...enrollmentDetails.familyInfo.motherInfo,
-      ...enrollmentDetails.familyInfo.fatherInfo,
-      ...enrollmentDetails.familyInfo.guardianInfo,
+      ...enrollmentDetails.familyInfo?.fatherInfo,
+      ...enrollmentDetails.familyInfo?.guardianInfo,
       ...flattenedSiblings,
     };
 
@@ -1262,8 +1264,8 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       familyInfo?.motherMiddleName ? `, ${familyInfo.motherMiddleName.toUpperCase()}` : ""
     }`;
 
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo;
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
+    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements?.hasFatherInfo;
+    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements?.hasGuardianInfo;
 
     const firstName = enrollmentDetails.studentInfo.studentDetails.firstName.toUpperCase();
     const lastName = enrollmentDetails.studentInfo.studentDetails.lastName.toUpperCase();
