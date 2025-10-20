@@ -25,6 +25,8 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { parentGuardianPassTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { ParentGuardianFileUploaderDialogProps } from "@/types";
@@ -38,8 +40,10 @@ import {
   CalendarIcon,
   CheckCircle2,
   CircleAlert,
+  Clock,
   CloudUpload,
   ExternalLink,
+  InfoIcon,
   Paperclip,
   Trash2,
   Upload,
@@ -63,6 +67,15 @@ const NOT_FILE_INPUTS = [
   "guardianPassType",
   "guardianPassportExpiry",
   "guardianPassportNumber",
+];
+
+const TO_FOLLOW_DOCS = [
+  "motherPass",
+  "motherPassport",
+  "fatherPass",
+  "fatherPassport",
+  "guardianPass",
+  "guardianPassport",
 ];
 
 const ParentGuardianFileUploaderDialog = memo(function ({
@@ -120,7 +133,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   }
 
   function changeDocument() {
-    if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]) return;
 
     setFormState({
       uploadRequirements: {
@@ -130,12 +143,13 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
         parentGuardianUploadRequirements: {
           ...formState.uploadRequirements.parentGuardianUploadRequirements,
-          [name]: "",
+          [name]: undefined,
         },
       },
     });
 
-    form.setValue(name, "", { shouldValidate: true });
+    form.setValue(name, undefined);
+    form.setValue("isValid", false);
   }
 
   if (isDesktop) {
@@ -143,15 +157,17 @@ const ParentGuardianFileUploaderDialog = memo(function ({
       <div
         className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
           "bg-red-50": errors[name] != null,
-          "bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements[name],
+          "bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements?.[name],
         })}>
         <div className="flex items-center gap-4">
-          {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+          {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
             <CheckCircle2 className="stroke-white fill-green-600" />
           ) : errors[name] != null ? (
             <CircleAlert className="size-6 text-destructive" />
+          ) : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name) ? (
+            <Clock className="size-6 " />
           ) : (
-            <Upload className="size-6" />
+            <Upload className="size-6 " />
           )}
           <div className="flex flex-col gap-1">
             <span className="text-sm">{label}</span>
@@ -161,7 +177,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
         <Dialog>
           <DialogTrigger asChild>
             <Button variant={errors[name] != null ? "destructive" : "outline"}>
-              {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? "View" : "Upload"}
+              {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
+                ? "View"
+                : form.getValues("toFollowDocs")?.includes(name)
+                ? "To follow"
+                : "Upload"}
             </Button>
           </DialogTrigger>
 
@@ -177,7 +197,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
             </Badge>
 
-            {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+            {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
               <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
                 <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
                   Change document
@@ -188,7 +208,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
                 {!NOT_FILE_INPUTS.includes(name) &&
-                  formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                  formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
                     <Link
                       to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
                       target="_blank"
@@ -211,8 +231,16 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         value={value}
                         onValueChange={onValueChange}
                         dropzoneOptions={dropZoneConfig}
-                        className="relative bg-background rounded-lg">
-                        <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
+                        className="relative bg-background rounded-lg cursor-no-drop">
+                        <FileInput
+                          {...field}
+                          id="fileInput"
+                          className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
+                            "opacity-70 cursor-not-allowed pointer-events-none":
+                              formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(
+                                name
+                              ),
+                          })}>
                           <div className="flex items-center justify-center flex-col p-8 w-full">
                             <CloudUpload className="text-gray-500 w-10 h-10" />
                             <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
@@ -222,7 +250,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </FileInput>
 
                         <FileUploaderContent>
-                          {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                          {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
                             <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
                               <div className="flex items-center gap-1">
                                 <Paperclip className="h-4 w-4 stroke-current" />
@@ -281,6 +309,116 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 )}
               </Button>
             )}
+
+            {!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] &&
+              TO_FOLLOW_DOCS.includes(name) && (
+                <FormField
+                  control={form.control}
+                  name="toFollowDocs"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-end gap-3 pt-2">
+                      <div className="flex items-center gap-2">
+                        <FormLabel>Document to follow</FormLabel>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-xs">
+                            <p className="text-sm">
+                              Enable this if you don't have the document ready now. You can submit it after enrollment
+                              is complete.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          {...field}
+                          checked={form.getValues("toFollowDocs")?.includes(name)}
+                          onCheckedChange={(checked) => {
+                            const current = form.getValues("toFollowDocs") || [];
+                            const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+
+                            form.setValue("toFollowDocs", updatedDocs);
+
+                            if (checked) {
+                              if (name === "motherPassport") {
+                                form.setValue("motherPassportNumber", "");
+                                form.setValue("motherPassportExpiry", undefined);
+                              }
+                              if (name === "motherPass") {
+                                form.setValue("motherPassType", "");
+                                form.setValue("motherPassExpiry", undefined);
+                              }
+
+                              if (name === "fatherPassport") {
+                                form.setValue("fatherPassportNumber", "");
+                                form.setValue("fatherPassportExpiry", undefined);
+                              }
+                              if (name === "fatherPass") {
+                                form.setValue("fatherPassType", "");
+                                form.setValue("fatherPassExpiry", undefined);
+                              }
+
+                              if (name === "guardianPassport") {
+                                form.setValue("guardianPassportNumber", "");
+                                form.setValue("guardianPassportExpiry", undefined);
+                              }
+                              if (name === "guardianPass") {
+                                form.setValue("guardianPassType", "");
+                                form.setValue("guardianPassExpiry", undefined);
+                              }
+                            }
+
+                            const updatedParentGuardianReqs = {
+                              ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+                              isValid: false,
+                              toFollowDocs: updatedDocs,
+                            };
+
+                            if (checked) {
+                              if (name === "motherPassport") {
+                                updatedParentGuardianReqs.motherPassportNumber = "";
+                                updatedParentGuardianReqs.motherPassportExpiry = undefined;
+                              }
+                              if (name === "motherPass") {
+                                updatedParentGuardianReqs.motherPassType = "";
+                                updatedParentGuardianReqs.motherPassExpiry = undefined;
+                              }
+
+                              if (name === "fatherPassport") {
+                                updatedParentGuardianReqs.fatherPassportNumber = "";
+                                updatedParentGuardianReqs.fatherPassportExpiry = undefined;
+                              }
+                              if (name === "fatherPass") {
+                                updatedParentGuardianReqs.fatherPassType = "";
+                                updatedParentGuardianReqs.fatherPassExpiry = undefined;
+                              }
+
+                              if (name === "guardianPassport") {
+                                updatedParentGuardianReqs.guardianPassportNumber = "";
+                                updatedParentGuardianReqs.guardianPassportExpiry = undefined;
+                              }
+                              if (name === "guardianPass") {
+                                updatedParentGuardianReqs.guardianPassType = "";
+                                updatedParentGuardianReqs.guardianPassExpiry = undefined;
+                              }
+                            }
+
+                            setFormState({
+                              ...formState,
+                              uploadRequirements: {
+                                ...formState.uploadRequirements!,
+                                parentGuardianUploadRequirements: updatedParentGuardianReqs,
+                              },
+                            });
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
 
             {name === "motherPass" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
@@ -849,7 +987,7 @@ function ParentGuardianFileUploaderDrawer({
   }
 
   function changeDocument() {
-    if (!formState.uploadRequirements?.parentGuardianUploadRequirements[name]) return;
+    if (!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]) return;
 
     setFormState({
       uploadRequirements: {
@@ -859,27 +997,30 @@ function ParentGuardianFileUploaderDrawer({
 
         parentGuardianUploadRequirements: {
           ...formState.uploadRequirements.parentGuardianUploadRequirements,
-          [name]: "",
+          [name]: undefined,
         },
       },
     });
 
-    form.setValue(name, "", { shouldValidate: true });
+    form.setValue(name, undefined);
+    form.setValue("isValid", false);
   }
 
   return (
     <div
       className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
         "bg-red-50": errors[name] != null,
-        "bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements[name],
+        "bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements?.[name],
       })}>
       <div className="flex items-center gap-4">
-        {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+        {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
           <CheckCircle2 className="stroke-white fill-green-600" />
         ) : errors[name] != null ? (
-          <CircleAlert className="size-6 text-destructive" />
+          <CircleAlert className="text-destructive" />
+        ) : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name) ? (
+          <Clock />
         ) : (
-          <Upload className="size-6" />
+          <Upload />
         )}
         <div className="flex flex-col gap-1">
           <span className="text-sm">{label}</span>
@@ -889,7 +1030,11 @@ function ParentGuardianFileUploaderDrawer({
       <Drawer>
         <DrawerTrigger asChild>
           <Button variant={errors[name] != null ? "destructive" : "outline"}>
-            {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? "View" : "Upload"}
+            {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
+              ? "View"
+              : form.getValues("toFollowDocs")?.includes(name)
+              ? "To follow"
+              : "Upload"}
           </Button>
         </DrawerTrigger>
 
@@ -905,7 +1050,7 @@ function ParentGuardianFileUploaderDrawer({
             Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
           </Badge>
 
-          {formState.uploadRequirements?.parentGuardianUploadRequirements[name] ? (
+          {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
               <Button onClick={changeDocument} size={"sm"} className="absolute text-xs right-4 top-4">
                 Change
@@ -916,7 +1061,7 @@ function ParentGuardianFileUploaderDrawer({
               <p className="text-muted-foreground text-xs">{label} has been uploaded</p>
 
               {!NOT_FILE_INPUTS.includes(name) &&
-                formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
                   <Link
                     to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
                     target="_blank"
@@ -939,8 +1084,14 @@ function ParentGuardianFileUploaderDrawer({
                       value={value}
                       onValueChange={onValueChange}
                       dropzoneOptions={dropZoneConfig}
-                      className="relative bg-background rounded-lg">
-                      <FileInput {...field} id="fileInput" className="bg-muted border-2 border-dashed">
+                      className="relative bg-background rounded-lg cursor-no-drop">
+                      <FileInput
+                        {...field}
+                        id="fileInput"
+                        className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
+                          "opacity-70 cursor-not-allowed pointer-events-none":
+                            formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name),
+                        })}>
                         <div className="flex items-center justify-center flex-col p-8 w-full">
                           <CloudUpload className="text-gray-500 w-10 h-10" />
                           <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
@@ -950,7 +1101,7 @@ function ParentGuardianFileUploaderDrawer({
                       </FileInput>
 
                       <FileUploaderContent>
-                        {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements[name] && (
+                        {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
                           <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
                             <div className="flex items-center gap-1">
                               <Paperclip className="h-4 w-4 stroke-current" />
@@ -1008,6 +1159,115 @@ function ParentGuardianFileUploaderDrawer({
                 </>
               )}
             </Button>
+          )}
+
+          {!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && TO_FOLLOW_DOCS.includes(name) && (
+            <FormField
+              control={form.control}
+              name="toFollowDocs"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-end gap-3 pt-2">
+                  <div className="flex items-center gap-2">
+                    <FormLabel>Document to follow</FormLabel>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="max-w-xs">
+                        <p className="text-sm">
+                          Enable this if you don't have the document ready now. You can submit it after enrollment is
+                          complete.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      {...field}
+                      checked={form.getValues("toFollowDocs")?.includes(name)}
+                      onCheckedChange={(checked) => {
+                        const current = form.getValues("toFollowDocs") || [];
+                        const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+
+                        form.setValue("toFollowDocs", updatedDocs);
+
+                        if (checked) {
+                          if (name === "motherPassport") {
+                            form.setValue("motherPassportNumber", "");
+                            form.setValue("motherPassportExpiry", undefined);
+                          }
+                          if (name === "motherPass") {
+                            form.setValue("motherPassType", "");
+                            form.setValue("motherPassExpiry", undefined);
+                          }
+
+                          if (name === "fatherPassport") {
+                            form.setValue("fatherPassportNumber", "");
+                            form.setValue("fatherPassportExpiry", undefined);
+                          }
+                          if (name === "fatherPass") {
+                            form.setValue("fatherPassType", "");
+                            form.setValue("fatherPassExpiry", undefined);
+                          }
+
+                          if (name === "guardianPassport") {
+                            form.setValue("guardianPassportNumber", "");
+                            form.setValue("guardianPassportExpiry", undefined);
+                          }
+                          if (name === "guardianPass") {
+                            form.setValue("guardianPassType", "");
+                            form.setValue("guardianPassExpiry", undefined);
+                          }
+                        }
+
+                        const updatedParentGuardianReqs = {
+                          ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+                          isValid: false,
+                          toFollowDocs: updatedDocs,
+                        };
+
+                        if (checked) {
+                          if (name === "motherPassport") {
+                            updatedParentGuardianReqs.motherPassportNumber = "";
+                            updatedParentGuardianReqs.motherPassportExpiry = undefined;
+                          }
+                          if (name === "motherPass") {
+                            updatedParentGuardianReqs.motherPassType = "";
+                            updatedParentGuardianReqs.motherPassExpiry = undefined;
+                          }
+
+                          if (name === "fatherPassport") {
+                            updatedParentGuardianReqs.fatherPassportNumber = "";
+                            updatedParentGuardianReqs.fatherPassportExpiry = undefined;
+                          }
+                          if (name === "fatherPass") {
+                            updatedParentGuardianReqs.fatherPassType = "";
+                            updatedParentGuardianReqs.fatherPassExpiry = undefined;
+                          }
+
+                          if (name === "guardianPassport") {
+                            updatedParentGuardianReqs.guardianPassportNumber = "";
+                            updatedParentGuardianReqs.guardianPassportExpiry = undefined;
+                          }
+                          if (name === "guardianPass") {
+                            updatedParentGuardianReqs.guardianPassType = "";
+                            updatedParentGuardianReqs.guardianPassExpiry = undefined;
+                          }
+                        }
+
+                        setFormState({
+                          ...formState,
+                          uploadRequirements: {
+                            ...formState.uploadRequirements!,
+                            parentGuardianUploadRequirements: updatedParentGuardianReqs,
+                          },
+                        });
+                      }}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
           )}
 
           {name === "motherPass" && (

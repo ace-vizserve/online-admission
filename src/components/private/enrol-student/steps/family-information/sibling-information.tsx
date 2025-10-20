@@ -5,6 +5,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +18,7 @@ import { toast } from "sonner";
 
 function SiblingInformation() {
   const navigate = useNavigate();
-  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewStudentContext();
 
   const form = useForm<SiblingInformationSchema>({
     resolver: zodResolver(siblingInformationSchema),
@@ -47,6 +49,7 @@ function SiblingInformation() {
       toast.warning("Mother's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
+      form.setError("root", {});
       return;
     }
 
@@ -54,13 +57,31 @@ function SiblingInformation() {
       toast.warning("Father's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
+      form.setError("root", {});
       return;
     }
 
     setCompletedTabs("/enrol-student/new/family-info");
     setCurrentTab("/enrol-student/new/enrollment-info");
+    setActiveTab("/enrol-student/new/enrollment-info");
     navigate("/enrol-student/new/enrollment-info");
   }
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo,
+        siblingsInfo: {
+          ...debouncedAutoSaveValue,
+        },
+      },
+    },
+    0
+  );
 
   return (
     <>

@@ -2,9 +2,16 @@ import PageMetaData from "@/components/page-metadata";
 import { SectionCards } from "@/components/private/dashboard/section-cards";
 import StudentsList from "@/components/private/dashboard/students-list";
 import { PARENTS_DASHBOARD_TITLE_DESCRIPTION } from "@/data";
+import { useEffect } from "react";
 
 function Dashboard() {
   const { title, description } = PARENTS_DASHBOARD_TITLE_DESCRIPTION;
+
+  useEffect(() => {
+    if (!sessionStorage.length) return;
+    sessionStorage.clear();
+    location.reload();
+  }, []);
 
   return (
     <>

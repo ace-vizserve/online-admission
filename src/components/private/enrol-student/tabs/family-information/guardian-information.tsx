@@ -7,6 +7,8 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -36,6 +38,22 @@ function GuardianInformation() {
       noGuardianInfo: formState.familyInfo?.guardianInfo?.noGuardianInfo ?? false,
     },
   });
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo,
+        guardianInfo: {
+          ...debouncedAutoSaveValue,
+        },
+      },
+    },
+    0
+  );
 
   function onSubmit(values: GuardianInformationSchema) {
     const insertedValues = Object.keys(values).filter((v) => {

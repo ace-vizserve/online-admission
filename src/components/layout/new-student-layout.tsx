@@ -19,8 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import useSession from "@/hooks/use-session";
-import { cn } from "@/lib/utils";
-import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "@/types";
+import { EnrolNewStudentFormState } from "@/types";
 import { useEnrolNewStudentTabStateStore, useSelectAcademicYear } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
@@ -66,11 +65,17 @@ function NewStudentLayout() {
           <div className="w-full overflow-x-auto">
             <NewStudentSteps />
           </div>
-          <div
-            className={cn("w-full opacity-100 scale-100 transition-[opacity_transform]", {
-              "scale-95 opacity-70": isPending,
-            })}>
-            <Outlet />
+          <div className="w-full">
+            {isPending ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-xs z-50">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-primary"></div>
+                  <p className="text-sm font-medium text-muted-foreground">Loading content...</p>
+                </div>
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </div>
         </div>
       </MaxWidthWrapper>
@@ -117,14 +122,18 @@ function SubmitApplicationDialog() {
       return;
     }
 
-    mutate(formState as EnrolOldStudentFormState);
+    mutate(formState as EnrolNewStudentFormState);
   }
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          disabled={isPending || !formState.uploadRequirements?.parentGuardianUploadRequirements.isValid}
+          disabled={
+            formState.uploadRequirements?.studentUploadRequirements?.isValid != true ||
+            formState.uploadRequirements?.parentGuardianUploadRequirements?.isValid != true ||
+            isPending
+          }
           className="gap-2 bg-green-600 hover:bg-green-500">
           {isPending ? (
             <>

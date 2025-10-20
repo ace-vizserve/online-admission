@@ -5,19 +5,18 @@ import LocationSelector from "@/components/ui/location-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { maritalStatuses } from "@/data";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import EnrolNewStudentStepsLoader from "../enrol-new-student-steps-loader";
 
 function StudentAddressContact() {
-  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewStudentContext();
   const navigate = useNavigate();
-  const [isPending, setTransition] = useTransition();
 
   const form = useForm<StudentAddressContactSchema>({
     resolver: zodResolver(studentAddressContactSchema),
@@ -31,12 +30,14 @@ function StudentAddressContact() {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
       });
+      form.setError("root", {});
       return;
     }
     if (!formState.studentInfo?.studentDetails?.isValid) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
       });
+      form.setError("root", {});
       return;
     }
 
@@ -52,19 +53,23 @@ function StudentAddressContact() {
 
     setCompletedTabs("/enrol-student/new/student-info");
     setCurrentTab("/enrol-student/new/family-info");
+    setActiveTab("/enrol-student/new/family-info");
+    navigate("/enrol-student/new/family-info");
   }
 
-  useEffect(() => {
-    if (form.formState.isSubmitSuccessful) {
-      setTransition(() => {
-        navigate("/enrol-student/new/family-info");
-      });
-    }
-  }, [form.formState.isSubmitSuccessful, navigate]);
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
 
-  if (isPending) {
-    return <EnrolNewStudentStepsLoader />;
-  }
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      studentInfo: {
+        studentDetails: { ...formState.studentInfo?.studentDetails },
+        addressContact: { ...debouncedAutoSaveValue },
+      },
+    },
+    0
+  );
 
   return (
     <Form {...form}>
@@ -109,7 +114,7 @@ function StudentAddressContact() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.studentInfo?.addressContact?.nationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>

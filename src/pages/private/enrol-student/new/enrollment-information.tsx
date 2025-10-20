@@ -26,6 +26,8 @@ import {
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
 } from "@/data";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,7 +63,7 @@ const ENRICHMENT_CLASS_LEVELS = [
 function EnrollmentInformation() {
   const { session } = useSession();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
-  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewStudentContext();
   const navigate = useNavigate();
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
     queryKey: ["new-discounts", session?.user.email],
@@ -155,7 +157,21 @@ function EnrollmentInformation() {
     });
     setCompletedTabs("/enrol-student/new/enrollment-info");
     setCurrentTab("/enrol-student/new/upload-requirements");
+    setActiveTab("/enrol-student/new/upload-requirements");
   }
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      enrollmentInfo: {
+        ...debouncedAutoSaveValue,
+      },
+    },
+    0
+  );
 
   if (isPending) {
     return <EnrolNewStudentStepsLoader />;
@@ -389,7 +405,7 @@ function EnrollmentInformation() {
                     render={({ field }) => (
                       <FormItem>
                         <div className="relative flex justify-between items-center">
-                          <FormLabel>Student Development Fund</FormLabel>
+                          <FormLabel>Student Development Fees</FormLabel>
 
                           <CDFDetailsDialog />
                         </div>
@@ -594,7 +610,7 @@ function CDFDetailsDialog() {
 
       <DialogContent className="!max-w-3xl">
         <DialogHeader className="text-start">
-          <DialogTitle> Student Development Fund</DialogTitle>
+          <DialogTitle> Student Development Fees</DialogTitle>
           <DialogDescription>Kindly choose your preferred payment option below.</DialogDescription>
         </DialogHeader>
         <img src={cdfDetails} alt="CDF Details" className="object-cover aspect-video rounded-lg" />

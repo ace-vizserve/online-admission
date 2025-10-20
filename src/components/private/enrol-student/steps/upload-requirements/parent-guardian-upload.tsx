@@ -9,10 +9,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
 import { Save } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
+
+const MAX_SKIPS = 2;
 
 function ParentGuardianUpload() {
   const { formState, setFormState } = useEnrolNewStudentContext();
@@ -30,6 +32,12 @@ function ParentGuardianUpload() {
       ...formState.uploadRequirements?.parentGuardianUploadRequirements,
     },
   });
+
+  const skippedDocsCount = useMemo(() => {
+    return form.watch("toFollowDocs")?.length ?? 0;
+  }, [form.watch("toFollowDocs")]);
+
+  const remainingSkips = MAX_SKIPS - skippedDocsCount;
 
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
@@ -66,6 +74,13 @@ function ParentGuardianUpload() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.log(errors);
+          if (Object.keys(errors).includes("toFollowDocs")) {
+            toast.warning("Too many skipped files!", {
+              description: "You can only skip up to 2 documents.",
+            });
+          }
+
           const { includesPassError: includesMotherPassError, includesPassportError: includesMotherPassportError } =
             documentErrors("mother", errors);
 
@@ -96,8 +111,45 @@ function ParentGuardianUpload() {
           if (includesGuardianPassError) {
             form.setError("guardianPass", {});
           }
+
+          setFormState({
+            uploadRequirements: {
+              studentUploadRequirements: {
+                ...(formState.uploadRequirements!.studentUploadRequirements ?? {}),
+              },
+              parentGuardianUploadRequirements: {
+                ...formState.uploadRequirements?.parentGuardianUploadRequirements,
+                isValid: false,
+              },
+            },
+          });
         })}
         className="space-y-6 lg:space-y-8 w-full mx-auto">
+        <div className="w-max mx-auto">
+          {skippedDocsCount > 0 ? (
+            <div
+              className={`text-xs px-3 py-2 rounded-md ${
+                remainingSkips < 1
+                  ? "bg-red-50 text-red-700 border border-red-200"
+                  : "bg-amber-50 text-amber-700 border border-amber-200"
+              }`}>
+              {remainingSkips < 1 ? (
+                <span>
+                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow. No more can be skipped.
+                </span>
+              ) : (
+                <span>
+                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow • {remainingSkips} skip
+                  {remainingSkips > 1 ? "s" : ""} remaining
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="text-xs px-3 py-2 rounded-md bg-green-50 text-green-600 border border-slate-200">
+              Up to {MAX_SKIPS} documents can be marked to submit later
+            </div>
+          )}
+        </div>
         <h1 className="max-w-4xl mx-auto font-semibold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
           <ParentGuardianFileUploaderDialog
@@ -123,7 +175,7 @@ function ParentGuardianUpload() {
           />
         </div>
 
-        {formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo && (
+        {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasFatherInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
@@ -153,7 +205,7 @@ function ParentGuardianUpload() {
           </>
         )}
 
-        {formState.uploadRequirements?.parentGuardianUploadRequirements.hasGuardianInfo && (
+        {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasGuardianInfo && (
           <>
             <Separator />
             <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>

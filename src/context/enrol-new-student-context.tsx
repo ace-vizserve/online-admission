@@ -22,9 +22,11 @@ export function useEnrolNewStudentContext() {
 
 function EnrolNewStudentContextProvider({ children }: { children: ReactNode }) {
   const currentTab = useEnrolNewStudentTabStateStore((state) => state.currentTab);
+  const activeTab = useEnrolNewStudentTabStateStore((state) => state.activeTab);
   const completedTabs = useEnrolNewStudentTabStateStore((state) => state.completedTabs);
   const setCompletedTabs = useEnrolNewStudentTabStateStore((state) => state.setCompletedTabs);
   const setCurrentTab = useEnrolNewStudentTabStateStore((state) => state.setCurrentTab);
+  const setActiveTab = useEnrolNewStudentTabStateStore((state) => state.setActiveTab);
   const enrolNewStudentFormState = useEnrolNewStudentStore((state) => state.formState);
   const setEnrolNewStudentFormState = useEnrolNewStudentStore((state) => state.setFormState);
   const clearState = useEnrolNewStudentStore((state) => state.clearState);
@@ -33,6 +35,7 @@ function EnrolNewStudentContextProvider({ children }: { children: ReactNode }) {
     if (currentTab != "") return;
 
     setCurrentTab("/enrol-student/new/student-info");
+    setActiveTab("/enrol-student/new/student-info");
   }, [currentTab, setCurrentTab]);
 
   return (
@@ -43,6 +46,8 @@ function EnrolNewStudentContextProvider({ children }: { children: ReactNode }) {
         setFormState: setEnrolNewStudentFormState,
         completedTabs,
         currentTab,
+        activeTab,
+        setActiveTab,
         setCompletedTabs,
         setCurrentTab,
       }}>

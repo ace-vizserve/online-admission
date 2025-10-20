@@ -5,6 +5,8 @@ import LocationSelector from "@/components/ui/location-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { maritalStatuses } from "@/data";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import { studentAddressContactSchema, StudentAddressContactSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
@@ -21,6 +23,20 @@ function StudentAddressContact() {
       ...formState.studentInfo?.addressContact,
     },
   });
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      studentInfo: {
+        studentDetails: { ...formState.studentInfo?.studentDetails },
+        addressContact: { ...debouncedAutoSaveValue },
+      },
+    },
+    0
+  );
 
   function onSubmit(values: StudentAddressContactSchema) {
     setFormState({
