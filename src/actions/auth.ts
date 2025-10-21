@@ -29,6 +29,12 @@ export async function userLogout() {
     }
   } catch (error) {
     const err = error as AuthError;
+    if (err.message === "Auth session missing!") {
+      localStorage.clear();
+      sessionStorage.clear();
+      location.reload();
+      return;
+    }
     toast.error(err.message);
   }
 }

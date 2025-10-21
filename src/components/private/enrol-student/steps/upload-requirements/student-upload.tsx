@@ -8,10 +8,12 @@ import {
 } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import StudentFileUploaderDialog from "./student-file-uploader-dialog";
+
+const MAX_SKIPS = 3;
 
 function StudentUpload() {
   const { formState, setFormState } = useEnrolNewStudentContext();
@@ -28,6 +30,12 @@ function StudentUpload() {
       ...formState.uploadRequirements?.studentUploadRequirements,
     },
   });
+
+  const skippedDocsCount = useMemo(() => {
+    return form.watch("toFollowDocs")?.length ?? 0;
+  }, [form.watch("toFollowDocs")]);
+
+  const remainingSkips = MAX_SKIPS - skippedDocsCount;
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     toast.success("Student documents saved!", {
@@ -55,6 +63,7 @@ function StudentUpload() {
           passExpiry: values.passExpiry,
           passportNumber: values.passportNumber,
           passportExpiry: values.passportExpiry,
+          toFollowDocs: values.toFollowDocs,
           isValid: true,
         },
       },
@@ -65,6 +74,12 @@ function StudentUpload() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          if (Object.keys(errors).includes("toFollowDocs")) {
+            toast.warning("Too many skipped files!", {
+              description: "You can only skip up to 3 documents.",
+            });
+          }
+
           const includesPassportError = Object.keys(errors).filter(
             (key) => key.includes("passportExpiry") || key.includes("passportNumber")
           );
@@ -79,8 +94,42 @@ function StudentUpload() {
           if (includesPassError.length > 0) {
             form.setError("pass", {});
           }
+
+          setFormState({
+            uploadRequirements: {
+              parentGuardianUploadRequirements: {
+                ...(formState.uploadRequirements!.parentGuardianUploadRequirements ?? {}),
+              },
+              studentUploadRequirements: { ...formState.uploadRequirements?.studentUploadRequirements, isValid: false },
+            },
+          });
         })}
-        className="space-y-4 w-full mx-auto">
+        className="space-y-6 lg:space-y-8 w-full mx-auto">
+        <div className="w-max mx-auto">
+          {skippedDocsCount > 0 ? (
+            <div
+              className={`text-xs px-3 py-2 rounded-md ${
+                remainingSkips < 1
+                  ? "bg-red-50 text-red-700 border border-red-200"
+                  : "bg-amber-50 text-amber-700 border border-amber-200"
+              }`}>
+              {remainingSkips < 1 ? (
+                <span>
+                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow. No more can be skipped.
+                </span>
+              ) : (
+                <span>
+                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow • {remainingSkips} skip
+                  {remainingSkips > 1 ? "s" : ""} remaining
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="text-xs px-3 py-2 rounded-md bg-green-50 text-green-600 border border-slate-200">
+              Up to {MAX_SKIPS} documents can be marked to submit later
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           <StudentFileUploaderDialog
             formState={formState}

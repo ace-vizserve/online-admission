@@ -15,22 +15,11 @@ import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import useSession from "@/hooks/use-session";
 import { EnrolOldStudentFormState } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { isBefore } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CheckCircle2, Send } from "lucide-react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
-
-function checkExpiry(label: string, expiry: Date | null | undefined, type: "passport" | "pass") {
-  if (!expiry) {
-    throw new Error(`${label}'s ${type} expiry date is invalid.`);
-  }
-
-  if (expiry && isBefore(expiry, new Date())) {
-    throw new Error(`${label}'s ${type} has expired.`);
-  }
-}
 
 function SubmitApplicationDialog() {
   const params = useParams();
@@ -95,50 +84,46 @@ function SubmitApplicationDialog() {
       }
 
       if (formState.enrollmentInfo == null) {
-        toast.warning("Fill up the enrollment information tab", {
-          description: "Kindly double check every details before submitting",
+        toast.warning("Fill up the enrollment information tab!", {
+          description: "Kindly double check and save your details before submitting",
         });
         return;
       }
 
       if (!formState.enrollmentInfo.isValid) {
-        toast.warning("Fill up the enrollment information tab", {
-          description: "Kindly double check every details before submitting",
+        toast.warning("Please save your enrollment information!", {
+          description: "Kindly double check and save your details before submitting.",
         });
         return;
       }
 
       if (formState.uploadRequirements?.studentUploadRequirements == null) {
-        toast.warning("Please upload the required documents in documents tab", {
-          description: "Kindly double check every details before submitting",
+        toast.warning("Please upload the required student documents", {
+          description: "Kindly double check and save your details before submitting.",
         });
         return;
       }
 
-      const { passExpiry, passportExpiry, idPicture } = formState.uploadRequirements.studentUploadRequirements;
-
-      if (!idPicture) {
-        throw new Error("Student ID Picture is required!");
+      if (formState.uploadRequirements.studentUploadRequirements.isValid !== true) {
+        toast.warning("Please review and save your student documents!", {
+          description: "Kindly double check and save your details before submitting.",
+        });
+        return;
       }
 
-      if (!passExpiry || isBefore(passExpiry, new Date())) {
-        throw new Error("Student's pass has expired!");
+      if (formState.uploadRequirements?.parentGuardianUploadRequirements == null) {
+        toast.warning("Please upload the required parent/guardian documents", {
+          description: "Kindly double check and save your details before submitting.",
+        });
+        return;
       }
 
-      if (!passportExpiry || isBefore(passportExpiry, new Date())) {
-        throw new Error("Student's passport has expired!");
+      if (formState.uploadRequirements.parentGuardianUploadRequirements.isValid !== true) {
+        toast.warning("Please review and save your parent/guardian documents!", {
+          description: "Kindly double check and save your details before submitting.",
+        });
+        return;
       }
-
-      if (formState.uploadRequirements?.parentGuardianUploadRequirements == null) return;
-
-      const {
-        motherPassExpiry,
-        motherPassportExpiry,
-        fatherPassExpiry,
-        fatherPassportExpiry,
-        guardianPassExpiry,
-        guardianPassportExpiry,
-      } = formState.uploadRequirements.parentGuardianUploadRequirements;
 
       const { noFatherInfo } = formState.familyInfo?.fatherInfo || {};
 
@@ -153,9 +138,6 @@ function SubmitApplicationDialog() {
         return;
       }
 
-      checkExpiry("Mother", motherPassExpiry, "pass");
-      checkExpiry("Mother", motherPassportExpiry, "passport");
-
       if (typeof noGuardianInfo === "boolean" && !noGuardianInfo) {
         const { guardianMobile } = formState.familyInfo.guardianInfo;
 
@@ -165,9 +147,6 @@ function SubmitApplicationDialog() {
           });
           return;
         }
-
-        checkExpiry("Guardian", guardianPassExpiry, "pass");
-        checkExpiry("Guardian", guardianPassportExpiry, "passport");
       }
 
       if (typeof noFatherInfo === "boolean" && !noFatherInfo) {
@@ -179,9 +158,6 @@ function SubmitApplicationDialog() {
           });
           return;
         }
-
-        checkExpiry("Father", fatherPassExpiry, "pass");
-        checkExpiry("Father", fatherPassportExpiry, "passport");
       }
 
       mutate();

@@ -283,7 +283,7 @@ export const FileInput = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
       <div
         ref={ref}
         {...props}
-        className={`relative w-full ${isLOF ? "opacity-50 cursor-not-allowed " : "cursor-pointer "}`}>
+        className={cn(`relative w-full ${isLOF ? "opacity-50 cursor-not-allowed " : "cursor-pointer "}`, className)}>
         <div
           className={cn(
             `w-full rounded-lg duration-300 ease-in-out

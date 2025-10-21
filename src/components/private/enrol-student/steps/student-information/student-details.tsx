@@ -7,6 +7,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { religions } from "@/data";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +20,7 @@ import { toast } from "sonner";
 
 function StudentDetails() {
   const { formState, setFormState } = useEnrolNewStudentContext();
-  const [isreligionOther, setIsreligionOther] = useState<boolean>(false);
+  const [isReligionOther, setIsReligionOther] = useState<boolean>(false);
 
   const form = useForm<StudentDetailsSchema>({
     resolver: zodResolver(studentDetailsSchema),
@@ -44,6 +46,7 @@ function StudentDetails() {
     });
 
     setFormState({
+      ...formState,
       studentInfo: {
         addressContact: {
           ...(formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema),
@@ -52,6 +55,22 @@ function StudentDetails() {
       },
     });
   }
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      studentInfo: {
+        addressContact: {
+          ...formState.studentInfo?.addressContact,
+        },
+        studentDetails: { ...debouncedAutoSaveValue },
+      },
+    },
+    0
+  );
 
   return (
     <Form {...form}>
@@ -172,7 +191,7 @@ function StudentDetails() {
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    defaultValue={formState.studentInfo?.studentDetails.gender}
+                    defaultValue={formState.studentInfo?.studentDetails?.gender}
                     onValueChange={field.onChange}
                     className="flex gap-2">
                     {[
@@ -207,11 +226,11 @@ function StudentDetails() {
                     <Select
                       onValueChange={(value) => {
                         if (value === "Other") {
-                          setIsreligionOther(true);
+                          setIsReligionOther(true);
                         } else {
                           form.reset({ ...form.getValues(), religionOther: undefined });
                           if (formState.studentInfo) formState.studentInfo.studentDetails.religionOther = undefined;
-                          setIsreligionOther(false);
+                          setIsReligionOther(false);
                         }
 
                         field.onChange(value);
@@ -233,7 +252,7 @@ function StudentDetails() {
                     <FormDescription>Your student's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(formState.studentInfo?.studentDetails.religionOther || isreligionOther) && (
+                  {(formState.studentInfo?.studentDetails?.religionOther || isReligionOther) && (
                     <FormField
                       control={form.control}
                       name="religionOther"

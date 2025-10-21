@@ -18,7 +18,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { OctagonAlert } from "lucide-react";
 import { useCallback, useEffect, useTransition } from "react";
@@ -61,11 +60,17 @@ function OldStudentLayout() {
           <div className="w-full overflow-x-auto">
             <OldStudentSteps />
           </div>
-          <div
-            className={cn("w-full opacity-100 scale-100 transition-[opacity_transform]", {
-              "scale-95 opacity-70": isPending,
-            })}>
-            <Outlet />
+          <div className="w-full">
+            {isPending ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-xs z-50">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-primary"></div>
+                  <p className="text-sm font-medium text-muted-foreground">Loading content...</p>
+                </div>
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </div>
         </div>
       </MaxWidthWrapper>

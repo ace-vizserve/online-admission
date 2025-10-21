@@ -7,6 +7,8 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
@@ -28,7 +30,7 @@ function GuardianInformation() {
   const { session } = useSession();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { formState, setFormState, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
+  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewStudentContext();
 
   const form = useForm<GuardianInformationSchema>({
     resolver: zodResolver(guardianInformationSchema),
@@ -85,6 +87,7 @@ function GuardianInformation() {
       toast.warning("Mother's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
+      form.setError("root", {});
       return;
     }
 
@@ -92,11 +95,13 @@ function GuardianInformation() {
       toast.warning("Father's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
+      form.setError("root", {});
       return;
     }
 
     setCompletedTabs("/enrol-student/new/family-info");
     setCurrentTab("/enrol-student/new/enrollment-info");
+    setActiveTab("/enrol-student/new/enrollment-info");
     navigate("/enrol-student/new/enrollment-info");
   }
 
@@ -164,6 +169,22 @@ function GuardianInformation() {
       });
     }
   }
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo,
+        guardianInfo: {
+          ...debouncedAutoSaveValue,
+        },
+      },
+    },
+    0
+  );
 
   return (
     <Form {...form}>

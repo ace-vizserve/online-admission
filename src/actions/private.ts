@@ -191,14 +191,16 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       expiryFields.forEach(({ field, statusField }) => {
         const expiryDate = doc[field];
         const isRejected = doc[statusField] === "Rejected";
+        const isToFollow = doc[statusField] === "To follow";
+        const isNull = doc[statusField] == null;
 
-        if (!isRejected) {
-          if (!expiryDate) {
-            updates[statusField] = "Uploaded";
-          } else {
-            const isExpired = isBefore(new Date(expiryDate), now);
-            updates[statusField] = isExpired ? "Expired" : "Valid";
-          }
+        if (isRejected || isToFollow || isNull) return;
+
+        if (!expiryDate) {
+          updates[statusField] = "Uploaded";
+        } else {
+          const isExpired = isBefore(new Date(expiryDate), now);
+          updates[statusField] = isExpired ? "Expired" : "Valid";
         }
       });
 
@@ -270,14 +272,16 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       expiryFields.forEach(({ field, statusField }) => {
         const expiryDate = doc[field];
         const isRejected = doc[statusField] === "Rejected";
+        const isToFollow = doc[statusField] === "To follow";
+        const isNull = doc[statusField] == null;
 
-        if (!isRejected) {
-          if (!expiryDate) {
-            updates[statusField] = "Uploaded";
-          } else {
-            const isExpired = isBefore(new Date(expiryDate), now);
-            updates[statusField] = isExpired ? "Expired" : "Valid";
-          }
+        if (isRejected || isToFollow || isNull) return;
+
+        if (!expiryDate) {
+          updates[statusField] = "Uploaded";
+        } else {
+          const isExpired = isBefore(new Date(expiryDate), now);
+          updates[statusField] = isExpired ? "Expired" : "Valid";
         }
       });
 
@@ -906,54 +910,56 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       throw new Error(enrolmentDocumentsError.message);
     }
 
+    const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
+
     const studentDocumentUploadResults = await Promise.all([
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          medical,
-          medicalStatus: medical ? "Uploaded" : null,
+          medical: studentToFollowDocs.includes("medical") ? null : medical,
+          medicalStatus: studentToFollowDocs.includes("medical") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          passport,
-          passportExpiry,
-          passportStatus: "Valid",
+          passport: studentToFollowDocs.includes("passport") ? null : passport,
+          passportExpiry: studentToFollowDocs.includes("passport") ? null : passportExpiry,
+          passportStatus: studentToFollowDocs.includes("passport") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          pass,
-          passExpiry,
-          passStatus: "Valid",
+          pass: studentToFollowDocs.includes("pass") ? null : pass,
+          passExpiry: studentToFollowDocs.includes("pass") ? null : passExpiry,
+          passStatus: studentToFollowDocs.includes("pass") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          birthCert,
-          birthCertStatus: "Uploaded",
+          birthCert: studentToFollowDocs.includes("birthCert") ? null : birthCert,
+          birthCertStatus: studentToFollowDocs.includes("birthCert") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          educCert,
-          educCertStatus: educCert ? "Uploaded" : null,
+          educCert: studentToFollowDocs.includes("educCert") ? null : educCert,
+          educCertStatus: studentToFollowDocs.includes("educCert") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          idPicture,
-          idPictureStatus: "Uploaded",
+          idPicture: studentToFollowDocs.includes("idPicture") ? null : idPicture,
+          idPictureStatus: studentToFollowDocs.includes("idPicture") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -975,15 +981,18 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       "mother"
     );
 
+    const parentGuardianToFollowDocs =
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
+
     const { motherPassType, motherPassExpiry, motherPassportNumber, motherPassportExpiry } = motherEnrollmentDocuments;
 
     const { error: updateEnrollmentMotherDocumentApplicationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .update({
-        motherPass: motherPassType,
-        motherPassExpiry,
-        motherPassport: motherPassportNumber,
-        motherPassportExpiry,
+        motherPass: parentGuardianToFollowDocs.includes("motherPass") ? null : motherPassType,
+        motherPassExpiry: parentGuardianToFollowDocs.includes("motherPass") ? null : motherPassExpiry,
+        motherPassport: parentGuardianToFollowDocs.includes("motherPassport") ? null : motherPassportNumber,
+        motherPassportExpiry: parentGuardianToFollowDocs.includes("motherPassport") ? null : motherPassportExpiry,
       })
       .eq("studentNumber", studentNumber?.studentNumber)
       .eq("enroleeNumber", data?.enroleeNumber);
@@ -996,18 +1005,24 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          motherPassport: motherEnrollmentDocuments.motherPassport,
-          motherPassportExpiry: motherEnrollmentDocuments.motherPassportExpiry,
-          motherPassportStatus: "Valid",
+          motherPassport: parentGuardianToFollowDocs.includes("motherPassport")
+            ? null
+            : motherEnrollmentDocuments.motherPassport,
+          motherPassportExpiry: parentGuardianToFollowDocs.includes("motherPassport")
+            ? null
+            : motherEnrollmentDocuments.motherPassportExpiry,
+          motherPassportStatus: parentGuardianToFollowDocs.includes("motherPassport") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          motherPass: motherEnrollmentDocuments.motherPass,
-          motherPassExpiry: motherEnrollmentDocuments.motherPassExpiry,
-          motherPassStatus: "Valid",
+          motherPass: parentGuardianToFollowDocs.includes("motherPass") ? null : motherEnrollmentDocuments.motherPass,
+          motherPassExpiry: parentGuardianToFollowDocs.includes("motherPass")
+            ? null
+            : motherEnrollmentDocuments.motherPassExpiry,
+          motherPassStatus: parentGuardianToFollowDocs.includes("motherPass") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1024,8 +1039,6 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       throw new Error(hasMotherUploadError.message);
     }
 
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
-
     const fatherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
       "father"
@@ -1038,10 +1051,10 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       const { error: updateEnrollmentFatherDocumentApplicationError } = await supabase
         .from(`${academicYear}_enrolment_applications`)
         .update({
-          fatherPass: fatherPassType,
-          fatherPassExpiry,
-          fatherPassport: fatherPassportNumber,
-          fatherPassportExpiry,
+          fatherPass: parentGuardianToFollowDocs.includes("fatherPass") ? null : fatherPassType,
+          fatherPassExpiry: parentGuardianToFollowDocs.includes("fatherPass") ? null : fatherPassExpiry,
+          fatherPassport: parentGuardianToFollowDocs.includes("fatherPassport") ? null : fatherPassportNumber,
+          fatherPassportExpiry: parentGuardianToFollowDocs.includes("fatherPassport") ? null : fatherPassportExpiry,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data?.enroleeNumber);
@@ -1054,18 +1067,24 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         supabase
           .from(`${academicYear}_enrolment_documents`)
           .update({
-            fatherPassport: fatherEnrollmentDocuments.fatherPassport,
-            fatherPassportExpiry: fatherEnrollmentDocuments.fatherPassportExpiry,
-            fatherPassportStatus: "Valid",
+            fatherPassport: parentGuardianToFollowDocs.includes("fatherPassport")
+              ? null
+              : fatherEnrollmentDocuments.fatherPassport,
+            fatherPassportExpiry: parentGuardianToFollowDocs.includes("fatherPassport")
+              ? null
+              : fatherEnrollmentDocuments.fatherPassportExpiry,
+            fatherPassportStatus: parentGuardianToFollowDocs.includes("fatherPassport") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
         supabase
           .from(`${academicYear}_enrolment_documents`)
           .update({
-            fatherPass: fatherEnrollmentDocuments.fatherPass,
-            fatherPassExpiry: fatherEnrollmentDocuments.fatherPassExpiry,
-            fatherPassStatus: "Valid",
+            fatherPass: parentGuardianToFollowDocs.includes("fatherPass") ? null : fatherEnrollmentDocuments.fatherPass,
+            fatherPassExpiry: parentGuardianToFollowDocs.includes("fatherPass")
+              ? null
+              : fatherEnrollmentDocuments.fatherPassExpiry,
+            fatherPassStatus: parentGuardianToFollowDocs.includes("fatherPass") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1097,10 +1116,12 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
       const { error: updateEnrollmentFatherDocumentApplicationError } = await supabase
         .from(`${academicYear}_enrolment_applications`)
         .update({
-          guardianPass: guardianPassType,
-          guardianPassExpiry,
-          guardianPassport: guardianPassportNumber,
-          guardianPassportExpiry,
+          guardianPass: parentGuardianToFollowDocs.includes("guardianPass") ? null : guardianPassType,
+          guardianPassExpiry: parentGuardianToFollowDocs.includes("guardianPass") ? null : guardianPassExpiry,
+          guardianPassport: parentGuardianToFollowDocs.includes("guardianPassport") ? null : guardianPassportNumber,
+          guardianPassportExpiry: parentGuardianToFollowDocs.includes("guardianPassport")
+            ? null
+            : guardianPassportExpiry,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data?.enroleeNumber);
@@ -1113,18 +1134,26 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         supabase
           .from(`${academicYear}_enrolment_documents`)
           .update({
-            guardianPassport: guardianEnrollmentDocuments.guardianPassport,
-            guardianPassportExpiry: guardianEnrollmentDocuments.guardianPassportExpiry,
-            guardianPassportStatus: "Valid",
+            guardianPassport: parentGuardianToFollowDocs.includes("guardianPassport")
+              ? null
+              : guardianEnrollmentDocuments.guardianPassport,
+            guardianPassportExpiry: parentGuardianToFollowDocs.includes("guardianPassport")
+              ? null
+              : guardianEnrollmentDocuments.guardianPassportExpiry,
+            guardianPassportStatus: parentGuardianToFollowDocs.includes("guardianPassport") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
         supabase
           .from(`${academicYear}_enrolment_documents`)
           .update({
-            guardianPass: guardianEnrollmentDocuments.guardianPass,
-            guardianPassExpiry: guardianEnrollmentDocuments.guardianPassExpiry,
-            guardianPassStatus: "Valid",
+            guardianPass: parentGuardianToFollowDocs.includes("guardianPass")
+              ? null
+              : guardianEnrollmentDocuments.guardianPass,
+            guardianPassExpiry: parentGuardianToFollowDocs.includes("guardianPass")
+              ? null
+              : guardianEnrollmentDocuments.guardianPassExpiry,
+            guardianPassStatus: parentGuardianToFollowDocs.includes("guardianPass") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1321,54 +1350,56 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       throw new Error(enrolmentDocumentsError.message);
     }
 
+    const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
+
     const studentDocumentUploadResults = await Promise.all([
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          medical,
-          medicalStatus: medical ? "Uploaded" : null,
+          medical: studentToFollowDocs.includes("medical") ? null : medical,
+          medicalStatus: studentToFollowDocs.includes("medical") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          passport,
-          passportExpiry,
-          passportStatus: "Valid",
+          passport: studentToFollowDocs.includes("passport") ? null : passport,
+          passportExpiry: studentToFollowDocs.includes("passport") ? null : passportExpiry,
+          passportStatus: studentToFollowDocs.includes("passport") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          pass,
-          passExpiry,
-          passStatus: "Valid",
+          pass: studentToFollowDocs.includes("pass") ? null : pass,
+          passExpiry: studentToFollowDocs.includes("pass") ? null : passExpiry,
+          passStatus: studentToFollowDocs.includes("pass") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          birthCert,
-          birthCertStatus: "Uploaded",
+          birthCert: studentToFollowDocs.includes("birthCert") ? null : birthCert,
+          birthCertStatus: studentToFollowDocs.includes("birthCert") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          educCert,
-          educCertStatus: educCert ? "Uploaded" : null,
+          educCert: studentToFollowDocs.includes("educCert") ? null : educCert,
+          educCertStatus: studentToFollowDocs.includes("educCert") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          idPicture,
-          idPictureStatus: "Uploaded",
+          idPicture: studentToFollowDocs.includes("idPicture") ? null : idPicture,
+          idPictureStatus: studentToFollowDocs.includes("idPicture") ? "To follow" : "Uploaded",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1390,15 +1421,18 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       "mother"
     );
 
+    const parentGuardianToFollowDocs =
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
+
     const { motherPassType, motherPassExpiry, motherPassportNumber, motherPassportExpiry } = motherEnrollmentDocuments;
 
     const { error: updateEnrollmentMotherDocumentApplicationError } = await supabase
       .from("ay2026_enrolment_applications")
       .update({
-        motherPass: motherPassType,
-        motherPassExpiry,
-        motherPassport: motherPassportNumber,
-        motherPassportExpiry,
+        motherPass: parentGuardianToFollowDocs.includes("motherPass") ? null : motherPassType,
+        motherPassExpiry: parentGuardianToFollowDocs.includes("motherPass") ? null : motherPassExpiry,
+        motherPassport: parentGuardianToFollowDocs.includes("motherPassport") ? null : motherPassportNumber,
+        motherPassportExpiry: parentGuardianToFollowDocs.includes("motherPassport") ? null : motherPassportExpiry,
       })
       .eq("studentNumber", studentNumber?.studentNumber)
       .eq("enroleeNumber", data?.enroleeNumber);
@@ -1411,18 +1445,24 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          motherPassport: motherEnrollmentDocuments.motherPassport,
-          motherPassportExpiry: motherEnrollmentDocuments.motherPassportExpiry,
-          motherPassportStatus: "Valid",
+          motherPassport: parentGuardianToFollowDocs.includes("motherPassport")
+            ? null
+            : motherEnrollmentDocuments.motherPassport,
+          motherPassportExpiry: parentGuardianToFollowDocs.includes("motherPassport")
+            ? null
+            : motherEnrollmentDocuments.motherPassportExpiry,
+          motherPassportStatus: parentGuardianToFollowDocs.includes("motherPassport") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
       supabase
         .from("ay2026_enrolment_documents")
         .update({
-          motherPass: motherEnrollmentDocuments.motherPass,
-          motherPassExpiry: motherEnrollmentDocuments.motherPassExpiry,
-          motherPassStatus: "Valid",
+          motherPass: parentGuardianToFollowDocs.includes("motherPass") ? null : motherEnrollmentDocuments.motherPass,
+          motherPassExpiry: parentGuardianToFollowDocs.includes("motherPass")
+            ? null
+            : motherEnrollmentDocuments.motherPassExpiry,
+          motherPassStatus: parentGuardianToFollowDocs.includes("motherPass") ? "To follow" : "Valid",
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1439,8 +1479,6 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       throw new Error(hasMotherUploadError.message);
     }
 
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
-
     const fatherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
       "father"
@@ -1453,10 +1491,10 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       const { error: updateEnrollmentMotherDocumentApplicationError } = await supabase
         .from("ay2026_enrolment_applications")
         .update({
-          fatherPass: fatherPassType,
-          fatherPassExpiry,
-          fatherPassport: fatherPassportNumber,
-          fatherPassportExpiry,
+          fatherPass: parentGuardianToFollowDocs.includes("fatherPass") ? null : fatherPassType,
+          fatherPassExpiry: parentGuardianToFollowDocs.includes("fatherPass") ? null : fatherPassExpiry,
+          fatherPassport: parentGuardianToFollowDocs.includes("fatherPassport") ? null : fatherPassportNumber,
+          fatherPassportExpiry: parentGuardianToFollowDocs.includes("fatherPassport") ? null : fatherPassportExpiry,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data?.enroleeNumber);
@@ -1469,18 +1507,24 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         supabase
           .from("ay2026_enrolment_documents")
           .update({
-            fatherPassport: fatherEnrollmentDocuments.fatherPassport,
-            fatherPassportExpiry: fatherEnrollmentDocuments.fatherPassportExpiry,
-            fatherPassportStatus: "Valid",
+            fatherPassport: parentGuardianToFollowDocs.includes("fatherPassport")
+              ? null
+              : fatherEnrollmentDocuments.fatherPassport,
+            fatherPassportExpiry: parentGuardianToFollowDocs.includes("fatherPassport")
+              ? null
+              : fatherEnrollmentDocuments.fatherPassportExpiry,
+            fatherPassportStatus: parentGuardianToFollowDocs.includes("fatherPassport") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
         supabase
           .from("ay2026_enrolment_documents")
           .update({
-            fatherPass: fatherEnrollmentDocuments.fatherPass,
-            fatherPassExpiry: fatherEnrollmentDocuments.fatherPassExpiry,
-            fatherPassStatus: "Valid",
+            fatherPass: parentGuardianToFollowDocs.includes("fatherPass") ? null : fatherEnrollmentDocuments.fatherPass,
+            fatherPassExpiry: parentGuardianToFollowDocs.includes("fatherPass")
+              ? null
+              : fatherEnrollmentDocuments.fatherPassExpiry,
+            fatherPassStatus: parentGuardianToFollowDocs.includes("fatherPass") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
@@ -1512,10 +1556,12 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
       const { error: updateEnrollmentMotherDocumentApplicationError } = await supabase
         .from("ay2026_enrolment_applications")
         .update({
-          guardianPass: guardianPassType,
-          guardianPassExpiry,
-          guardianPassport: guardianPassportNumber,
-          guardianPassportExpiry,
+          guardianPass: parentGuardianToFollowDocs.includes("guardianPass") ? null : guardianPassType,
+          guardianPassExpiry: parentGuardianToFollowDocs.includes("guardianPass") ? null : guardianPassExpiry,
+          guardianPassport: parentGuardianToFollowDocs.includes("guardianPassport") ? null : guardianPassportNumber,
+          guardianPassportExpiry: parentGuardianToFollowDocs.includes("guardianPassport")
+            ? null
+            : guardianPassportExpiry,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data?.enroleeNumber);
@@ -1528,18 +1574,26 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         supabase
           .from("ay2026_enrolment_documents")
           .update({
-            guardianPassport: guardianEnrollmentDocuments.guardianPassport,
-            guardianPassportExpiry: guardianEnrollmentDocuments.guardianPassportExpiry,
-            guardianPassportStatus: "Valid",
+            guardianPassport: parentGuardianToFollowDocs.includes("guardianPassport")
+              ? null
+              : guardianEnrollmentDocuments.guardianPassport,
+            guardianPassportExpiry: parentGuardianToFollowDocs.includes("guardianPassport")
+              ? null
+              : guardianEnrollmentDocuments.guardianPassportExpiry,
+            guardianPassportStatus: parentGuardianToFollowDocs.includes("guardianPassport") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),
         supabase
           .from("ay2026_enrolment_documents")
           .update({
-            guardianPass: guardianEnrollmentDocuments.guardianPass,
-            guardianPassExpiry: guardianEnrollmentDocuments.guardianPassExpiry,
-            guardianPassStatus: "Valid",
+            guardianPass: parentGuardianToFollowDocs.includes("guardianPass")
+              ? null
+              : guardianEnrollmentDocuments.guardianPass,
+            guardianPassExpiry: parentGuardianToFollowDocs.includes("guardianPass")
+              ? null
+              : guardianEnrollmentDocuments.guardianPassExpiry,
+            guardianPassStatus: parentGuardianToFollowDocs.includes("guardianPass") ? "To follow" : "Valid",
           })
           .eq("studentNumber", studentNumber?.studentNumber)
           .eq("enroleeNumber", data.enroleeNumber),

@@ -132,6 +132,7 @@ function InfoBox({
   const { familyInformation, studentDocuments, studentInformation } = studentDetails;
 
   const { fatherEmail, guardianEmail } = familyInformation;
+
   switch (value) {
     case "student-information":
       return <SingleDocuments label={label} studentInformation={studentInformation} />;

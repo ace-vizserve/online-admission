@@ -238,7 +238,10 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={idPicture.idPictureStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={idPicture.idPictureStatus ? (idPicture.idPictureStatus as StatusProps) : "Missing"}
+              />
 
               <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
@@ -246,19 +249,25 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
             </div>
             <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
 
-            <Link
-              to={idPicture.idPicture!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            {idPicture.idPicture ? (
+              <Link
+                to={idPicture.idPicture}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+            ) : (
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+            )}
           </div>
         )}
 
-        {Object.values(medicalCertDocument).some((v) => v == null) ? (
+        {Object.values(medicalCertDocument).every((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
@@ -276,7 +285,12 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={medicalCertDocument.medicalStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={
+                  medicalCertDocument.medicalStatus ? (medicalCertDocument.medicalStatus as StatusProps) : "Missing"
+                }
+              />
 
               <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
@@ -284,19 +298,25 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
             </div>
             <p className="text-muted-foreground font-medium text-sm">Medical Exam</p>
 
-            <Link
-              to={medicalCertDocument.medical!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            {medicalCertDocument.medical ? (
+              <Link
+                to={medicalCertDocument.medical}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+            ) : (
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+            )}
           </div>
         )}
 
-        {Object.values(birthCertDocument).some((v) => v == null) ? (
+        {Object.values(birthCertDocument).every((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
@@ -314,7 +334,12 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={birthCertDocument.birthCertStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={
+                  birthCertDocument.birthCertStatus ? (birthCertDocument.birthCertStatus as StatusProps) : "Missing"
+                }
+              />
 
               <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
@@ -322,19 +347,25 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
             </div>
             <p className="text-muted-foreground font-medium text-sm">Birth Certificate</p>
 
-            <Link
-              to={birthCertDocument.birthCert!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            {birthCertDocument.birthCert ? (
+              <Link
+                to={birthCertDocument.birthCert}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+            ) : (
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+            )}
           </div>
         )}
 
-        {Object.values(eduCertDocument).some((v) => v == null) ? (
+        {Object.values(eduCertDocument).every((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />
@@ -352,7 +383,10 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
         ) : (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={eduCertDocument.educCertStatus as StatusProps} />
+              <StatusBadge
+                className="absolute -top-2"
+                status={eduCertDocument.educCertStatus ? (eduCertDocument.educCertStatus as StatusProps) : "Missing"}
+              />
 
               <div className="pt-6 w-max mx-auto">
                 <img src={fileSvg} className="size-10" />
@@ -360,15 +394,21 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
             </div>
             <p className="text-muted-foreground font-medium text-sm">Transcript of Records</p>
 
-            <Link
-              to={eduCertDocument.educCert!}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
+            {eduCertDocument.educCert ? (
+              <Link
+                to={eduCertDocument.educCert}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 text-xs  w-full",
+                  variant: "secondary",
+                })}>
+                View document <Eye />
+              </Link>
+            ) : (
+              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+                View document <EyeClosed />
+              </Button>
+            )}
           </div>
         )}
       </div>

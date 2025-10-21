@@ -20,7 +20,9 @@ export type PasswordResetStore = {
 
 export type EnrolNewStudentTabStateStore = {
   currentTab: string;
+  activeTab: string;
   completedTabs: string[];
+  setActiveTab: (tab: string) => void;
   setCurrentTab: (tab: string) => void;
   setCompletedTabs: (tab: string) => void;
   clearState: () => void;
@@ -42,10 +44,16 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
   persist(
     (set) => ({
       currentTab: "",
+      activeTab: "",
       clearState: () => {
         set({ currentTab: "", completedTabs: [] });
       },
       completedTabs: [],
+      setActiveTab: (tab: string) =>
+        set((state) => ({
+          ...state,
+          activeTab: tab,
+        })),
       setCurrentTab: (tab: string) =>
         set((state) => ({
           ...state,

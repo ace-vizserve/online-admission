@@ -32,7 +32,7 @@ const STEPS = [
 ];
 
 function NewStudentSteps() {
-  const { currentTab, completedTabs } = useEnrolNewStudentContext();
+  const { currentTab, completedTabs, activeTab, setActiveTab } = useEnrolNewStudentContext();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
 
@@ -46,7 +46,9 @@ function NewStudentSteps() {
           <li
             key={step.name}
             onClick={() => {
+              if (step.url === activeTab) return;
               navigate(`${step.url}?=academicYear=${academicYear}`);
+              setActiveTab(step.url);
             }}
             className={buttonVariants({
               size: "lg",
@@ -56,8 +58,14 @@ function NewStudentSteps() {
               }),
               variant: "outline",
             })}>
+            {activeTab == step.url && (
+              <span className="absolute right-3 top-3 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-60"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary shadow-lg shadow-secondary/50"></span>
+              </span>
+            )}
             <div
-              className={cn("space-y-1 text-center px-6 py-4", {
+              className={cn(" space-y-1 text-center px-6 py-4", {
                 "text-green-600": isCompleted,
               })}>
               <p className="text-sm font-semibold">{step.name}</p>

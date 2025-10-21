@@ -58,7 +58,7 @@ function RenderFamilyDocCard({
   return (
     <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
       <div className="w-full flex relative">
-        <StatusBadge className="absolute -top-2" status={status && !isMissing ? (status as StatusProps) : "Missing"} />
+        <StatusBadge className="absolute -top-2" status={status ? (status as StatusProps) : "Missing"} />
         {!isMissing && (
           <>
             <Popover>
@@ -106,7 +106,7 @@ function RenderFamilyDocCard({
         </div>
       </div>
       <p className="text-muted-foreground font-medium text-sm">{label}</p>
-      {isMissing ? (
+      {status == null && isMissing ? (
         <div className="flex flex-col gap-2 w-full">
           <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
             View document <EyeClosed />
@@ -117,15 +117,21 @@ function RenderFamilyDocCard({
         </div>
       ) : (
         <div className="flex flex-col gap-2 w-full">
-          <Link
-            to={fileUrl}
-            target="_blank"
-            className={buttonVariants({
-              className: "gap-2 text-xs  w-full",
-              variant: "secondary",
-            })}>
-            View document <Eye />
-          </Link>
+          {fileUrl ? (
+            <Link
+              to={fileUrl}
+              target="_blank"
+              className={buttonVariants({
+                className: "gap-2 text-xs  w-full",
+                variant: "secondary",
+              })}>
+              View document <Eye />
+            </Link>
+          ) : (
+            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
+              View document <EyeClosed />
+            </Button>
+          )}
           <ParentGuardianFileUploaderDialog
             role={role}
             status={status!}

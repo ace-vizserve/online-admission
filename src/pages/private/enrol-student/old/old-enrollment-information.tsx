@@ -26,6 +26,8 @@ import {
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
 } from "@/data";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { getNextGradeLevel } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
@@ -61,8 +63,8 @@ const ENRICHMENT_CLASS_LEVELS = [
 
 function OldEnrollmentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
-  const { session } = useSession();
   const { formState, setFormState } = useEnrolOldStudentContext();
+  const { session } = useSession();
   const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
     formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
@@ -84,7 +86,8 @@ function OldEnrollmentInformation() {
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
       ...formState.enrollmentInfo,
-      contractSignatory: data?.fatherEmail && !formState.familyInfo?.fatherInfo?.noFatherInfo ? "Father" : "Mother",
+      contractSignatory:
+        data?.fatherEmail != null && !formState.familyInfo?.fatherInfo?.noFatherInfo ? "Father" : "Mother",
     },
   });
 
@@ -93,6 +96,19 @@ function OldEnrollmentInformation() {
     setSelectedLevel(getNextGradeLevel(data.levelApplied) ?? "");
     form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
   }, [data, form, isSuccess]);
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      enrollmentInfo: {
+        ...debouncedAutoSaveValue,
+      },
+    },
+    0
+  );
 
   function onSubmit(values: EnrollmentInformationSchema) {
     if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {
@@ -465,7 +481,7 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {data?.fatherEmail && !formState.familyInfo?.fatherInfo?.noFatherInfo && (
+                            {data?.fatherEmail != null && !formState.familyInfo?.fatherInfo?.noFatherInfo && (
                               <SelectItem value={"Father"}>Father</SelectItem>
                             )}
                             <SelectItem value={"Mother"}>Mother</SelectItem>

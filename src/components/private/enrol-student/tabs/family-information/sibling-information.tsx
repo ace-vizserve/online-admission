@@ -5,6 +5,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { useAutoSave } from "@/hooks/use-autosave";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +30,22 @@ function SiblingInformation() {
     control: form.control,
     name: "siblings" as never,
   });
+
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo,
+        siblingsInfo: {
+          ...debouncedAutoSaveValue,
+        },
+      },
+    },
+    0
+  );
 
   function onSubmit(values: SiblingInformationSchema) {
     setFormState({
