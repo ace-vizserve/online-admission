@@ -8,16 +8,19 @@ function OldStudentSteps() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
   return (
-    <ol className="flex flex-col lg:flex-row gap-0.5 pb-6 lg:pb-0">
+    <ol className="flex flex-col lg:flex-row gap-1 pb-6 lg:pb-0">
       <NavLink
         to={`/enrol-student/${params.id}/student-info?=academicYear=${academicYear}`}
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",
-            className: cn("relative overflow-hidden lg:flex-1 w-full py-10 px-6 rounded-none", {
-              " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
-                isActive,
-            }),
+            className: cn(
+              "relative overflow-hidden lg:flex-1 w-full py-10 px-6 lg:rounded-t-none border lg:border-t-0 rounded-t-none border-t-0",
+              {
+                " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
+                  isActive,
+              }
+            ),
             variant: "outline",
           })
         }>
@@ -32,10 +35,13 @@ function OldStudentSteps() {
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",
-            className: cn("relative overflow-hidden lg:flex-1 w-full py-10 px-6 rounded-none", {
-              " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
-                isActive,
-            }),
+            className: cn(
+              "relative overflow-hidden lg:flex-1 w-full py-10 px-6 lg:rounded-t-none border lg:border-t-0",
+              {
+                " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
+                  isActive,
+              }
+            ),
             variant: "outline",
           })
         }>
@@ -50,10 +56,13 @@ function OldStudentSteps() {
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",
-            className: cn("relative overflow-hidden lg:flex-1 w-full py-10 px-6 rounded-none", {
-              " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
-                isActive,
-            }),
+            className: cn(
+              "relative overflow-hidden lg:flex-1 w-full py-10 px-6 lg:rounded-t-none border lg:border-t-0",
+              {
+                " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
+                  isActive,
+              }
+            ),
             variant: "outline",
           })
         }>
@@ -68,10 +77,13 @@ function OldStudentSteps() {
         className={({ isActive }) =>
           buttonVariants({
             size: "lg",
-            className: cn("relative overflow-hidden lg:flex-1 w-full py-10 px-6 rounded-none", {
-              "bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
-                isActive,
-            }),
+            className: cn(
+              "relative overflow-hidden lg:flex-1 w-full py-10 px-6 lg:rounded-t-none border lg:border-t-0",
+              {
+                "bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
+                  isActive,
+              }
+            ),
             variant: "outline",
           })
         }>

@@ -37,7 +37,7 @@ function NewStudentSteps() {
   const navigate = useNavigate();
 
   return (
-    <ol className="flex flex-col lg:flex-row gap-0.5 pb-6 lg:pb-0">
+    <ol className="flex flex-col lg:flex-row gap-1 pb-6 lg:pb-0">
       {STEPS.map((step) => {
         const isCurrent = currentTab == step.url;
         const isCompleted = completedTabs.includes(step.url);
@@ -52,10 +52,13 @@ function NewStudentSteps() {
             }}
             className={buttonVariants({
               size: "lg",
-              className: cn("relative overflow-hidden lg:flex-1 w-full py-10 px-6 rounded-none pointer-events-none", {
-                "opacity-100 cursor-pointer pointer-events-auto": isCurrent || isCompleted,
-                "bg-green-50": isCompleted,
-              }),
+              className: cn(
+                "relative overflow-hidden lg:flex-1 w-full first:rounded-t-none first:border-t-0 lg:rounded-t-none border lg:border-t-0 py-10 px-6 pointer-events-none",
+                {
+                  "opacity-100 cursor-pointer pointer-events-auto": isCurrent || isCompleted,
+                  "bg-green-50": isCompleted,
+                }
+              ),
               variant: "outline",
             })}>
             {activeTab == step.url && (
