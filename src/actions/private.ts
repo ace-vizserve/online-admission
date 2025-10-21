@@ -196,12 +196,10 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
 
         if (isRejected || isToFollow || isNull) return;
 
-        if (!expiryDate) {
-          updates[statusField] = "Uploaded";
-        } else {
-          const isExpired = isBefore(new Date(expiryDate), now);
-          updates[statusField] = isExpired ? "Expired" : "Valid";
-        }
+        if (!expiryDate) return;
+
+        const isExpired = isBefore(new Date(expiryDate), now);
+        updates[statusField] = isExpired ? "Expired" : "Valid";
       });
 
       if (Object.keys(updates).length > 0) {
@@ -277,12 +275,9 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
 
         if (isRejected || isToFollow || isNull) return;
 
-        if (!expiryDate) {
-          updates[statusField] = "Uploaded";
-        } else {
-          const isExpired = isBefore(new Date(expiryDate), now);
-          updates[statusField] = isExpired ? "Expired" : "Valid";
-        }
+        if (!expiryDate) return;
+        const isExpired = isBefore(new Date(expiryDate), now);
+        updates[statusField] = isExpired ? "Expired" : "Valid";
       });
 
       if (Object.keys(updates).length > 0) {
