@@ -1,4 +1,4 @@
-import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -21,7 +22,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowRight, Calendar as CalendarIcon, Info, Save } from "lucide-react";
+import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, Info, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -189,6 +190,19 @@ function GuardianInformation() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+        {(!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid) && (
+          <div className="w-full max-w-md mx-auto">
+            <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">
+              <AlertTriangleIcon className="size-4" />
+              <AlertTitle>Information Required</AlertTitle>
+              <AlertDescription className="text-amber-500">
+                Please save the father's and mother's information by clicking the Save button on each tab before
+                proceeding.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
@@ -464,20 +478,33 @@ function GuardianInformation() {
             <Save />
           </Button>
 
-          <Button
-            disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
-            onClick={proceedToNextStep}
-            size={"lg"}
-            className="hidden lg:flex w-full p-8 gap-2 uppercase"
-            type="button">
-            Proceed to Next Step
-            <ArrowRight />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="hidden lg:block w-full">
+                  <Button
+                    disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
+                    onClick={proceedToNextStep}
+                    size={"lg"}
+                    className="w-full p-8 gap-2 uppercase"
+                    type="button">
+                    Proceed to Next Step
+                    <ArrowRight />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {(!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid) && (
+                <TooltipContent>
+                  <p>Please save the father’s and mother’s information by clicking the Save button on each tab.</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
 
           <Button
             disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
             onClick={proceedToNextStep}
-            className="flex lg:hidden w-full p-6 gap-2 uppercase"
+            className="w-full flex lg:hidden p-6 gap-2 uppercase"
             type="button">
             Proceed to Next Step
             <ArrowRight />

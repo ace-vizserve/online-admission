@@ -478,8 +478,6 @@ export const studentUploadRequirementsSchema = z
       pass: "Pass",
       idPicture: "ID Picture",
       birthCert: "Birth Certificate",
-      medical: "Medical Examination",
-      educCert: "Transcript of Records",
     };
 
     if (data.toFollowDocs && data.toFollowDocs.length > TO_FOLLOW_LIMIT) {

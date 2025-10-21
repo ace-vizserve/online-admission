@@ -79,6 +79,8 @@ function FatherInformation() {
       }
     }
 
+    form.setValue("isValid", true);
+
     setFormState({
       ...formState,
       familyInfo: {
