@@ -92,16 +92,19 @@ function SiblingInformation() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
             {(!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid) && (
-              <div className="w-full max-w-md mx-auto">
-                <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">
-                  <AlertTriangleIcon className="size-4" />
-                  <AlertTitle>Information Required</AlertTitle>
-                  <AlertDescription className="text-amber-500">
-                    Please save the father's and mother's information by clicking the Save button on each tab before
-                    proceeding.
-                  </AlertDescription>
-                </Alert>
-              </div>
+              <>
+                <div className="w-full max-w-md mx-auto">
+                  <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">
+                    <AlertTriangleIcon className="size-4" />
+                    <AlertTitle>Information Required</AlertTitle>
+                    <AlertDescription className="text-amber-500">
+                      Please save the father's and mother's information by clicking the Save button on each tab before
+                      proceeding.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+                <br />
+              </>
             )}
             {fields.map((field, index) => (
               <Card key={field.id} className="flex flex-col space-y-8 shadow-none border-none">
