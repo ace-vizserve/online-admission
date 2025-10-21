@@ -15,22 +15,11 @@ import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import useSession from "@/hooks/use-session";
 import { EnrolOldStudentFormState } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { isBefore } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CheckCircle2, Send } from "lucide-react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
-
-function checkExpiry(label: string, expiry: Date | null | undefined, type: "passport" | "pass") {
-  if (!expiry) {
-    throw new Error(`${label}'s ${type} expiry date is invalid.`);
-  }
-
-  if (expiry && isBefore(expiry, new Date())) {
-    throw new Error(`${label}'s ${type} has expired.`);
-  }
-}
 
 function SubmitApplicationDialog() {
   const params = useParams();

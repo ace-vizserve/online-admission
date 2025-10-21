@@ -156,7 +156,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   }
 
   function getWatchedFields() {
-    let obj: Record<string, unknown> = {};
+    const obj: Record<string, unknown> = {};
 
     NOT_FILE_INPUTS.map((key) => {
       obj[key] = form.watch(key as keyof ParentGuardianUploadRequirementsSchema);

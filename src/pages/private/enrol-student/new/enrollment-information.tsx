@@ -94,6 +94,19 @@ function EnrollmentInformation() {
     }
   }, [form.formState.isSubmitSuccessful, navigate]);
 
+  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      enrollmentInfo: {
+        ...debouncedAutoSaveValue,
+      },
+    },
+    0
+  );
+
   if (formState.familyInfo?.motherInfo == null) {
     return <Navigate to={"/enrol-student/new/family-info"} />;
   }
@@ -159,19 +172,6 @@ function EnrollmentInformation() {
     setCurrentTab("/enrol-student/new/upload-requirements");
     setActiveTab("/enrol-student/new/upload-requirements");
   }
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      enrollmentInfo: {
-        ...debouncedAutoSaveValue,
-      },
-    },
-    0
-  );
 
   if (isPending) {
     return <EnrolNewStudentStepsLoader />;
