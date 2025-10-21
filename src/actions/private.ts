@@ -1932,6 +1932,19 @@ export async function uploadFileToBucket(isImage: boolean, files: File[], academ
   }
 }
 
+export async function deleteFile(file: string, academicYear: string) {
+  try {
+    const { error } = await supabase.storage.from("parent-portal").remove([`${academicYear}/${file}`]);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
 export async function updateEnrollmentApplicationDetails({
   academicYear,
   enrollmentDetails,

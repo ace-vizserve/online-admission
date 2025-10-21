@@ -1,4 +1,4 @@
-import { uploadFileToBucket } from "@/actions/private";
+import { deleteFile, uploadFileToBucket } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -44,11 +44,12 @@ import {
   CloudUpload,
   ExternalLink,
   InfoIcon,
+  Loader2,
   Paperclip,
   Trash2,
   Upload,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
@@ -89,6 +90,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
   setFormState,
 }: ParentGuardianFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const [isChangingDocument, setIsChangingDocument] = useState<boolean>(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(false, file, academicYear);
@@ -132,24 +134,32 @@ const ParentGuardianFileUploaderDialog = memo(function ({
     mutate(value);
   }
 
-  function changeDocument() {
+  async function changeDocument() {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]) return;
 
-    setFormState({
-      uploadRequirements: {
-        studentUploadRequirements: {
-          ...formState.uploadRequirements.studentUploadRequirements,
-        },
+    try {
+      setIsChangingDocument(true);
+      await deleteFile(formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string, academicYear);
 
-        parentGuardianUploadRequirements: {
-          ...formState.uploadRequirements.parentGuardianUploadRequirements,
-          [name]: undefined,
-        },
-      },
-    });
+      setFormState({
+        uploadRequirements: {
+          studentUploadRequirements: {
+            ...formState.uploadRequirements.studentUploadRequirements,
+          },
 
-    form.setValue(name, undefined);
-    form.setValue("isValid", false);
+          parentGuardianUploadRequirements: {
+            ...formState.uploadRequirements.parentGuardianUploadRequirements,
+            [name]: undefined,
+          },
+        },
+      });
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+      setIsChangingDocument(false);
+    } catch (error) {
+      setIsChangingDocument(false);
+    }
   }
 
   if (isDesktop) {
@@ -199,7 +209,12 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
             {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
               <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
-                <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                <Button
+                  disabled={isChangingDocument}
+                  onClick={async () => await changeDocument()}
+                  size={"sm"}
+                  className="text-xs absolute right-4 top-4">
+                  {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                   Change document
                 </Button>
                 <div className="p-6 bg-white rounded-full">
@@ -948,6 +963,7 @@ function ParentGuardianFileUploaderDrawer({
   value,
 }: ParentGuardianFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const [isChangingDocument, setIsChangingDocument] = useState<boolean>(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       return await uploadFileToBucket(false, file, academicYear);
@@ -986,24 +1002,32 @@ function ParentGuardianFileUploaderDrawer({
     mutate(value);
   }
 
-  function changeDocument() {
+  async function changeDocument() {
     if (!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]) return;
 
-    setFormState({
-      uploadRequirements: {
-        studentUploadRequirements: {
-          ...formState.uploadRequirements.studentUploadRequirements,
-        },
+    try {
+      setIsChangingDocument(true);
+      await deleteFile(formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string, academicYear);
 
-        parentGuardianUploadRequirements: {
-          ...formState.uploadRequirements.parentGuardianUploadRequirements,
-          [name]: undefined,
-        },
-      },
-    });
+      setFormState({
+        uploadRequirements: {
+          studentUploadRequirements: {
+            ...formState.uploadRequirements.studentUploadRequirements,
+          },
 
-    form.setValue(name, undefined);
-    form.setValue("isValid", false);
+          parentGuardianUploadRequirements: {
+            ...formState.uploadRequirements.parentGuardianUploadRequirements,
+            [name]: undefined,
+          },
+        },
+      });
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+      setIsChangingDocument(false);
+    } catch (error) {
+      setIsChangingDocument(false);
+    }
   }
 
   return (
@@ -1052,7 +1076,12 @@ function ParentGuardianFileUploaderDrawer({
 
           {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
-              <Button onClick={changeDocument} size={"sm"} className="absolute text-xs right-4 top-4">
+              <Button
+                disabled={isChangingDocument}
+                onClick={async () => await changeDocument()}
+                size={"sm"}
+                className="text-xs absolute right-4 top-4">
+                {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                 Change
               </Button>
               <div className="p-6 bg-white rounded-full">

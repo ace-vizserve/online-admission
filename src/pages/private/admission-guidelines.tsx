@@ -47,7 +47,7 @@ function AdmissionGuidelines() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="relative w-full max-w-6xl mx-auto flex flex-col gap-8 py-8 md:gap-10 md:py-12 px-4 md:px-6">
-        <div className="text-center space-y-4 py-8">
+        <div className="text-center space-y-4 py-8 px-4 md:px-6">
           <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-2xl mb-4">
             <GraduationCap className="size-6 md:size-8 text-primary" />
           </div>
@@ -88,8 +88,8 @@ function AdmissionGuidelines() {
           </CardFooter>
         </Card>
 
-        <Card className="border-none shadow-none overflow-hidden">
-          <CardHeader>
+        <Card className="border-none shadow-none overflow-hidden px-4 md:px-6">
+          <CardHeader className="p-0">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-sm">
                 Resources
@@ -108,7 +108,7 @@ function AdmissionGuidelines() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6">
+          <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 px-0">
             <div className="space-y-1">
               <p className="text-sm font-semibold text-secondary">Created by Creatives Team</p>
               <p className="text-xs text-muted-foreground">Last updated: 2024</p>
@@ -154,7 +154,7 @@ function EducationLevelTable() {
         </p>
       </div>
 
-      <div className="border-2 rounded-xl overflow-hidden shadow-sm">
+      <div className="border rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
