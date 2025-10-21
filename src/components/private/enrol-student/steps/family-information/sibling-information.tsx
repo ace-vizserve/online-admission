@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,11 +96,12 @@ function SiblingInformation() {
                 <div className="w-full max-w-md mx-auto">
                   <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">
                     <AlertTriangleIcon className="size-4" />
-                    <AlertTitle>Information Required</AlertTitle>
-                    <AlertDescription className="text-amber-500">
-                      Please save the father's and mother's information by clicking the Save button on each tab before
+                    <AlertTitle>Confirmation Required</AlertTitle>
+                    <p className="text-amber-500 col-start-2 text-sm">
+                      Please save and confirm the father's and mother's information by clicking the{" "}
+                      <span className="font-semibold">"Confirm & Save"</span> button on each tab separately before
                       proceeding.
-                    </AlertDescription>
+                    </p>
                   </Alert>
                 </div>
                 <br />
