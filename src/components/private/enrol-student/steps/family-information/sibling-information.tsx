@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { ArrowRight, CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
+import { AlertTriangleIcon, ArrowRight, CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -90,6 +91,18 @@ function SiblingInformation() {
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+            {(!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid) && (
+              <div className="w-full max-w-md mx-auto">
+                <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">
+                  <AlertTriangleIcon className="size-4" />
+                  <AlertTitle>Information Required</AlertTitle>
+                  <AlertDescription className="text-amber-500">
+                    Please save the father's and mother's information by clicking the Save button on each tab before
+                    proceeding.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
             {fields.map((field, index) => (
               <Card key={field.id} className="flex flex-col space-y-8 shadow-none border-none">
                 <CardHeader className="w-full flex items-center justify-between">

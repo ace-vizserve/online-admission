@@ -482,7 +482,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
           </div>
         )}
 
-        {Object.values(eduCertDocument).some((v) => v == null) ? (
+        {Object.values(eduCertDocument).every((v) => v == null) ? (
           <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
             <div className="w-full flex relative">
               <StatusBadge className="absolute -top-2" status={"Missing"} />

@@ -64,7 +64,9 @@ const NOT_FILE_INPUTS = ["passExpiry", "passType", "passportExpiry", "passportNu
 
 const MULTIPLE_FILE_UPLOADS = ["medical", "passport", "pass", "birthCert", "educCert"];
 
-const TO_FOLLOW_DOCS = ["idPicture", "passport", "pass", "birthCert", "medical", "educCert"];
+const TO_FOLLOW_DOCS = ["idPicture", "passport", "pass", "birthCert"];
+
+const OPTIONAL_DOCS = ["medical", "educCert"];
 
 const StudentFileUploaderDialog = memo(function ({
   form,
@@ -350,78 +352,80 @@ const StudentFileUploaderDialog = memo(function ({
               </Button>
             )}
 
-            {!formState.uploadRequirements?.studentUploadRequirements?.[name] && TO_FOLLOW_DOCS.includes(name) && (
-              <FormField
-                control={form.control}
-                name="toFollowDocs"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-end gap-3 pt-2">
-                    <div className="flex items-center gap-2">
-                      <FormLabel>Document to follow</FormLabel>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <InfoIcon className="size-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent side="left" className="max-w-xs">
-                          <p className="text-sm">
-                            Enable this if you don't have the document ready now. You can submit it after enrollment is
-                            complete.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        {...field}
-                        checked={form.getValues("toFollowDocs")?.includes(name)}
-                        onCheckedChange={(checked) => {
-                          const current = form.getValues("toFollowDocs") || [];
-                          const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+            {!formState.uploadRequirements?.studentUploadRequirements?.[name] &&
+              TO_FOLLOW_DOCS.includes(name) &&
+              !OPTIONAL_DOCS.includes(name) && (
+                <FormField
+                  control={form.control}
+                  name="toFollowDocs"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-end gap-3 pt-2">
+                      <div className="flex items-center gap-2">
+                        <FormLabel>Document to follow</FormLabel>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-xs">
+                            <p className="text-sm">
+                              Enable this if you don't have the document ready now. You can submit it after enrollment
+                              is complete.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          {...field}
+                          checked={form.getValues("toFollowDocs")?.includes(name)}
+                          onCheckedChange={(checked) => {
+                            const current = form.getValues("toFollowDocs") || [];
+                            const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
 
-                          form.setValue("toFollowDocs", updatedDocs);
+                            form.setValue("toFollowDocs", updatedDocs);
 
-                          if (checked) {
-                            if (name === "passport") {
-                              form.setValue("passportNumber", "");
-                              form.setValue("passportExpiry", undefined);
+                            if (checked) {
+                              if (name === "passport") {
+                                form.setValue("passportNumber", "");
+                                form.setValue("passportExpiry", undefined);
+                              }
+                              if (name === "pass") {
+                                form.setValue("passType", "");
+                                form.setValue("passExpiry", undefined);
+                              }
                             }
-                            if (name === "pass") {
-                              form.setValue("passType", "");
-                              form.setValue("passExpiry", undefined);
-                            }
-                          }
 
-                          const updatedStudentReqs = {
-                            ...formState.uploadRequirements!.studentUploadRequirements,
-                            isValid: false,
-                            toFollowDocs: updatedDocs,
-                          };
+                            const updatedStudentReqs = {
+                              ...formState.uploadRequirements!.studentUploadRequirements,
+                              isValid: false,
+                              toFollowDocs: updatedDocs,
+                            };
 
-                          if (checked) {
-                            if (name === "passport") {
-                              updatedStudentReqs.passportNumber = "";
-                              updatedStudentReqs.passportExpiry = undefined;
+                            if (checked) {
+                              if (name === "passport") {
+                                updatedStudentReqs.passportNumber = "";
+                                updatedStudentReqs.passportExpiry = undefined;
+                              }
+                              if (name === "pass") {
+                                updatedStudentReqs.passType = "";
+                                updatedStudentReqs.passExpiry = undefined;
+                              }
                             }
-                            if (name === "pass") {
-                              updatedStudentReqs.passType = "";
-                              updatedStudentReqs.passExpiry = undefined;
-                            }
-                          }
 
-                          setFormState({
-                            ...formState,
-                            uploadRequirements: {
-                              ...formState.uploadRequirements!,
-                              studentUploadRequirements: updatedStudentReqs,
-                            },
-                          });
-                        }}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            )}
+                            setFormState({
+                              ...formState,
+                              uploadRequirements: {
+                                ...formState.uploadRequirements!,
+                                studentUploadRequirements: updatedStudentReqs,
+                              },
+                            });
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
 
             {name === "pass" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
@@ -833,78 +837,80 @@ function StudentFileUploaderDrawer({
             </Button>
           )}
 
-          {!formState.uploadRequirements?.studentUploadRequirements?.[name] && TO_FOLLOW_DOCS.includes(name) && (
-            <FormField
-              control={form.control}
-              name="toFollowDocs"
-              render={({ field }) => (
-                <FormItem className="flex items-center justify-end gap-3 pt-2">
-                  <div className="flex items-center gap-2">
-                    <FormLabel>Document to follow</FormLabel>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <InfoIcon className="size-4 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="max-w-xs">
-                        <p className="text-sm">
-                          Enable this if you don't have the document ready now. You can submit it after enrollment is
-                          complete.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      {...field}
-                      checked={form.getValues("toFollowDocs")?.includes(name)}
-                      onCheckedChange={(checked) => {
-                        const current = form.getValues("toFollowDocs") || [];
-                        const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+          {!formState.uploadRequirements?.studentUploadRequirements?.[name] &&
+            TO_FOLLOW_DOCS.includes(name) &&
+            !OPTIONAL_DOCS.includes(name) && (
+              <FormField
+                control={form.control}
+                name="toFollowDocs"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-end gap-3 pt-2">
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Document to follow</FormLabel>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="max-w-xs">
+                          <p className="text-sm">
+                            Enable this if you don't have the document ready now. You can submit it after enrollment is
+                            complete.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        {...field}
+                        checked={form.getValues("toFollowDocs")?.includes(name)}
+                        onCheckedChange={(checked) => {
+                          const current = form.getValues("toFollowDocs") || [];
+                          const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
 
-                        form.setValue("toFollowDocs", updatedDocs);
+                          form.setValue("toFollowDocs", updatedDocs);
 
-                        if (checked) {
-                          if (name === "passport") {
-                            form.setValue("passportNumber", "");
-                            form.setValue("passportExpiry", undefined);
+                          if (checked) {
+                            if (name === "passport") {
+                              form.setValue("passportNumber", "");
+                              form.setValue("passportExpiry", undefined);
+                            }
+                            if (name === "pass") {
+                              form.setValue("passType", "");
+                              form.setValue("passExpiry", undefined);
+                            }
                           }
-                          if (name === "pass") {
-                            form.setValue("passType", "");
-                            form.setValue("passExpiry", undefined);
-                          }
-                        }
 
-                        const updatedStudentReqs = {
-                          ...formState.uploadRequirements!.studentUploadRequirements,
-                          isValid: false,
-                          toFollowDocs: updatedDocs,
-                        };
+                          const updatedStudentReqs = {
+                            ...formState.uploadRequirements!.studentUploadRequirements,
+                            isValid: false,
+                            toFollowDocs: updatedDocs,
+                          };
 
-                        if (checked) {
-                          if (name === "passport") {
-                            updatedStudentReqs.passportNumber = "";
-                            updatedStudentReqs.passportExpiry = undefined;
+                          if (checked) {
+                            if (name === "passport") {
+                              updatedStudentReqs.passportNumber = "";
+                              updatedStudentReqs.passportExpiry = undefined;
+                            }
+                            if (name === "pass") {
+                              updatedStudentReqs.passType = "";
+                              updatedStudentReqs.passExpiry = undefined;
+                            }
                           }
-                          if (name === "pass") {
-                            updatedStudentReqs.passType = "";
-                            updatedStudentReqs.passExpiry = undefined;
-                          }
-                        }
 
-                        setFormState({
-                          ...formState,
-                          uploadRequirements: {
-                            ...formState.uploadRequirements!,
-                            studentUploadRequirements: updatedStudentReqs,
-                          },
-                        });
-                      }}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          )}
+                          setFormState({
+                            ...formState,
+                            uploadRequirements: {
+                              ...formState.uploadRequirements!,
+                              studentUploadRequirements: updatedStudentReqs,
+                            },
+                          });
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
 
           {name === "pass" && (
             <div className="grid grid-cols-1 gap-2 w-full">
