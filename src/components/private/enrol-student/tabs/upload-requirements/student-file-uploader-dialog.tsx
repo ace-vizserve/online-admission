@@ -1,4 +1,4 @@
-import { uploadFileToBucket } from "@/actions/private";
+import { deleteFile, uploadFileToBucket } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -45,11 +45,12 @@ import {
   Download,
   ExternalLink,
   InfoIcon,
+  Loader2,
   Paperclip,
   Trash2,
   Upload,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
@@ -76,6 +77,7 @@ const StudentFileUploaderDialog = memo(function ({
   setFormState,
 }: StudentFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const [isChangingDocument, setIsChangingDocument] = useState<boolean>(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       const isImage = file.length == 1;
@@ -126,24 +128,32 @@ const StudentFileUploaderDialog = memo(function ({
     mutate(value);
   }
 
-  function changeDocument() {
+  async function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
 
-    setFormState({
-      uploadRequirements: {
-        parentGuardianUploadRequirements: {
-          ...formState.uploadRequirements.parentGuardianUploadRequirements,
-        },
-        studentUploadRequirements: {
-          ...formState.uploadRequirements.studentUploadRequirements,
-          [name]: undefined,
-          isValid: false,
-        },
-      },
-    });
+    try {
+      setIsChangingDocument(true);
+      await deleteFile(formState.uploadRequirements?.studentUploadRequirements[name] as string, academicYear);
 
-    form.setValue(name, undefined);
-    form.setValue("isValid", false);
+      setFormState({
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            ...formState.uploadRequirements.parentGuardianUploadRequirements,
+          },
+          studentUploadRequirements: {
+            ...formState.uploadRequirements.studentUploadRequirements,
+            [name]: undefined,
+            isValid: false,
+          },
+        },
+      });
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+      setIsChangingDocument(false);
+    } catch (error) {
+      setIsChangingDocument(false);
+    }
   }
 
   if (isDesktop) {
@@ -210,7 +220,12 @@ const StudentFileUploaderDialog = memo(function ({
 
             {formState.uploadRequirements?.studentUploadRequirements[name] ? (
               <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
-                <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+                <Button
+                  disabled={isChangingDocument}
+                  onClick={async () => await changeDocument()}
+                  size={"sm"}
+                  className="text-xs absolute right-4 top-4">
+                  {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                   Change document
                 </Button>
                 <div className="p-6 bg-white rounded-full">
@@ -245,7 +260,7 @@ const StudentFileUploaderDialog = memo(function ({
                         <FileInput
                           {...field}
                           id="fileInput"
-                          className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
+                          className={cn("bg-muted pointer-events-auto", {
                             "opacity-70 cursor-not-allowed pointer-events-none":
                               formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
                           })}>
@@ -596,6 +611,7 @@ function StudentFileUploaderDrawer({
   value,
 }: StudentFileUploaderDialogProps) {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const [isChangingDocument, setIsChangingDocument] = useState<boolean>(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async (file: File[]) => {
       const isImage = file.length == 1;
@@ -642,24 +658,32 @@ function StudentFileUploaderDrawer({
     mutate(value);
   }
 
-  function changeDocument() {
+  async function changeDocument() {
     if (!formState.uploadRequirements?.studentUploadRequirements[name]) return;
 
-    setFormState({
-      uploadRequirements: {
-        parentGuardianUploadRequirements: {
-          ...formState.uploadRequirements.parentGuardianUploadRequirements,
-        },
-        studentUploadRequirements: {
-          ...formState.uploadRequirements.studentUploadRequirements,
-          [name]: undefined,
-          isValid: false,
-        },
-      },
-    });
+    try {
+      setIsChangingDocument(true);
+      await deleteFile(formState.uploadRequirements?.studentUploadRequirements[name] as string, academicYear);
 
-    form.setValue(name, undefined);
-    form.setValue("isValid", false);
+      setFormState({
+        uploadRequirements: {
+          parentGuardianUploadRequirements: {
+            ...formState.uploadRequirements.parentGuardianUploadRequirements,
+          },
+          studentUploadRequirements: {
+            ...formState.uploadRequirements.studentUploadRequirements,
+            [name]: undefined,
+            isValid: false,
+          },
+        },
+      });
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+      setIsChangingDocument(false);
+    } catch (error) {
+      setIsChangingDocument(false);
+    }
   }
 
   return (
@@ -725,7 +749,12 @@ function StudentFileUploaderDrawer({
 
           {formState.uploadRequirements?.studentUploadRequirements[name] ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
-              <Button onClick={changeDocument} size={"sm"} className="text-xs absolute right-4 top-4">
+              <Button
+                disabled={isChangingDocument}
+                onClick={async () => await changeDocument()}
+                size={"sm"}
+                className="text-xs absolute right-4 top-4">
+                {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                 Change
               </Button>
               <div className="p-6 bg-white rounded-full">
