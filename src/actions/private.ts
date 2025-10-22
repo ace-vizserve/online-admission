@@ -1934,7 +1934,9 @@ export async function uploadFileToBucket(isImage: boolean, files: File[], academ
 
 export async function deleteFile(file: string, academicYear: string) {
   try {
-    const { error } = await supabase.storage.from("parent-portal").remove([`${academicYear}/${file}`]);
+    const fileName = file.split("/").pop();
+
+    const { error } = await supabase.storage.from("parent-portal").remove([`${academicYear}/documents/${fileName}`]);
 
     if (error) {
       throw new Error(error.message);
