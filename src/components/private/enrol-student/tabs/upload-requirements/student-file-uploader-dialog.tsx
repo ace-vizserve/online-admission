@@ -260,7 +260,7 @@ const StudentFileUploaderDialog = memo(function ({
                         <FileInput
                           {...field}
                           id="fileInput"
-                          className={cn("bg-muted pointer-events-auto", {
+                          className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
                             "opacity-70 cursor-not-allowed pointer-events-none":
                               formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
                           })}>
