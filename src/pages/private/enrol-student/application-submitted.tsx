@@ -1,5 +1,6 @@
 import PageMetaData from "@/components/page-metadata";
 import { buttonVariants } from "@/components/ui/button";
+import { Confetti } from "@/components/ui/confetti";
 import { APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION } from "@/data";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router";
@@ -10,6 +11,9 @@ function ApplicationSubmitted() {
   return (
     <>
       <PageMetaData title={title} description={description} />
+
+      <Confetti className="absolute inset-0 w-full h-dvh" />
+
       <div className="min-h-dvh flex flex-col items-center justify-center text-center p-4">
         <div className="flex flex-col items-center gap-2">
           <div className="relative animate-bounce">
