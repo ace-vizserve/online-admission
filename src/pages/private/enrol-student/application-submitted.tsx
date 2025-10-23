@@ -12,7 +12,7 @@ function ApplicationSubmitted() {
     <>
       <PageMetaData title={title} description={description} />
 
-      <Confetti className="absolute inset-0 w-full h-dvh" />
+      <Confetti className="absolute inset-0 w-full h-dvh pointer-events-none" />
 
       <div className="min-h-dvh flex flex-col items-center justify-center text-center p-4">
         <div className="flex flex-col items-center gap-2">
