@@ -282,6 +282,15 @@ export function extractFamilyInfo(studentInformation: FamilyInfo[]) {
   };
 }
 
+export const getChangedKeys = (defaultObject: Record<string, unknown>, newObject: Record<string, unknown>) => {
+  const skippedKeys = ["id", "created_at", "studentNumber", "enroleePhoto"];
+
+  return Object.keys({ ...defaultObject, ...newObject }).filter((key) => {
+    if (skippedKeys.includes(key)) return false;
+    return JSON.stringify(defaultObject[key]) !== JSON.stringify(newObject[key]);
+  });
+};
+
 export function filterKeysBySubstring(obj: Record<string, unknown>, substring: string) {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => key.includes(substring)));
 }

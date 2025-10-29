@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 import { updateEnrollmentApplicationDetails } from "@/actions/private";
+import { sendEmailNotification } from "@/actions/send-email-notification";
 import InputWithIcon from "@/components/private/student-profile/input-with-icon";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,7 +13,7 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import useSession from "@/hooks/use-session";
-import { cn, extractSiblings, removeEmptyKeys } from "@/lib/utils";
+import { cn, extractSiblings, getChangedKeys, removeEmptyKeys } from "@/lib/utils";
 import { FamilyInfo } from "@/types";
 import { familyInformationSchema, FamilyInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,7 +36,7 @@ import {
   Smile,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -77,23 +78,9 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
 function EditFamilyInformation({ familyInformation }: { familyInformation: FamilyInfo }) {
   const [searchParams] = useSearchParams();
   const { session } = useSession();
+  const academicYear = searchParams.get("academicYear");
   const params = useParams();
   const queryClient = useQueryClient();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (enrollmentDetails: FamilyInformationSchema) => {
-      const academicYear = searchParams.get("academicYear");
-
-      if (!academicYear || !params.id) return;
-
-      return await updateEnrollmentApplicationDetails({ academicYear, enroleeNumber: params.id, enrollmentDetails });
-    },
-    onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: ["student-documents", params.id],
-      });
-    },
-  });
-
   const {
     fatherMiddleName,
     fatherMobile,
@@ -106,9 +93,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
     fatherEmail,
     motherEmail,
   } = familyInformation;
-
   const siblings = extractSiblings(familyInformation);
-
   const form = useForm<FamilyInformationSchema>({
     resolver: zodResolver(familyInformationSchema),
     defaultValues: {
@@ -121,6 +106,48 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
       guardianMobile: guardianMobile ? String(guardianMobile) : undefined,
       siblings: siblings as unknown as FamilyInformationSchema["siblings"],
       noFatherInfo: fatherEmail ? false : true,
+      noGuardianInfo: guardianEmail ? false : true,
+    },
+  });
+  const initialValuesRef = useRef(form.getValues());
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (enrollmentDetails: FamilyInformationSchema) => {
+      if (!academicYear || !params.id) return;
+
+      return await updateEnrollmentApplicationDetails({ academicYear, enroleeNumber: params.id, enrollmentDetails });
+    },
+    onSuccess: async (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["student-documents", params.id],
+      });
+
+      if (initialValuesRef.current.fatherBirthDay) {
+        initialValuesRef.current.fatherBirthDay = new Date(initialValuesRef.current.fatherBirthDay);
+      }
+
+      if (initialValuesRef.current.motherBirthDay) {
+        initialValuesRef.current.motherBirthDay = new Date(initialValuesRef.current.motherBirthDay);
+      }
+
+      if (initialValuesRef.current.guardianBirthDay) {
+        initialValuesRef.current.guardianBirthDay = new Date(initialValuesRef.current.guardianBirthDay);
+      }
+
+      const updatedSections = getChangedKeys(initialValuesRef.current, variables);
+      const parentEmail = session?.user.email as string;
+      const role = session?.user.user_metadata.relationship as string;
+      if (!academicYear || !params.id) return;
+      if (updatedSections.length) {
+        await sendEmailNotification({
+          parentEmail,
+          role,
+          updatedSections,
+          section: "Parent/Guardian Information",
+          academicYear,
+          enroleeNumber: params.id,
+        });
+      }
+      initialValuesRef.current = variables;
     },
   });
 

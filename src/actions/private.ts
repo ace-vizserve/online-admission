@@ -1960,6 +1960,7 @@ export async function updateEnrollmentApplicationDetails({
     const { firstName, middleName, lastName, siblings } = enrollmentDetails;
 
     delete enrollmentDetails.noFatherInfo;
+    delete enrollmentDetails.noGuardianInfo;
     delete enrollmentDetails.isValid;
 
     let flattenedSiblings: Record<string, unknown> = {};

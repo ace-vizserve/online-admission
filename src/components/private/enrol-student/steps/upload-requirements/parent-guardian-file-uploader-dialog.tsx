@@ -451,6 +451,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               }
                             }
 
+                            onValueChange(null);
+
+                            form.resetField(name);
+
                             setFormState({
                               ...formState,
                               uploadRequirements: {
@@ -1237,6 +1241,10 @@ function ParentGuardianFileUploaderDrawer({
                             updatedParentGuardianReqs.guardianPassExpiry = undefined;
                           }
                         }
+
+                        onValueChange(null);
+
+                        form.resetField(name);
 
                         setFormState({
                           ...formState,

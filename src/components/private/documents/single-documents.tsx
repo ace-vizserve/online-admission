@@ -1,4 +1,5 @@
 import { updateEnrollmentApplicationDetails } from "@/actions/private";
+import { sendEmailNotification } from "@/actions/send-email-notification";
 import InputWithIcon from "@/components/private/student-profile/input-with-icon";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { maritalStatuses, religions } from "@/data";
-import { cn } from "@/lib/utils";
+import useSession from "@/hooks/use-session";
+import { cn, getChangedKeys } from "@/lib/utils";
 import { Student } from "@/types";
 import { studentAddressContactAndInformationSchema, StudentAddressContactAndInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,7 +41,7 @@ import {
   Users,
   VenetianMask,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -82,25 +84,10 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
 
 function EditStudentInformation({ studentInformation }: { studentInformation: Student }) {
   const [searchParams] = useSearchParams();
+  const { session } = useSession();
+  const academicYear = searchParams.get("academicYear");
   const params = useParams();
   const queryClient = useQueryClient();
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (enrollmentDetails: StudentAddressContactAndInformationSchema) => {
-      const academicYear = searchParams.get("academicYear");
-
-      if (!academicYear || !params.id) return;
-
-      return await updateEnrollmentApplicationDetails({ academicYear, enroleeNumber: params.id, enrollmentDetails });
-    },
-    onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: ["student-documents", params.id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["student-profile", params.id],
-      });
-    },
-  });
   const { nationality, middleName, birthDay, gender, contactPersonNumber, homePhone, postalCode, religionOther } =
     studentInformation;
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(religionOther ? true : false);
@@ -113,6 +100,40 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
       contactPersonNumber: String(contactPersonNumber),
       homePhone: String(homePhone),
       postalCode: String(postalCode),
+    },
+  });
+
+  const initialValuesRef = useRef(form.getValues());
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (enrollmentDetails: StudentAddressContactAndInformationSchema) => {
+      if (!academicYear || !params.id) return;
+
+      return await updateEnrollmentApplicationDetails({ academicYear, enroleeNumber: params.id, enrollmentDetails });
+    },
+    onSuccess: async (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["student-documents", params.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["student-profile", params.id],
+      });
+      initialValuesRef.current.birthDay = new Date(initialValuesRef.current.birthDay);
+
+      const updatedSections = getChangedKeys(initialValuesRef.current, variables);
+      const parentEmail = session?.user.email as string;
+      const role = session?.user.user_metadata.relationship as string;
+      if (!academicYear || !params.id) return;
+      if (updatedSections.length) {
+        await sendEmailNotification({
+          parentEmail,
+          role,
+          updatedSections,
+          section: "Student Information",
+          academicYear,
+          enroleeNumber: params.id,
+        });
+      }
+      initialValuesRef.current = variables;
     },
   });
 
@@ -231,7 +252,18 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            captionLayout="dropdown"
+                          />
                         </PopoverContent>
                       </Popover>
 
