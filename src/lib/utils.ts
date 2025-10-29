@@ -283,10 +283,12 @@ export function extractFamilyInfo(studentInformation: FamilyInfo[]) {
 }
 
 export const getChangedKeys = (defaultObject: Record<string, unknown>, newObject: Record<string, unknown>) => {
-  const skippedKeys = ["id", "created_at", "studentNumber", "enroleePhoto"];
+  const skippedKeys = ["id", "created_at", "studentNumber", "enroleePhoto", "noFatherInfo", "noGuardianInfo"];
 
   return Object.keys({ ...defaultObject, ...newObject }).filter((key) => {
     if (skippedKeys.includes(key)) return false;
+    if (key === "siblings" && Array.isArray(defaultObject[key]) && !defaultObject[key].length) return false;
+    if (key === "siblings" && Array.isArray(newObject[key]) && !newObject[key].length) return false;
     return JSON.stringify(defaultObject[key]) !== JSON.stringify(newObject[key]);
   });
 };
