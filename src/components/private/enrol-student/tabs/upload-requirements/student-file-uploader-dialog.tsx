@@ -368,17 +368,6 @@ const StudentFileUploaderDialog = memo(function ({
 
                             form.setValue("toFollowDocs", updatedDocs);
 
-                            if (checked) {
-                              if (name === "passport") {
-                                form.setValue("passportNumber", "");
-                                form.setValue("passportExpiry", undefined);
-                              }
-                              if (name === "pass") {
-                                form.setValue("passType", "");
-                                form.setValue("passExpiry", undefined);
-                              }
-                            }
-
                             const updatedStudentReqs = {
                               ...formState.uploadRequirements!.studentUploadRequirements,
                               isValid: false,
@@ -389,12 +378,20 @@ const StudentFileUploaderDialog = memo(function ({
                               if (name === "passport") {
                                 updatedStudentReqs.passportNumber = "";
                                 updatedStudentReqs.passportExpiry = undefined;
+                                form.setValue("passportNumber", "");
+                                form.setValue("passportExpiry", undefined);
                               }
                               if (name === "pass") {
                                 updatedStudentReqs.passType = "";
                                 updatedStudentReqs.passExpiry = undefined;
+                                form.setValue("passType", "");
+                                form.setValue("passExpiry", undefined);
                               }
                             }
+
+                            onValueChange(null);
+
+                            form.resetField(name);
 
                             setFormState({
                               ...formState,
@@ -898,17 +895,6 @@ function StudentFileUploaderDrawer({
 
                           form.setValue("toFollowDocs", updatedDocs);
 
-                          if (checked) {
-                            if (name === "passport") {
-                              form.setValue("passportNumber", "");
-                              form.setValue("passportExpiry", undefined);
-                            }
-                            if (name === "pass") {
-                              form.setValue("passType", "");
-                              form.setValue("passExpiry", undefined);
-                            }
-                          }
-
                           const updatedStudentReqs = {
                             ...formState.uploadRequirements!.studentUploadRequirements,
                             isValid: false,
@@ -919,12 +905,20 @@ function StudentFileUploaderDrawer({
                             if (name === "passport") {
                               updatedStudentReqs.passportNumber = "";
                               updatedStudentReqs.passportExpiry = undefined;
+                              form.setValue("passportNumber", "");
+                              form.setValue("passportExpiry", undefined);
                             }
                             if (name === "pass") {
                               updatedStudentReqs.passType = "";
                               updatedStudentReqs.passExpiry = undefined;
+                              form.setValue("passType", "");
+                              form.setValue("passExpiry", undefined);
                             }
                           }
+
+                          onValueChange(null);
+
+                          form.resetField(name);
 
                           setFormState({
                             ...formState,

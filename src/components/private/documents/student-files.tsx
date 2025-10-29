@@ -1,4 +1,5 @@
 import { studentReuploadDocuments } from "@/actions/private";
+import { sendEmailNotification } from "@/actions/send-email-notification";
 import fileSvg from "@/assets/file.svg";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
 import { studentPassTypes } from "@/data";
+import useSession from "@/hooks/use-session";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { cn } from "@/lib/utils";
 import { StudentDocument, StudentDocumentUpdatePayload, StudentReuploadProps } from "@/types";
@@ -38,6 +40,7 @@ const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 function StudentFiles({ label, documents }: { label: string; documents: StudentDocument }) {
   const params = useParams();
   const [searchParams] = useSearchParams();
+  const { session } = useSession();
   const academicYear = searchParams.get("academicYear");
   const passportDocument = documents.documentsThatExpire[0];
   const passDocument = documents.documentsThatExpire[1];
@@ -157,6 +160,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               )}
 
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={passDocument?.passStatus ?? "Missing"}
                 academicYear={academicYear!}
                 documentType="pass"
@@ -267,6 +272,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               )}
 
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={passportDocument?.passportStatus ?? "Missing"}
                 academicYear={academicYear!}
                 documentType="passport"
@@ -338,6 +345,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               )}
 
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={idPicture.idPictureStatus!}
                 academicYear={academicYear!}
                 documentType="idPicture"
@@ -367,6 +376,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                 View document <EyeClosed />
               </Button>
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={"Missing"}
                 academicYear={academicYear!}
                 documentType="medical"
@@ -401,6 +412,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               </Link>
 
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={medicalCertDocument.medicalStatus!}
                 academicYear={academicYear!}
                 documentType="medical"
@@ -469,6 +482,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               )}
 
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={birthCertDocument.birthCertStatus!}
                 academicYear={academicYear!}
                 documentType="birthCert"
@@ -498,6 +513,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
                 View document <EyeClosed />
               </Button>
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={"Missing"}
                 academicYear={academicYear!}
                 documentType="educCert"
@@ -541,6 +558,8 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
               )}
 
               <StudentFileUploaderDialog
+                parentEmail={session?.user.email as string}
+                role={session?.user.user_metadata.relationship}
                 status={eduCertDocument?.educCertStatus ?? "Missing"}
                 academicYear={academicYear!}
                 documentType="educCert"
@@ -559,21 +578,32 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
 }
 
 function StudentFileUploaderDialog({
+  parentEmail,
+  role,
   status,
   academicYear,
   documentType,
   enroleeNumber,
   label,
-}: StudentReuploadProps & { label: string; status: string }) {
+}: StudentReuploadProps & { label: string; status: string; parentEmail: string; role: string }) {
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: StudentDocumentUpdatePayload) => {
       return await studentReuploadDocuments({ academicYear, documentType, enroleeNumber, payload });
     },
-    onSuccess() {
+    onSuccess: async () => {
       setIsOpen(false);
       queryClient.invalidateQueries({
         queryKey: ["student-documents", enroleeNumber],
+      });
+
+      await sendEmailNotification({
+        parentEmail,
+        role,
+        updatedSections: [label],
+        section: "Student Documents",
+        academicYear,
+        enroleeNumber,
       });
     },
   });

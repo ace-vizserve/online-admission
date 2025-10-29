@@ -1,4 +1,5 @@
 import { parentGuardianReuploadDocuments } from "@/actions/private";
+import { sendEmailNotification } from "@/actions/send-email-notification";
 import fileSvg from "@/assets/file.svg";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
 import { parentGuardianPassTypes } from "@/data";
+import useSession from "@/hooks/use-session";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { cn } from "@/lib/utils";
 import { FamilyDocument, ParentGuardianDocumentUpdatePayload, ParentGuardianReuploadProps } from "@/types";
@@ -50,6 +52,7 @@ function RenderFamilyDocCard({
   documentType: string;
   payload: Record<string, unknown>;
 }) {
+  const { session } = useSession();
   const isMissing = !fileUrl;
   const params = useParams();
   const [searchParams] = useSearchParams();
@@ -133,6 +136,7 @@ function RenderFamilyDocCard({
             </Button>
           )}
           <ParentGuardianFileUploaderDialog
+            parentEmail={session?.user.email as string}
             role={role}
             status={status!}
             academicYear={academicYear!}
@@ -293,22 +297,31 @@ function FamilyFiles({
 }
 
 function ParentGuardianFileUploaderDialog({
+  parentEmail,
   role,
   status,
   academicYear,
   documentType,
   enroleeNumber,
   label,
-}: ParentGuardianReuploadProps & { label: string; status: string; role: string }) {
+}: ParentGuardianReuploadProps & { label: string; status: string; role: string; parentEmail: string }) {
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: ParentGuardianDocumentUpdatePayload) => {
       return await parentGuardianReuploadDocuments({ academicYear, documentType, enroleeNumber, payload, role });
     },
-    onSuccess() {
+    onSuccess: async () => {
       setIsOpen(false);
       queryClient.invalidateQueries({
         queryKey: ["family-documents", enroleeNumber],
+      });
+      await sendEmailNotification({
+        parentEmail,
+        role,
+        updatedSections: [label],
+        section: "Parent/Guardian Documents",
+        academicYear,
+        enroleeNumber,
       });
     },
   });

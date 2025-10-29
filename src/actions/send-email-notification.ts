@@ -1,16 +1,28 @@
-import { Resend } from "resend";
+import { supabase } from "@/lib/client";
 
-const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY as string;
+type Props = {
+  academicYear: string;
+  enroleeNumber: string;
+  role: string;
+  parentEmail: string;
+  updatedSections: string[];
+  section: "Student Information" | "Student Documents" | "Parent/Guardian Information" | "Parent/Guardian Documents";
+};
 
-const resend = new Resend(RESEND_API_KEY);
-
-export async function sendEmailNotification() {
+export async function sendEmailNotification({
+  parentEmail,
+  role,
+  updatedSections,
+  section,
+  enroleeNumber,
+  academicYear,
+}: Props) {
   try {
-    const { data, error } = await resend.emails.send({
-      from: "Acme <onboarding@resend.dev>",
-      to: ["delivered@resend.dev"],
-      subject: "Hello World",
-      html: "<strong>It works!</strong>",
+    const admissionPanelParams = Number(enroleeNumber.slice(3));
+    const admissionPanelUrl = `https://panel.enrol.hfse.edu.sg/admin/content/${academicYear}_enrolment_applications/${admissionPanelParams}`;
+
+    const { data, error } = await supabase.functions.invoke("resend-email", {
+      body: { role, parentEmail, updatedSections, section, admissionPanelUrl },
     });
 
     if (error) {
