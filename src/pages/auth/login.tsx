@@ -1,4 +1,5 @@
 import { userLogin } from "@/actions/auth";
+import { sendEmailNotification } from "@/actions/send-email-notification";
 import students from "@/assets/students.webp";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
@@ -15,6 +16,7 @@ import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { motion } from "motion/react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 
@@ -37,6 +39,12 @@ function Login() {
   function onSubmit(values: LoginSchema) {
     mutate(values);
   }
+
+  useEffect(() => {
+    (async () => {
+      await sendEmailNotification();
+    })();
+  }, []);
 
   return (
     <>
