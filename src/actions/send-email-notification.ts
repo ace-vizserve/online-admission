@@ -1,5 +1,4 @@
 import { Resend } from "resend";
-import { toast } from "sonner";
 
 const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY as string;
 
@@ -22,6 +21,5 @@ export async function sendEmailNotification() {
   } catch (error) {
     const err = error as Error;
     console.log(err);
-    toast.error(err.message);
   }
 }
