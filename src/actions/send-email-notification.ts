@@ -18,11 +18,29 @@ export async function sendEmailNotification({
   academicYear,
 }: Props) {
   try {
+    const { data: studentName, error: fetchError } = await supabase
+      .from(`${academicYear}_enrolment_applications`)
+      .select("firstName, middleName, lastName")
+      .eq("enroleeNumber", enroleeNumber)
+      .single();
+
+    if (fetchError) {
+      throw new Error(fetchError.message);
+    }
+
     const admissionPanelParams = Number(enroleeNumber.slice(3));
     const admissionPanelUrl = `https://panel.enrol.hfse.edu.sg/admin/content/${academicYear}_enrolment_applications/${admissionPanelParams}`;
 
     const { data, error } = await supabase.functions.invoke("resend-email", {
-      body: { role, parentEmail, updatedSections, section, admissionPanelUrl },
+      body: {
+        role,
+        parentEmail,
+        updatedSections,
+        section,
+        admissionPanelUrl,
+        enrollmentNumber: enroleeNumber,
+        studentName: `${studentName.lastName}, ${studentName.firstName} ${studentName.lastName ?? ""}`,
+      },
     });
 
     if (error) {
