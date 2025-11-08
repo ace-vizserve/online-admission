@@ -1055,7 +1055,7 @@ function ParentGuardianFileUploaderDrawer({
           <span className="text-muted-foreground text-xs">{description}</span>
         </div>
       </div>
-      <Drawer>
+      <Drawer repositionInputs={false}>
         <DrawerTrigger asChild>
           <Button variant={errors[name] != null ? "destructive" : "outline"}>
             {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
