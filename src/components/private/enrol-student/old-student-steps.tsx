@@ -108,12 +108,11 @@ function OldStudentSteps() {
             variant: "outline",
           })
         }>
-        {studentEnrolmentDocsIsInvalid ||
-          (parentGuardianEnrolmentDocsIsInvalid && (
-            <Badge className="text-[0.7rem] font-semibold absolute right-3 top-3" variant={"destructive"}>
-              Unsaved
-            </Badge>
-          ))}
+        {(studentEnrolmentDocsIsInvalid || parentGuardianEnrolmentDocsIsInvalid) && (
+          <Badge className="text-[0.7rem] font-semibold absolute right-3 top-3" variant={"destructive"}>
+            Unsaved
+          </Badge>
+        )}
         <div className="space-y-1 text-center px-6 py-4">
           <p className="text-sm font-semibold">Upload Requirements</p>
           <p className="text-xs text-muted-foreground">Review your documents</p>
