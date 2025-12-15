@@ -249,6 +249,7 @@ export const classLevels = [
 
 export const classTypes = [
   { label: "Enrichment Class", value: "Enrichment Class" },
+  { label: "Global Class (CAMBRIDGE)", value: "Global Class (CAMBRIDGE)" },
   { label: "Global Class 3 (ENGLISH + FRENCH)", value: "Global Class 3 (ENGLISH + FRENCH)" },
   { label: "Global Class 2 (ENGLISH + TAMIL)", value: "Global Class 2 (ENGLISH + TAMIL)" },
   { label: "Global Class 1 (ENGLISH + MANDARIN)", value: "Global Class 1 (ENGLISH + MANDARIN)" },
