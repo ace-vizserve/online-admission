@@ -53,7 +53,10 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
 ];
 const WHOLE_DAY_CLASS_LEVEL = ["Secondary One", "Secondary Two", "Secondary Three", "Secondary Four"];
 
-const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary One", "Secondary Two", "Secondary Three", "Secondary Four"];
+const ALLOWED_CAMBRIDGE_CLASS_TYPES = ["Global Class (CAMBRIDGE)", "Standard Class (ENGLISH + TAGALOG)"];
+const CAMBRIDGE_CLASS_LEVELS = ["Secondary One", "Secondary Two"];
+
+const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary Three", "Secondary Four"];
 const ENRICHMENT_CLASS_LEVELS = [
   "Youngstarters | Little Stars",
   "Youngstarters | Junior Stars",
@@ -125,6 +128,22 @@ function EnrollmentInformation() {
         description: "'Whole Day' is only available for secondary students.",
       });
       form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
+      return;
+    }
+
+    if (
+      CAMBRIDGE_CLASS_LEVELS.includes(values.levelApplied) &&
+      !ALLOWED_CAMBRIDGE_CLASS_TYPES.includes(values.classType)
+    ) {
+      toast.warning("Class Type Mismatch!", {
+        description:
+          "Only 'Global Class (CAMBRIDGE)' or 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
+      });
+
+      form.setError("classType", {
+        message: "Please select a valid class type for this level.",
+      });
+
       return;
     }
 
@@ -239,6 +258,13 @@ function EnrollmentInformation() {
                           <SelectContent>
                             {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Enrichment Class"}>Enrichment Class</SelectItem>
+                            ) : CAMBRIDGE_CLASS_LEVELS.includes(selectedLevel) ? (
+                              <>
+                                <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>
+                                <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
+                                  Standard Class (ENGLISH + TAGALOG)
+                                </SelectItem>
+                              </>
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
                                 Standard Class (ENGLISH + TAGALOG)
