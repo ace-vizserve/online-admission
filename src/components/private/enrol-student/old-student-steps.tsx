@@ -56,7 +56,9 @@ function OldStudentSteps() {
             variant: "outline",
           })
         }>
-        {isFamilyInfoInvalid && <Badge className="text-[0.7rem] font-semibold absolute right-3 top-3">Review</Badge>}
+        {isFamilyInfoInvalid && (
+          <Badge className="text-[0.65rem] md:text-[0.7rem] font-semibold absolute right-3 top-3">View</Badge>
+        )}
         <div className="space-y-1 text-center px-6 py-4">
           <p className="text-sm font-semibold">Family Information</p>
           <p className="text-xs text-muted-foreground">Review Family information</p>
@@ -80,8 +82,10 @@ function OldStudentSteps() {
           })
         }>
         {enrollmentInfoIsInvalid && (
-          <Badge className="text-[0.7rem] font-semibold absolute right-3 top-3" variant={"destructive"}>
-            Unsaved
+          <Badge
+            className="text-[0.65rem] md:text-[0.7rem] font-semibold absolute right-3 top-3"
+            variant={"destructive"}>
+            Incomplete
           </Badge>
         )}
         <div className="space-y-1 text-center px-6 py-4">
@@ -109,8 +113,10 @@ function OldStudentSteps() {
           })
         }>
         {(studentEnrolmentDocsIsInvalid || parentGuardianEnrolmentDocsIsInvalid) && (
-          <Badge className="text-[0.7rem] font-semibold absolute right-3 top-3" variant={"destructive"}>
-            Unsaved
+          <Badge
+            className="text-[0.65rem] md:text-[0.7rem] font-semibold absolute right-3 top-3"
+            variant={"destructive"}>
+            Incomplete
           </Badge>
         )}
         <div className="space-y-1 text-center px-6 py-4">
