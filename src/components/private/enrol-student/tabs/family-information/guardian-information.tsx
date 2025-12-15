@@ -35,7 +35,7 @@ function GuardianInformation() {
     resolver: zodResolver(guardianInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.guardianInfo,
-      noGuardianInfo: formState.familyInfo?.guardianInfo?.noGuardianInfo ?? false,
+      noGuardianInfo: formState.familyInfo?.guardianInfo?.noGuardianInfo,
     },
   });
 
