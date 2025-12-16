@@ -14,14 +14,17 @@ import { Button } from "@/components/ui/button";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import useSession from "@/hooks/use-session";
 import { EnrolOldStudentFormState } from "@/types";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CheckCircle2, Send } from "lucide-react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 function SubmitApplicationDialog() {
+  const navigate = useNavigate();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const params = useParams();
   const { session } = useSession();
   const queryClient = useQueryClient();
@@ -58,6 +61,13 @@ function SubmitApplicationDialog() {
       if (isNaN(Number(contactPersonNumber))) {
         toast.warning("Invalid Contact Person Number!", {
           description: "Please enter a valid mobile or telephone number for the contact person.",
+          action: {
+            label: "Edit Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/student-info?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -65,6 +75,13 @@ function SubmitApplicationDialog() {
       if (isNaN(Number(homePhone))) {
         toast.warning("Invalid Home Phone Number!", {
           description: "Please enter a valid home phone number.",
+          action: {
+            label: "Edit Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/student-info?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -72,6 +89,13 @@ function SubmitApplicationDialog() {
       if (isNaN(Number(postalCode))) {
         toast.warning("Invalid Postal Code!", {
           description: "Please enter a valid postal code.",
+          action: {
+            label: "Edit Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/student-info?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -79,6 +103,13 @@ function SubmitApplicationDialog() {
       if (formState.familyInfo == null) {
         toast.info("Review Family Information!", {
           description: "Please double-check all family details before submitting",
+          action: {
+            label: "View Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/family-info?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#1F45C7",
+          },
         });
         return;
       }
@@ -86,6 +117,13 @@ function SubmitApplicationDialog() {
       if (formState.enrollmentInfo == null) {
         toast.warning("Fill up the enrollment information tab!", {
           description: "Kindly double check and save your details before submitting",
+          action: {
+            label: "Edit Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/enrollment-info?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -93,6 +131,13 @@ function SubmitApplicationDialog() {
       if (!formState.enrollmentInfo.isValid) {
         toast.warning("Please save your enrollment information!", {
           description: "Kindly double check and save your details before submitting.",
+          action: {
+            label: "Save Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/enrollment-info?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -100,6 +145,13 @@ function SubmitApplicationDialog() {
       if (formState.uploadRequirements?.studentUploadRequirements == null) {
         toast.warning("Please upload the required student documents", {
           description: "Kindly double check and save your details before submitting.",
+          action: {
+            label: "Edit Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/documents?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -107,6 +159,13 @@ function SubmitApplicationDialog() {
       if (formState.uploadRequirements.studentUploadRequirements.isValid !== true) {
         toast.warning("Please review and save your student documents!", {
           description: "Kindly double check and save your details before submitting.",
+          action: {
+            label: "View Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/documents?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -114,6 +173,13 @@ function SubmitApplicationDialog() {
       if (formState.uploadRequirements?.parentGuardianUploadRequirements == null) {
         toast.warning("Please upload the required parent/guardian documents", {
           description: "Kindly double check and save your details before submitting.",
+          action: {
+            label: "Edit Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/documents?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -121,6 +187,13 @@ function SubmitApplicationDialog() {
       if (formState.uploadRequirements.parentGuardianUploadRequirements.isValid !== true) {
         toast.warning("Please review and save your parent/guardian documents!", {
           description: "Kindly double check and save your details before submitting.",
+          action: {
+            label: "View Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/documents?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
         });
         return;
       }
@@ -134,6 +207,13 @@ function SubmitApplicationDialog() {
       if (isNaN(Number(motherMobile))) {
         toast.warning("Invalid Mother Mobile!", {
           description: "Please enter a valid mobile number.",
+          action: {
+            label: "Edit Info",
+            onClick: () => navigate(`/enrol-student/${params.id}/family-info?academicYear=${academicYear}`),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#1F45C7",
+          },
         });
         return;
       }
@@ -144,6 +224,13 @@ function SubmitApplicationDialog() {
         if (isNaN(Number(guardianMobile))) {
           toast.warning("Invalid Guardian Mobile!", {
             description: "Please enter a valid mobile number.",
+            action: {
+              label: "Edit Info",
+              onClick: () => navigate(`/enrol-student/${params.id}/family-info?academicYear=${academicYear}`),
+            },
+            actionButtonStyle: {
+              backgroundColor: "#1F45C7",
+            },
           });
           return;
         }
@@ -155,6 +242,13 @@ function SubmitApplicationDialog() {
         if (isNaN(Number(fatherMobile))) {
           toast.warning("Invalid Father Mobile!", {
             description: "Please enter a valid mobile number.",
+            action: {
+              label: "Edit Info",
+              onClick: () => navigate(`/enrol-student/${params.id}/family-info?academicYear=${academicYear}`),
+            },
+            actionButtonStyle: {
+              backgroundColor: "#1F45C7",
+            },
           });
           return;
         }
