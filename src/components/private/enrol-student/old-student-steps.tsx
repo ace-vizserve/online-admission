@@ -50,7 +50,7 @@ function OldStudentSteps() {
               {
                 " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
                   isActive && !isFamilyInfoInvalid,
-                "border-b-4 border-b-primary": isActive && isFamilyInfoInvalid,
+                "border-b-4 border-b-primary hover:text-primary": isActive && isFamilyInfoInvalid,
               }
             ),
             variant: "outline",
@@ -75,7 +75,8 @@ function OldStudentSteps() {
               {
                 " bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
                   isActive && !enrollmentInfoIsInvalid,
-                "border-b-4 border-b-destructive": isActive && enrollmentInfoIsInvalid,
+                "border-b-4 border-b-destructive text-destructive hover:text-destructive":
+                  isActive && enrollmentInfoIsInvalid,
               }
             ),
             variant: "outline",
@@ -105,7 +106,7 @@ function OldStudentSteps() {
                 "bg-green-50 hover:bg-green-50 border-b-4 border-b-green-600 text-green-600 hover:text-green-600":
                   isActive && !studentEnrolmentDocsIsInvalid && !parentGuardianEnrolmentDocsIsInvalid,
 
-                "border-b-4 border-b-destructive":
+                "border-b-4 border-b-destructive text-destructive hover:text-destructive":
                   isActive && (studentEnrolmentDocsIsInvalid || parentGuardianEnrolmentDocsIsInvalid),
               }
             ),

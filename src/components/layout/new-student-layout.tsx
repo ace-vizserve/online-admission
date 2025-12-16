@@ -84,6 +84,7 @@ function NewStudentLayout() {
 }
 
 function SubmitApplicationDialog() {
+  const navigate = useNavigate();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const queryClient = useQueryClient();
   const { session } = useSession();
@@ -118,6 +119,27 @@ function SubmitApplicationDialog() {
     if (formState.uploadRequirements?.studentUploadRequirements == null) {
       toast.warning("Please upload the required documents in documents tab", {
         description: "Kindly double check every details before submitting",
+        action: {
+          label: "Edit Info",
+          onClick: () => navigate(`/enrol-student/new/documents?academicYear=${academicYear}`),
+        },
+        actionButtonStyle: {
+          backgroundColor: "#DC7609",
+        },
+      });
+      return;
+    }
+
+    if (formState.uploadRequirements?.parentGuardianUploadRequirements == null) {
+      toast.warning("Please upload the required documents in documents tab", {
+        description: "Kindly double check every details before submitting",
+        action: {
+          label: "Edit Info",
+          onClick: () => navigate(`/enrol-student/new/documents?academicYear=${academicYear}`),
+        },
+        actionButtonStyle: {
+          backgroundColor: "#DC7609",
+        },
       });
       return;
     }

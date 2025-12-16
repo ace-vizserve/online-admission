@@ -30,6 +30,9 @@ function SecuritySettings() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: updatePassword,
+    onSuccess() {
+      form.setValue("password", "");
+    },
   });
 
   const form = useForm<UpdatePasswordSchema>({
