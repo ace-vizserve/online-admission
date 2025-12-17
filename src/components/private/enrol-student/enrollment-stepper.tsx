@@ -1,5 +1,6 @@
 import discountPriceTag from "@/assets/discount-codes/sept-discounts-promo-tac.webp";
 import enrollmentProcess from "@/assets/enrollment-process.webp";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Stepper, { Step } from "@/components/ui/stepper";
 import "inner-image-zoom/lib/styles.min.css";
 import { Copy, Info, Phone } from "lucide-react";
@@ -59,11 +60,11 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
             </p>
           </div>
 
-          <div className="group relative overflow-hidden rounded-xl border bg-white transition-all">
+          <div className="relative overflow-hidden rounded-xl border bg-white transition-all">
             <InnerImageZoom hideCloseButton src={enrollmentProcess} className="w-full h-auto rounded-lg" />
 
-            <div className="absolute top-4 right-4 bg-black/60 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-              Hover to Zoom
+            <div className="absolute top-4 right-4 bg-black/60 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-md">
+              Click to Zoom
             </div>
           </div>
 
@@ -90,11 +91,24 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
           </div>
 
           <div className="flex flex-col items-center justify-center">
-            <img
-              src={discountPriceTag}
-              alt="Discount Promo"
-              className="max-h-64 md:max-h-80 w-auto rounded-lg shadow-lg transition-transform hover:scale-[1.02]"
-            />
+            <Dialog>
+              <DialogTrigger>
+                <div className="relative">
+                  <img
+                    src={discountPriceTag}
+                    alt="Discount Promo"
+                    className="max-h-64 md:max-h-80 w-auto rounded-lg shadow-lg transition-transform hover:scale-[1.02]"
+                  />
+
+                  <div className="absolute top-1 right-1 bg-black/60 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-md">
+                    Click to Zoom
+                  </div>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="!max-w-xl pt-10 md:pt-12">
+                <img src={discountPriceTag} alt="Discount Promo" className="w-full h-auto rounded-lg" />
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50 p-4">
