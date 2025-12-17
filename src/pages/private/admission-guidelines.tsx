@@ -1,16 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  AlertCircle,
-  BookOpen,
-  CheckCircle2,
-  ExternalLink,
-  Globe,
-  GraduationCap,
-  Heart,
-  Shield,
-  Users,
-} from "lucide-react";
+import { AlertCircle, BookOpen, CheckCircle2, ExternalLink, Globe, Heart, Shield, Users } from "lucide-react";
 
 function AdmissionGuidelines() {
   const requirements = [
@@ -67,15 +57,8 @@ function AdmissionGuidelines() {
       <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16">
         {/* Hero Section */}
         <div className="text-center space-y-6 mb-16">
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white rounded-full shadow-lg border-2 border-blue-100">
-            <GraduationCap className="w-6 h-6 text-blue-600" />
-            <span className="text-sm font-semibold text-blue-600 uppercase tracking-wide">Join Our HAPI Family</span>
-          </div>
-
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-blue-600 to-amber-600 bg-clip-text text-transparent">
-              Admission Requirements
-            </span>
+            <span className="text-secondary">Admission Requirements</span>
           </h1>
 
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
