@@ -121,7 +121,7 @@ function EnrolStudent() {
       {academicYear === "" ? (
         <AcademicYearSelector setSelectedAy={setAcademicYear} />
       ) : (
-        <div className="w-full h-dvh pt-0 md:pt-20 flex items-center justify-center bg-muted">
+        <div className="w-full min-h-dvh pt-0 md:pt-20 flex items-center justify-center bg-muted">
           {showEnrollmentProcess ? (
             <EnrollmentStepper academicYear={academicYear} setShowEnrollmentProcess={setShowEnrollmentProcess} />
           ) : (
@@ -140,12 +140,12 @@ function EnrolStudent() {
                 damping: 14,
                 duration: 0.1,
               }}
-              className="w-full">
-              <Card className="rounded-none w-full max-w-full sm:max-w-lg sm:mx-auto sm:rounded-xl">
+              className="w-full px-4">
+              <Card className="w-full sm:max-w-xl sm:mx-auto rounded-lg md:rounded-xl">
                 <CardHeader className="text-center">
-                  <CardTitle className="text-lg">Select a student</CardTitle>
-                  <CardDescription className="text-sm">
-                    All registered students for <strong>AY 2025</strong> are listed below.
+                  <CardTitle className="text-2xl md:text-3xl text-primary font-bold">Select a student</CardTitle>
+                  <CardDescription className="text-sm font-medium">
+                    All registered students for <strong className="text-primary">AY 2025</strong> are listed below.
                   </CardDescription>
                   <AcademicYearDropdown />
                 </CardHeader>
@@ -168,13 +168,13 @@ function EnrolStudent() {
                   <Button
                     disabled={isCheckingEnrollment}
                     onClick={async () => await checkEnrollmentExists()}
-                    variant={"outline"}
+                    variant={"secondary"}
                     size={"lg"}
                     className={cn("gap-2 w-full cursor-pointer", {
                       "opacity-70 pointer-events-none": selected == null,
                     })}>
                     {isCheckingEnrollment ? (
-                      <DotPulse size="30" speed="1.3" color="#1F45C7" />
+                      <DotPulse size="30" speed="1.3" color="#FFF" />
                     ) : (
                       <>
                         Enrol student <ArrowUpRight />
@@ -230,8 +230,10 @@ const StudentsList = memo(function ({ selected, setSelected, studentList }: Stud
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-1">
-                <span className="font-semibold text-sm capitalize">{student.enroleeFullName}</span>
-                <span className="text-xs text-muted-foreground font-medium capitalize">{student.levelApplied}</span>
+                <span className="font-bold text-sm md:text-base capitalize">{student.enroleeFullName}</span>
+                <span className="text-xs md:text-sm text-secondary font-semibold capitalize">
+                  {student.levelApplied}
+                </span>
               </div>
             </div>
           </Radio>

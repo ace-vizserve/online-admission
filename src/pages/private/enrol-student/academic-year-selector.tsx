@@ -34,9 +34,15 @@ type Props = {
 
 const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
   return (
-    <div className="pt-4 md:pt-24 h-dvh md:flex md:flex-col md:items-center md:justify-center px-6 bg-muted">
-      <h1 className="hidden md:block text-4xl font-bold text-center tracking-tight">Choose Academic Year</h1>
-      <div className="mt-8 md:mt-12 max-w-screen-md mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="relative min-h-screen flex items-center justify-center flex-col px-4 py-8 md:py-0">
+      <div className="text-center space-y-6 max-w-3xl">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">Choose Academic Year</h1>
+
+        <p className="text-lg md:text-xl text-muted-foreground text-pretty">
+          Select the academic year for your child's enrolment journey
+        </p>
+      </div>
+      <div className="mt-8 md:mt-12 max-w-5xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {academicYears.map((year) => (
           <div
             key={year.name}
@@ -49,13 +55,15 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
               </Badge>
             )} */}
 
-            <h3 className="text-lg font-semibold">{year.label}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{year.description}</p>
+            <h3 className={`text-lg md:text-2xl font-bold ${year.isUpcoming ? "text-primary" : "text-secondary"}`}>
+              {year.label}
+            </h3>
+            <p className="mt-2 text-sm md:text-base text-muted-foreground">{year.description}</p>
             <Separator className="my-4" />
             <ul className="space-y-2">
               {year.details.map((detail) => (
-                <li key={detail} className="flex items-center gap-2 text-sm">
-                  <CircleCheck className="h-4 w-4 text-green-600" />
+                <li key={detail} className="flex items-center gap-2 text-sm md:text-base">
+                  <CircleCheck className="size-4 md:size-5 text-green-600" />
                   {detail}
                 </li>
               ))}
@@ -63,7 +71,8 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
             <Button
               // disabled={year.isClosed}
               onClick={() => setSelectedAy(year.value)}
-              variant={year.isUpcoming ? "default" : "outline"}
+              variant={year.isUpcoming ? "default" : "secondary"}
+              size={"lg"}
               className="w-full mt-6 gap-2 cursor-pointer">
               {year.buttonText}
               <ArrowUpRight />
