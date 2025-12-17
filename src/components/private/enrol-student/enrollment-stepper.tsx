@@ -52,7 +52,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
       nextButtonText="Acknowledge & Next">
       {/* Step 1: Enrollment Process */}
       <Step>
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 mt-6">
           <div className="space-y-2">
             <h2 className="text-2xl font-bold tracking-tight text-primary">Enrollment Process</h2>
             <p className="text-sm font-medium">
