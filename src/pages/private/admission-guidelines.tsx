@@ -48,17 +48,11 @@ function AdmissionGuidelines() {
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50">
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl" />
-      </div>
-
       <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16">
         {/* Hero Section */}
         <div className="text-center space-y-6 mb-16">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-            <span className="text-secondary">Admission Requirements</span>
+            <span className="text-primary">Admission Requirements</span>
           </h1>
 
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
@@ -84,7 +78,7 @@ function AdmissionGuidelines() {
         </div>
 
         {/* Main Content Card */}
-        <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-sm mb-12">
+        <Card className="border-none shadow-2xl mb-12">
           <CardHeader className="space-y-4 pb-8 border-b border-gray-100">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -101,34 +95,21 @@ function AdmissionGuidelines() {
           </CardHeader>
 
           <CardContent className="pt-8">
-            <div className="grid gap-4 md:gap-5">
+            <div className="space-y-4">
               {requirements.map((req, index) => {
                 const Icon = req.icon;
                 return (
-                  <div
-                    key={index}
-                    className="group relative overflow-hidden rounded-xl border-2 border-gray-100 bg-white p-6 transition-all duration-300 hover:border-blue-200 hover:shadow-lg">
-                    {/* Category Badge */}
-                    <div className="absolute top-4 right-4">
-                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-blue-50 to-amber-50 text-blue-700 border border-blue-200">
-                        {req.category}
-                      </span>
-                    </div>
-
-                    <div className="flex gap-4">
-                      {/* Icon */}
-                      <div className="flex-shrink-0">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                          <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
-                        </div>
+                  <div key={index} className="flex gap-4 rounded-lg border border-gray-200 bg-white p-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-blue-600 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-white" />
                       </div>
-
-                      {/* Text */}
-                      <p className="text-gray-700 leading-relaxed pt-1 pr-24">{req.text}</p>
                     </div>
 
-                    {/* Decorative gradient line */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-amber-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="space-y-2">
+                      <span className="inline-block text-xs font-semibold text-blue-600">{req.category}</span>
+                      <p className="text-sm text-gray-700 leading-relaxed">{req.text}</p>
+                    </div>
                   </div>
                 );
               })}
@@ -141,7 +122,7 @@ function AdmissionGuidelines() {
         </Card>
 
         {/* Parent Portal Guide Card */}
-        <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-sm overflow-hidden py-0">
+        <Card className="border-none shadow-2xl overflow-hidden py-0">
           <CardHeader className="space-y-4 pt-6 pb-6 bg-gradient-to-r from-blue-50 to-amber-50">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white rounded-lg shadow-sm">
