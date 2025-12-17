@@ -18,7 +18,7 @@ import { Field, Radio, RadioGroup } from "@headlessui/react";
 import { useQuery } from "@tanstack/react-query";
 import { DotPulse, Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { ArrowLeft, ArrowUpRight, UserPlus2, UserRoundPlus } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CircleCheck, UserPlus2, UserRoundPlus } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useCallback, useState, useTransition } from "react";
 import { Link, useNavigate } from "react-router";
@@ -219,22 +219,25 @@ const StudentsList = memo(function ({ selected, setSelected, studentList }: Stud
         <Field key={student.enroleeNumber}>
           <Radio
             value={student}
-            className="border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-lg p-3 transition data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg">
-            <div className="flex gap-3">
-              <Avatar className="size-11">
-                <AvatarImage
-                  className="object-cover"
-                  src={student.enroleePhoto ?? "https://github.com/shadcn.png"}
-                  alt="@shadcn"
-                />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col gap-1">
-                <span className="font-bold text-sm md:text-base capitalize">{student.enroleeFullName}</span>
-                <span className="text-xs md:text-sm text-secondary font-semibold capitalize">
-                  {student.levelApplied}
-                </span>
+            className="border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-lg p-3 transition data-[checked]:outline data-[checked]:outline-green-600 data-[checked]:hover:shadow-none hover:shadow-lg">
+            <div className="flex items-center justify-between gap-3 w-full">
+              <div className="flex items-center justify-center gap-3">
+                <Avatar className="size-11">
+                  <AvatarImage
+                    className="object-cover"
+                    src={student.enroleePhoto ?? "https://github.com/shadcn.png"}
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-1">
+                  <span className="font-bold text-sm md:text-base capitalize">{student.enroleeFullName}</span>
+                  <span className="text-xs md:text-sm text-secondary font-semibold capitalize">
+                    {student.levelApplied}
+                  </span>
+                </div>
               </div>
+              <CircleCheck className="size-6 md:size-8 fill-green-600 stroke-white opacity-0 transition group-data-checked:opacity-100" />
             </div>
           </Radio>
         </Field>
@@ -249,15 +252,15 @@ function AcademicYearDropdown() {
 
   return (
     <Select value={academicYear} onValueChange={setAcademicYear}>
-      <SelectTrigger className="text-primary mt-2 w-max mx-auto text-xs font-semibold" size="sm">
-        <Label className="text-xs font-semibold">Academic Year</Label>
+      <SelectTrigger className="text-primary mt-2 w-max mx-auto text-sm font-medium" size="sm">
+        <Label className="text-sm font-medium">Academic Year</Label>
         <SelectValue placeholder="Choose academic year" />
       </SelectTrigger>
       <SelectContent className="[&_div:focus]:text-primary">
-        <SelectItem className="text-xs font-semibold" value="ay2025">
+        <SelectItem className="text-sm font-medium" value="ay2025">
           2025
         </SelectItem>
-        <SelectItem className="text-xs font-semibold" value="ay2026">
+        <SelectItem className="text-sm font-medium" value="ay2026">
           2026
         </SelectItem>
       </SelectContent>
