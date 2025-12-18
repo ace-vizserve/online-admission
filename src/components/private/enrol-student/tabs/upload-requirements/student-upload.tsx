@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Save } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ const MAX_SKIPS = 3;
 function StudentUpload() {
   const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
+
   const { data, isPending, isSuccess } = useQuery({
     queryKey: ["student-documents", params.id],
     queryFn: async () => {
@@ -36,24 +37,33 @@ function StudentUpload() {
   const [medicalExam, setMedicalExam] = useState<File[] | null>(null);
   const [passport, setPassport] = useState<File[] | null>(null);
   const [pass, setPass] = useState<File[] | null>(null);
+  const hydratedRef = useRef<boolean>(false);
 
   const form = useForm<StudentUploadRequirementsSchema>({
     resolver: zodResolver(studentUploadRequirementsSchema),
     defaultValues: {
       ...formState.uploadRequirements?.studentUploadRequirements,
     },
+    mode: "onChange",
   });
 
-  const skippedDocsCount = useMemo(() => {
-    return form.watch("toFollowDocs")?.length ?? 0;
-  }, [form.watch("toFollowDocs")]);
-
+  // compute directly from watch instead of useMemo + unstable deps
+  const toFollowDocs = form.watch("toFollowDocs");
+  const skippedDocsCount = toFollowDocs?.length ?? 0;
   const remainingSkips = MAX_SKIPS - skippedDocsCount;
 
+  // hydrate context from server if context is empty/invalid
   useEffect(() => {
     if (!isSuccess || !data) return;
 
-    if (formState.uploadRequirements?.studentUploadRequirements.isValid) return;
+    const studentReq = formState.uploadRequirements?.studentUploadRequirements;
+    const isValid = formState.uploadRequirements?.studentUploadRequirements.isValid;
+
+    if (studentReq != null && Object.keys(studentReq).length > 0) return;
+
+    if (isValid) return;
+
+    console.log("Triggered");
 
     setFormState({
       uploadRequirements: {
@@ -61,23 +71,28 @@ function StudentUpload() {
           ...formState.uploadRequirements?.parentGuardianUploadRequirements,
         } as ParentGuardianUploadRequirementsSchema,
         studentUploadRequirements: {
-          ...data?.studentUploadRequirements,
-        } as unknown as StudentUploadRequirementsSchema,
+          ...data.studentUploadRequirements,
+        } as StudentUploadRequirementsSchema,
       },
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, setFormState, data]);
+  }, [isSuccess, data]);
 
+  // hydrate RHF from context only once
   useEffect(() => {
-    if (!formState.uploadRequirements?.studentUploadRequirements) return;
+    const studentReq = formState.uploadRequirements?.studentUploadRequirements;
+    if (!studentReq || hydratedRef.current) return;
 
-    Object.entries(formState.uploadRequirements.studentUploadRequirements).forEach(([key, value]) => {
+    console.log("Triggered");
+
+    Object.entries(studentReq).forEach(([key, value]) => {
       form.setValue(key as keyof StudentUploadRequirementsSchema, value, {
         shouldValidate: true,
-        shouldDirty: true,
       });
     });
+
+    hydratedRef.current = true;
   }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
@@ -113,6 +128,10 @@ function StudentUpload() {
             });
           }
 
+          const includesIDPictureError = Object.keys(errors).filter((key) => key.includes("idPicture"));
+          const includesBirthCertError = Object.keys(errors).filter((key) => key.includes("birthCert"));
+          const includesEducCertError = Object.keys(errors).filter((key) => key.includes("educCert"));
+          const includesMedicalError = Object.keys(errors).filter((key) => key.includes("medical"));
           const includesPassportError = Object.keys(errors).filter(
             (key) => key.includes("passportExpiry") || key.includes("passportNumber")
           );
@@ -120,12 +139,58 @@ function StudentUpload() {
             (key) => key.includes("passType") || key.includes("passExpiry")
           );
 
+          if (includesBirthCertError.length > 0) {
+            form.setError("birthCert", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid Birth Certificate document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (includesEducCertError.length > 0) {
+            form.setError("educCert", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid Transcript of Records document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (includesMedicalError.length > 0) {
+            form.setError("medical", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid Medical Exam document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (includesIDPictureError.length > 0) {
+            form.setError("idPicture", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid ID picture!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
           if (includesPassportError.length > 0) {
             form.setError("passport", {});
+            toast.warning("Invalid student passport document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           if (includesPassError.length > 0) {
             form.setError("pass", {});
+            toast.warning("Invalid student pass document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           setFormState({
@@ -133,7 +198,10 @@ function StudentUpload() {
               parentGuardianUploadRequirements: {
                 ...(formState.uploadRequirements!.parentGuardianUploadRequirements ?? {}),
               },
-              studentUploadRequirements: { ...formState.uploadRequirements?.studentUploadRequirements, isValid: false },
+              studentUploadRequirements: {
+                ...formState.uploadRequirements?.studentUploadRequirements,
+                isValid: false,
+              },
             },
           });
         })}
@@ -148,11 +216,13 @@ function StudentUpload() {
               }`}>
               {remainingSkips < 1 ? (
                 <span>
-                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow. No more can be skipped.
+                  {skippedDocsCount} document
+                  {skippedDocsCount > 1 ? "s" : ""} marked to follow. No more can be skipped.
                 </span>
               ) : (
                 <span>
-                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow • {remainingSkips} skip
+                  {skippedDocsCount} document
+                  {skippedDocsCount > 1 ? "s" : ""} marked to follow • {remainingSkips} skip
                   {remainingSkips > 1 ? "s" : ""} remaining
                 </span>
               )}

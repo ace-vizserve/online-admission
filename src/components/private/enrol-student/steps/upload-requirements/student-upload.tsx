@@ -8,7 +8,7 @@ import {
 } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import StudentFileUploaderDialog from "./student-file-uploader-dialog";
@@ -31,10 +31,8 @@ function StudentUpload() {
     },
   });
 
-  const skippedDocsCount = useMemo(() => {
-    return form.watch("toFollowDocs")?.length ?? 0;
-  }, [form.watch("toFollowDocs")]);
-
+  const toFollowDocs = form.watch("toFollowDocs");
+  const skippedDocsCount = toFollowDocs?.length ?? 0;
   const remainingSkips = MAX_SKIPS - skippedDocsCount;
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
@@ -75,11 +73,15 @@ function StudentUpload() {
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
           if (Object.keys(errors).includes("toFollowDocs")) {
-            toast.warning("Too many skipped files!", {
+            toast.error("Too many skipped files!", {
               description: "You can only skip up to 3 documents.",
             });
           }
 
+          const includesIDPictureError = Object.keys(errors).filter((key) => key.includes("idPicture"));
+          const includesBirthCertError = Object.keys(errors).filter((key) => key.includes("birthCert"));
+          const includesEducCertError = Object.keys(errors).filter((key) => key.includes("educCert"));
+          const includesMedicalError = Object.keys(errors).filter((key) => key.includes("medical"));
           const includesPassportError = Object.keys(errors).filter(
             (key) => key.includes("passportExpiry") || key.includes("passportNumber")
           );
@@ -87,12 +89,58 @@ function StudentUpload() {
             (key) => key.includes("passType") || key.includes("passExpiry")
           );
 
+          if (includesBirthCertError.length > 0) {
+            form.setError("birthCert", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid Birth Certificate document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (includesEducCertError.length > 0) {
+            form.setError("educCert", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid Transcript of Records document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (includesMedicalError.length > 0) {
+            form.setError("medical", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid Medical Exam document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (includesIDPictureError.length > 0) {
+            form.setError("idPicture", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid ID picture!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
           if (includesPassportError.length > 0) {
             form.setError("passport", {});
+            toast.warning("Invalid student passport document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           if (includesPassError.length > 0) {
             form.setError("pass", {});
+            toast.warning("Invalid student pass document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           setFormState({

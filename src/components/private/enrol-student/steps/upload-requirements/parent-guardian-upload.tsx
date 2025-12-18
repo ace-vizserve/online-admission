@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
 import { Save } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
@@ -33,10 +33,8 @@ function ParentGuardianUpload() {
     },
   });
 
-  const skippedDocsCount = useMemo(() => {
-    return form.watch("toFollowDocs")?.length ?? 0;
-  }, [form.watch("toFollowDocs")]);
-
+  const toFollowDocs = form.watch("toFollowDocs");
+  const skippedDocsCount = toFollowDocs?.length ?? 0;
   const remainingSkips = MAX_SKIPS - skippedDocsCount;
 
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
@@ -76,7 +74,7 @@ function ParentGuardianUpload() {
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
           console.log(errors);
           if (Object.keys(errors).includes("toFollowDocs")) {
-            toast.warning("Too many skipped files!", {
+            toast.error("Too many skipped files!", {
               description: "You can only skip up to 2 documents.",
             });
           }
@@ -85,31 +83,67 @@ function ParentGuardianUpload() {
             documentErrors("mother", errors);
 
           if (includesMotherPassportError) {
-            form.setError("motherPassport", {});
+            form.setError("motherPassport", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid mother passport document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           if (includesMotherPassError) {
-            form.setError("motherPass", {});
+            form.setError("motherPass", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid mother pass document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           const { includesPassError: includesFatherPassError, includesPassportError: includesFatherPassportError } =
             documentErrors("father", errors);
 
           if (includesFatherPassportError) {
-            form.setError("fatherPassport", {});
+            form.setError("fatherPassport", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid father passport document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
           if (includesFatherPassError) {
-            form.setError("fatherPass", {});
+            form.setError("fatherPass", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid father pass document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           const { includesPassError: includesGuardianPassError, includesPassportError: includesGuardianPassportError } =
             documentErrors("guardian", errors);
 
           if (includesGuardianPassportError) {
-            form.setError("guardianPassport", {});
+            form.setError("guardianPassport", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid guardian passport document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
           if (includesGuardianPassError) {
-            form.setError("guardianPass", {});
+            form.setError("guardianPass", {
+              type: "manual",
+              message: "Please upload a file to continue",
+            });
+            toast.warning("Invalid guardian pass document!", {
+              description: "The file contains invalid information. Please check and correct it.",
+            });
           }
 
           setFormState({

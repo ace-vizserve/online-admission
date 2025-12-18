@@ -141,15 +141,62 @@ const ParentGuardianFileUploaderDialog = memo(function ({
       setIsChangingDocument(true);
       await deleteFile(formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string, academicYear);
 
+      const updatedParentGuardianReqs = {
+        ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+        [name]: undefined,
+        isValid: false,
+      };
+
+      if (name === "motherPassport") {
+        updatedParentGuardianReqs.motherPassportNumber = undefined;
+        updatedParentGuardianReqs.motherPassportExpiry = undefined;
+        form.setValue("motherPassportNumber", undefined);
+        form.setValue("motherPassportExpiry", undefined);
+      }
+      if (name === "motherPass") {
+        updatedParentGuardianReqs.motherPassType = undefined;
+        updatedParentGuardianReqs.motherPassExpiry = undefined;
+        form.setValue("motherPassType", undefined);
+        form.setValue("motherPassExpiry", undefined);
+      }
+
+      if (name === "fatherPassport") {
+        updatedParentGuardianReqs.fatherPassportNumber = undefined;
+        updatedParentGuardianReqs.fatherPassportExpiry = undefined;
+        form.setValue("fatherPassportNumber", undefined);
+        form.setValue("fatherPassportExpiry", undefined);
+      }
+      if (name === "fatherPass") {
+        updatedParentGuardianReqs.fatherPassType = undefined;
+        updatedParentGuardianReqs.fatherPassExpiry = undefined;
+        form.setValue("fatherPassType", undefined);
+        form.setValue("fatherPassExpiry", undefined);
+      }
+
+      if (name === "guardianPassport") {
+        updatedParentGuardianReqs.guardianPassportNumber = undefined;
+        updatedParentGuardianReqs.guardianPassportExpiry = undefined;
+        form.setValue("guardianPassportNumber", undefined);
+        form.setValue("guardianPassportExpiry", undefined);
+      }
+      if (name === "guardianPass") {
+        updatedParentGuardianReqs.guardianPassType = undefined;
+        updatedParentGuardianReqs.guardianPassExpiry = undefined;
+        form.setValue("guardianPassType", undefined);
+        form.setValue("guardianPassExpiry", undefined);
+      }
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+
       setFormState({
         uploadRequirements: {
           studentUploadRequirements: {
             ...formState.uploadRequirements.studentUploadRequirements,
           },
-
           parentGuardianUploadRequirements: {
             ...formState.uploadRequirements.parentGuardianUploadRequirements,
-            [name]: undefined,
+            ...updatedParentGuardianReqs,
           },
         },
       });
@@ -354,75 +401,57 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             const current = form.getValues("toFollowDocs") || [];
                             const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
 
-                            form.setValue("toFollowDocs", updatedDocs);
-
-                            if (checked) {
-                              if (name === "motherPassport") {
-                                form.setValue("motherPassportNumber", "");
-                                form.setValue("motherPassportExpiry", undefined);
-                              }
-                              if (name === "motherPass") {
-                                form.setValue("motherPassType", "");
-                                form.setValue("motherPassExpiry", undefined);
-                              }
-
-                              if (name === "fatherPassport") {
-                                form.setValue("fatherPassportNumber", "");
-                                form.setValue("fatherPassportExpiry", undefined);
-                              }
-                              if (name === "fatherPass") {
-                                form.setValue("fatherPassType", "");
-                                form.setValue("fatherPassExpiry", undefined);
-                              }
-
-                              if (name === "guardianPassport") {
-                                form.setValue("guardianPassportNumber", "");
-                                form.setValue("guardianPassportExpiry", undefined);
-                              }
-                              if (name === "guardianPass") {
-                                form.setValue("guardianPassType", "");
-                                form.setValue("guardianPassExpiry", undefined);
-                              }
-                            }
-
                             const updatedParentGuardianReqs = {
                               ...formState.uploadRequirements!.parentGuardianUploadRequirements,
                               isValid: false,
+                              [name]: undefined,
                               toFollowDocs: updatedDocs,
                             };
 
                             if (checked) {
                               if (name === "motherPassport") {
-                                updatedParentGuardianReqs.motherPassportNumber = "";
+                                form.setValue("motherPassportNumber", undefined);
+                                form.setValue("motherPassportExpiry", undefined);
+                                updatedParentGuardianReqs.motherPassportNumber = undefined;
                                 updatedParentGuardianReqs.motherPassportExpiry = undefined;
                               }
                               if (name === "motherPass") {
-                                updatedParentGuardianReqs.motherPassType = "";
+                                form.setValue("motherPassType", undefined);
+                                form.setValue("motherPassExpiry", undefined);
+                                updatedParentGuardianReqs.motherPassType = undefined;
                                 updatedParentGuardianReqs.motherPassExpiry = undefined;
                               }
 
                               if (name === "fatherPassport") {
-                                updatedParentGuardianReqs.fatherPassportNumber = "";
+                                form.setValue("fatherPassportNumber", undefined);
+                                form.setValue("fatherPassportExpiry", undefined);
+                                updatedParentGuardianReqs.fatherPassportNumber = undefined;
                                 updatedParentGuardianReqs.fatherPassportExpiry = undefined;
                               }
                               if (name === "fatherPass") {
-                                updatedParentGuardianReqs.fatherPassType = "";
+                                form.setValue("fatherPassType", undefined);
+                                form.setValue("fatherPassExpiry", undefined);
+                                updatedParentGuardianReqs.fatherPassType = undefined;
                                 updatedParentGuardianReqs.fatherPassExpiry = undefined;
                               }
 
                               if (name === "guardianPassport") {
-                                updatedParentGuardianReqs.guardianPassportNumber = "";
+                                form.setValue("guardianPassportNumber", undefined);
+                                form.setValue("guardianPassportExpiry", undefined);
+                                updatedParentGuardianReqs.guardianPassportNumber = undefined;
                                 updatedParentGuardianReqs.guardianPassportExpiry = undefined;
                               }
                               if (name === "guardianPass") {
-                                updatedParentGuardianReqs.guardianPassType = "";
+                                form.setValue("guardianPassType", undefined);
+                                form.setValue("guardianPassExpiry", undefined);
+                                updatedParentGuardianReqs.guardianPassType = undefined;
                                 updatedParentGuardianReqs.guardianPassExpiry = undefined;
                               }
                             }
 
+                            form.setValue(name, undefined);
+                            form.setValue("toFollowDocs", updatedDocs);
                             onValueChange(null);
-
-                            form.resetField(name);
 
                             setFormState({
                               ...formState,
@@ -1013,15 +1042,62 @@ function ParentGuardianFileUploaderDrawer({
       setIsChangingDocument(true);
       await deleteFile(formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string, academicYear);
 
+      const updatedParentGuardianReqs = {
+        ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+        [name]: undefined,
+        isValid: false,
+      };
+
+      if (name === "motherPassport") {
+        updatedParentGuardianReqs.motherPassportNumber = undefined;
+        updatedParentGuardianReqs.motherPassportExpiry = undefined;
+        form.setValue("motherPassportNumber", undefined);
+        form.setValue("motherPassportExpiry", undefined);
+      }
+      if (name === "motherPass") {
+        updatedParentGuardianReqs.motherPassType = undefined;
+        updatedParentGuardianReqs.motherPassExpiry = undefined;
+        form.setValue("motherPassType", undefined);
+        form.setValue("motherPassExpiry", undefined);
+      }
+
+      if (name === "fatherPassport") {
+        updatedParentGuardianReqs.fatherPassportNumber = undefined;
+        updatedParentGuardianReqs.fatherPassportExpiry = undefined;
+        form.setValue("fatherPassportNumber", undefined);
+        form.setValue("fatherPassportExpiry", undefined);
+      }
+      if (name === "fatherPass") {
+        updatedParentGuardianReqs.fatherPassType = undefined;
+        updatedParentGuardianReqs.fatherPassExpiry = undefined;
+        form.setValue("fatherPassType", undefined);
+        form.setValue("fatherPassExpiry", undefined);
+      }
+
+      if (name === "guardianPassport") {
+        updatedParentGuardianReqs.guardianPassportNumber = undefined;
+        updatedParentGuardianReqs.guardianPassportExpiry = undefined;
+        form.setValue("guardianPassportNumber", undefined);
+        form.setValue("guardianPassportExpiry", undefined);
+      }
+      if (name === "guardianPass") {
+        updatedParentGuardianReqs.guardianPassType = undefined;
+        updatedParentGuardianReqs.guardianPassExpiry = undefined;
+        form.setValue("guardianPassType", undefined);
+        form.setValue("guardianPassExpiry", undefined);
+      }
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+
       setFormState({
         uploadRequirements: {
           studentUploadRequirements: {
             ...formState.uploadRequirements.studentUploadRequirements,
           },
-
           parentGuardianUploadRequirements: {
             ...formState.uploadRequirements.parentGuardianUploadRequirements,
-            [name]: undefined,
+            ...updatedParentGuardianReqs,
           },
         },
       });
@@ -1222,75 +1298,57 @@ function ParentGuardianFileUploaderDrawer({
                         const current = form.getValues("toFollowDocs") || [];
                         const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
 
-                        form.setValue("toFollowDocs", updatedDocs);
-
-                        if (checked) {
-                          if (name === "motherPassport") {
-                            form.setValue("motherPassportNumber", "");
-                            form.setValue("motherPassportExpiry", undefined);
-                          }
-                          if (name === "motherPass") {
-                            form.setValue("motherPassType", "");
-                            form.setValue("motherPassExpiry", undefined);
-                          }
-
-                          if (name === "fatherPassport") {
-                            form.setValue("fatherPassportNumber", "");
-                            form.setValue("fatherPassportExpiry", undefined);
-                          }
-                          if (name === "fatherPass") {
-                            form.setValue("fatherPassType", "");
-                            form.setValue("fatherPassExpiry", undefined);
-                          }
-
-                          if (name === "guardianPassport") {
-                            form.setValue("guardianPassportNumber", "");
-                            form.setValue("guardianPassportExpiry", undefined);
-                          }
-                          if (name === "guardianPass") {
-                            form.setValue("guardianPassType", "");
-                            form.setValue("guardianPassExpiry", undefined);
-                          }
-                        }
-
                         const updatedParentGuardianReqs = {
                           ...formState.uploadRequirements!.parentGuardianUploadRequirements,
                           isValid: false,
+                          [name]: undefined,
                           toFollowDocs: updatedDocs,
                         };
 
                         if (checked) {
                           if (name === "motherPassport") {
-                            updatedParentGuardianReqs.motherPassportNumber = "";
+                            form.setValue("motherPassportNumber", undefined);
+                            form.setValue("motherPassportExpiry", undefined);
+                            updatedParentGuardianReqs.motherPassportNumber = undefined;
                             updatedParentGuardianReqs.motherPassportExpiry = undefined;
                           }
                           if (name === "motherPass") {
-                            updatedParentGuardianReqs.motherPassType = "";
+                            form.setValue("motherPassType", undefined);
+                            form.setValue("motherPassExpiry", undefined);
+                            updatedParentGuardianReqs.motherPassType = undefined;
                             updatedParentGuardianReqs.motherPassExpiry = undefined;
                           }
 
                           if (name === "fatherPassport") {
-                            updatedParentGuardianReqs.fatherPassportNumber = "";
+                            form.setValue("fatherPassportNumber", undefined);
+                            form.setValue("fatherPassportExpiry", undefined);
+                            updatedParentGuardianReqs.fatherPassportNumber = undefined;
                             updatedParentGuardianReqs.fatherPassportExpiry = undefined;
                           }
                           if (name === "fatherPass") {
-                            updatedParentGuardianReqs.fatherPassType = "";
+                            form.setValue("fatherPassType", undefined);
+                            form.setValue("fatherPassExpiry", undefined);
+                            updatedParentGuardianReqs.fatherPassType = undefined;
                             updatedParentGuardianReqs.fatherPassExpiry = undefined;
                           }
 
                           if (name === "guardianPassport") {
-                            updatedParentGuardianReqs.guardianPassportNumber = "";
+                            form.setValue("guardianPassportNumber", undefined);
+                            form.setValue("guardianPassportExpiry", undefined);
+                            updatedParentGuardianReqs.guardianPassportNumber = undefined;
                             updatedParentGuardianReqs.guardianPassportExpiry = undefined;
                           }
                           if (name === "guardianPass") {
-                            updatedParentGuardianReqs.guardianPassType = "";
+                            form.setValue("guardianPassType", undefined);
+                            form.setValue("guardianPassExpiry", undefined);
+                            updatedParentGuardianReqs.guardianPassType = undefined;
                             updatedParentGuardianReqs.guardianPassExpiry = undefined;
                           }
                         }
 
+                        form.setValue(name, undefined);
+                        form.setValue("toFollowDocs", updatedDocs);
                         onValueChange(null);
-
-                        form.resetField(name);
 
                         setFormState({
                           ...formState,
