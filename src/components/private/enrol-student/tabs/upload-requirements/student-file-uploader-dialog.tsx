@@ -135,6 +135,28 @@ const StudentFileUploaderDialog = memo(function ({
       setIsChangingDocument(true);
       await deleteFile(formState.uploadRequirements?.studentUploadRequirements[name] as string, academicYear);
 
+      const updatedStudentReqs = {
+        ...formState.uploadRequirements!.studentUploadRequirements,
+        [name]: undefined,
+        isValid: false,
+      };
+
+      if (name === "passport") {
+        updatedStudentReqs.passportNumber = undefined;
+        updatedStudentReqs.passportExpiry = undefined;
+        form.setValue("passportNumber", undefined);
+        form.setValue("passportExpiry", undefined);
+      }
+      if (name === "pass") {
+        updatedStudentReqs.passType = undefined;
+        updatedStudentReqs.passExpiry = undefined;
+        form.setValue("passType", undefined);
+        form.setValue("passExpiry", undefined);
+      }
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+
       setFormState({
         uploadRequirements: {
           parentGuardianUploadRequirements: {
@@ -142,14 +164,11 @@ const StudentFileUploaderDialog = memo(function ({
           },
           studentUploadRequirements: {
             ...formState.uploadRequirements.studentUploadRequirements,
-            [name]: undefined,
-            isValid: false,
+            ...updatedStudentReqs,
           },
         },
       });
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
       setIsChangingDocument(false);
     } catch (error) {
       setIsChangingDocument(false);
@@ -366,32 +385,31 @@ const StudentFileUploaderDialog = memo(function ({
                             const current = form.getValues("toFollowDocs") || [];
                             const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
 
-                            form.setValue("toFollowDocs", updatedDocs);
-
                             const updatedStudentReqs = {
                               ...formState.uploadRequirements!.studentUploadRequirements,
                               isValid: false,
+                              [name]: undefined,
                               toFollowDocs: updatedDocs,
                             };
 
                             if (checked) {
                               if (name === "passport") {
-                                updatedStudentReqs.passportNumber = "";
+                                updatedStudentReqs.passportNumber = undefined;
                                 updatedStudentReqs.passportExpiry = undefined;
-                                form.setValue("passportNumber", "");
+                                form.setValue("passportNumber", undefined);
                                 form.setValue("passportExpiry", undefined);
                               }
                               if (name === "pass") {
-                                updatedStudentReqs.passType = "";
+                                updatedStudentReqs.passType = undefined;
                                 updatedStudentReqs.passExpiry = undefined;
-                                form.setValue("passType", "");
+                                form.setValue("passType", undefined);
                                 form.setValue("passExpiry", undefined);
                               }
                             }
 
+                            form.setValue(name, undefined);
+                            form.setValue("toFollowDocs", updatedDocs);
                             onValueChange(null);
-
-                            form.resetField(name);
 
                             setFormState({
                               ...formState,
@@ -662,6 +680,28 @@ function StudentFileUploaderDrawer({
       setIsChangingDocument(true);
       await deleteFile(formState.uploadRequirements?.studentUploadRequirements[name] as string, academicYear);
 
+      const updatedStudentReqs = {
+        ...formState.uploadRequirements!.studentUploadRequirements,
+        [name]: undefined,
+        isValid: false,
+      };
+
+      if (name === "passport") {
+        updatedStudentReqs.passportNumber = undefined;
+        updatedStudentReqs.passportExpiry = undefined;
+        form.setValue("passportNumber", undefined);
+        form.setValue("passportExpiry", undefined);
+      }
+      if (name === "pass") {
+        updatedStudentReqs.passType = undefined;
+        updatedStudentReqs.passExpiry = undefined;
+        form.setValue("passType", undefined);
+        form.setValue("passExpiry", undefined);
+      }
+
+      form.setValue(name, undefined);
+      form.setValue("isValid", false);
+
       setFormState({
         uploadRequirements: {
           parentGuardianUploadRequirements: {
@@ -669,14 +709,11 @@ function StudentFileUploaderDrawer({
           },
           studentUploadRequirements: {
             ...formState.uploadRequirements.studentUploadRequirements,
-            [name]: undefined,
-            isValid: false,
+            ...updatedStudentReqs,
           },
         },
       });
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
       setIsChangingDocument(false);
     } catch (error) {
       setIsChangingDocument(false);
@@ -893,32 +930,33 @@ function StudentFileUploaderDrawer({
                           const current = form.getValues("toFollowDocs") || [];
                           const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
 
-                          form.setValue("toFollowDocs", updatedDocs);
-
                           const updatedStudentReqs = {
                             ...formState.uploadRequirements!.studentUploadRequirements,
                             isValid: false,
+                            [name]: undefined,
                             toFollowDocs: updatedDocs,
                           };
 
                           if (checked) {
                             if (name === "passport") {
-                              updatedStudentReqs.passportNumber = "";
+                              updatedStudentReqs.passportNumber = undefined;
                               updatedStudentReqs.passportExpiry = undefined;
-                              form.setValue("passportNumber", "");
+                              form.setValue("passport", undefined);
+                              form.setValue("passportNumber", undefined);
                               form.setValue("passportExpiry", undefined);
                             }
                             if (name === "pass") {
-                              updatedStudentReqs.passType = "";
+                              updatedStudentReqs.passType = undefined;
                               updatedStudentReqs.passExpiry = undefined;
-                              form.setValue("passType", "");
+                              form.setValue("pass", undefined);
+                              form.setValue("passType", undefined);
                               form.setValue("passExpiry", undefined);
                             }
                           }
 
                           onValueChange(null);
 
-                          form.resetField(name);
+                          form.setValue("toFollowDocs", updatedDocs);
 
                           setFormState({
                             ...formState,

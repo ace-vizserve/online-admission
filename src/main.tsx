@@ -22,6 +22,6 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </QueryClientProvider>
     </UserSessionContextProvider>
-    <Toaster closeButton theme="light" richColors position="top-center" />
+    <Toaster closeButton theme="light" richColors position="top-center" expand visibleToasts={6} />
   </StrictMode>
 );

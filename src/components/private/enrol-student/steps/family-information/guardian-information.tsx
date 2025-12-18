@@ -195,11 +195,11 @@ function GuardianInformation() {
             <div className="w-full max-w-md mx-auto">
               <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">
                 <AlertTriangleIcon className="size-4" />
-                <AlertTitle>Confirmation Required</AlertTitle>
+                <AlertTitle className="text-amber-600 font-bold">Confirmation Required</AlertTitle>
                 <p className="text-amber-500 col-start-2 text-sm">
                   Please save and confirm the father's and mother's information by clicking the{" "}
-                  <span className="font-semibold">"Confirm & Save"</span> button on each tab separately before
-                  proceeding.
+                  <span className="font-bold text-amber-600">"Confirm & Save"</span> button on each tab separately
+                  before proceeding.
                 </p>
               </Alert>
             </div>
