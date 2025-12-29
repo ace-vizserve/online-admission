@@ -98,7 +98,7 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
               </div>
             </div>
           </div>
-          <TabsList className="flex flex-col sm:flex-row 2xl:flex-col w-full h-auto bg-transparent gap-1 overflow-x-auto xl:overflow-visible">
+          <TabsList className="flex flex-col lg:flex-row 2xl:flex-col w-full h-auto bg-transparent gap-1 overflow-x-auto xl:overflow-visible">
             {tabs.map((tab) => {
               const hasStudentAction = tab.name === "Student Documents" && state?.studentDocsActions;
               const hasFamilyAction = tab.name === "Family Documents" && state?.parentGuardianDocsActions;
@@ -141,7 +141,7 @@ function UploadFiles({ enroleeNumber }: ProfileProps) {
         </aside>
 
         {tabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="border p-6 md:p-8 rounded-xl">
+          <TabsContent key={tab.value} value={tab.value} className="w-full border p-6 md:p-8 rounded-xl">
             <InfoBox
               studentDetails={data as unknown as StudentDocumentsList}
               label={tab.name}
