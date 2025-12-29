@@ -190,6 +190,16 @@ function GuardianInformation() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+        <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+          <Info className="h-4 w-4 !text-blue-500" />
+          <div className="space-y-1 text-pretty">
+            <AlertTitle className="text-xs text-blue-700 font-bold">Important Information</AlertTitle>
+            <span className="text-xs text-blue-900">
+              Always click the <span className="font-bold">Save details</span> button after applying any changes to
+              ensure your updates are recorded.
+            </span>
+          </div>
+        </Alert>
         {(!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid) && (
           <>
             <div className="w-full max-w-md mx-auto">
@@ -207,7 +217,7 @@ function GuardianInformation() {
           </>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
             name="guardianFirstName"
@@ -459,25 +469,21 @@ function GuardianInformation() {
               </FormItem>
             )}
           />
-
-          <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
-            <Info className="h-4 w-4 !text-blue-500" />
-            <div className="space-y-1 text-pretty">
-              <AlertTitle className="text-xs text-blue-700 font-semibold">Important Information</AlertTitle>
-              <span className="text-xs text-blue-900">
-                Always click the <span className="font-semibold">Save</span> button after applying any changes to ensure
-                your updates are recorded.
-              </span>
-            </div>
-          </Alert>
         </div>
         <div className="flex flex-col gap-4">
-          <Button size={"lg"} variant={"secondary"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
+          <Button
+            size={"lg"}
+            variant={"secondary"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="submit">
             Confirm & Save
             <Save />
           </Button>
 
-          <Button variant={"secondary"} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+          <Button
+            variant={"secondary"}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
             Confirm & Save
             <Save />
           </Button>
@@ -490,7 +496,7 @@ function GuardianInformation() {
                     disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
                     onClick={proceedToNextStep}
                     size={"lg"}
-                    className="w-full p-8 gap-2 uppercase"
+                    className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
                     type="button">
                     Proceed to Next Step
                     <ArrowRight />
@@ -508,7 +514,7 @@ function GuardianInformation() {
           <Button
             disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
             onClick={proceedToNextStep}
-            className="w-full flex lg:hidden p-6 gap-2 uppercase"
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
             Proceed to Next Step
             <ArrowRight />

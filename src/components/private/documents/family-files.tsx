@@ -1,6 +1,5 @@
 import { parentGuardianReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
-import fileSvg from "@/assets/file.svg";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -14,21 +13,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { parentGuardianPassTypes } from "@/data";
 import useSession from "@/hooks/use-session";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { cn } from "@/lib/utils";
 import { FamilyDocument, ParentGuardianDocumentUpdatePayload, ParentGuardianReuploadProps } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
-import { CalendarIcon, EllipsisVertical, Eye, EyeClosed, RotateCcw, Save } from "lucide-react";
+import { CalendarIcon, Eye, EyeClosed, FileText, Heart, RotateCcw, Save, User, Users } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -53,88 +50,66 @@ function RenderFamilyDocCard({
   payload: Record<string, unknown>;
 }) {
   const { session } = useSession();
-  const isMissing = !fileUrl;
+  const isMissing = !fileUrl || status === "To follow";
   const params = useParams();
   const [searchParams] = useSearchParams();
   const academicYear = searchParams.get("academicYear");
 
   return (
-    <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-      <div className="w-full flex relative">
-        <StatusBadge className="absolute -top-2" status={status ? (status as StatusProps) : "Missing"} />
-        {!isMissing && (
-          <>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
-                  <EllipsisVertical />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-72">
-                <div className="grid gap-4">
-                  <div className="space-y-1">
-                    <h4 className="font-medium text-sm">{label}</h4>
-                    <p className="text-xs text-muted-foreground">See the details of the {label}.</p>
-                  </div>
-                  <div className="grid gap-2">
-                    {typeLabel && (
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <span className="text-xs">Type/Number</span>
-                        <Input
-                          defaultValue={typeLabel ? typeLabel : "N/A"}
-                          className="col-span-2 h-8 capitalize"
-                          readOnly
-                        />
-                      </div>
-                    )}
-                    {expiry && (
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <span className="text-xs">Expires at</span>
-                        <Input
-                          tabIndex={-1}
-                          defaultValue={expiry ? formatDate(new Date(expiry), "dd/MM/yyyy") : "N/A"}
-                          className="col-span-2 h-8"
-                          readOnly
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </>
-        )}
-        <div className="pt-4 w-max mx-auto">
-          <img src={fileSvg} className="size-10" />
+    <div className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl gap-4 transition-all hover:border-slate-300">
+      {/* Left Side: Icon & Info */}
+      <div className="flex items-center gap-4 min-w-0">
+        <div
+          className={cn(
+            "size-11 shrink-0 rounded-xl flex items-center justify-center",
+            isMissing ? "bg-slate-100 text-slate-400" : "bg-primary text-white shadow-sm"
+          )}>
+          {isMissing ? <EyeClosed size={20} /> : <FileText size={20} />}
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+            <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{label}</h3>
+            <StatusBadge status={status ? (status as any) : "Missing"} className="text-[10px] font-bold uppercase" />
+          </div>
+
+          <div className="flex flex-col gap-0.5">
+            {expiry ? (
+              <p className="text-[11px] text-slate-500 font-bold tracking-tight">
+                Expires: {format(new Date(expiry), "dd MMM yyyy")}
+              </p>
+            ) : (
+              <p
+                className={cn(
+                  "text-[11px] font-bold uppercase tracking-tighter",
+                  isMissing ? "text-amber-600" : "text-slate-400"
+                )}>
+                {isMissing ? "Action Required" : "Record Verified"}
+              </p>
+            )}
+            {typeLabel && (
+              <span className="text-[10px] text-slate-400 font-medium truncate italic">Ref: {typeLabel}</span>
+            )}
+          </div>
         </div>
       </div>
-      <p className="text-muted-foreground font-medium text-sm">{label}</p>
-      {status == null && isMissing ? (
-        <div className="flex flex-col gap-2 w-full">
-          <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-            View document <EyeClosed />
-          </Button>
-          <Button disabled className="gap-2 text-xs w-full">
-            Reupload <RotateCcw />
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2 w-full">
-          {fileUrl ? (
-            <Link
-              to={fileUrl}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 text-xs  w-full",
-                variant: "secondary",
-              })}>
-              View document <Eye />
-            </Link>
-          ) : (
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
-          )}
+
+      {/* Right Side: Actions & Info Popover */}
+      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
+        {fileUrl && (
+          <Link
+            to={fileUrl}
+            target="_blank"
+            className={buttonVariants({
+              variant: "outline",
+              className:
+                "flex-1 sm:flex-none h-9 gap-2 text-[11px] !font-bold border-slate-200 hover:bg-slate-50 text-slate-600",
+            })}>
+            <Eye size={14} /> <span>View</span>
+          </Link>
+        )}
+
+        <div className="flex-1 sm:flex-none">
           <ParentGuardianFileUploaderDialog
             parentEmail={session?.user.email as string}
             role={role}
@@ -146,7 +121,16 @@ function RenderFamilyDocCard({
             payload={{ ...payload }}
           />
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ title, icon, color }: { title: string; icon: React.ReactNode; color: string }) {
+  return (
+    <div className="flex items-center gap-3 pb-2">
+      <div className={cn("p-2 bg-indigo-50 rounded-lg", color)}>{icon}</div>
+      <h2 className="font-bold text-lg text-slate-800 tracking-tight">{title}</h2>
     </div>
   );
 }
@@ -256,41 +240,43 @@ function FamilyFiles({
   ];
 
   return (
-    <div className="space-y-8 py-6 xl:py-0">
-      <div className="space-y-2">
-        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
-        <p className="text-sm text-muted-foreground">
-          This section includes details about the parent and guardian documents for this current school year.
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="space-y-1">
+        <h1 className="font-black text-2xl md:text-4xl text-slate-900 tracking-tight">{label}</h1>
+        <p className="text-sm font-medium text-slate-500">
+          This section includes details about the student's parens/guardian documents for this current school year.
         </p>
       </div>
-      <h2 className="font-bold text-lg">Mother's Documents</h2>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
-        {motherCards.map((props, idx) => (
-          <RenderFamilyDocCard key={idx} {...props} />
-        ))}
-      </div>
+
+      <section className="space-y-6">
+        <SectionHeader title="Mother Documents" icon={<Heart className="size-5" />} color="text-rose-500" />
+
+        <div className="w-full grid grid-cols-1 gap-x-3 gap-y-4 mb-6">
+          {motherCards.map((props, idx) => (
+            <RenderFamilyDocCard key={idx} {...props} />
+          ))}
+        </div>
+      </section>
 
       {noFatherInfo ? null : (
-        <>
-          <Separator className="my-4" />
-          <h2 className="font-bold text-lg">Father's Documents</h2>
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4 mb-6">
+        <section className="space-y-6">
+          <SectionHeader title="Father Documents" icon={<User className="size-5" />} color="text-blue-600" />
+          <div className="w-full grid grid-cols-1 gap-x-3 gap-y-4 mb-6">
             {fatherCards.map((props, idx) => (
               <RenderFamilyDocCard key={idx} {...props} />
             ))}
           </div>
-        </>
+        </section>
       )}
       {noGuardianInfo ? null : (
-        <>
-          <Separator className="my-4" />
-          <h2 className="font-bold text-lg">Guardian's Documents</h2>
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-4">
+        <section className="space-y-6">
+          <SectionHeader title="Guardian's Details" icon={<Users className="size-5" />} color="text-indigo-600" />
+          <div className="w-full grid grid-cols-1 gap-x-3 gap-y-4">
             {guardianCards.map((props, idx) => (
               <RenderFamilyDocCard key={idx} {...props} />
             ))}
           </div>
-        </>
+        </section>
       )}
     </div>
   );
@@ -315,6 +301,13 @@ function ParentGuardianFileUploaderDialog({
       queryClient.invalidateQueries({
         queryKey: ["family-documents", enroleeNumber],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["pending-tasks", parentEmail],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["section-cards", parentEmail],
+      });
+
       await sendEmailNotification({
         parentEmail,
         role,
@@ -516,15 +509,17 @@ function ParentGuardianFileUploaderDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button disabled={status == "Valid" || status == "Uploaded" || isPending} className="gap-2 text-xs w-full">
+        <Button
+          disabled={status == "Valid" || status == "Uploaded" || isPending}
+          className="gap-2 text-xs w-full font-bold">
           Reupload <RotateCcw />
         </Button>
       </DialogTrigger>
       <DialogContent className="!max-w-3xl">
         <form onSubmit={submitReupload} className="grid grid-cols-1 items-center space-y-4">
           <DialogHeader className="text-start">
-            <DialogTitle>{label}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+            <DialogDescription className="font-semibold">
               Upload a clear and recent document in <strong>PDF</strong> format.
             </DialogDescription>
           </DialogHeader>
@@ -817,7 +812,9 @@ function ParentGuardianFileUploaderDialog({
             </div>
           )}
           <DialogFooter>
-            <Button className="w-full gap-2" type="submit">
+            <Button
+              className="w-full py-6 rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 text-base font-bold"
+              type="submit">
               {isPending ? (
                 <>
                   Saving <DotPulse size="30" speed="1.3" color="white" />

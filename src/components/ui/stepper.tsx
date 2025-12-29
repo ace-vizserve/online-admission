@@ -84,19 +84,8 @@ export default function Stepper({
 
   return (
     <div className="flex min-h-full flex-1 flex-col items-center justify-center p-4" {...rest}>
-      <motion.div
-        initial={{
-          opacity: 0,
-          scale: 0.8,
-        }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-        }}
-        transition={{
-          type: "spring",
-        }}
-        className={`mx-auto w-full max-w-4xl ${stepCircleContainerClassName}`}>
+      <div
+        className={`mx-auto w-full max-w-4xl ${stepCircleContainerClassName} animate-in fade-in slide-in-from-bottom-1 duration-500`}>
         <div className={`${stepContainerClassName} flex w-full max-w-sm mx-auto justify-center items-center space-x-2`}>
           {!hideStepIndicators &&
             stepsArray.map((_, index) => {
@@ -145,10 +134,10 @@ export default function Stepper({
                   <Button
                     variant={"ghost"}
                     onClick={handleBack}
-                    className={`duration-350 transition gap-2 ${
+                    className={`duration-350 transition gap-2 font-bold ${
                       currentStep === 1
                         ? "pointer-events-none opacity-50 text-neutral-400"
-                        : "text-neutral-400 hover:text-neutral-700"
+                        : "text-neutral-700 hover:text-neutral-800"
                     }`}
                     {...backButtonProps}>
                     <ArrowLeft />
@@ -189,7 +178,11 @@ export default function Stepper({
                     </label>
                   </div>
 
-                  <Button disabled={!isFirstPageChecked} onClick={handleNext} className="gap-2" {...nextButtonProps}>
+                  <Button
+                    disabled={!isFirstPageChecked}
+                    onClick={handleNext}
+                    className="font-bold gap-2 !p-6 !rounded-xl"
+                    {...nextButtonProps}>
                     {nextButtonText}
                     <ArrowRight />
                   </Button>
@@ -198,7 +191,7 @@ export default function Stepper({
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

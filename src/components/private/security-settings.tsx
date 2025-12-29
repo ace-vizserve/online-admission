@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { ShieldAlert } from "lucide-react";
+import { LockKeyhole, ShieldAlert } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
@@ -57,8 +57,10 @@ function SecuritySettings() {
       <Sheet open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="text-xl">Security Settings</SheetTitle>
-            <SheetDescription>Update your account password to keep your account secure.</SheetDescription>
+            <SheetTitle className="text-2xl font-black tracking-tight text-primary">Security Settings</SheetTitle>
+            <SheetDescription className="text-slate-500 font-medium">
+              Update your account password to keep your account secure.
+            </SheetDescription>
           </SheetHeader>
           {passwordChanged != null && !passwordChanged ? (
             <div className="px-4">
@@ -78,23 +80,38 @@ function SecuritySettings() {
                   name="password"
                   render={({ field }) => (
                     <FormItem className="grid gap-2">
-                      <FormLabel id="new-password">New Password</FormLabel>
+                      <FormLabel className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        New Password
+                      </FormLabel>
                       <FormControl>
-                        <PasswordInput autoFocus id="new-password" placeholder="Enter your new password" {...field} />
+                        <PasswordInput
+                          autoFocus
+                          id="new-password"
+                          placeholder="Enter your new password"
+                          {...field}
+                          className="h-12 border-slate-200 focus-visible:ring-primary rounded-xl"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <Button size={"lg"} disabled={isPending} type="submit" className="w-full gap-2">
+                <Button
+                  size="lg"
+                  disabled={isPending}
+                  type="submit"
+                  className="w-full h-12 rounded-xl bg-primary font-bold transition-all hover:bg-primary/90 active:scale-[0.98]">
                   {isPending ? (
-                    <>
-                      Updating
-                      <DotPulse size="30" speed="1.3" color="white" />
-                    </>
+                    <div className="flex items-center gap-2">
+                      <span>Updating</span>
+                      <DotPulse size="24" speed="1.3" color="white" />
+                    </div>
                   ) : (
-                    "Change password"
+                    <div className="flex items-center gap-2">
+                      <LockKeyhole className="size-4" />
+                      <span>Update password</span>
+                    </div>
                   )}
                 </Button>
               </div>
@@ -109,8 +126,10 @@ function SecuritySettings() {
     <Drawer open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
       <DrawerContent className="space-y-2">
         <DrawerHeader className="gap-2">
-          <DrawerTitle className="text-xl">Security Settings</DrawerTitle>
-          <DrawerDescription>Update your account password to keep your account secure.</DrawerDescription>
+          <DrawerTitle className="text-xl font-black tracking-tight text-primary">Security Settings</DrawerTitle>
+          <DrawerDescription className="font-medium">
+            Update your account password to keep your account secure.
+          </DrawerDescription>
           {passwordChanged != null && !passwordChanged ? (
             <Alert className="bg-emerald-500/10 border-cyan-600/50 text-cyan-600 dark:border-cyan-600 [&>svg]:text-cyan-600">
               <ShieldAlert />
@@ -128,23 +147,38 @@ function SecuritySettings() {
                 name="password"
                 render={({ field }) => (
                   <FormItem className="grid gap-2">
-                    <FormLabel id="new-password">New Password</FormLabel>
+                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      New Password
+                    </FormLabel>
                     <FormControl>
-                      <PasswordInput autoFocus id="new-password" placeholder="Enter your new password" {...field} />
+                      <PasswordInput
+                        autoFocus
+                        id="new-password"
+                        placeholder="Enter your new password"
+                        {...field}
+                        className="h-12 border-slate-200 focus-visible:ring-primary rounded-xl"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button size={"lg"} disabled={isPending} type="submit" className="w-full gap-2">
+              <Button
+                size="lg"
+                disabled={isPending}
+                type="submit"
+                className="w-full h-12 rounded-xl bg-primary font-bold transition-all hover:bg-primary/90 active:scale-[0.98]">
                 {isPending ? (
-                  <>
-                    Updating
-                    <DotPulse size="30" speed="1.3" color="white" />
-                  </>
+                  <div className="flex items-center gap-2">
+                    <span>Updating</span>
+                    <DotPulse size="24" speed="1.3" color="white" />
+                  </div>
                 ) : (
-                  "Change password"
+                  <div className="flex items-center gap-2">
+                    <LockKeyhole className="size-4" />
+                    <span>Update password</span>
+                  </div>
                 )}
               </Button>
             </div>

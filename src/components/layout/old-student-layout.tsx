@@ -62,10 +62,19 @@ function OldStudentLayout() {
           </div>
           <div className="w-full">
             {isPending ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-xs z-50">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-primary"></div>
-                  <p className="text-sm font-medium text-muted-foreground">Loading content...</p>
+              <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-50 animate-in fade-in duration-300">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative flex items-center justify-center">
+                    <div className="h-12 w-12 rounded-full border-4 border-indigo-100"></div>
+                    <div className="absolute h-12 w-12 animate-spin rounded-full border-6 border-transparent border-t-indigo-600"></div>
+                  </div>
+
+                  <div className="space-y-1 text-center">
+                    <p className="font-bold text-slate-800 tracking-tight">Preparing Enrolment</p>
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-widest animate-pulse">
+                      Updating Information...
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -91,27 +100,29 @@ function ExitApplicationDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="link" className="gap-2">
+        <Button variant="link" className="gap-2 font-bold">
           <ArrowLeft />
           Cancel
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader className="items-center">
-          <AlertDialogTitle>
+          <AlertDialogTitle className="font-black">
             <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
               <OctagonAlert className="h-7 w-7 text-destructive" />
             </div>
             Exit Application?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-xs md:text-sm text-center">
+          <AlertDialogDescription className="text-xs md:text-sm text-center font-medium">
             Are you sure you want to exit this page? Both saved and unsaved information will be removed and cannot be
             recovered.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-2 sm:justify-center">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={exitApplication} className={buttonVariants({ variant: "destructive" })}>
+          <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={exitApplication}
+            className={buttonVariants({ variant: "destructive", className: "font-bold" })}>
             Exit Anyway
           </AlertDialogAction>
         </AlertDialogFooter>

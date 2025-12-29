@@ -1,7 +1,9 @@
 import { getPreviousStudentDocuments } from "@/actions/private";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { cn } from "@/lib/utils";
 import {
   ParentGuardianUploadRequirementsSchema,
   studentUploadRequirementsSchema,
@@ -11,7 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { Save } from "lucide-react";
+import { AlertCircle, Clock, Info, Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
@@ -24,7 +26,7 @@ function StudentUpload() {
   const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
 
-  const { data, isPending, isSuccess } = useQuery({
+  const { data, isPending, isSuccess, fetchStatus } = useQuery({
     queryKey: ["student-documents", params.id],
     queryFn: async () => {
       return await getPreviousStudentDocuments(params.id!);
@@ -41,18 +43,14 @@ function StudentUpload() {
 
   const form = useForm<StudentUploadRequirementsSchema>({
     resolver: zodResolver(studentUploadRequirementsSchema),
-    defaultValues: {
-      ...formState.uploadRequirements?.studentUploadRequirements,
-    },
     mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   // compute directly from watch instead of useMemo + unstable deps
   const toFollowDocs = form.watch("toFollowDocs");
   const skippedDocsCount = toFollowDocs?.length ?? 0;
-  const remainingSkips = MAX_SKIPS - skippedDocsCount;
 
-  // hydrate context from server if context is empty/invalid
   useEffect(() => {
     if (!isSuccess || !data) return;
 
@@ -75,27 +73,38 @@ function StudentUpload() {
         } as StudentUploadRequirementsSchema,
       },
     });
+  }, [isSuccess, data, formState.uploadRequirements]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, data]);
-
-  // hydrate RHF from context only once
   useEffect(() => {
     const studentReq = formState.uploadRequirements?.studentUploadRequirements;
-    if (!studentReq || hydratedRef.current) return;
+    if (hydratedRef.current) return;
+    if (!studentReq || Object.keys(studentReq).length < 1) return;
 
     console.log("Triggered");
 
-    Object.entries(studentReq).forEach(([key, value]) => {
-      form.setValue(key as keyof StudentUploadRequirementsSchema, value, {
-        shouldValidate: true,
-      });
+    form.reset(studentReq, {
+      keepErrors: false,
     });
 
+    form.trigger();
+
     hydratedRef.current = true;
-  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
+  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
+    const isPassExpiryNull = values.passExpiry?.getFullYear() === 1970 && values.passExpiry?.getTime() === 0;
+
+    const isPassportExpiryNull =
+      values.passportExpiry?.getFullYear() === 1970 && values.passportExpiry?.getTime() === 0;
+
+    if (isPassExpiryNull) {
+      values.passExpiry = undefined;
+    }
+
+    if (isPassportExpiryNull) {
+      values.passportExpiry = undefined;
+    }
+
     setFormState({
       uploadRequirements: {
         parentGuardianUploadRequirements: {
@@ -110,11 +119,11 @@ function StudentUpload() {
     });
   }
 
-  if (isPending) {
+  if (fetchStatus === "fetching" && isPending) {
     return <Loader />;
   }
 
-  if (Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length < 1) {
+  if (formState.uploadRequirements?.studentUploadRequirements == null) {
     return <Loader />;
   }
 
@@ -123,8 +132,8 @@ function StudentUpload() {
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
           if (Object.keys(errors).includes("toFollowDocs")) {
-            toast.warning("Too many skipped files!", {
-              description: "You can only skip up to 3 documents.",
+            toast.warning("Too many skipped documents!", {
+              description: "You can only skip up to 3 student documents.",
             });
           }
 
@@ -133,16 +142,16 @@ function StudentUpload() {
           const includesEducCertError = Object.keys(errors).filter((key) => key.includes("educCert"));
           const includesMedicalError = Object.keys(errors).filter((key) => key.includes("medical"));
           const includesPassportError = Object.keys(errors).filter(
-            (key) => key.includes("passportExpiry") || key.includes("passportNumber")
+            (key) => key === "passport" || key === "passportExpiry" || key === "passportNumber"
           );
           const includesPassError = Object.keys(errors).filter(
-            (key) => key.includes("passType") || key.includes("passExpiry")
+            (key) => key === "pass" || key === "passType" || key === "passExpiry"
           );
 
           if (includesBirthCertError.length > 0) {
             form.setError("birthCert", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid Birth Certificate document!", {
               description: "Please upload a valid file to continue.",
@@ -152,7 +161,7 @@ function StudentUpload() {
           if (includesEducCertError.length > 0) {
             form.setError("educCert", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid Transcript of Records document!", {
               description: "Please upload a valid file to continue.",
@@ -162,7 +171,7 @@ function StudentUpload() {
           if (includesMedicalError.length > 0) {
             form.setError("medical", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid Medical Exam document!", {
               description: "Please upload a valid file to continue.",
@@ -172,7 +181,7 @@ function StudentUpload() {
           if (includesIDPictureError.length > 0) {
             form.setError("idPicture", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid ID picture!", {
               description: "Please upload a valid file to continue.",
@@ -180,14 +189,20 @@ function StudentUpload() {
           }
 
           if (includesPassportError.length > 0) {
-            form.setError("passport", {});
+            form.setError("passport", {
+              type: "manual",
+              message: "Please upload a valid file to continue",
+            });
             toast.warning("Invalid student passport document!", {
               description: "The file contains invalid information. Please check and correct it.",
             });
           }
 
           if (includesPassError.length > 0) {
-            form.setError("pass", {});
+            form.setError("pass", {
+              type: "manual",
+              message: "Please upload a valid file to continue",
+            });
             toast.warning("Invalid student pass document!", {
               description: "The file contains invalid information. Please check and correct it.",
             });
@@ -206,33 +221,18 @@ function StudentUpload() {
           });
         })}
         className="space-y-6 lg:space-y-8 w-full mx-auto">
-        <div className="w-max mx-auto">
-          {skippedDocsCount > 0 ? (
-            <div
-              className={`text-xs px-3 py-2 rounded-md ${
-                remainingSkips < 1
-                  ? "bg-red-50 text-red-700 border border-red-200"
-                  : "bg-amber-50 text-amber-700 border border-amber-200"
-              }`}>
-              {remainingSkips < 1 ? (
-                <span>
-                  {skippedDocsCount} document
-                  {skippedDocsCount > 1 ? "s" : ""} marked to follow. No more can be skipped.
-                </span>
-              ) : (
-                <span>
-                  {skippedDocsCount} document
-                  {skippedDocsCount > 1 ? "s" : ""} marked to follow • {remainingSkips} skip
-                  {remainingSkips > 1 ? "s" : ""} remaining
-                </span>
-              )}
-            </div>
-          ) : (
-            <div className="text-xs px-3 py-2 rounded-md bg-green-50 text-green-600 border border-slate-200">
-              Up to {MAX_SKIPS} documents can be marked to submit later
-            </div>
-          )}
-        </div>
+        <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+          <Info className="h-4 w-4 !text-blue-500" />
+          <div className="space-y-1 text-pretty">
+            <AlertTitle className="text-xs text-blue-700 font-bold">Important Information</AlertTitle>
+            <span className="text-xs text-blue-900">
+              After you upload or edit any document, please click <span className="font-bold">Save documents</span> so
+              your updates are kept.
+            </span>
+          </div>
+        </Alert>
+
+        <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           <StudentFileUploaderDialog
@@ -306,14 +306,16 @@ function StudentUpload() {
 
         <Button
           size="lg"
-          className="mt-8 mb-0 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase"
+          className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
           type="submit">
-          Save
+          Save documents
           <Save />
         </Button>
 
-        <Button className="mt-8 mb-0 flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Save
+        <Button
+          className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+          type="submit">
+          Save documents
           <Save />
         </Button>
       </form>
@@ -321,11 +323,48 @@ function StudentUpload() {
   );
 }
 
+function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: number; MAX_SKIPS: number }) {
+  const remainingSkips = MAX_SKIPS - skippedDocsCount;
+
+  return (
+    <div className="w-max mx-auto animate-in fade-in slide-in-from-top-2 duration-500">
+      {skippedDocsCount > 0 ? (
+        <div
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm",
+            remainingSkips < 1
+              ? "bg-rose-50 text-rose-600 border-rose-100"
+              : "bg-amber-50 text-amber-700 border-amber-100"
+          )}>
+          {remainingSkips < 1 ? (
+            <>
+              <AlertCircle size={14} className="shrink-0" />
+              <span>{skippedDocsCount} skipped • No skips left</span>
+            </>
+          ) : (
+            <>
+              <Clock size={14} className="shrink-0 animate-pulse" />
+              <span>
+                {skippedDocsCount} Following • {remainingSkips} more allowed
+              </span>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold uppercase tracking-wider">
+          <Info size={14} className="text-blue-500" />
+          <span>You can skip up to {MAX_SKIPS} documents for now</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Loader() {
   return (
     <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-      <p className="text-sm text-muted-foreground animate-pulse">Fetching documents...</p>
-      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
+      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching documents...</p>
     </div>
   );
 }

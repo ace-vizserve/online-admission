@@ -247,6 +247,19 @@ export const classLevels = [
   { label: "Secondary Four", value: "Secondary Four" },
 ] as const;
 
+export const vizSchoolClassLevels = [
+  { label: "Primary One", value: "Primary One" },
+  { label: "Primary Two", value: "Primary Two" },
+  { label: "Primary Three", value: "Primary Three" },
+  { label: "Primary Four", value: "Primary Four" },
+  { label: "Primary Five", value: "Primary Five" },
+  { label: "Primary Six", value: "Primary Six" },
+  { label: "Secondary One", value: "Secondary One" },
+  { label: "Secondary Two", value: "Secondary Two" },
+  { label: "Secondary Three", value: "Secondary Three" },
+  { label: "Secondary Four", value: "Secondary Four" },
+] as const;
+
 export const classTypes = [
   { label: "Enrichment Class", value: "Enrichment Class" },
   { label: "Global Class (CAMBRIDGE)", value: "Global Class (CAMBRIDGE)" },

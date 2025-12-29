@@ -1,3 +1,4 @@
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
-import { CalendarIcon, MinusCircle, PlusCircle, Save } from "lucide-react";
+import { Baby, CalendarIcon, Info, MinusCircle, PlusCircle, Save } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -67,6 +68,16 @@ function SiblingInformation() {
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto ">
+            <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+              <Info className="h-4 w-4 !text-blue-500" />
+              <div className="space-y-1 text-pretty">
+                <AlertTitle className="text-xs text-blue-700 font-bold">Important Information</AlertTitle>
+                <span className="text-xs text-blue-900">
+                  Always click the <span className="font-bold">Save details</span> button after applying any changes to
+                  ensure your updates are recorded.
+                </span>
+              </div>
+            </Alert>
             {fields.map((field, index) => (
               <Card key={field.id} className="flex flex-col space-y-8 shadow-none border-none">
                 <CardHeader className="w-full flex items-center justify-between">
@@ -80,7 +91,7 @@ function SiblingInformation() {
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full ">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full ">
                     <FormField
                       control={form.control}
                       name={`siblings.${index}.siblingFullName`}
@@ -193,23 +204,24 @@ function SiblingInformation() {
               </Card>
             ))}
 
-            <Button
-              variant={"secondary"}
-              size={"lg"}
-              className="hidden lg:flex w-full p-8 gap-2 uppercase my-4"
-              type="submit">
-              Save
-              <Save />
-            </Button>
+            <div className="flex flex-col gap-4 mb-4">
+              <Button
+                size={"lg"}
+                variant={"secondary"}
+                className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+                type="submit">
+                Save details
+                <Save />
+              </Button>
 
-            <Button
-              variant={"secondary"}
-              size={"lg"}
-              className="flex lg:hidden w-full p-6 gap-2 uppercase my-4"
-              type="submit">
-              Save
-              <Save />
-            </Button>
+              <Button
+                variant={"secondary"}
+                className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+                type="submit">
+                Save details
+                <Save />
+              </Button>
+            </div>
           </form>
         </Form>
       )}
@@ -217,14 +229,14 @@ function SiblingInformation() {
       <Button
         disabled={fields.length >= 5}
         size={"lg"}
-        className="hidden lg:flex w-full p-8 gap-2 uppercase mx-auto max-w-5xl"
+        className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
         onClick={() =>
           append({
-            siblingBirthDay: new Date(),
+            siblingDateOfBirth: new Date(),
             siblingFullName: "",
             siblingReligion: "",
-            siblingEducationOccupation: "",
-            siblingSchoolCompany: "",
+            siblingSchoolLevelOrCompanyPosition: "",
+            siblingSchoolOrCompanyName: "",
           })
         }>
         Add Sibling
@@ -232,14 +244,14 @@ function SiblingInformation() {
       </Button>
 
       <Button
-        className="flex lg:hidden w-full p-6 gap-2 uppercase mx-auto max-w-5xl"
+        className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
         onClick={() =>
           append({
-            siblingBirthDay: new Date(),
+            siblingDateOfBirth: new Date(),
             siblingFullName: "",
             siblingReligion: "",
-            siblingEducationOccupation: "",
-            siblingSchoolCompany: "",
+            siblingSchoolLevelOrCompanyPosition: "",
+            siblingSchoolOrCompanyName: "",
           })
         }>
         Add Sibling
@@ -251,11 +263,29 @@ function SiblingInformation() {
 
 function EmptySibling() {
   return (
-    <Card className="h-dvh max-h-[400px] bg-muted w-full max-w-5xl mx-auto mb-4">
-      <CardContent className="h-full flex flex-col items-center justify-center text-center p-6">
-        <PlusCircle className="w-8 h-8 mb-2" />
-        <p className="mb-1 font-medium">No siblings added yet.</p>
-        <span className="text-sm text-muted-foreground">Click the button below to add a sibling.</span>
+    <Card className="group relative h-[300px] w-full max-w-5xl mx-auto mb-6 border-2 border-dashed border-slate-200 bg-slate-50/50 transition-colors hover:bg-slate-50 hover:border-slate-300 rounded-3xl overflow-hidden">
+      <CardContent className="h-full flex flex-col items-center justify-center text-center p-8">
+        {/* Decorative Icon Container */}
+        <div className="relative mb-6">
+          <div className="flex items-center justify-center size-16 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:scale-110 transition-transform duration-300">
+            <Baby className="size-8 text-slate-400 group-hover:text-slate-900 transition-colors" />
+          </div>
+          <div className="absolute -bottom-1 -right-1 flex items-center justify-center size-6 rounded-full bg-slate-900 text-white border-2 border-white">
+            <PlusCircle className="size-3.5" />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <h3 className="text-lg font-black tracking-tight text-primary">No Siblings Recorded</h3>
+          <p className="text-sm text-slate-500 font-medium max-w-[280px] leading-relaxed">
+            Adding siblings can help the school coordinate records and transportation for your family.
+          </p>
+        </div>
+
+        {/* Subtle Hint */}
+        <div className="mt-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/50 text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+          Optional Section
+        </div>
       </CardContent>
     </Card>
   );

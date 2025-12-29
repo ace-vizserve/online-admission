@@ -1,7 +1,7 @@
-import { buttonVariants } from "@/components/ui/button";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { cn } from "@/lib/utils";
 import { useSelectAcademicYear } from "@/zustand-store";
+import { Check } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const STEPS = [
@@ -37,50 +37,66 @@ function NewStudentSteps() {
   const navigate = useNavigate();
 
   return (
-    <ol className="flex flex-col lg:flex-row gap-1 pb-6 lg:pb-0">
-      {STEPS.map((step) => {
-        const isCurrent = currentTab == step.url;
-        const isCompleted = completedTabs.includes(step.url);
+    <nav className="w-full bg-white mb-12 md:mb-0">
+      <ol className="flex flex-col lg:flex-row max-w-screen mx-auto">
+        {STEPS.map((step, index) => {
+          const isCurrent = currentTab === step.url;
+          const isCompleted = completedTabs.includes(step.url);
+          const isLocked = !isCurrent && !isCompleted;
 
-        return (
-          <li
-            key={step.name}
-            onClick={() => {
-              if (step.url === activeTab) return;
-              navigate(`${step.url}?=academicYear=${academicYear}`);
-              setActiveTab(step.url);
-            }}
-            className={buttonVariants({
-              size: "lg",
-              className: cn(
-                "relative overflow-hidden lg:flex-1 w-full first:rounded-t-none first:border-t-0 lg:rounded-t-none border lg:border-t-0 py-10 px-6 pointer-events-none",
-                {
-                  "opacity-100 cursor-pointer pointer-events-auto": isCurrent || isCompleted,
-                  "bg-green-50": isCompleted,
-                }
-              ),
-              variant: "outline",
-            })}>
-            {activeTab == step.url && (
-              <span className="absolute right-3 top-3 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-60"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary shadow-lg shadow-secondary/50"></span>
-              </span>
-            )}
-            <div
-              className={cn(" space-y-1 text-center px-6 py-4", {
-                "text-green-600": isCompleted,
-              })}>
-              <p className="text-sm font-semibold">{step.name}</p>
-              <p className="text-xs text-muted-foreground">{step.description}</p>
-            </div>
+          return (
+            <li
+              key={step.name}
+              onClick={() => {
+                if (isLocked || step.url === activeTab) return;
+                navigate(`${step.url}?academicYear=${academicYear}`);
+                setActiveTab(step.url);
+              }}
+              className={cn(
+                "relative flex-1 group transition-all duration-300",
+                isLocked ? "cursor-not-allowed" : "cursor-pointer"
+              )}>
+              <div className="flex items-center lg:flex-col lg:text-center px-6 py-5 gap-4 lg:gap-2">
+                {/* Step Number / Icon */}
+                <div
+                  className={cn(
+                    "size-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-black transition-all",
+                    isCurrent
+                      ? "bg-primary text-white ring-4 ring-slate-100"
+                      : isCompleted
+                      ? "bg-green-600 text-white"
+                      : "bg-slate-100 text-slate-400"
+                  )}>
+                  {isCompleted ? <Check size={14} strokeWidth={3} /> : index + 1}
+                </div>
 
-            {isCompleted && <span className="absolute bottom-0 w-full h-1 bg-green-600" />}
-            {isCurrent && <span className="absolute bottom-0 w-full h-1 bg-primary animate-pulse" />}
-          </li>
-        );
-      })}
-    </ol>
+                {/* Text Content */}
+                <div className="min-w-0">
+                  <p
+                    className={cn(
+                      "text-xs font-black uppercase tracking-tight transition-colors",
+                      isCurrent ? "text-primary" : isCompleted ? "text-green-700" : "text-slate-400"
+                    )}>
+                    {step.name}
+                  </p>
+                  <p className="hidden lg:block text-[12px] text-slate-500 font-medium truncate">{step.description}</p>
+                </div>
+              </div>
+
+              {/* Bottom Progress Indicator */}
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-transparent px-2">
+                <div
+                  className={cn(
+                    "h-full w-full rounded-t-full transition-all duration-500",
+                    isCurrent ? "bg-primary" : isCompleted ? "bg-green-600/40" : "bg-slate-100"
+                  )}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }
 

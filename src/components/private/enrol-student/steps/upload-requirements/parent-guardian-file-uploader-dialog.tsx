@@ -100,7 +100,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
-        form.setValue(name, data!.imagePath, { shouldValidate: true });
+        form.setValue(name, data!.imagePath);
         setFormState({
           uploadRequirements: {
             studentUploadRequirements: {
@@ -114,6 +114,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
           },
         });
       }
+    },
+    onSettled() {
+      form.trigger();
     },
   });
 
@@ -144,52 +147,52 @@ const ParentGuardianFileUploaderDialog = memo(function ({
       await deleteFile(formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string, academicYear);
 
       const updatedParentGuardianReqs = {
-        ...formState.uploadRequirements!.parentGuardianUploadRequirements,
-        [name]: undefined,
+        ...formState.uploadRequirements.parentGuardianUploadRequirements,
+        [name]: "",
         isValid: false,
       };
 
       if (name === "motherPassport") {
-        updatedParentGuardianReqs.motherPassportNumber = undefined;
-        updatedParentGuardianReqs.motherPassportExpiry = undefined;
-        form.setValue("motherPassportNumber", undefined);
-        form.setValue("motherPassportExpiry", undefined);
+        updatedParentGuardianReqs.motherPassportNumber = "";
+        updatedParentGuardianReqs.motherPassportExpiry = null as unknown as undefined;
+        form.setValue("motherPassportNumber", "");
+        form.setValue("motherPassportExpiry", null as unknown as undefined);
       }
       if (name === "motherPass") {
-        updatedParentGuardianReqs.motherPassType = undefined;
-        updatedParentGuardianReqs.motherPassExpiry = undefined;
-        form.setValue("motherPassType", undefined);
-        form.setValue("motherPassExpiry", undefined);
+        updatedParentGuardianReqs.motherPassType = "";
+        updatedParentGuardianReqs.motherPassExpiry = null as unknown as undefined;
+        form.setValue("motherPassType", "");
+        form.setValue("motherPassExpiry", null as unknown as undefined);
       }
 
       if (name === "fatherPassport") {
-        updatedParentGuardianReqs.fatherPassportNumber = undefined;
-        updatedParentGuardianReqs.fatherPassportExpiry = undefined;
-        form.setValue("fatherPassportNumber", undefined);
-        form.setValue("fatherPassportExpiry", undefined);
+        updatedParentGuardianReqs.fatherPassportNumber = "";
+        updatedParentGuardianReqs.fatherPassportExpiry = null as unknown as undefined;
+        form.setValue("fatherPassportNumber", "");
+        form.setValue("fatherPassportExpiry", null as unknown as undefined);
       }
       if (name === "fatherPass") {
-        updatedParentGuardianReqs.fatherPassType = undefined;
-        updatedParentGuardianReqs.fatherPassExpiry = undefined;
-        form.setValue("fatherPassType", undefined);
-        form.setValue("fatherPassExpiry", undefined);
+        updatedParentGuardianReqs.fatherPassType = "";
+        updatedParentGuardianReqs.fatherPassExpiry = null as unknown as undefined;
+        form.setValue("fatherPassType", "");
+        form.setValue("fatherPassExpiry", null as unknown as undefined);
       }
 
       if (name === "guardianPassport") {
-        updatedParentGuardianReqs.guardianPassportNumber = undefined;
-        updatedParentGuardianReqs.guardianPassportExpiry = undefined;
-        form.setValue("guardianPassportNumber", undefined);
-        form.setValue("guardianPassportExpiry", undefined);
+        updatedParentGuardianReqs.guardianPassportNumber = "";
+        updatedParentGuardianReqs.guardianPassportExpiry = null as unknown as undefined;
+        form.setValue("guardianPassportNumber", "");
+        form.setValue("guardianPassportExpiry", null as unknown as undefined);
       }
       if (name === "guardianPass") {
-        updatedParentGuardianReqs.guardianPassType = undefined;
-        updatedParentGuardianReqs.guardianPassExpiry = undefined;
-        form.setValue("guardianPassType", undefined);
-        form.setValue("guardianPassExpiry", undefined);
+        updatedParentGuardianReqs.guardianPassType = "";
+        updatedParentGuardianReqs.guardianPassExpiry = null as unknown as undefined;
+        form.setValue("guardianPassType", "");
+        form.setValue("guardianPassExpiry", null as unknown as undefined);
       }
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
+      form.setValue(name, "");
+      onValueChange(null);
 
       setFormState({
         uploadRequirements: {
@@ -203,11 +206,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
         },
       });
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
       setIsChangingDocument(false);
     } catch (error) {
       setIsChangingDocument(false);
+    } finally {
+      form.trigger();
     }
   }
 
@@ -251,20 +254,27 @@ const ParentGuardianFileUploaderDialog = memo(function ({
           {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
             <CheckCircle2 className="stroke-white fill-green-600" />
           ) : errors[name] != null ? (
-            <CircleAlert className="text-destructive" />
+            <CircleAlert className="size-6 text-destructive" />
           ) : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name) ? (
-            <Clock />
+            <Clock className="size-6 " />
           ) : (
-            <Upload />
+            <Upload className="size-6 " />
           )}
           <div className="flex flex-col gap-1">
-            <span className="text-sm">{label}</span>
-            <span className="text-muted-foreground text-xs">{description}</span>
+            <span className="text-sm font-semibold">{label}</span>
+            <span className="text-muted-foreground font-medium text-xs">{description}</span>
           </div>
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant={errors[name] != null ? "destructive" : "outline"}>
+            <Button
+              className="font-semibold"
+              variant={
+                errors[name] != null ||
+                (form.formState.errors.toFollowDocs != null && form.getValues("toFollowDocs")?.includes(name))
+                  ? "destructive"
+                  : "outline"
+              }>
               {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
                 ? "View"
                 : form.getValues("toFollowDocs")?.includes(name)
@@ -275,8 +285,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 
           <DialogContent className="!max-w-3xl">
             <DialogHeader className="text-start">
-              <DialogTitle>{label}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+              <DialogDescription className="font-semibold">
                 Upload a clear and recent document in <strong>PDF</strong> format.
               </DialogDescription>
             </DialogHeader>
@@ -291,7 +301,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                   disabled={isChangingDocument}
                   onClick={async () => await changeDocument()}
                   size={"sm"}
-                  className="text-xs absolute right-4 top-4">
+                  className="text-xs absolute right-4 top-4 font-bold">
                   {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                   Change document
                 </Button>
@@ -303,7 +313,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 {!NOT_FILE_INPUTS.includes(name) &&
                   formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
                     <Link
-                      to={formState.uploadRequirements.parentGuardianUploadRequirements?.[name] as string}
+                      to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
                       target="_blank"
                       className={buttonVariants({
                         className: "gap-2 text-xs hover:bg-white",
@@ -348,7 +358,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               <div className="flex items-center gap-1">
                                 <Paperclip className="h-4 w-4 stroke-current" />
                                 <span className="text-sm font-medium">
-                                  {(formState.uploadRequirements.parentGuardianUploadRequirements?.[name] as string)
+                                  {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
                                     .split("\\")
                                     .pop()}
                                 </span>
@@ -364,7 +374,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                                       ...formState.uploadRequirements!,
                                       studentUploadRequirements: {
                                         ...formState.uploadRequirements!.studentUploadRequirements,
-                                        [name]: undefined,
+                                        [name]: "",
                                       },
                                     },
                                   });
@@ -435,52 +445,52 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             const updatedParentGuardianReqs = {
                               ...formState.uploadRequirements!.parentGuardianUploadRequirements,
                               isValid: false,
-                              [name]: undefined,
+                              [name]: "",
                               toFollowDocs: updatedDocs,
                             };
 
                             if (checked) {
                               if (name === "motherPassport") {
-                                form.setValue("motherPassportNumber", undefined);
-                                form.setValue("motherPassportExpiry", undefined);
-                                updatedParentGuardianReqs.motherPassportNumber = undefined;
-                                updatedParentGuardianReqs.motherPassportExpiry = undefined;
+                                updatedParentGuardianReqs.motherPassportNumber = "";
+                                updatedParentGuardianReqs.motherPassportExpiry = null as unknown as undefined;
+                                form.setValue("motherPassportNumber", "");
+                                form.setValue("motherPassportExpiry", null as unknown as undefined);
                               }
                               if (name === "motherPass") {
-                                form.setValue("motherPassType", undefined);
-                                form.setValue("motherPassExpiry", undefined);
-                                updatedParentGuardianReqs.motherPassType = undefined;
-                                updatedParentGuardianReqs.motherPassExpiry = undefined;
+                                updatedParentGuardianReqs.motherPassType = "";
+                                updatedParentGuardianReqs.motherPassExpiry = null as unknown as undefined;
+                                form.setValue("motherPassType", "");
+                                form.setValue("motherPassExpiry", null as unknown as undefined);
                               }
 
                               if (name === "fatherPassport") {
-                                form.setValue("fatherPassportNumber", undefined);
-                                form.setValue("fatherPassportExpiry", undefined);
-                                updatedParentGuardianReqs.fatherPassportNumber = undefined;
-                                updatedParentGuardianReqs.fatherPassportExpiry = undefined;
+                                updatedParentGuardianReqs.fatherPassportNumber = "";
+                                updatedParentGuardianReqs.fatherPassportExpiry = null as unknown as undefined;
+                                form.setValue("fatherPassportNumber", "");
+                                form.setValue("fatherPassportExpiry", null as unknown as undefined);
                               }
                               if (name === "fatherPass") {
-                                form.setValue("fatherPassType", undefined);
-                                form.setValue("fatherPassExpiry", undefined);
-                                updatedParentGuardianReqs.fatherPassType = undefined;
-                                updatedParentGuardianReqs.fatherPassExpiry = undefined;
+                                updatedParentGuardianReqs.fatherPassType = "";
+                                updatedParentGuardianReqs.fatherPassExpiry = null as unknown as undefined;
+                                form.setValue("fatherPassType", "");
+                                form.setValue("fatherPassExpiry", null as unknown as undefined);
                               }
 
                               if (name === "guardianPassport") {
-                                form.setValue("guardianPassportNumber", undefined);
-                                form.setValue("guardianPassportExpiry", undefined);
-                                updatedParentGuardianReqs.guardianPassportNumber = undefined;
-                                updatedParentGuardianReqs.guardianPassportExpiry = undefined;
+                                updatedParentGuardianReqs.guardianPassportNumber = "";
+                                updatedParentGuardianReqs.guardianPassportExpiry = null as unknown as undefined;
+                                form.setValue("guardianPassportNumber", "");
+                                form.setValue("guardianPassportExpiry", null as unknown as undefined);
                               }
                               if (name === "guardianPass") {
-                                form.setValue("guardianPassType", undefined);
-                                form.setValue("guardianPassExpiry", undefined);
-                                updatedParentGuardianReqs.guardianPassType = undefined;
-                                updatedParentGuardianReqs.guardianPassExpiry = undefined;
+                                updatedParentGuardianReqs.guardianPassType = "";
+                                updatedParentGuardianReqs.guardianPassExpiry = null as unknown as undefined;
+                                form.setValue("guardianPassType", "");
+                                form.setValue("guardianPassExpiry", null as unknown as undefined);
                               }
                             }
 
-                            form.setValue(name, undefined);
+                            form.setValue(name, "");
                             form.setValue("toFollowDocs", updatedDocs);
                             onValueChange(null);
 
@@ -491,6 +501,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                                 parentGuardianUploadRequirements: updatedParentGuardianReqs,
                               },
                             });
+
+                            form.trigger();
                           }}
                         />
                       </FormControl>
@@ -509,7 +521,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                       <FormLabel>Pass Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger
+                            disabled={form.getValues("toFollowDocs")?.includes("motherPass")}
+                            className="w-full">
                             <SelectValue placeholder="Select a pass type" />
                           </SelectTrigger>
                         </FormControl>
@@ -531,11 +545,12 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                   name="motherPassExpiry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Passport Expiry</FormLabel>
+                      <FormLabel>Pass Expiry</FormLabel>
                       <Popover modal>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("motherPass")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -548,25 +563,38 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+                                field.onChange(fixedDate);
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      motherPassExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
-                      <FormDescription>Passport expiration date.</FormDescription>
+                      <FormDescription>Pass expiration date.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -583,7 +611,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <PassportInput {...field} placeholder="Enter  passport number" />
+                        <PassportInput
+                          disabled={form.getValues("toFollowDocs")?.includes("motherPassport")}
+                          {...field}
+                          placeholder="Enter  passport number"
+                        />
                       </FormControl>
                       <FormDescription>Mother passport number.</FormDescription>
                       <FormMessage />
@@ -601,6 +633,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("motherPassport")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -613,21 +646,34 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+                                field.onChange(fixedDate);
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      motherPassportExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -649,7 +695,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                       <FormLabel>Pass Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger
+                            disabled={form.getValues("toFollowDocs")?.includes("fatherPass")}
+                            className="w-full">
                             <SelectValue placeholder="Select a pass type" />
                           </SelectTrigger>
                         </FormControl>
@@ -676,6 +724,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("fatherPass")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -688,21 +737,34 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+                                field.onChange(fixedDate);
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      fatherPassExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -723,7 +785,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <PassportInput {...field} placeholder="Enter  passport number" />
+                        <PassportInput
+                          disabled={form.getValues("toFollowDocs")?.includes("fatherPassport")}
+                          {...field}
+                          placeholder="Enter  passport number"
+                        />
                       </FormControl>
                       <FormDescription>Father passport number.</FormDescription>
                       <FormMessage />
@@ -741,6 +807,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("fatherPassport")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -753,21 +820,34 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+                                field.onChange(fixedDate);
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      fatherPassportExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -789,7 +869,9 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                       <FormLabel>Pass Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger
+                            disabled={form.getValues("toFollowDocs")?.includes("guardianPass")}
+                            className="w-full">
                             <SelectValue placeholder="Select a pass type" />
                           </SelectTrigger>
                         </FormControl>
@@ -816,6 +898,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("guardianPass")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -828,21 +911,34 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+                                field.onChange(fixedDate);
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      guardianPassExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -863,7 +959,11 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <PassportInput {...field} placeholder="Enter  passport number" />
+                        <PassportInput
+                          disabled={form.getValues("toFollowDocs")?.includes("guardianPassport")}
+                          {...field}
+                          placeholder="Enter  passport number"
+                        />
                       </FormControl>
                       <FormDescription>Guardian passport number.</FormDescription>
                       <FormMessage />
@@ -881,6 +981,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("guardianPassport")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -893,21 +994,34 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+                                field.onChange(fixedDate);
+                                setFormState({
+                                  uploadRequirements: {
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                    },
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                      guardianPassportExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -957,7 +1071,7 @@ function ParentGuardianFileUploaderDrawer({
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
-        form.setValue(name, data!.imagePath, { shouldValidate: true });
+        form.setValue(name, data!.imagePath);
         setFormState({
           uploadRequirements: {
             studentUploadRequirements: {
@@ -972,12 +1086,14 @@ function ParentGuardianFileUploaderDrawer({
         });
       }
     },
+    onSettled() {
+      form.trigger();
+    },
   });
 
   const { errors } = useFormState({ control: form.control });
   const dropZoneConfig: DropzoneOptions = {
     maxFiles: 4,
-    disabled: false,
     maxSize: 1024 * 1024 * 4, // 4MB max
     accept: {
       "application/pdf": [],
@@ -997,52 +1113,52 @@ function ParentGuardianFileUploaderDrawer({
       await deleteFile(formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string, academicYear);
 
       const updatedParentGuardianReqs = {
-        ...formState.uploadRequirements!.parentGuardianUploadRequirements,
-        [name]: undefined,
+        ...formState.uploadRequirements.parentGuardianUploadRequirements,
+        [name]: "",
         isValid: false,
       };
 
       if (name === "motherPassport") {
-        updatedParentGuardianReqs.motherPassportNumber = undefined;
-        updatedParentGuardianReqs.motherPassportExpiry = undefined;
-        form.setValue("motherPassportNumber", undefined);
-        form.setValue("motherPassportExpiry", undefined);
+        updatedParentGuardianReqs.motherPassportNumber = "";
+        updatedParentGuardianReqs.motherPassportExpiry = null as unknown as undefined;
+        form.setValue("motherPassportNumber", "");
+        form.setValue("motherPassportExpiry", null as unknown as undefined);
       }
       if (name === "motherPass") {
-        updatedParentGuardianReqs.motherPassType = undefined;
-        updatedParentGuardianReqs.motherPassExpiry = undefined;
-        form.setValue("motherPassType", undefined);
-        form.setValue("motherPassExpiry", undefined);
+        updatedParentGuardianReqs.motherPassType = "";
+        updatedParentGuardianReqs.motherPassExpiry = null as unknown as undefined;
+        form.setValue("motherPassType", "");
+        form.setValue("motherPassExpiry", null as unknown as undefined);
       }
 
       if (name === "fatherPassport") {
-        updatedParentGuardianReqs.fatherPassportNumber = undefined;
-        updatedParentGuardianReqs.fatherPassportExpiry = undefined;
-        form.setValue("fatherPassportNumber", undefined);
-        form.setValue("fatherPassportExpiry", undefined);
+        updatedParentGuardianReqs.fatherPassportNumber = "";
+        updatedParentGuardianReqs.fatherPassportExpiry = null as unknown as undefined;
+        form.setValue("fatherPassportNumber", "");
+        form.setValue("fatherPassportExpiry", null as unknown as undefined);
       }
       if (name === "fatherPass") {
-        updatedParentGuardianReqs.fatherPassType = undefined;
-        updatedParentGuardianReqs.fatherPassExpiry = undefined;
-        form.setValue("fatherPassType", undefined);
-        form.setValue("fatherPassExpiry", undefined);
+        updatedParentGuardianReqs.fatherPassType = "";
+        updatedParentGuardianReqs.fatherPassExpiry = null as unknown as undefined;
+        form.setValue("fatherPassType", "");
+        form.setValue("fatherPassExpiry", null as unknown as undefined);
       }
 
       if (name === "guardianPassport") {
-        updatedParentGuardianReqs.guardianPassportNumber = undefined;
-        updatedParentGuardianReqs.guardianPassportExpiry = undefined;
-        form.setValue("guardianPassportNumber", undefined);
-        form.setValue("guardianPassportExpiry", undefined);
+        updatedParentGuardianReqs.guardianPassportNumber = "";
+        updatedParentGuardianReqs.guardianPassportExpiry = null as unknown as undefined;
+        form.setValue("guardianPassportNumber", "");
+        form.setValue("guardianPassportExpiry", null as unknown as undefined);
       }
       if (name === "guardianPass") {
-        updatedParentGuardianReqs.guardianPassType = undefined;
-        updatedParentGuardianReqs.guardianPassExpiry = undefined;
-        form.setValue("guardianPassType", undefined);
-        form.setValue("guardianPassExpiry", undefined);
+        updatedParentGuardianReqs.guardianPassType = "";
+        updatedParentGuardianReqs.guardianPassExpiry = null as unknown as undefined;
+        form.setValue("guardianPassType", "");
+        form.setValue("guardianPassExpiry", null as unknown as undefined);
       }
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
+      form.setValue(name, "");
+      onValueChange(null);
 
       setFormState({
         uploadRequirements: {
@@ -1056,13 +1172,42 @@ function ParentGuardianFileUploaderDrawer({
         },
       });
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
       setIsChangingDocument(false);
     } catch (error) {
       setIsChangingDocument(false);
+    } finally {
+      form.trigger();
     }
   }
+
+  function getWatchedFields() {
+    const obj: Record<string, unknown> = {};
+
+    NOT_FILE_INPUTS.map((key) => {
+      obj[key] = form.watch(key as keyof ParentGuardianUploadRequirementsSchema);
+    });
+
+    return obj;
+  }
+
+  const debouncedAutoSaveValue = useDebounce(getWatchedFields(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      uploadRequirements: {
+        studentUploadRequirements: {
+          ...formState.uploadRequirements?.studentUploadRequirements,
+        },
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements?.parentGuardianUploadRequirements,
+          ...debouncedAutoSaveValue,
+        },
+      },
+    },
+    0
+  );
 
   return (
     <div
@@ -1081,13 +1226,20 @@ function ParentGuardianFileUploaderDrawer({
           <Upload />
         )}
         <div className="flex flex-col gap-1">
-          <span className="text-sm">{label}</span>
-          <span className="text-muted-foreground text-xs">{description}</span>
+          <span className="text-sm font-semibold">{label}</span>
+          <span className="text-muted-foreground font-medium text-xs">{description}</span>
         </div>
       </div>
       <Drawer repositionInputs={false}>
         <DrawerTrigger asChild>
-          <Button variant={errors[name] != null ? "destructive" : "outline"}>
+          <Button
+            className="font-semibold"
+            variant={
+              errors[name] != null ||
+              (form.formState.errors.toFollowDocs != null && form.getValues("toFollowDocs")?.includes(name))
+                ? "destructive"
+                : "outline"
+            }>
             {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
               ? "View"
               : form.getValues("toFollowDocs")?.includes(name)
@@ -1097,9 +1249,9 @@ function ParentGuardianFileUploaderDrawer({
         </DrawerTrigger>
 
         <DrawerContent className="px-4 space-y-4">
-          <DrawerHeader className="text-start px-0 mb-0">
-            <DrawerTitle>{label}</DrawerTitle>
-            <DrawerDescription className="text-xs">
+          <DrawerHeader className="!text-start px-0 mb-0">
+            <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
+            <DrawerDescription className="text-xs font-semibold">
               Upload a clear and recent document in <strong>PDF</strong> format.
             </DrawerDescription>
           </DrawerHeader>
@@ -1114,19 +1266,19 @@ function ParentGuardianFileUploaderDrawer({
                 disabled={isChangingDocument}
                 onClick={async () => await changeDocument()}
                 size={"sm"}
-                className="text-xs absolute right-4 top-4">
+                className="text-xs absolute right-4 top-4 font-bold">
                 {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                 Change
               </Button>
               <div className="p-6 bg-white rounded-full">
-                <img src={fileSvg} className="size-14" />
+                <img src={fileSvg} className="size-10" />
               </div>
               <p className="text-muted-foreground text-xs">{label} has been uploaded</p>
 
               {!NOT_FILE_INPUTS.includes(name) &&
                 formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
                   <Link
-                    to={formState.uploadRequirements.parentGuardianUploadRequirements?.[name] as string}
+                    to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
                     target="_blank"
                     className={buttonVariants({
                       className: "gap-2 text-xs hover:bg-white",
@@ -1169,7 +1321,7 @@ function ParentGuardianFileUploaderDrawer({
                             <div className="flex items-center gap-1">
                               <Paperclip className="h-4 w-4 stroke-current" />
                               <span className="text-sm font-medium">
-                                {(formState.uploadRequirements.parentGuardianUploadRequirements?.[name] as string)
+                                {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
                                   .split("\\")
                                   .pop()}
                               </span>
@@ -1185,7 +1337,7 @@ function ParentGuardianFileUploaderDrawer({
                                     ...formState.uploadRequirements!,
                                     studentUploadRequirements: {
                                       ...formState.uploadRequirements!.studentUploadRequirements,
-                                      [name]: undefined,
+                                      [name]: "",
                                     },
                                   },
                                 });
@@ -1211,7 +1363,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {value != null && value.length > 0 && (
-            <Button disabled={isPending} onClick={uploadFile} className="mt-2 gap-2">
+            <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
               {isPending ? (
                 <>
                   Uploading <DotPulse size="30" speed="1.3" color="white" />
@@ -1255,52 +1407,52 @@ function ParentGuardianFileUploaderDrawer({
                         const updatedParentGuardianReqs = {
                           ...formState.uploadRequirements!.parentGuardianUploadRequirements,
                           isValid: false,
-                          [name]: undefined,
+                          [name]: "",
                           toFollowDocs: updatedDocs,
                         };
 
                         if (checked) {
                           if (name === "motherPassport") {
-                            form.setValue("motherPassportNumber", undefined);
-                            form.setValue("motherPassportExpiry", undefined);
-                            updatedParentGuardianReqs.motherPassportNumber = undefined;
-                            updatedParentGuardianReqs.motherPassportExpiry = undefined;
+                            updatedParentGuardianReqs.motherPassportNumber = "";
+                            updatedParentGuardianReqs.motherPassportExpiry = null as unknown as undefined;
+                            form.setValue("motherPassportNumber", "");
+                            form.setValue("motherPassportExpiry", null as unknown as undefined);
                           }
                           if (name === "motherPass") {
-                            form.setValue("motherPassType", undefined);
-                            form.setValue("motherPassExpiry", undefined);
-                            updatedParentGuardianReqs.motherPassType = undefined;
-                            updatedParentGuardianReqs.motherPassExpiry = undefined;
+                            updatedParentGuardianReqs.motherPassType = "";
+                            updatedParentGuardianReqs.motherPassExpiry = null as unknown as undefined;
+                            form.setValue("motherPassType", "");
+                            form.setValue("motherPassExpiry", null as unknown as undefined);
                           }
 
                           if (name === "fatherPassport") {
-                            form.setValue("fatherPassportNumber", undefined);
-                            form.setValue("fatherPassportExpiry", undefined);
-                            updatedParentGuardianReqs.fatherPassportNumber = undefined;
-                            updatedParentGuardianReqs.fatherPassportExpiry = undefined;
+                            updatedParentGuardianReqs.fatherPassportNumber = "";
+                            updatedParentGuardianReqs.fatherPassportExpiry = null as unknown as undefined;
+                            form.setValue("fatherPassportNumber", "");
+                            form.setValue("fatherPassportExpiry", null as unknown as undefined);
                           }
                           if (name === "fatherPass") {
-                            form.setValue("fatherPassType", undefined);
-                            form.setValue("fatherPassExpiry", undefined);
-                            updatedParentGuardianReqs.fatherPassType = undefined;
-                            updatedParentGuardianReqs.fatherPassExpiry = undefined;
+                            updatedParentGuardianReqs.fatherPassType = "";
+                            updatedParentGuardianReqs.fatherPassExpiry = null as unknown as undefined;
+                            form.setValue("fatherPassType", "");
+                            form.setValue("fatherPassExpiry", null as unknown as undefined);
                           }
 
                           if (name === "guardianPassport") {
-                            form.setValue("guardianPassportNumber", undefined);
-                            form.setValue("guardianPassportExpiry", undefined);
-                            updatedParentGuardianReqs.guardianPassportNumber = undefined;
-                            updatedParentGuardianReqs.guardianPassportExpiry = undefined;
+                            updatedParentGuardianReqs.guardianPassportNumber = "";
+                            updatedParentGuardianReqs.guardianPassportExpiry = null as unknown as undefined;
+                            form.setValue("guardianPassportNumber", "");
+                            form.setValue("guardianPassportExpiry", null as unknown as undefined);
                           }
                           if (name === "guardianPass") {
-                            form.setValue("guardianPassType", undefined);
-                            form.setValue("guardianPassExpiry", undefined);
-                            updatedParentGuardianReqs.guardianPassType = undefined;
-                            updatedParentGuardianReqs.guardianPassExpiry = undefined;
+                            updatedParentGuardianReqs.guardianPassType = "";
+                            updatedParentGuardianReqs.guardianPassExpiry = null as unknown as undefined;
+                            form.setValue("guardianPassType", "");
+                            form.setValue("guardianPassExpiry", null as unknown as undefined);
                           }
                         }
 
-                        form.setValue(name, undefined);
+                        form.setValue(name, "");
                         form.setValue("toFollowDocs", updatedDocs);
                         onValueChange(null);
 
@@ -1311,6 +1463,8 @@ function ParentGuardianFileUploaderDrawer({
                             parentGuardianUploadRequirements: updatedParentGuardianReqs,
                           },
                         });
+
+                        form.trigger();
                       }}
                     />
                   </FormControl>
@@ -1328,7 +1482,9 @@ function ParentGuardianFileUploaderDrawer({
                   <FormItem>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger
+                          disabled={form.getValues("toFollowDocs")?.includes("motherPass")}
+                          className="w-full">
                           <SelectValue placeholder="Select a pass type" />
                         </SelectTrigger>
                       </FormControl>
@@ -1354,6 +1510,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("motherPass")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1366,22 +1523,32 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          startMonth={new Date()}
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                              field.onChange(fixedDate);
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    motherPassExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1401,9 +1568,12 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput {...field} placeholder="Enter  passport number" />
+                      <PassportInput
+                        disabled={form.getValues("toFollowDocs")?.includes("motherPassport")}
+                        {...field}
+                        placeholder="Enter  passport number"
+                      />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1417,6 +1587,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("motherPassport")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1429,22 +1600,32 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          startMonth={new Date()}
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                              field.onChange(fixedDate);
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    motherPassportExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1465,7 +1646,9 @@ function ParentGuardianFileUploaderDrawer({
                   <FormItem>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger
+                          disabled={form.getValues("toFollowDocs")?.includes("fatherPass")}
+                          className="w-full">
                           <SelectValue placeholder="Select a pass type" />
                         </SelectTrigger>
                       </FormControl>
@@ -1492,6 +1675,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("fatherPass")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1504,22 +1688,32 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          startMonth={new Date()}
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                              field.onChange(fixedDate);
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    fatherPassExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1539,9 +1733,12 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput {...field} placeholder="Enter  passport number" />
+                      <PassportInput
+                        disabled={form.getValues("toFollowDocs")?.includes("fatherPassport")}
+                        {...field}
+                        placeholder="Enter  passport number"
+                      />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1556,6 +1753,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("fatherPassport")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1568,22 +1766,32 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          startMonth={new Date()}
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                              field.onChange(fixedDate);
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    fatherPassportExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1604,7 +1812,9 @@ function ParentGuardianFileUploaderDrawer({
                   <FormItem>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger
+                          disabled={form.getValues("toFollowDocs")?.includes("guardianPass")}
+                          className="w-full">
                           <SelectValue placeholder="Select a pass type" />
                         </SelectTrigger>
                       </FormControl>
@@ -1631,6 +1841,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("guardianPass")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1643,22 +1854,32 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          startMonth={new Date()}
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                              field.onChange(fixedDate);
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    guardianPassExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1678,9 +1899,12 @@ function ParentGuardianFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput {...field} placeholder="Enter  passport number" />
+                      <PassportInput
+                        disabled={form.getValues("toFollowDocs")?.includes("guardianPassport")}
+                        {...field}
+                        placeholder="Enter  passport number"
+                      />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1695,6 +1919,7 @@ function ParentGuardianFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("guardianPassport")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1707,22 +1932,32 @@ function ParentGuardianFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          startMonth={new Date()}
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                              field.onChange(fixedDate);
+                              setFormState({
+                                uploadRequirements: {
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                  },
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                    guardianPassportExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1733,7 +1968,6 @@ function ParentGuardianFileUploaderDrawer({
               />
             </div>
           )}
-
           <DrawerFooter className="px-0"></DrawerFooter>
         </DrawerContent>
       </Drawer>

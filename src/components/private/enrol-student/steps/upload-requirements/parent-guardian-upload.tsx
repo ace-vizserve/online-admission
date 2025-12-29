@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
 
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { documentErrors } from "@/lib/utils";
+import { cn, documentErrors } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
-import { Save } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Clock, Info, Save } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
@@ -31,11 +32,16 @@ function ParentGuardianUpload() {
     defaultValues: {
       ...formState.uploadRequirements?.parentGuardianUploadRequirements,
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
+
+  useEffect(() => {
+    form.trigger();
+  }, []);
 
   const toFollowDocs = form.watch("toFollowDocs");
   const skippedDocsCount = toFollowDocs?.length ?? 0;
-  const remainingSkips = MAX_SKIPS - skippedDocsCount;
 
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
@@ -51,6 +57,45 @@ function ParentGuardianUpload() {
       });
       form.setError("root", {});
       return;
+    }
+
+    const isMotherPassExpiryNull =
+      values.motherPassExpiry?.getFullYear() === 1970 && values.motherPassExpiry?.getTime() === 0;
+    const isMotherPassportExpiryNull =
+      values.motherPassportExpiry?.getFullYear() === 1970 && values.motherPassportExpiry?.getTime() === 0;
+
+    const isFatherPassExpiryNull =
+      values.fatherPassExpiry?.getFullYear() === 1970 && values.fatherPassExpiry?.getTime() === 0;
+    const isFatherPassportExpiryNull =
+      values.fatherPassportExpiry?.getFullYear() === 1970 && values.fatherPassportExpiry?.getTime() === 0;
+
+    const isGuardianPassExpiryNull =
+      values.guardianPassExpiry?.getFullYear() === 1970 && values.guardianPassExpiry?.getTime() === 0;
+    const isGuardianPassportExpiryNull =
+      values.guardianPassportExpiry?.getFullYear() === 1970 && values.guardianPassportExpiry?.getTime() === 0;
+
+    if (isMotherPassExpiryNull) {
+      values.motherPassExpiry = undefined;
+    }
+
+    if (isMotherPassportExpiryNull) {
+      values.motherPassportExpiry = undefined;
+    }
+
+    if (isFatherPassExpiryNull) {
+      values.fatherPassExpiry = undefined;
+    }
+
+    if (isFatherPassportExpiryNull) {
+      values.fatherPassportExpiry = undefined;
+    }
+
+    if (isGuardianPassExpiryNull) {
+      values.guardianPassExpiry = undefined;
+    }
+
+    if (isGuardianPassportExpiryNull) {
+      values.guardianPassportExpiry = undefined;
     }
 
     setFormState({
@@ -72,10 +117,9 @@ function ParentGuardianUpload() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.log(errors);
           if (Object.keys(errors).includes("toFollowDocs")) {
-            toast.error("Too many skipped files!", {
-              description: "You can only skip up to 2 documents.",
+            toast.error("Too many skipped documents!", {
+              description: "You can only skip up to 2 parent/guardian documents.",
             });
           }
 
@@ -85,7 +129,7 @@ function ParentGuardianUpload() {
           if (includesMotherPassportError) {
             form.setError("motherPassport", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid mother passport document!", {
               description: "The file contains invalid information. Please check and correct it.",
@@ -95,7 +139,7 @@ function ParentGuardianUpload() {
           if (includesMotherPassError) {
             form.setError("motherPass", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid mother pass document!", {
               description: "The file contains invalid information. Please check and correct it.",
@@ -108,7 +152,7 @@ function ParentGuardianUpload() {
           if (includesFatherPassportError) {
             form.setError("fatherPassport", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid father passport document!", {
               description: "The file contains invalid information. Please check and correct it.",
@@ -117,7 +161,7 @@ function ParentGuardianUpload() {
           if (includesFatherPassError) {
             form.setError("fatherPass", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid father pass document!", {
               description: "The file contains invalid information. Please check and correct it.",
@@ -130,7 +174,7 @@ function ParentGuardianUpload() {
           if (includesGuardianPassportError) {
             form.setError("guardianPassport", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid guardian passport document!", {
               description: "The file contains invalid information. Please check and correct it.",
@@ -139,7 +183,7 @@ function ParentGuardianUpload() {
           if (includesGuardianPassError) {
             form.setError("guardianPass", {
               type: "manual",
-              message: "Please upload a file to continue",
+              message: "Please upload a valid file to continue",
             });
             toast.warning("Invalid guardian pass document!", {
               description: "The file contains invalid information. Please check and correct it.",
@@ -159,32 +203,18 @@ function ParentGuardianUpload() {
           });
         })}
         className="space-y-6 lg:space-y-8 w-full mx-auto">
-        <div className="w-max mx-auto">
-          {skippedDocsCount > 0 ? (
-            <div
-              className={`text-xs px-3 py-2 rounded-md ${
-                remainingSkips < 1
-                  ? "bg-red-50 text-red-700 border border-red-200"
-                  : "bg-amber-50 text-amber-700 border border-amber-200"
-              }`}>
-              {remainingSkips < 1 ? (
-                <span>
-                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow. No more can be skipped.
-                </span>
-              ) : (
-                <span>
-                  {skippedDocsCount} document{skippedDocsCount > 1 ? "s" : ""} marked to follow • {remainingSkips} skip
-                  {remainingSkips > 1 ? "s" : ""} remaining
-                </span>
-              )}
-            </div>
-          ) : (
-            <div className="text-xs px-3 py-2 rounded-md bg-green-50 text-green-600 border border-slate-200">
-              Up to {MAX_SKIPS} documents can be marked to submit later
-            </div>
-          )}
-        </div>
-        <h1 className="max-w-4xl mx-auto font-semibold uppercase">Mother Documents</h1>
+        <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+          <Info className="h-4 w-4 !text-blue-500" />
+          <div className="space-y-1 text-pretty">
+            <AlertTitle className="text-xs text-blue-700 font-bold">Important Information</AlertTitle>
+            <span className="text-xs text-blue-900">
+              After you upload or edit any document, please click <span className="font-bold">Save documents</span> so
+              your updates are kept.
+            </span>
+          </div>
+        </Alert>
+        <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
+        <h1 className="max-w-4xl mx-auto font-bold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
           <ParentGuardianFileUploaderDialog
             formState={formState}
@@ -212,7 +242,7 @@ function ParentGuardianUpload() {
         {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasFatherInfo && (
           <>
             <Separator />
-            <h1 className="max-w-4xl mx-auto font-semibold uppercase">Father Documents</h1>
+            <h1 className="max-w-4xl mx-auto font-bold uppercase">Father Documents</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
               <ParentGuardianFileUploaderDialog
                 formState={formState}
@@ -242,7 +272,7 @@ function ParentGuardianUpload() {
         {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasGuardianInfo && (
           <>
             <Separator />
-            <h1 className="max-w-4xl mx-auto font-semibold uppercase">Guardian Documents</h1>
+            <h1 className="max-w-4xl mx-auto font-bold uppercase">Guardian Documents</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
               <ParentGuardianFileUploaderDialog
                 formState={formState}
@@ -271,18 +301,57 @@ function ParentGuardianUpload() {
 
         <Button
           size="lg"
-          className="mt-8 mb-0 hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase"
+          className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
           type="submit">
-          Save
+          Save documents
           <Save />
         </Button>
 
-        <Button className="mt-8 mb-0 flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Save
+        <Button
+          className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+          type="submit">
+          Save documents
           <Save />
         </Button>
       </form>
     </Form>
+  );
+}
+
+function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: number; MAX_SKIPS: number }) {
+  const remainingSkips = MAX_SKIPS - skippedDocsCount;
+
+  return (
+    <div className="w-max mx-auto animate-in fade-in slide-in-from-top-2 duration-500">
+      {skippedDocsCount > 0 ? (
+        <div
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm",
+            remainingSkips < 1
+              ? "bg-rose-50 text-rose-600 border-rose-100"
+              : "bg-amber-50 text-amber-700 border-amber-100"
+          )}>
+          {remainingSkips < 1 ? (
+            <>
+              <AlertCircle size={14} className="shrink-0" />
+              <span>{skippedDocsCount} skipped • No skips left</span>
+            </>
+          ) : (
+            <>
+              <Clock size={14} className="shrink-0 animate-pulse" />
+              <span>
+                {skippedDocsCount} Following • {remainingSkips} more allowed
+              </span>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold uppercase tracking-wider">
+          <Info size={14} className="text-blue-500" />
+          <span>You can skip up to {MAX_SKIPS} documents for now</span>
+        </div>
+      )}
+    </div>
   );
 }
 

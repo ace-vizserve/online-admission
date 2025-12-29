@@ -1,415 +1,110 @@
-import fileSvg from "@/assets/file.svg";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PassportInput } from "@/components/ui/passport-input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
-import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
+import { buttonVariants } from "@/components/ui/button";
+import StatusBadge from "@/components/ui/status-badge";
+import { cn } from "@/lib/utils";
 import { StudentDocument } from "@/types";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import { formatDate } from "date-fns";
-import { EllipsisVertical, Eye, EyeClosed } from "lucide-react";
+import { format } from "date-fns";
+import { Eye, EyeClosed, FileText } from "lucide-react";
 import { Link } from "react-router";
 
 function StudentDocuments({ label, documents }: { label: string; documents: StudentDocument }) {
-  const passportDocument = documents.documentsThatExpire[0];
-  const passDocument = documents.documentsThatExpire[1];
+  const expiringDocs = [
+    { title: "Student Pass", type: "pass", data: documents.documentsThatExpire[1] },
+    { title: "Passport", type: "passport", data: documents.documentsThatExpire[0] },
+  ];
 
-  const idPicture = documents.permanentDocuments[0];
-  const medicalCertDocument = documents.permanentDocuments[1];
-  const birthCertDocument = documents.permanentDocuments[2];
-  const eduCertDocument = documents.permanentDocuments[3];
+  const permanentDocs = [
+    { title: "ID Picture", type: "idPicture", data: documents.permanentDocuments[0] },
+    { title: "Medical Exam", type: "medical", data: documents.permanentDocuments[1] },
+    { title: "Birth Certificate", type: "birthCert", data: documents.permanentDocuments[2] },
+    { title: "Transcript of Records", type: "educCert", data: documents.permanentDocuments[3] },
+  ];
 
   return (
-    <div className="space-y-8 py-6 xl:py-0">
-      <div className="space-y-2">
-        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      {/* Simple Header */}
+      <div className="space-y-1">
+        <h1 className="font-black text-2xl md:text-4xl text-slate-900 tracking-tight">{label}</h1>
+        <p className="text-sm font-medium text-slate-500">
           This section includes details about the student's documents for this current school year.
         </p>
       </div>
 
-      <h2 className="font-bold text-lg">Documents That Expire</h2>
-
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
-        {Object.values(passDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Pass</p>
-
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={passDocument.passStatus ? (passDocument.passStatus as StatusProps) : "Missing"}
-              />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
-                    <EllipsisVertical />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-72">
-                  <div className="grid gap-4">
-                    <div className="space-y-1">
-                      <h4 className="font-medium text-sm">Student Pass</h4>
-                      <p className="text-xs text-muted-foreground">See the details of the Student's Pass.</p>
-                    </div>
-                    <div className="grid gap-2">
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Pass Type</Label>
-                        <Input
-                          id="passType"
-                          defaultValue={passDocument.passType ? passDocument.passType?.replace("_", " ") : "N/A"}
-                          className="col-span-2 h-8 capitalize"
-                          tabIndex={-1}
-                          readOnly
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Expires at</Label>
-                        {passDocument.passExpiry ? (
-                          <Input
-                            id="passExpirationDate"
-                            defaultValue={formatDate(new Date(passDocument.passExpiry), "dd/MM/yyyy")}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        ) : (
-                          <Input
-                            id="passExpirationDate"
-                            defaultValue={"N/A"}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Pass</p>
-            {passDocument.pass ? (
-              <Link
-                to={passDocument.pass}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-            ) : (
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-            )}
-          </div>
-        )}
-
-        {Object.values(passportDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Passport</p>
-
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={passportDocument.passportStatus ? (passportDocument.passportStatus as StatusProps) : "Missing"}
-              />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
-                    <EllipsisVertical />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-72">
-                  <div className="grid gap-4">
-                    <div className="space-y-1">
-                      <h4 className="font-medium text-sm">Student Passport</h4>
-                      <p className="text-xs text-muted-foreground">See the details of the Student's Passport.</p>
-                    </div>
-                    <div className="grid gap-2">
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Passport #</Label>
-                        <div className="flex items-center col-span-2 ">
-                          <PassportInput defaultValue={passportDocument.passportNumber ?? "N/A"} readOnly />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Expires at</Label>
-                        {passportDocument.passportExpiry ? (
-                          <Input
-                            id="passportExpiry"
-                            defaultValue={formatDate(new Date(passportDocument.passportExpiry), "dd/MM/yyyy")}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        ) : (
-                          <Input
-                            id="passportExpiry"
-                            defaultValue={"N/A"}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Passport</p>
-
-            {passportDocument.passport ? (
-              <Link
-                to={passportDocument.passport!}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-            ) : (
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-            )}
-          </div>
-        )}
+      {/* Section: Expiring */}
+      <div className="space-y-4">
+        <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 px-1">Documents that expire</h2>
+        <div className="grid gap-3">
+          {expiringDocs.map((doc) => (
+            <DocumentRow key={doc.type} title={doc.title} doc={doc.data} type={doc.type} />
+          ))}
+        </div>
       </div>
 
-      <Separator />
+      {/* Section: Permanent */}
+      <div className="space-y-4">
+        <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 px-1">Permanent documents</h2>
+        <div className="grid gap-3">
+          {permanentDocs.map((doc) => (
+            <DocumentRow key={doc.type} title={doc.title} doc={doc.data} type={doc.type} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-      <h2 className="font-bold text-lg">Permanent Documents</h2>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
-        {Object.values(idPicture).some((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
+function DocumentRow({ title, doc, type }: any) {
+  const isMissing = !doc || Object.values(doc).every((v) => v == null) || doc?.[`${type}Status`] === "To follow";
+  const status = doc?.[`${type}Status`] || "Missing";
 
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
+  return (
+    <div className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl gap-4 transition-all hover:border-slate-300">
+      {/* Header Area: Icon & Text */}
+      <div className="flex items-center gap-4 min-w-0">
+        {/* Icon Plate */}
+        <div
+          className={cn(
+            "size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+            isMissing ? "bg-slate-100 text-slate-400" : "bg-primary text-primary-foreground shadow-sm"
+          )}>
+          {isMissing ? <EyeClosed size={20} /> : <FileText size={20} />}
+        </div>
 
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
+        {/* Text Details */}
+        <div className="flex flex-col min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+            <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{title}</h3>
+            <StatusBadge status={status} className="text-[10px] font-bold uppercase" />
           </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={idPicture.idPictureStatus ? (idPicture.idPictureStatus as StatusProps) : "Missing"}
-              />
 
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
+          {!isMissing && doc?.[`${type}Expiry`] ? (
+            <p className="text-[11px] text-slate-500 font-bold tracking-tight">
+              Expires: {format(new Date(doc[`${type}Expiry`]), "dd MMM yyyy")}
+            </p>
+          ) : (
+            <p
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-tighter",
+                isMissing ? "text-amber-600" : "text-slate-500"
+              )}>
+              {isMissing ? "Action Required" : "Record saved"}
+            </p>
+          )}
+        </div>
+      </div>
 
-            {idPicture.idPicture ? (
-              <Link
-                to={idPicture.idPicture}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-            ) : (
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-            )}
-          </div>
-        )}
-
-        {Object.values(medicalCertDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Medical Exam</p>
-
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={
-                  medicalCertDocument.medicalStatus ? (medicalCertDocument.medicalStatus as StatusProps) : "Missing"
-                }
-              />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Medical Exam</p>
-
-            {medicalCertDocument.medical ? (
-              <Link
-                to={medicalCertDocument.medical}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-            ) : (
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-            )}
-          </div>
-        )}
-
-        {Object.values(birthCertDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Birth Certificate</p>
-
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={
-                  birthCertDocument.birthCertStatus ? (birthCertDocument.birthCertStatus as StatusProps) : "Missing"
-                }
-              />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Birth Certificate</p>
-
-            {birthCertDocument.birthCert ? (
-              <Link
-                to={birthCertDocument.birthCert}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-            ) : (
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-            )}
-          </div>
-        )}
-
-        {Object.values(eduCertDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Transcript of Records</p>
-
-            <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-              View document <EyeClosed />
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={eduCertDocument.educCertStatus ? (eduCertDocument.educCertStatus as StatusProps) : "Missing"}
-              />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Transcript of Records</p>
-
-            {eduCertDocument.educCert ? (
-              <Link
-                to={eduCertDocument.educCert}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-            ) : (
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-            )}
-          </div>
+      {/* Action Area: Full-width on mobile, auto-width on desktop */}
+      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
+        {!isMissing && doc?.[type] && (
+          <Link
+            to={doc[type]}
+            target="_blank"
+            className={buttonVariants({
+              variant: "outline",
+              className: "flex-1 sm:flex-none h-9 gap-2 text-[11px] font-bold border-slate-200 hover:bg-slate-50",
+            })}>
+            <Eye size={14} />
+            <span>View</span>
+          </Link>
         )}
       </div>
     </div>

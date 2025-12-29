@@ -4,6 +4,8 @@ import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
 import ScrollToTop from "@/components/layout/scroll-to-top";
+import CurrentLearnerLayout from "@/components/layout/vizschool/current-learner-layout";
+import NewLearnerLayout from "@/components/layout/vizschool/new-learner-layout";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
@@ -11,7 +13,6 @@ import UpdatePassword from "@/pages/auth/update-password";
 import NotFound from "@/pages/not-found";
 import AdmissionGuidelines from "@/pages/private/admission-guidelines";
 import Dashboard from "@/pages/private/dashboard";
-import Documents from "@/pages/private/documents";
 import ApplicationSubmitted from "@/pages/private/enrol-student/application-submitted";
 import EnrolStudent from "@/pages/private/enrol-student/enrol-student";
 import EnrollmentInformation from "@/pages/private/enrol-student/new/enrollment-information";
@@ -22,7 +23,16 @@ import OldEnrollmentInformation from "@/pages/private/enrol-student/old/old-enro
 import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-information";
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
 import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requirements";
+import CurrentEnrollmentInformation from "@/pages/private/enrol-student/vizschool/current/current-enrollment-information";
+import CurrentFamilyInformation from "@/pages/private/enrol-student/vizschool/current/current-family-information";
+import CurrentLearnerInformation from "@/pages/private/enrol-student/vizschool/current/current-learner-information";
+import CurrentUploadRequirements from "@/pages/private/enrol-student/vizschool/current/current-upload-requirements";
+import LearnerEnrollmentInformation from "@/pages/private/enrol-student/vizschool/new/learner-enrollment-information";
+import LearnerFamilyInformation from "@/pages/private/enrol-student/vizschool/new/learner-family-information";
+import LearnerInformation from "@/pages/private/enrol-student/vizschool/new/learner-information";
+import LearnerUploadRequirements from "@/pages/private/enrol-student/vizschool/new/learner-upload-requirements";
 import { Enrollment } from "@/pages/private/Enrollment";
+import PendingTasks from "@/pages/private/pending-tasks";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentPhoto from "@/pages/private/student-photo";
 import StudentProfile from "@/pages/private/student-profile";
@@ -97,6 +107,15 @@ function AppRoutes() {
           />
 
           <Route
+            path="pending-tasks"
+            element={
+              <AuthGuard>
+                <PendingTasks />
+              </AuthGuard>
+            }
+          />
+
+          <Route
             path="guidelines"
             element={
               <AuthGuard>
@@ -124,16 +143,15 @@ function AppRoutes() {
           />
 
           <Route
-            path="enrolment"
+            path="enrolments"
             element={
               <AuthGuard>
                 <Enrollment />
               </AuthGuard>
-            }
-          />
+            }></Route>
 
           <Route
-            path="single-student/:id"
+            path="enrolments/:id"
             element={
               <AuthGuard>
                 <SingleEnrol />
@@ -142,25 +160,7 @@ function AppRoutes() {
           />
 
           <Route
-            path="documents"
-            element={
-              <AuthGuard>
-                <Documents />
-              </AuthGuard>
-            }
-          />
-
-          <Route
-            path="student-list/:id"
-            element={
-              <AuthGuard>
-                <Uploaded />
-              </AuthGuard>
-            }
-          />
-
-          <Route
-            path="document-file/:id"
+            path="enrolments/application/:id"
             element={
               <AuthGuard>
                 <Uploaded />
@@ -246,6 +246,79 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <UploadRequirements />
+              </AuthGuard>
+            }
+          />
+        </Route>
+
+        {/* VizSchool */}
+        <Route element={<CurrentLearnerLayout />}>
+          <Route
+            index
+            path="/vizschool/enrol-student/:id/student-info"
+            element={
+              <AuthGuard>
+                <CurrentLearnerInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/vizschool/enrol-student/:id/family-info"
+            element={
+              <AuthGuard>
+                <CurrentFamilyInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/vizschool/enrol-student/:id/enrollment-info"
+            element={
+              <AuthGuard>
+                <CurrentEnrollmentInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/vizschool/enrol-student/:id/documents"
+            element={
+              <AuthGuard>
+                <CurrentUploadRequirements />
+              </AuthGuard>
+            }
+          />
+        </Route>
+
+        <Route path="vizschool/enrol-student/new" element={<NewLearnerLayout />}>
+          <Route
+            path="student-info"
+            element={
+              <AuthGuard>
+                <LearnerInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            index
+            path="family-info"
+            element={
+              <AuthGuard>
+                <LearnerFamilyInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="enrollment-info"
+            element={
+              <AuthGuard>
+                <LearnerEnrollmentInformation />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="upload-requirements"
+            element={
+              <AuthGuard>
+                <LearnerUploadRequirements />
               </AuthGuard>
             }
           />

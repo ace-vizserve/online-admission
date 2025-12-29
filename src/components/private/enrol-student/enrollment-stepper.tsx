@@ -3,9 +3,8 @@ import enrollmentProcess from "@/assets/enrollment-process.webp";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Stepper, { Step } from "@/components/ui/stepper";
 import "inner-image-zoom/lib/styles.min.css";
-import { Copy, Info, Phone } from "lucide-react";
+import { Info, Phone } from "lucide-react";
 import InnerImageZoom from "react-inner-image-zoom";
-import { toast } from "sonner";
 
 type Props = {
   academicYear: string;
@@ -15,28 +14,21 @@ type Props = {
 export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYear }: Props) {
   const phone = "+65 8200 0062";
 
-  async function copyPhoneNumber() {
-    try {
-      await navigator.clipboard.writeText(phone);
-      toast.info("Phone number copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-  }
-
   const ContactInfo = () => (
-    <div className="mt-6 flex items-start gap-3 rounded-lg border border-primary/10 bg-primary/5 p-4 transition-colors hover:bg-primary/10">
-      <div className="rounded-full bg-primary/20 p-2 text-primary">
+    <div className="mt-6 flex items-start gap-3 rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50/50 to-transparent p-4 transition-all hover:shadow-sm">
+      <div className="rounded-full bg-primary p-2 text-white shadow-lg shadow-blue-200">
         <Phone className="size-4" />
       </div>
+
       <div className="space-y-1">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Need Help?</p>
+        <p className="text-[10px] uppercase tracking-widest text-primary font-black">Admissions Officer</p>
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium leading-none">
-            Ms. Charlene <span className="text-muted-foreground mx-1">|</span>
-            <span className="text-primary font-bold">{phone}</span>
+          <p className="text-sm font-semibold text-slate-900">
+            Ms. Charlene <span className="text-slate-300 mx-2 font-light">|</span>
+            <a href={`tel:${phone}`} className="text-primary hover:underline">
+              {phone}
+            </a>
           </p>
-          <Copy onClick={copyPhoneNumber} className="hidden lg:flex size-4 cursor-pointer" />
         </div>
       </div>
     </div>
@@ -52,9 +44,9 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
       nextButtonText="Acknowledge & Next">
       {/* Step 1: Enrollment Process */}
       <Step>
-        <div className="space-y-6 py-4 mt-6">
+        <div className="space-y-6 py-4 -mt-4 md:mt-6">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight text-primary">Enrollment Process</h2>
+            <h2 className="text-2xl font-black tracking-tight text-primary">Enrollment Process</h2>
             <p className="text-sm font-medium">
               Review the official timeline and steps for Academic Year {academicYear.split("y")[1]}
             </p>
@@ -84,15 +76,15 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
 
       {/* Step 2: Terms & Discounts */}
       <Step>
-        <div className="space-y-6 py-4 mt-6">
+        <div className="space-y-6 py-4 mt-6 md:mt-0">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight text-primary">Promos & Discounts</h2>
+            <h2 className="text-2xl font-black tracking-tight text-primary">Promos & Discounts</h2>
             <p className="text-sm font-medium">Important terms and conditions regarding school fees and eligibility</p>
           </div>
 
           <div className="flex flex-col items-center justify-center">
             <Dialog>
-              <DialogTrigger>
+              <DialogTrigger className="cursor-zoom-in">
                 <div className="relative">
                   <img
                     src={discountPriceTag}

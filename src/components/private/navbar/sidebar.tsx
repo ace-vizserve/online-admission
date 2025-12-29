@@ -25,7 +25,7 @@ const data = {
     },
     {
       title: "Enrolment",
-      url: "/admission/enrolment",
+      url: "/admission/enrolments",
       icon: ClipboardList,
     },
     {

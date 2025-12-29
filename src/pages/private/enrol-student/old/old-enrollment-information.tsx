@@ -35,10 +35,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { CircleFadingArrowUpIcon, CircleHelp, Save } from "lucide-react";
+import { CircleFadingArrowUpIcon, CircleHelp, Info, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 import { toast } from "sonner";
 
 const MORNING_AFTERNOON_CLASS_LEVEL = [
@@ -65,6 +65,7 @@ const ENRICHMENT_CLASS_LEVELS = [
 ];
 
 function OldEnrollmentInformation() {
+  const location = useLocation();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const { formState, setFormState } = useEnrolOldStudentContext();
   const { session } = useSession();
@@ -99,6 +100,14 @@ function OldEnrollmentInformation() {
     setSelectedLevel(getNextGradeLevel(data.levelApplied) ?? "");
     form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
   }, [data, form, isSuccess]);
+
+  useEffect(() => {
+    const triggerForm = location.state?.triggerForm as boolean | undefined;
+
+    if (triggerForm && triggerForm === true) {
+      form.trigger();
+    }
+  }, [location.state?.triggerForm]);
 
   const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
 
@@ -202,40 +211,47 @@ function OldEnrollmentInformation() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <div className="w-full flex-1">
+      <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card className="w-full mx-auto border-none shadow-none">
           <CardHeader className="gap-8 p-0">
-            <CardTitle className="text-balance text-center text-2xl text-primary">
+            <CardTitle className="text-2xl font-black tracking-tight text-primary text-center">
               Input the necessary enrolment information
             </CardTitle>
-            <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
-              <CircleFadingArrowUpIcon className="h-4 w-4 !text-blue-500" />
-              <div className="space-y-1 text-pretty">
-                <AlertTitle className="text-xs text-blue-700 font-semibold">
-                  {data?.levelApplied === "Secondary 4" ? "Level Completion" : "Next Grade Auto-Detected"}
-                </AlertTitle>
-                <span className="text-xs text-blue-900">
-                  {data?.levelApplied === "Secondary 4" ? (
-                    <>
-                      The student has completed{" "}
-                      <span className="font-semibold capitalize">{data?.levelApplied?.split("-")?.join(" ")}</span>.
-                      This is the final year of secondary school.
-                    </>
-                  ) : (
-                    <>
-                      Based on previous level{" "}
-                      <span className="font-semibold capitalize">
-                        {(data?.levelApplied as string)?.split("-")?.join(" ")}
-                      </span>{" "}
-                      to{" "}
-                      <span className="font-semibold capitalize">
-                        {getNextGradeLevel(data?.levelApplied)?.split("-")?.join(" ")}
-                      </span>
-                    </>
-                  )}
-                </span>
-              </div>
-            </Alert>
+
+            <div className="space-y-6">
+              <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+                <Info className="h-4 w-4 !text-blue-500" />
+                <div className="space-y-1 text-pretty">
+                  <AlertTitle className="text-xs text-blue-700 font-bold">Important Information</AlertTitle>
+                  <span className="text-xs text-blue-900">
+                    Always click the <span className="font-bold">Save details</span> button after applying any changes
+                    to ensure your updates are recorded.
+                  </span>
+                </div>
+              </Alert>
+
+              <Alert className="bg-green-500/10 border-green-200 w-full md:w-max md:max-w-[450px] mx-auto">
+                <CircleFadingArrowUpIcon className="h-4 w-4 !text-green-600" />
+                <div className="space-y-1">
+                  <AlertTitle className="text-xs text-green-800 font-bold">
+                    {data?.levelApplied === "Secondary 4" ? "Academic Journey Complete" : "Grade Level Auto-Selected"}
+                  </AlertTitle>
+                  <p className="text-xs text-green-700">
+                    {data?.levelApplied === "Secondary 4" ? (
+                      <>Completed final year of secondary education</>
+                    ) : (
+                      <>
+                        Progressing from <span className="font-bold">{data?.levelApplied?.split("-")?.join(" ")}</span>
+                        {" to "}
+                        <span className="font-bold">
+                          {getNextGradeLevel(data?.levelApplied)?.split("-")?.join(" ")}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </Alert>
+            </div>
           </CardHeader>
 
           <CardContent className="px-0">
@@ -243,13 +259,19 @@ function OldEnrollmentInformation() {
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-8 max-w-6xl mx-auto py-0 md:py-6 lg:py-10">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
                     name="levelApplied"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Class Level</FormLabel>
+                        <div className="flex justify-between items-center gap-2">
+                          <FormLabel>Class Level</FormLabel>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 border-green-200 border text-green-800">
+                            <CircleFadingArrowUpIcon className="h-3 w-3" />
+                            Auto-filled
+                          </span>
+                        </div>
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value);
@@ -499,7 +521,7 @@ function OldEnrollmentInformation() {
                     name="contractSignatory"
                     render={({ field }) => (
                       <FormItem className="text-white">
-                        <FormLabel>Parent Contract Signatory</FormLabel>
+                        <Label className="text-xl text-white font-semibold">Parent Contract Signatory</Label>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="bg-white text-black w-full">
@@ -523,10 +545,9 @@ function OldEnrollmentInformation() {
                   />
 
                   <div className="space-y-4">
-                    <Label className="text-xl text-white font-semibold">Apply a Discount</Label>
                     {isPendingCurrentStudentDiscounts ? (
                       <div className="w-full flex items-center justify-center">
-                        <Tailspin size="30" stroke="3" speed="0.9" color="white" />
+                        <Tailspin size="30" stroke="5" speed="0.9" color="white" />
                       </div>
                     ) : (
                       <FormField
@@ -534,7 +555,7 @@ function OldEnrollmentInformation() {
                         name="discount"
                         render={({ field }) => (
                           <FormItem className="space-y-1">
-                            <FormLabel className="text-white">Discount Code</FormLabel>
+                            <Label className="text-xl text-white font-semibold">Discount Code</Label>
                             <FormControl>
                               <div>
                                 <MultiSelect
@@ -626,14 +647,17 @@ function OldEnrollmentInformation() {
                   )}
                 </div>
 
-                <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-                  Save
-                  <Save />
+                <Button
+                  size={"lg"}
+                  className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
+                  type="submit">
+                  Save details <Save />
                 </Button>
 
-                <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-                  Save
-                  <Save />
+                <Button
+                  className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+                  type="submit">
+                  Save details <Save />
                 </Button>
               </form>
             </Form>
@@ -651,7 +675,7 @@ function CDFDetailsDialog() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <CircleHelp className="stroke-blue-600 stroke-2 size-4" />
+              <CircleHelp className="stroke-primary stroke-2 size-4 cursor-pointer" />
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent>
@@ -660,10 +684,12 @@ function CDFDetailsDialog() {
         </Tooltip>
       </TooltipProvider>
 
-      <DialogContent className="!max-w-3xl">
+      <DialogContent className="!max-w-4xl">
         <DialogHeader className="text-start">
-          <DialogTitle> Student Development Fees</DialogTitle>
-          <DialogDescription>Kindly choose your preferred payment option below.</DialogDescription>
+          <DialogTitle className="!font-black text-2xl"> Student Development Fees</DialogTitle>
+          <DialogDescription className="font-semibold">
+            Kindly choose your preferred payment option below.
+          </DialogDescription>
         </DialogHeader>
         <img src={cdfDetails} alt="CDF Details" className="object-cover aspect-video rounded-lg" />
       </DialogContent>
@@ -674,8 +700,8 @@ function CDFDetailsDialog() {
 function Loader() {
   return (
     <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-      <p className="text-sm text-muted-foreground animate-pulse">Fetching enrolment details...</p>
-      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
+      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching enrolment details...</p>
     </div>
   );
 }

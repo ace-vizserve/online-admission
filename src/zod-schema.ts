@@ -20,7 +20,7 @@ export const registrationSchema = z
     firstName: z.string().min(1, "First name is required").transform(capitalizeWords),
     lastName: z.string().min(1, "Last name is required").transform(capitalizeWords),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
     relationship: z.enum(["mother", "father", "guardian"], {
       message: "Please select a valid role",
@@ -76,6 +76,68 @@ export const studentDetailsSchema = z
         message: "NRIC/FIN must be exactly 9 characters",
       })
       .regex(/^[STFGM]\d{7}[A-Z]$/, { message: "Invalid NRIC or FIN format" }),
+  })
+  .superRefine((schema, ctx) => {
+    if (schema.religion === "Other") {
+      if (!schema.religionOther) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please specify religion",
+          path: ["religionOther"],
+        });
+      }
+    }
+  });
+
+export const vizSchoolStudentDetailsSchema = z
+  .object({
+    isValid: z.boolean().default(false).optional(),
+    firstName: z
+      .string()
+      .min(1, {
+        message: "First name is required",
+      })
+      .transform(capitalizeWords),
+    middleName: z.string().transform(capitalizeWords).optional(),
+    lastName: z
+      .string()
+      .min(1, {
+        message: "Last name is required",
+      })
+      .transform(capitalizeWords),
+    preferredName: z
+      .string()
+      .min(1, {
+        message: "Preferred name is required",
+      })
+      .transform(capitalizeWords),
+    birthDay: z.coerce.date({
+      required_error: "Birth date is required",
+      invalid_type_error: "Please enter a valid date",
+    }),
+    gender: z.string().min(1, {
+      message: "Please select a gender",
+    }),
+    primaryLanguage: z
+      .string()
+      .min(1, {
+        message: "Primary language is required",
+      })
+      .transform(capitalizeWords),
+    religion: z.string().min(1, {
+      message: "Religion is required",
+    }),
+    religionOther: z.string().optional().nullable(),
+    nric: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .optional()
+      .refine((val) => val === undefined || val.length === 9, {
+        message: "NRIC/FIN must be exactly 9 characters",
+      })
+      .refine((val) => val === undefined || /^[STFGM]\d{7}[A-Z]$/.test(val), {
+        message: "Invalid NRIC or FIN format",
+      }),
   })
   .superRefine((schema, ctx) => {
     if (schema.religion === "Other") {
@@ -193,6 +255,72 @@ export const guardianInformationSchema = z
     }
   });
 
+export const vizSchoolGuardianInformationSchema = z
+  .object({
+    guardianFirstName: z.string().transform(capitalizeWords).optional(),
+    guardianMiddleName: z.string().transform(capitalizeWords).optional(),
+    guardianLastName: z.string().transform(capitalizeWords).optional(),
+    guardianPreferredName: z.string().transform(capitalizeWords).optional(),
+    guardianBirthDay: z.coerce
+      .date({
+        required_error: "Guardian's date of birth is required",
+        invalid_type_error: "Please enter a valid date",
+      })
+      .optional(),
+    guardianNationality: z.string().optional(),
+    guardianReligion: z.string().transform(capitalizeWords).optional(),
+    guardianNric: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .optional()
+      .refine((val) => val === undefined || val.length === 9, {
+        message: "NRIC/FIN must be exactly 9 characters",
+      })
+      .refine((val) => val === undefined || /^[STFGM]\d{7}[A-Z]$/.test(val), {
+        message: "Invalid NRIC or FIN format",
+      }),
+    guardianMobile: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Guardian's mobile number must contain only digits" }),
+    guardianEmail: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => val === undefined || z.string().email().safeParse(val).success, {
+        message: "Please enter a valid email address",
+      })
+      .optional(),
+    guardianCompanyName: z.string().transform(capitalizeWords).optional(),
+    guardianPosition: z.string().transform(capitalizeWords).optional(),
+    noGuardianInfo: z.boolean().default(false).optional(),
+  })
+  .superRefine((schema, ctx) => {
+    const requiredFields = [
+      { key: "guardianFirstName", label: "Guardian's first name" },
+      { key: "guardianLastName", label: "Guardian's last name" },
+      { key: "guardianPreferredName", label: "Preferred name" },
+      { key: "guardianBirthDay", label: "Guardian's date of birth" },
+      { key: "guardianNationality", label: "Nationality" },
+      { key: "guardianReligion", label: "Religion" },
+      { key: "guardianMobile", label: "Mobile phone number" },
+      { key: "guardianEmail", label: "Email address" },
+      { key: "guardianCompanyName", label: "Company name" },
+      { key: "guardianPosition", label: "Position at work" },
+    ];
+
+    if (!schema.noGuardianInfo) {
+      for (const field of requiredFields) {
+        if (!schema[field.key as keyof typeof schema]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [field.key],
+            message: `${field.label} is required`,
+          });
+        }
+      }
+    }
+  });
+
 export const fatherInformationSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
@@ -260,6 +388,72 @@ export const fatherInformationSchema = z
     }
   });
 
+export const vizSchoolFatherInformationSchema = z
+  .object({
+    isValid: z.boolean().default(false).optional(),
+    noFatherInfo: z.boolean().default(false).optional(),
+    fatherFirstName: z.string().transform(capitalizeWords).optional(),
+    fatherMiddleName: z.string().transform(capitalizeWords).optional(),
+    fatherLastName: z.string().transform(capitalizeWords).optional(),
+    fatherPreferredName: z.string().transform(capitalizeWords).optional(),
+    fatherBirthDay: z.coerce
+      .date({
+        invalid_type_error: "Please enter a valid date",
+      })
+      .optional(),
+    fatherNationality: z.string().optional(),
+    fatherReligion: z.string().transform(capitalizeWords).optional(),
+    fatherNric: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .optional()
+      .refine((val) => val === undefined || val.length === 9, {
+        message: "NRIC/FIN must be exactly 9 characters",
+      })
+      .refine((val) => val === undefined || /^[STFGM]\d{7}[A-Z]$/.test(val), {
+        message: "Invalid NRIC or FIN format",
+      }),
+    fatherMobile: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Father's mobile number must contain only digits" }),
+    fatherEmail: z
+      .string()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => val === undefined || z.string().email().safeParse(val).success, {
+        message: "Please enter a valid email address",
+      })
+      .optional(),
+    fatherCompanyName: z.string().transform(capitalizeWords).optional(),
+    fatherPosition: z.string().transform(capitalizeWords).optional(),
+  })
+  .superRefine((schema, ctx) => {
+    const requiredFields = [
+      { key: "fatherFirstName", label: "Father's first name" },
+      { key: "fatherLastName", label: "Father's last name" },
+      { key: "fatherPreferredName", label: "Preferred name" },
+      { key: "fatherBirthDay", label: "Father's date of birth" },
+      { key: "fatherNationality", label: "Nationality" },
+      { key: "fatherReligion", label: "Religion" },
+      { key: "fatherMobile", label: "Mobile phone number" },
+      { key: "fatherEmail", label: "Email address" },
+      { key: "fatherCompanyName", label: "Company name" },
+      { key: "fatherPosition", label: "Position at work" },
+    ];
+
+    if (!schema.noFatherInfo) {
+      for (const field of requiredFields) {
+        if (!schema[field.key as keyof typeof schema]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [field.key],
+            message: `${field.label} is required`,
+          });
+        }
+      }
+    }
+  });
+
 export const motherInformationSchema = z.object({
   isValid: z.boolean().default(false).optional(),
   motherFirstName: z
@@ -295,6 +489,68 @@ export const motherInformationSchema = z.object({
       message: "NRIC/FIN must be exactly 9 characters",
     })
     .regex(/^[STFGM]\d{7}[A-Z]$/, { message: "Invalid NRIC or FIN format" }),
+  motherMobile: z
+    .string()
+    .min(1, {
+      message: "Mobile phone number is required",
+    })
+    .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Mother's mobile number must contain only digits" }),
+  motherEmail: z.string().email({
+    message: "Please enter a valid email address",
+  }),
+  motherCompanyName: z
+    .string()
+    .min(1, {
+      message: "Company name is required",
+    })
+    .transform(capitalizeWords),
+  motherPosition: z
+    .string()
+    .min(1, {
+      message: "Position at work is required",
+    })
+    .transform(capitalizeWords),
+});
+
+export const vizSchoolMotherInformationSchema = z.object({
+  isValid: z.boolean().default(false).optional(),
+  motherFirstName: z
+    .string()
+    .min(1, {
+      message: "Mother's first name is required",
+    })
+    .transform(capitalizeWords),
+  motherMiddleName: z.string().transform(capitalizeWords).optional(),
+  motherLastName: z
+    .string()
+    .min(1, {
+      message: "Mother's last name is required",
+    })
+    .transform(capitalizeWords),
+  motherPreferredName: z
+    .string()
+    .min(1, {
+      message: "Preferred name is required",
+    })
+    .transform(capitalizeWords),
+  motherBirthDay: z.coerce.date({
+    required_error: "Mother's date of birth is required",
+    invalid_type_error: "Please enter a valid date",
+  }),
+  motherNationality: z.string(),
+  motherReligion: z.string().min(1, {
+    message: "Religion is required",
+  }),
+  motherNric: z
+    .string()
+    .transform((val) => (val === "" ? undefined : val))
+    .optional()
+    .refine((val) => val === undefined || val.length === 9, {
+      message: "NRIC/FIN must be exactly 9 characters",
+    })
+    .refine((val) => val === undefined || /^[STFGM]\d{7}[A-Z]$/.test(val), {
+      message: "Invalid NRIC or FIN format",
+    }),
   motherMobile: z
     .string()
     .min(1, {
@@ -410,44 +666,84 @@ export const enrollmentInformationSchema = z
     }
   });
 
+export const vizSchoolEnrollmentInformationSchema = z
+  .object({
+    isValid: z.boolean().default(false).optional(),
+    levelApplied: z.string().min(1, {
+      message: "Class level is required",
+    }),
+    classType: z.string().min(1, {
+      message: "Class type is required",
+    }),
+    preferredSchedule: z.string().min(1, {
+      message: "Preferred schedule is required",
+    }),
+    availUniform: z.string().min(1, {
+      message: "School uniform selection is required",
+    }),
+    paymentOption: z.string().min(1, {
+      message: "Campus development fee selection is required",
+    }),
+    discount: z.array(z.string().optional()).optional(),
+    referrerName: z.string().optional(),
+    referrerMobile: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^\+?\d+$/.test(val), { message: "Referrer's mobile number must contain only digits" }),
+    contractSignatory: z.string().min(1, {
+      message: "Parent contract signatory is required",
+    }),
+  })
+  .superRefine((schema, ctx) => {
+    if (schema.referrerName) {
+      if (!schema.referrerMobile) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please enter your referrer's mobile phone",
+          path: ["referrerMobile"],
+        });
+      }
+    }
+  });
+
 export const studentUploadRequirementsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
     idPicture: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     birthCert: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     educCert: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     medical: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     passport: z
-      .string({ message: "Upload the file to continue" })
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .string()
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     passportNumber: z.string().optional(),
     passportExpiry: z.coerce
       .date({
@@ -456,11 +752,11 @@ export const studentUploadRequirementsSchema = z
       .optional(),
     pass: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     passType: z.string().optional(),
     passExpiry: z.coerce
       .date({
@@ -628,11 +924,11 @@ export const parentGuardianUploadRequirementsSchema = z
     hasGuardianInfo: z.boolean().optional(),
     motherPassport: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     motherPassportNumber: z.string().optional(),
     motherPassportExpiry: z.coerce
       .date({
@@ -641,11 +937,11 @@ export const parentGuardianUploadRequirementsSchema = z
       .optional(),
     motherPass: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     motherPassType: z.string().optional(),
     motherPassExpiry: z.coerce
       .date({
@@ -654,11 +950,11 @@ export const parentGuardianUploadRequirementsSchema = z
       .optional(),
     fatherPassport: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     fatherPassportNumber: z.string().optional(),
     fatherPassportExpiry: z.coerce
       .date({
@@ -667,11 +963,11 @@ export const parentGuardianUploadRequirementsSchema = z
       .optional(),
     fatherPass: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     fatherPassType: z.string().optional(),
     fatherPassExpiry: z.coerce
       .date({
@@ -680,11 +976,11 @@ export const parentGuardianUploadRequirementsSchema = z
       .optional(),
     guardianPassport: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     guardianPassportNumber: z.string().optional(),
     guardianPassportExpiry: z.coerce
       .date({
@@ -693,11 +989,11 @@ export const parentGuardianUploadRequirementsSchema = z
       .optional(),
     guardianPass: z
       .string()
-      .url("Please upload the file to continue")
-      .refine((val) => val.startsWith("http"), {
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
-      })
-      .optional(),
+      }),
     guardianPassType: z.string().optional(),
     guardianPassExpiry: z.coerce
       .date({
@@ -819,3 +1115,9 @@ export type EnrollmentInformationSchema = z.infer<typeof enrollmentInformationSc
 export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequirementsSchema>;
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
+
+export type VizSchoolStudentDetailsSchema = z.infer<typeof vizSchoolStudentDetailsSchema>;
+export type VizSchoolEnrollmentInformationSchema = z.infer<typeof vizSchoolEnrollmentInformationSchema>;
+export type VizSchoolFatherInformationSchema = z.infer<typeof vizSchoolFatherInformationSchema>;
+export type VizSchoolMotherInformationSchema = z.infer<typeof vizSchoolMotherInformationSchema>;
+export type VizSchoolGuardianInformationSchema = z.infer<typeof vizSchoolGuardianInformationSchema>;
