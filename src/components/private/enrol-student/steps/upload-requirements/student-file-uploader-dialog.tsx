@@ -89,7 +89,7 @@ const StudentFileUploaderDialog = memo(function ({
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
-        form.setValue(name, data!.imagePath, { shouldValidate: true });
+        form.setValue(name, data!.imagePath);
         setFormState({
           uploadRequirements: {
             parentGuardianUploadRequirements: {
@@ -104,6 +104,9 @@ const StudentFileUploaderDialog = memo(function ({
           },
         });
       }
+    },
+    onSettled() {
+      form.trigger();
     },
   });
 
@@ -140,25 +143,25 @@ const StudentFileUploaderDialog = memo(function ({
 
       const updatedStudentReqs = {
         ...formState.uploadRequirements!.studentUploadRequirements,
-        [name]: undefined,
+        [name]: "",
         isValid: false,
       };
 
       if (name === "passport") {
-        updatedStudentReqs.passportNumber = undefined;
-        updatedStudentReqs.passportExpiry = undefined;
-        form.setValue("passportNumber", undefined);
-        form.setValue("passportExpiry", undefined);
+        updatedStudentReqs.passportNumber = "";
+        updatedStudentReqs.passportExpiry = null as unknown as undefined;
+        form.setValue("passportNumber", "");
+        form.setValue("passportExpiry", null as unknown as undefined);
       }
       if (name === "pass") {
-        updatedStudentReqs.passType = undefined;
-        updatedStudentReqs.passExpiry = undefined;
-        form.setValue("passType", undefined);
-        form.setValue("passExpiry", undefined);
+        updatedStudentReqs.passType = "";
+        updatedStudentReqs.passExpiry = null as unknown as undefined;
+        form.setValue("passType", "");
+        form.setValue("passExpiry", null as unknown as undefined);
       }
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
+      form.setValue(name, "");
+      onValueChange(null);
 
       setFormState({
         uploadRequirements: {
@@ -175,6 +178,9 @@ const StudentFileUploaderDialog = memo(function ({
       setIsChangingDocument(false);
     } catch (error) {
       setIsChangingDocument(false);
+    } finally {
+      form.setValue("isValid", false);
+      form.trigger();
     }
   }
 
@@ -225,13 +231,20 @@ const StudentFileUploaderDialog = memo(function ({
             <Upload className="size-6" />
           )}
           <div className="flex flex-col gap-1">
-            <span className="text-sm">{label}</span>
-            <span className="text-muted-foreground text-xs">{description}</span>
+            <span className="text-sm font-semibold">{label}</span>
+            <span className="text-muted-foreground font-medium text-xs">{description}</span>
           </div>
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant={errors[name] != null ? "destructive" : "outline"}>
+            <Button
+              className="font-semibold"
+              variant={
+                errors[name] != null ||
+                (form.formState.errors.toFollowDocs != null && form.getValues("toFollowDocs")?.includes(name))
+                  ? "destructive"
+                  : "outline"
+              }>
               {formState.uploadRequirements?.studentUploadRequirements?.[name]
                 ? "View"
                 : form.getValues("toFollowDocs")?.includes(name)
@@ -242,8 +255,8 @@ const StudentFileUploaderDialog = memo(function ({
 
           <DialogContent className="!max-w-3xl">
             <DialogHeader className="text-start">
-              <DialogTitle>{label}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+              <DialogDescription className="font-semibold">
                 Upload a clear and recent document in{" "}
                 <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
               </DialogDescription>
@@ -274,7 +287,7 @@ const StudentFileUploaderDialog = memo(function ({
                   disabled={isChangingDocument}
                   onClick={async () => await changeDocument()}
                   size={"sm"}
-                  className="text-xs absolute right-4 top-4">
+                  className="text-xs absolute right-4 top-4 font-bold">
                   {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                   Change document
                 </Button>
@@ -373,7 +386,7 @@ const StudentFileUploaderDialog = memo(function ({
             )}
 
             {value != null && value.length > 0 && (
-              <Button disabled={isPending} onClick={uploadFile} className="gap-2">
+              <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
                 {isPending ? (
                   <>
                     Uploading <DotPulse size="30" speed="1.3" color="white" />
@@ -419,26 +432,26 @@ const StudentFileUploaderDialog = memo(function ({
                             const updatedStudentReqs = {
                               ...formState.uploadRequirements!.studentUploadRequirements,
                               isValid: false,
-                              [name]: undefined,
+                              [name]: "",
                               toFollowDocs: updatedDocs,
                             };
 
                             if (checked) {
                               if (name === "passport") {
-                                updatedStudentReqs.passportNumber = undefined;
-                                updatedStudentReqs.passportExpiry = undefined;
-                                form.setValue("passportNumber", undefined);
-                                form.setValue("passportExpiry", undefined);
+                                updatedStudentReqs.passportNumber = "";
+                                updatedStudentReqs.passportExpiry = null as unknown as undefined;
+                                form.setValue("passportNumber", "");
+                                form.setValue("passportExpiry", null as unknown as undefined);
                               }
                               if (name === "pass") {
-                                updatedStudentReqs.passType = undefined;
-                                updatedStudentReqs.passExpiry = undefined;
-                                form.setValue("passType", undefined);
-                                form.setValue("passExpiry", undefined);
+                                updatedStudentReqs.passType = "";
+                                updatedStudentReqs.passExpiry = null as unknown as undefined;
+                                form.setValue("passType", "");
+                                form.setValue("passExpiry", null as unknown as undefined);
                               }
                             }
 
-                            form.setValue(name, undefined);
+                            form.setValue(name, "");
                             form.setValue("toFollowDocs", updatedDocs);
                             onValueChange(null);
 
@@ -449,6 +462,8 @@ const StudentFileUploaderDialog = memo(function ({
                                 studentUploadRequirements: updatedStudentReqs,
                               },
                             });
+
+                            form.trigger();
                           }}
                         />
                       </FormControl>
@@ -467,7 +482,7 @@ const StudentFileUploaderDialog = memo(function ({
                       <FormLabel>Pass Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger disabled={form.getValues("toFollowDocs")?.includes("pass")} className="w-full">
                             <SelectValue placeholder="Select a pass type" />
                           </SelectTrigger>
                         </FormControl>
@@ -489,11 +504,12 @@ const StudentFileUploaderDialog = memo(function ({
                   name="passExpiry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Passport Expiry</FormLabel>
+                      <FormLabel>Pass Expiry</FormLabel>
                       <Popover modal>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("pass")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -506,25 +522,40 @@ const StudentFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+
+                                field.onChange(fixedDate);
+
+                                setFormState({
+                                  uploadRequirements: {
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                    },
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                      passExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
-                      <FormDescription>Passport expiration date.</FormDescription>
+                      <FormDescription>Pass expiration date.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -541,7 +572,11 @@ const StudentFileUploaderDialog = memo(function ({
                     <FormItem>
                       <FormLabel>Passport Number</FormLabel>
                       <FormControl>
-                        <PassportInput {...field} placeholder="Enter your passport number" />
+                        <PassportInput
+                          disabled={form.getValues("toFollowDocs")?.includes("passport")}
+                          {...field}
+                          placeholder="Enter your passport number"
+                        />
                       </FormControl>
                       <FormDescription>Student’s passport number.</FormDescription>
                       <FormMessage />
@@ -559,6 +594,7 @@ const StudentFileUploaderDialog = memo(function ({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("passport")}
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
@@ -571,21 +607,36 @@ const StudentFileUploaderDialog = memo(function ({
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            captionLayout="dropdown"
+                            disabled={[{ before: new Date() }]}
                             mode="single"
-                            disabled={[
-                              {
-                                before: new Date(),
-                              },
-                            ]}
+                            defaultMonth={field.value}
                             selected={field.value}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                );
+
+                                field.onChange(fixedDate);
+
+                                setFormState({
+                                  uploadRequirements: {
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                    },
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                      passportExpiry: fixedDate,
+                                    },
+                                  },
+                                });
                               } else {
                                 field.onChange(date);
                               }
                             }}
-                            captionLayout="dropdown"
                           />
                         </PopoverContent>
                       </Popover>
@@ -636,7 +687,7 @@ function StudentFileUploaderDrawer({
     onSuccess(data) {
       onValueChange(null);
       if (!NOT_FILE_INPUTS.includes(name)) {
-        form.setValue(name, data!.imagePath, { shouldValidate: true });
+        form.setValue(name, data!.imagePath);
         setFormState({
           uploadRequirements: {
             parentGuardianUploadRequirements: {
@@ -652,10 +703,12 @@ function StudentFileUploaderDrawer({
         });
       }
     },
+    onSettled() {
+      form.trigger();
+    },
   });
 
   const { errors } = useFormState({ control: form.control });
-
   const dropZoneConfig: DropzoneOptions = {
     maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
@@ -684,25 +737,25 @@ function StudentFileUploaderDrawer({
 
       const updatedStudentReqs = {
         ...formState.uploadRequirements!.studentUploadRequirements,
-        [name]: undefined,
+        [name]: "",
         isValid: false,
       };
 
       if (name === "passport") {
-        updatedStudentReqs.passportNumber = undefined;
-        updatedStudentReqs.passportExpiry = undefined;
-        form.setValue("passportNumber", undefined);
-        form.setValue("passportExpiry", undefined);
+        updatedStudentReqs.passportNumber = "";
+        updatedStudentReqs.passportExpiry = null as unknown as undefined;
+        form.setValue("passportNumber", "");
+        form.setValue("passportExpiry", null as unknown as undefined);
       }
       if (name === "pass") {
-        updatedStudentReqs.passType = undefined;
-        updatedStudentReqs.passExpiry = undefined;
-        form.setValue("passType", undefined);
-        form.setValue("passExpiry", undefined);
+        updatedStudentReqs.passType = "";
+        updatedStudentReqs.passExpiry = null as unknown as undefined;
+        form.setValue("passType", "");
+        form.setValue("passExpiry", null as unknown as undefined);
       }
 
-      form.setValue(name, undefined);
-      form.setValue("isValid", false);
+      form.setValue(name, "");
+      onValueChange(null);
 
       setFormState({
         uploadRequirements: {
@@ -719,8 +772,40 @@ function StudentFileUploaderDrawer({
       setIsChangingDocument(false);
     } catch (error) {
       setIsChangingDocument(false);
+    } finally {
+      form.setValue("isValid", false);
+      form.trigger();
     }
   }
+
+  function getWatchedFields() {
+    const obj: Record<string, unknown> = {};
+
+    NOT_FILE_INPUTS.map((key) => {
+      obj[key] = form.watch(key as keyof StudentUploadRequirementsSchema);
+    });
+
+    return obj;
+  }
+
+  const debouncedAutoSaveValue = useDebounce(getWatchedFields(), 500);
+
+  useAutoSave(
+    setFormState,
+    {
+      ...formState,
+      uploadRequirements: {
+        parentGuardianUploadRequirements: {
+          ...formState.uploadRequirements?.parentGuardianUploadRequirements,
+        },
+        studentUploadRequirements: {
+          ...formState.uploadRequirements?.studentUploadRequirements,
+          ...debouncedAutoSaveValue,
+        },
+      },
+    },
+    0
+  );
 
   return (
     <div
@@ -732,20 +817,27 @@ function StudentFileUploaderDrawer({
         {formState.uploadRequirements?.studentUploadRequirements[name] ? (
           <CheckCircle2 className="stroke-white fill-green-600" />
         ) : errors[name] != null ? (
-          <CircleAlert className="size-6 text-destructive" />
+          <CircleAlert className="text-destructive" />
         ) : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name) ? (
-          <Clock className="size-6" />
+          <Clock />
         ) : (
-          <Upload className="size-6" />
+          <Upload />
         )}
         <div className="flex flex-col gap-1">
-          <span className="text-sm">{label}</span>
-          <span className="text-muted-foreground text-xs">{description}</span>
+          <span className="text-sm font-semibold">{label}</span>
+          <span className="text-muted-foreground font-medium text-xs">{description}</span>
         </div>
       </div>
       <Drawer repositionInputs={false}>
         <DrawerTrigger asChild>
-          <Button variant={errors[name] != null ? "destructive" : "outline"}>
+          <Button
+            className="font-semibold"
+            variant={
+              errors[name] != null ||
+              (form.formState.errors.toFollowDocs != null && form.getValues("toFollowDocs")?.includes(name))
+                ? "destructive"
+                : "outline"
+            }>
             {formState.uploadRequirements?.studentUploadRequirements?.[name]
               ? "View"
               : form.getValues("toFollowDocs")?.includes(name)
@@ -755,13 +847,15 @@ function StudentFileUploaderDrawer({
         </DrawerTrigger>
 
         <DrawerContent className="px-4 space-y-4">
-          <DrawerHeader className="text-start px-0 mb-0">
-            <DrawerTitle>{label}</DrawerTitle>
-            <DrawerDescription className="text-xs">
+          <DrawerHeader className="!text-start px-0 mb-0">
+            <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
+
+            <DrawerDescription className="text-xs font-semibold">
               Upload a clear and recent document in{" "}
               <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
             </DrawerDescription>
           </DrawerHeader>
+
           {MULTIPLE_FILE_UPLOADS.includes(name) ? (
             <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
               Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
@@ -787,7 +881,7 @@ function StudentFileUploaderDrawer({
                 disabled={isChangingDocument}
                 onClick={async () => await changeDocument()}
                 size={"sm"}
-                className="text-xs absolute right-4 top-4">
+                className="text-xs absolute right-4 top-4 font-bold">
                 {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
                 Change
               </Button>
@@ -887,7 +981,7 @@ function StudentFileUploaderDrawer({
           )}
 
           {value != null && value.length > 0 && (
-            <Button disabled={isPending} onClick={uploadFile} className="mt-2 gap-2">
+            <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
               {isPending ? (
                 <>
                   Uploading <DotPulse size="30" speed="1.3" color="white" />
@@ -939,16 +1033,16 @@ function StudentFileUploaderDrawer({
 
                           if (checked) {
                             if (name === "passport") {
-                              updatedStudentReqs.passportNumber = undefined;
-                              updatedStudentReqs.passportExpiry = undefined;
-                              form.setValue("passportNumber", undefined);
-                              form.setValue("passportExpiry", undefined);
+                              updatedStudentReqs.passportNumber = "";
+                              updatedStudentReqs.passportExpiry = null as unknown as undefined;
+                              form.setValue("passportNumber", "");
+                              form.setValue("passportExpiry", null as unknown as undefined);
                             }
                             if (name === "pass") {
-                              updatedStudentReqs.passType = undefined;
-                              updatedStudentReqs.passExpiry = undefined;
-                              form.setValue("passType", undefined);
-                              form.setValue("passExpiry", undefined);
+                              updatedStudentReqs.passType = "";
+                              updatedStudentReqs.passExpiry = null as unknown as undefined;
+                              form.setValue("passType", "");
+                              form.setValue("passExpiry", null as unknown as undefined);
                             }
                           }
 
@@ -963,6 +1057,8 @@ function StudentFileUploaderDrawer({
                               studentUploadRequirements: updatedStudentReqs,
                             },
                           });
+
+                          form.trigger();
                         }}
                       />
                     </FormControl>
@@ -980,7 +1076,7 @@ function StudentFileUploaderDrawer({
                   <FormItem>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger disabled={form.getValues("toFollowDocs")?.includes("pass")} className="w-full">
                           <SelectValue placeholder="Select a pass type" />
                         </SelectTrigger>
                       </FormControl>
@@ -1006,6 +1102,7 @@ function StudentFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("pass")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1018,21 +1115,34 @@ function StudentFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+                              field.onChange(fixedDate);
+
+                              setFormState({
+                                uploadRequirements: {
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                  },
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                    passExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1052,7 +1162,11 @@ function StudentFileUploaderDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <PassportInput {...field} placeholder="Enter your passport number" />
+                      <PassportInput
+                        disabled={form.getValues("toFollowDocs")?.includes("passport")}
+                        placeholder="Enter your passport number"
+                        {...field}
+                      />
                     </FormControl>
 
                     <FormMessage />
@@ -1069,6 +1183,7 @@ function StudentFileUploaderDrawer({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={form.getValues("toFollowDocs")?.includes("passport")}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -1081,21 +1196,34 @@ function StudentFileUploaderDrawer({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          captionLayout="dropdown"
+                          disabled={[{ before: new Date() }]}
                           mode="single"
-                          disabled={[
-                            {
-                              before: new Date(),
-                            },
-                          ]}
+                          defaultMonth={field.value}
                           selected={field.value}
                           onSelect={(date) => {
                             if (date) {
-                              field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+                              field.onChange(fixedDate);
+
+                              setFormState({
+                                uploadRequirements: {
+                                  parentGuardianUploadRequirements: {
+                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                  },
+                                  studentUploadRequirements: {
+                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                      ({} as StudentUploadRequirementsSchema)),
+                                    passportExpiry: fixedDate,
+                                  },
+                                },
+                              });
                             } else {
                               field.onChange(date);
                             }
                           }}
-                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
@@ -1106,7 +1234,6 @@ function StudentFileUploaderDrawer({
               />
             </div>
           )}
-
           <DrawerFooter className="px-0 py-4">
             <div className="h-4" />
           </DrawerFooter>

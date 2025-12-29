@@ -1,3 +1,4 @@
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Info, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -26,30 +27,38 @@ function StudentAddressContact() {
   });
 
   function onSubmit(values: StudentAddressContactSchema) {
+    setFormState({
+      studentInfo: {
+        studentDetails: { ...formState.studentInfo!.studentDetails },
+        addressContact: { ...values, isValid: true },
+      },
+    });
+    toast.success("Student Address & Contact details saved!", {
+      description: "Please double check everything before proceeding.",
+    });
+  }
+
+  function proceedToNextStep() {
     if (!Object.keys(formState).length) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
       });
-      form.setError("root", {});
       return;
     }
     if (!formState.studentInfo?.studentDetails?.isValid) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
       });
-      form.setError("root", {});
       return;
     }
 
-    setFormState({
-      studentInfo: {
-        addressContact: values,
-        studentDetails: { ...formState.studentInfo!.studentDetails },
-      },
-    });
-    toast.success("Student Address & Contact details saved!", {
-      description: "Proceeding to the next step...",
-    });
+    if (!formState.studentInfo?.addressContact?.isValid) {
+      toast.warning("Student Address & Contact invalid!", {
+        description:
+          "Please check the student’s address and contact details and correct any missing or invalid information.",
+      });
+      return;
+    }
 
     setCompletedTabs("/enrol-student/new/student-info");
     setCurrentTab("/enrol-student/new/family-info");
@@ -74,6 +83,17 @@ function StudentAddressContact() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+        <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+          <Info className="h-4 w-4 !text-blue-500" />
+          <div className="space-y-1 text-pretty">
+            <AlertTitle className="text-xs text-blue-700 font-bold">Important Information</AlertTitle>
+            <span className="text-xs text-blue-900">
+              Always click the <span className="font-bold">Save details</span> button after applying any changes to
+              ensure your updates are recorded.
+            </span>
+          </div>
+        </Alert>
+
         <FormField
           control={form.control}
           name="homeAddress"
@@ -89,7 +109,7 @@ function StudentAddressContact() {
           )}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
             name="postalCode"
@@ -125,7 +145,7 @@ function StudentAddressContact() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
             name="homePhone"
@@ -140,7 +160,7 @@ function StudentAddressContact() {
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 lg:gap-6 w-full">
             <FormField
               control={form.control}
               name="contactPerson"
@@ -172,7 +192,7 @@ function StudentAddressContact() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 lg:gap-6 w-full">
           <FormField
             control={form.control}
             name="parentMaritalStatus"
@@ -215,15 +235,41 @@ function StudentAddressContact() {
           />
         </div>
 
-        <Button size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          Continue to Next Step
-          <ArrowRight />
-        </Button>
+        <div className="flex flex-col gap-4">
+          <Button
+            variant={"secondary"}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="submit">
+            Save details
+            <Save />
+          </Button>
 
-        <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          Continue to Next Step
-          <ArrowRight />
-        </Button>
+          <Button
+            variant={"secondary"}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
+            Save details
+            <Save />
+          </Button>
+
+          <Button
+            onClick={proceedToNextStep}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="button">
+            Proceed to next step
+            <ArrowRight />
+          </Button>
+
+          <Button
+            onClick={proceedToNextStep}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="button">
+            Proceed to next step
+            <ArrowRight />
+          </Button>
+        </div>
       </form>
     </Form>
   );

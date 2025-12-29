@@ -16,7 +16,9 @@ export async function userLogin({ email, password }: LoginSchema) {
     }
   } catch (error) {
     const err = error as AuthError;
-    toast.error(err.message);
+    toast.error(err.message + "!", {
+      description: "Please check your email and password, then try again.",
+    });
   }
 }
 
@@ -35,7 +37,7 @@ export async function userLogout() {
       location.reload();
       return;
     }
-    toast.error(err.message);
+    toast.error(err.message + "!");
   }
 }
 
@@ -46,7 +48,7 @@ export async function userRegister({ firstName, lastName, relationship, email, p
     const emailExist = users.find((user) => user.email === email);
 
     if (emailExist) {
-      throw new Error("An account with this email already exists!");
+      throw new Error("An account with this email already exists");
     }
 
     const { error } = await supabase.auth.signUp({
@@ -71,7 +73,7 @@ export async function userRegister({ firstName, lastName, relationship, email, p
     });
   } catch (error) {
     const err = error as AuthError;
-    toast.error(err.message);
+    toast.error(err.message + "!");
   }
 }
 
@@ -82,7 +84,7 @@ export async function sendPasswordResetLink({ email }: { email: string }) {
     const emailExist = users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
 
     if (!emailExist) {
-      throw new Error("An account with this email doesn't exists!");
+      throw new Error("An account with this email doesn't exists");
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email);
@@ -96,7 +98,7 @@ export async function sendPasswordResetLink({ email }: { email: string }) {
     });
   } catch (error) {
     const err = error as AuthError;
-    toast.error(err.message);
+    toast.error(err.message + "!");
   }
 }
 
@@ -121,7 +123,7 @@ export async function authUpdatePassword({ password }: { password: string }) {
     });
   } catch (error) {
     const err = error as AuthError;
-    toast.error(err.message);
+    toast.error(err.message + "!");
     throw err;
   }
 }
@@ -145,6 +147,6 @@ export async function updatePassword({ password }: { password: string }) {
     });
   } catch (error) {
     const err = error as AuthError;
-    toast.error(err.message);
+    toast.error(err.message + "!");
   }
 }

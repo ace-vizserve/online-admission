@@ -2,6 +2,7 @@ import { getNewStudentDiscounts } from "@/actions/private";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
 import EnrolNewStudentStepsLoader from "@/components/private/enrol-student/steps/enrol-new-student-steps-loader";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -34,7 +35,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { ArrowRight, CircleHelp } from "lucide-react";
+import { ArrowRight, CircleHelp, Info } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router";
@@ -199,17 +200,27 @@ function EnrollmentInformation() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <div className="w-full flex-1">
+      <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card className="w-full mx-auto border-none shadow-none">
           <CardHeader>
-            <CardTitle className="text-center text-xl lg:text-2xl text-primary">
+            <CardTitle className="text-2xl font-black tracking-tight text-primary text-center">
               Input the necessary enrolment information
             </CardTitle>
           </CardHeader>
+          <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
+            <Info className="h-4 w-4 !text-blue-500" />
+            <div className="space-y-1 text-pretty">
+              <AlertTitle className="text-xs text-blue-700 font-bold">Important Information</AlertTitle>
+              <span className="text-xs text-blue-900">
+                Always click the <span className="font-bold">Save details</span> button after applying any changes to
+                ensure your updates are recorded.
+              </span>
+            </div>
+          </Alert>
           <CardContent className="px-0">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-6xl mx-auto py-10">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
                     name="levelApplied"
@@ -464,7 +475,7 @@ function EnrollmentInformation() {
                     name="contractSignatory"
                     render={({ field }) => (
                       <FormItem className="text-white">
-                        <FormLabel>Parent Contract Signatory</FormLabel>
+                        <Label className="text-xl text-white font-semibold">Parent Contract Signatory</Label>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="bg-white text-black w-full">
@@ -487,10 +498,9 @@ function EnrollmentInformation() {
                     )}
                   />
                   <div className="space-y-4">
-                    <Label className="text-xl text-white font-semibold">Apply a Discount</Label>
                     {isPendingNewStudentDiscounts ? (
                       <div className="w-full flex items-center justify-center">
-                        <Tailspin size="30" stroke="3" speed="0.9" color="white" />
+                        <Tailspin size="30" stroke="5" speed="0.9" color="white" />
                       </div>
                     ) : (
                       <FormField
@@ -498,7 +508,7 @@ function EnrollmentInformation() {
                         name="discount"
                         render={({ field }) => (
                           <FormItem className="space-y-1">
-                            <FormLabel className="text-white">Discount Code</FormLabel>
+                            <Label className="text-xl text-white font-semibold">Discount Code</Label>
                             <FormControl>
                               <div>
                                 <MultiSelect
@@ -599,13 +609,15 @@ function EnrollmentInformation() {
 
                 <Button
                   size={"lg"}
-                  className="hidden lg:flex w-full max-w-3xl mx-auto p-8 gap-2 uppercase"
+                  className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
                   type="submit">
                   Proceed to Next Step
                   <ArrowRight />
                 </Button>
 
-                <Button className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
+                <Button
+                  className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+                  type="submit">
                   Proceed to Next Step
                   <ArrowRight />
                 </Button>
@@ -625,7 +637,7 @@ function CDFDetailsDialog() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <CircleHelp className="stroke-blue-600 stroke-2 size-4" />
+              <CircleHelp className="stroke-primary stroke-2 size-4 cursor-pointer" />
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent>
@@ -634,10 +646,12 @@ function CDFDetailsDialog() {
         </Tooltip>
       </TooltipProvider>
 
-      <DialogContent className="!max-w-3xl">
+      <DialogContent className="!max-w-4xl">
         <DialogHeader className="text-start">
-          <DialogTitle> Student Development Fees</DialogTitle>
-          <DialogDescription>Kindly choose your preferred payment option below.</DialogDescription>
+          <DialogTitle className="!font-black text-2xl"> Student Development Fees</DialogTitle>
+          <DialogDescription className="font-semibold">
+            Kindly choose your preferred payment option below.
+          </DialogDescription>
         </DialogHeader>
         <img src={cdfDetails} alt="CDF Details" className="object-cover aspect-video rounded-lg" />
       </DialogContent>

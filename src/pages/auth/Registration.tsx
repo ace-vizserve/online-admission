@@ -4,7 +4,6 @@ import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -32,11 +31,10 @@ function Registration() {
       confirmPassword: "",
     },
   });
+
   const { mutate, isPending } = useMutation({
     mutationFn: userRegister,
-    onSuccess() {
-      form.reset();
-    },
+    onSettled: () => form.reset(),
   });
 
   function onSubmit(values: RegistrationSchema) {
@@ -46,156 +44,170 @@ function Registration() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <div className="h-dvh flex items-center justify-center">
-        <div className="w-full h-full grid lg:grid-cols-2">
-          <MaxWidthWrapper className="h-full w-full max-w-2xl flex items-center justify-center">
-            <Card className="border-none shadow-none w-full max-w-xl">
-              <Logo className="mx-auto" />
-              <CardHeader>
-                <CardTitle className="text-2xl text-center">Parent Portal Registration</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid gap-4">
-                      <FormField
-                        control={form.control}
-                        name="firstName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>First Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your first name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Last Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your last name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Dropdown for Parent/Guardian Role */}
-                      <FormField
-                        control={form.control}
-                        name="relationship"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Relationship to Student</FormLabel>
-                            <FormControl>
-                              <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select a role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="mother">Mother</SelectItem>
-                                  <SelectItem value="father">Father</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address</FormLabel>
-                            <FormControl>
-                              <Input type="email" placeholder="Enter your email" autoComplete="email" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <PasswordInput placeholder="Enter your password" autoComplete="new-password" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <PasswordInput
-                                placeholder="Re-enter your password"
-                                autoComplete="new-password"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button disabled={isPending} type="submit" className="w-full gap-2">
-                        {isPending ? (
-                          <>
-                            Submitting
-                            <DotPulse size="30" speed="1.3" color="white" />
-                          </>
-                        ) : (
-                          "Register"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-                <div className="mt-4 text-center text-sm">
-                  Already have an account?{" "}
-                  <Link to="/login" className="underline">
-                    Login
-                  </Link>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-full h-full grid lg:grid-cols-2 min-h-screen">
+          {/* Form Section */}
+          <MaxWidthWrapper className="flex items-center justify-center py-12 px-6">
+            <div className="w-full space-y-8">
+              {/* Branding Header */}
+              <div className="flex flex-col items-center text-center space-y-3">
+                <Logo className="h-20 w-auto" />
+                <div className="space-y-1">
+                  <h1 className="text-3xl font-black tracking-tight text-primary">Create Parent Account</h1>
+                  <p className="font-medium text-slate-500 leading-relaxed">
+                    Join the HFSE community to manage your child's journey.
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                  <div className="grid grid-cols-2 items-start gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            First Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="John" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            Last Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="relationship"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          Relationship to Student
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select your role" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="mother">Mother</SelectItem>
+                            <SelectItem value="father">Father</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          Email Address
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="john.doe@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-start gap-4">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            Password
+                          </FormLabel>
+                          <FormControl>
+                            <PasswordInput placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            Confirm password
+                          </FormLabel>
+                          <FormControl>
+                            <PasswordInput placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <Button
+                    disabled={isPending}
+                    type="submit"
+                    className="w-full h-11 font-bold text-sm transition-all rounded-xl shadow-lg shadow-slate-200 mt-2">
+                    {isPending ? (
+                      <div className="flex items-center gap-3">
+                        <span>Creating Account</span>
+                        <DotPulse size="20" speed="1.3" color="white" />
+                      </div>
+                    ) : (
+                      "Create Account"
+                    )}
+                  </Button>
+                </form>
+              </Form>
+
+              <p className="text-center text-sm text-slate-500 font-medium">
+                Already have an account?{" "}
+                <Link to="/login" className="font-bold text-primary hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </MaxWidthWrapper>
-          <div className="bg-muted hidden lg:flex lg:items-center lg:justify-center">
-            <motion.img
-              fetchPriority="high"
-              initial={{
-                opacity: 0,
-                translateY: 40,
-              }}
-              animate={{
-                opacity: 1,
-                translateY: 0,
-              }}
-              transition={{
-                duration: 1,
-                type: "spring",
-              }}
-              src={students}
-              alt="HFSE International School Students"
-              className="object-cover w-3/4 h-auto rounded-lg"
-            />
+
+          {/* Visual Section */}
+          <div className="hidden lg:flex items-center justify-center bg-slate-50 p-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative w-full max-w-lg">
+              <div className="absolute -top-10 -right-10 size-32 bg-primary/5 rounded-full blur-3xl" />
+              <img
+                src={students}
+                alt="Students"
+                className="relative z-10 w-full h-auto rounded-[2rem] shadow-2xl border-[12px] border-white object-cover"
+              />
+              <div className="absolute -bottom-10 -left-10 size-40 bg-slate-200/40 rounded-full blur-3xl" />
+            </motion.div>
           </div>
         </div>
       </div>

@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
 import { updateEnrollmentApplicationDetails } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
@@ -27,6 +26,7 @@ import {
   Cake,
   CalendarIcon,
   Globe,
+  Heart,
   Landmark,
   Mail,
   Phone,
@@ -35,8 +35,9 @@ import {
   School,
   Smile,
   User,
+  Users,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -45,24 +46,51 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
   const [editMode, setEditMode] = useState<boolean>(false);
 
   return (
-    <div className="space-y-8 py-6 xl:py-0">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="w-full space-y-2">
-          <h1 className="font-bold text-2xl md:text-3xl">{editMode ? "Edit Family Information" : label}</h1>
-          <p className="text-sm text-muted-foreground text-balance">
+        <div className="space-y-1">
+          <h1 className="font-black text-2xl md:text-4xl text-slate-900 tracking-tight">{label}</h1>
+          <p className="text-sm font-medium text-slate-500">
             View-only details about parents, guardian, and siblings. Enable edit mode to make changes.
           </p>
         </div>
 
-        <div className="w-full md:max-w-xs flex items-center justify-between gap-3 rounded-lg border p-3">
-          <div className="flex flex-col gap-1">
-            <p className="text-sm font-medium leading-none">Switch to {editMode ? "view" : "edit"} mode</p>
-            <p className="text-xs text-muted-foreground">
-              Enable&nbsp;{editMode ? "viewing" : "editing"}&nbsp;of&nbsp;student's&nbsp;family&nbsp;information.
+        <div
+          className={cn(
+            "w-full md:max-w-xs flex items-center justify-between gap-4 rounded-xl border p-4 transition-all duration-200",
+            editMode
+              ? "bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20"
+              : "bg-primary/5 border-border hover:bg-primary/10"
+          )}>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <div className={cn("size-2 rounded-full", editMode ? "bg-secondary" : "bg-primary")} />
+              <p className="text-sm font-semibold leading-none tracking-tight">
+                {editMode ? "Editing Mode" : "Viewing Mode"}
+              </p>
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-muted-foreground">
+              {editMode ? "You can now modify student details." : "Switch to edit to update information."}
             </p>
           </div>
 
-          <Switch checked={editMode} onCheckedChange={setEditMode} />
+          <Switch
+            checked={editMode}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                toast.info("Edit mode enabled!", {
+                  description: "You can now modify the student details.",
+                });
+              } else {
+                toast.info("View mode enabled!", {
+                  description: "Fields are locked and cannot be edited.",
+                });
+              }
+
+              setEditMode(checked);
+            }}
+            className="data-[state=checked]:bg-secondary cursor-pointer"
+          />
         </div>
       </div>
 
@@ -88,7 +116,6 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
     motherMobile,
     guardianMiddleName,
     guardianMobile,
-    fatherNationality,
     guardianEmail,
     fatherEmail,
     motherEmail,
@@ -194,1449 +221,974 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
 
   return (
     <Form {...form}>
-      <form className="space-y-8 py-6 xl:py-0" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="space-y-12" onSubmit={form.handleSubmit(onSubmit)}>
+        {/* FATHER SECTION */}
         {fatherEmail && (
-          <>
-            <Separator />
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Father's Personal Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherFirstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
+          <Card className="border-none py-0 shadow-none bg-transparent">
+            <SectionHeader title="Father's Details" icon={<User className="size-5" />} color="text-blue-600" />
+            <CardContent className="px-0 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                <FormField
+                  control={form.control}
+                  name="fatherFirstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        First Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherMiddleName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Middle Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherLastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Last Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherPreferredName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Preferred Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherBirthDay"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Birthday
+                      </FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}>
+                              {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherMiddleName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Middle Name <span className="text-xs text-muted-foreground">(optional)</span>
-                          </FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <FormField
+                  control={form.control}
+                  name="fatherReligion"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Religion
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Landmark className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherLastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherPreferredName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Preferred Name</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Smile className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherBirthDay"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date of Birth</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}>
-                                  {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
-                            </PopoverContent>
-                          </Popover>
+                <FormField
+                  control={form.control}
+                  name="fatherEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Email Address
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Mail className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherMobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Mobile Number
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Phone className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherNationality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Nationality
+                      </FormLabel>
+                      <FormControl>
+                        <LocationSelector
+                          showStates={false}
+                          currentCountry={field.value || "Singapore"}
+                          onCountryChange={(v) => field.onChange(v?.name)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <FormField
+                  control={form.control}
+                  name="fatherNric"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        NRIC/FIN
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<BadgeInfo className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherReligion"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Religion</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Landmark className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                <FormField
+                  control={form.control}
+                  name="fatherCompanyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Company
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Briefcase className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Father's Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Mail className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherMobile"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mobile Number</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Phone className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherNationality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Select Nationality</FormLabel>
-                          <FormControl>
-                            <LocationSelector
-                              showStates={false}
-                              currentCountry={fatherNationality ?? "Singapore"}
-                              onCountryChange={(value) => field.onChange(value?.name)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Father's Work Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherNric"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>NRIC/FIN</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherCompanyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="fatherPosition"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </>
+                <FormField
+                  control={form.control}
+                  name="fatherPosition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Occupation
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
         )}
 
+        {/* MOTHER SECTION */}
         {motherEmail && (
-          <>
-            <Separator />
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Mother's Personal Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherFirstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
+          <Card className="border-none py-0 shadow-none bg-transparent">
+            <SectionHeader title="Mother's Details" icon={<Heart className="size-5" />} color="text-rose-500" />
+            <CardContent className="px-0 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                <FormField
+                  control={form.control}
+                  name="motherFirstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        First Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="motherMiddleName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Middle Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="motherLastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Last Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="motherPreferredName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Preferred Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="motherBirthDay"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Birthday
+                      </FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}>
+                              {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherMiddleName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Middle Name <span className="text-xs text-muted-foreground">(optional)</span>
-                          </FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <FormField
+                  control={form.control}
+                  name="motherReligion"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Religion
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Landmark className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherLastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherPreferredName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Preferred Name</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Smile className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherBirthDay"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date of Birth</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}>
-                                  {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
-                            </PopoverContent>
-                          </Popover>
+                <FormField
+                  control={form.control}
+                  name="motherEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Email Address
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Mail className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="motherMobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Mobile Number
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Phone className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="motherNationality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Nationality
+                      </FormLabel>
+                      <FormControl>
+                        <LocationSelector
+                          showStates={false}
+                          currentCountry={field.value || "Singapore"}
+                          onCountryChange={(v) => field.onChange(v?.name)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <FormField
+                  control={form.control}
+                  name="motherNric"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        NRIC/FIN
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<BadgeInfo className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherReligion"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Religion</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Landmark className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                <FormField
+                  control={form.control}
+                  name="motherCompanyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Company
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Briefcase className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Mother's Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Mail className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherMobile"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mobile Number</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Phone className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherNationality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Select Nationality</FormLabel>
-                          <FormControl>
-                            <LocationSelector
-                              showStates={false}
-                              currentCountry={fatherNationality ?? "Singapore"}
-                              onCountryChange={(value) => field.onChange(value?.name)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Mother's Work Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherNric"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>NRIC/FIN</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherCompanyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="motherPosition"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </>
+                <FormField
+                  control={form.control}
+                  name="motherPosition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Occupation
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
         )}
 
+        {/* GUARDIAN SECTION */}
         {guardianEmail && (
-          <>
-            <Separator />
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Guardian's Personal Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianFirstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
+          <Card className="border-none py-0 shadow-none bg-transparent">
+            <SectionHeader title="Mother's Details" icon={<Heart className="size-5" />} color="text-rose-500" />
+            <CardContent className="px-0 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                <FormField
+                  control={form.control}
+                  name="guardianFirstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        First Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guardianMiddleName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Middle Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guardianLastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Last Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guardianPreferredName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Preferred Name
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<User className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guardianBirthDay"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Birthday
+                      </FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}>
+                              {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianMiddleName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Middle Name <span className="text-xs text-muted-foreground">(optional)</span>
-                          </FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <FormField
+                  control={form.control}
+                  name="guardianReligion"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Religion
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Landmark className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianLastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<User className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianPreferredName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Preferred Name</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Smile className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianBirthDay"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date of Birth</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}>
-                                  {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
-                            </PopoverContent>
-                          </Popover>
+                <FormField
+                  control={form.control}
+                  name="guardianEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Email Address
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Mail className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guardianMobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Mobile Number
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Phone className="size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guardianNationality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Nationality
+                      </FormLabel>
+                      <FormControl>
+                        <LocationSelector
+                          showStates={false}
+                          currentCountry={field.value || "Singapore"}
+                          onCountryChange={(v) => field.onChange(v?.name)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <FormField
+                  control={form.control}
+                  name="guardianNric"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        NRIC/FIN
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<BadgeInfo className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianReligion"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Religion</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Landmark className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                <FormField
+                  control={form.control}
+                  name="guardianCompanyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Company
+                      </FormLabel>
+                      <FormControl>
+                        <InputWithIcon svgIcon={<Briefcase className="text-muted-foreground size-4" />} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Guardian's Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Mail className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianMobile"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mobile Number</FormLabel>
-                          <FormControl>
-                            <InputWithIcon svgIcon={<Phone className="text-muted-foreground size-4" />} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianNationality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Select Nationality</FormLabel>
-                          <FormControl>
-                            <LocationSelector
-                              showStates={false}
-                              currentCountry={fatherNationality ?? "Singapore"}
-                              onCountryChange={(value) => field.onChange(value?.name)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-0 border-none shadow-none">
-              <CardHeader className="p-0">
-                <CardTitle className="font-bold text-lg">Guardian's Work Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianNric"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>NRIC/FIN</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianCompanyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="guardianPosition"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position</FormLabel>
-                          <FormControl>
-                            <InputWithIcon
-                              svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </>
+                <FormField
+                  control={form.control}
+                  name="guardianPosition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                        Occupation
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {siblings != null && siblings.length > 0 && (
-          <>
-            <Separator />
-
-            {fields.map((field, index) => (
-              <Card key={field.id} className="p-0 flex flex-col shadow-none border-none">
-                <CardHeader className="p-0 w-full ">
-                  <CardTitle className="font-semibold text-xl">Sibling {index + 1} information</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 space-y-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full ">
-                    <FormField
-                      control={form.control}
-                      name={`siblings.${index}.siblingFullName`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full name</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`siblings.${index}.siblingBirthDay`}
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date of birth</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}>
-                                  {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                            </PopoverContent>
-                          </Popover>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`siblings.${index}.siblingReligion`}
-                      render={({ field }) => (
-                        <div className="flex flex-col gap-2">
+          <Card className="border-none shadow-none bg-transparent">
+            <CardHeader className="px-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-purple-50 rounded-lg">
+                    <Users className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl font-bold text-slate-900">Siblings Information</CardTitle>
+                    <p className="text-sm text-muted-foreground font-medium">Details of brothers and sisters</p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  size={"lg"}
+                  variant={"outline"}
+                  onClick={() =>
+                    append({
+                      siblingBirthDay: new Date(),
+                      siblingFullName: "",
+                      siblingReligion: "",
+                      siblingEducationOccupation: "",
+                      siblingSchoolCompany: "",
+                    })
+                  }
+                  className="gap-2 text-white hover:bg-green-600 hover:text-white bg-green-500 font-bold">
+                  <PlusCircle className="size-4" /> Add Sibling
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-8 md:space-y-12 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+              {fields.map((field, index) => (
+                <Card key={field.id} className="p-0 flex flex-col shadow-none border-none">
+                  <CardHeader className="p-0 w-full ">
+                    <CardTitle className="font-semibold text-xl">Sibling {index + 1} information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 space-y-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full ">
+                      <FormField
+                        control={form.control}
+                        name={`siblings.${index}.siblingFullName`}
+                        render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Religion</FormLabel>
+                            <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                              Full name
+                            </FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
 
                             <FormMessage />
                           </FormItem>
-                        </div>
-                      )}
-                    />
-                  </div>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`siblings.${index}.siblingBirthDay`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                              Date of birth
+                            </FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}>
+                                    {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                              </PopoverContent>
+                            </Popover>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
-                    <FormField
-                      control={form.control}
-                      name={`siblings.${index}.siblingSchoolCompany`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>School or Company Name</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={form.control}
+                        name={`siblings.${index}.siblingReligion`}
+                        render={({ field }) => (
+                          <div className="flex flex-col gap-2">
+                            <FormItem>
+                              <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                                Religion
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
 
-                    <FormField
-                      control={form.control}
-                      name={`siblings.${index}.siblingEducationOccupation`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>School Level or Company Position</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          </div>
+                        )}
+                      />
+                    </div>
 
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
+                      <FormField
+                        control={form.control}
+                        name={`siblings.${index}.siblingSchoolCompany`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                              School or Company Name
+                            </FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
 
-            <Button
-              variant={"secondary"}
-              disabled={fields.length >= 5}
-              size={"lg"}
-              className="my-4 hidden lg:flex w-full p-8 gap-2 uppercase mx-auto max-w-5xl"
-              onClick={() =>
-                append({
-                  siblingBirthDay: new Date(),
-                  siblingFullName: "",
-                  siblingReligion: "",
-                  siblingEducationOccupation: "",
-                  siblingSchoolCompany: "",
-                })
-              }>
-              Add Sibling
-              <PlusCircle />
-            </Button>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-            <Button
-              variant={"secondary"}
-              className="my-4 flex lg:hidden w-full p-6 gap-2 uppercase mx-auto max-w-5xl"
-              onClick={() =>
-                append({
-                  siblingBirthDay: new Date(),
-                  siblingFullName: "",
-                  siblingReligion: "",
-                  siblingEducationOccupation: "",
-                  siblingSchoolCompany: "",
-                })
-              }>
-              Add Sibling
-              <PlusCircle />
-            </Button>
-          </>
+                      <FormField
+                        control={form.control}
+                        name={`siblings.${index}.siblingEducationOccupation`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">
+                              School Level or Company Position
+                            </FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
         )}
 
-        <Button disabled={isPending} size={"lg"} className="hidden lg:flex w-full p-8 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="30" speed="1.3" color="#FFF" />
-            </>
-          ) : (
-            <>
-              Save Changes
-              <Save />
-            </>
-          )}
-        </Button>
-
-        <Button disabled={isPending} className="flex lg:hidden w-full p-6 gap-2 uppercase" type="submit">
-          {isPending ? (
-            <>
-              Saving
-              <DotPulse size="15" speed="1.3" color="#FFF" />
-            </>
-          ) : (
-            <>
-              Save Changes
-              <Save />
-            </>
-          )}
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            disabled={isPending}
+            type="submit"
+            size="lg"
+            className="w-full py-8 rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 text-base font-bold">
+            {isPending ? (
+              <DotPulse size={35} speed={1.3} color="white" />
+            ) : (
+              <>
+                Save Changes
+                <Save className="size-5" />
+              </>
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );
 }
 
 function ViewFamilyInformation({ familyInformation }: { familyInformation: FamilyInfo }) {
-  const {
-    motherBirthDay,
-    motherEmail,
-    motherFirstName,
-    motherLastName,
-    motherMiddleName,
-    motherMobile,
-    motherNationality,
-    motherNric,
-    motherPreferredName,
-    motherReligion,
-    motherCompanyName,
-    motherPosition,
-    fatherEmail,
-    fatherBirthDay,
-    fatherFirstName,
-    fatherLastName,
-    fatherMiddleName,
-    fatherMobile,
-    fatherNationality,
-    fatherNric,
-    fatherPreferredName,
-    fatherReligion,
-    fatherCompanyName,
-    fatherPosition,
-    guardianBirthDay,
-    guardianReligion,
-    guardianEmail,
-    guardianFirstName,
-    guardianLastName,
-    guardianMiddleName,
-    guardianMobile,
-    guardianNationality,
-    guardianNric,
-    guardianPreferredName,
-    guardianCompanyName,
-    guardianPosition,
-  } = familyInformation;
-
   const siblings = extractSiblings(familyInformation);
 
-  const maskedFatherNric = fatherNric ? fatherNric.slice(0, 3) + "****" + fatherNric.slice(7) : undefined;
-  const maskedGuardianNric = guardianNric ? guardianNric.slice(0, 3) + "****" + guardianNric.slice(7) : undefined;
-  const maskedMotherNric = motherNric?.slice(0, 3) + "****" + motherNric?.slice(7);
+  const renderDataField = (
+    label: string,
+    value: string | null | undefined,
+    icon: React.ReactElement<{ className: string }>
+  ) => (
+    <div className="space-y-1.5 group">
+      <Label className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">{label}</Label>
+      <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white group-hover:border-slate-300 transition-all duration-200 shadow-sm">
+        {React.cloneElement(icon, {
+          className: "size-4 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors",
+        })}
+        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value || "N/A"}</span>
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      {fatherEmail && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Father's Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherFirstName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Middle Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherMiddleName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherLastName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Preferred Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherPreferredName ?? "N/A"}
-                    svgIcon={<Smile className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date of Birth</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherBirthDay ? formatDate(fatherBirthDay, "dd/MM/yyyy") : "N/A"}
-                    svgIcon={<Cake className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Religion</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherReligion ?? "N/A"}
-                    svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Father's Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherEmail ?? "N/A"}
-                    svgIcon={<Mail className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Mobile Number</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherMobile ?? "N/A"}
-                    svgIcon={<Phone className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nationality</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherNationality ?? "N/A"}
-                    svgIcon={<Globe className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Father's Work Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>NRIC/FIN</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={maskedFatherNric ?? "N/A"}
-                    svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Company</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherCompanyName ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Position</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherPosition ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
+    <div className="space-y-16">
+      {/* FATHER SECTION */}
+      {familyInformation.fatherEmail && (
+        <section className="space-y-6">
+          <SectionHeader title="Father's Details" icon={<User className="size-5" />} color="text-blue-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+            {renderDataField("First Name", familyInformation.fatherFirstName, <User />)}
+            {renderDataField("Middle Name", familyInformation.fatherMiddleName, <User />)}
+            {renderDataField("Last Name", familyInformation.fatherLastName, <User />)}
+            {renderDataField("Preferred Name", familyInformation.fatherPreferredName, <Smile />)}
+            {renderDataField(
+              "Date of birth",
+              familyInformation.fatherBirthDay ? formatDate(familyInformation.fatherBirthDay, "dd MMM yyyy") : null,
+              <Cake />
+            )}
+            {renderDataField("Religion", familyInformation.fatherReligion, <Landmark />)}
+            {renderDataField("Email Address", familyInformation.fatherEmail, <Mail />)}
+            {renderDataField("Mobile No.", familyInformation.fatherMobile, <Phone />)}
+            {renderDataField("Nationality", familyInformation.fatherNationality, <Globe />)}
+            {renderDataField(
+              "NRIC/FIN",
+              familyInformation.fatherNric
+                ? familyInformation.fatherNric.slice(0, 3) + "****" + familyInformation.fatherNric.slice(-2)
+                : null,
+              <BadgeInfo />
+            )}
+            {renderDataField("Company", familyInformation.fatherCompanyName, <Briefcase />)}
+            {renderDataField("Occupation", familyInformation.fatherPosition, <Briefcase />)}
+          </div>
+        </section>
       )}
 
-      {motherEmail && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Mother’s Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherFirstName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Middle Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherMiddleName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherLastName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Preferred Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherPreferredName ?? "N/A"}
-                    svgIcon={<Smile className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date of Birth</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherBirthDay ? formatDate(motherBirthDay, "dd/MM/yyyy") : "N/A"}
-                    svgIcon={<Cake className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Religion</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherReligion ?? "N/A"}
-                    svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Mother’s Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherEmail ?? "N/A"}
-                    svgIcon={<Mail className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Mobile Number</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherMobile ?? "N/A"}
-                    svgIcon={<Phone className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nationality</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherNationality ?? "N/A"}
-                    svgIcon={<Globe className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Mother’s Work Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>NRIC/FIN</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={maskedMotherNric ?? "N/A"}
-                    svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Company</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherCompanyName ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Position</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherPosition ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
+      {/* MOTHER SECTION */}
+      {familyInformation.motherEmail && (
+        <section className="space-y-6">
+          <SectionHeader title="Mother's Details" icon={<Heart className="size-5" />} color="text-rose-500" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+            {renderDataField("First Name", familyInformation.motherFirstName, <User />)}
+            {renderDataField("Middle Name", familyInformation.motherMiddleName, <User />)}
+            {renderDataField("Last Name", familyInformation.motherLastName, <User />)}
+            {renderDataField("Preferred Name", familyInformation.motherPreferredName, <Smile />)}
+            {renderDataField(
+              "Date of birth",
+              familyInformation.motherBirthDay ? formatDate(familyInformation.motherBirthDay, "dd MMM yyyy") : null,
+              <Cake />
+            )}
+            {renderDataField("Religion", familyInformation.motherReligion, <Landmark />)}
+            {renderDataField("Email Address", familyInformation.motherEmail, <Mail />)}
+            {renderDataField("Mobile No.", familyInformation.motherMobile, <Phone />)}
+            {renderDataField("Nationality", familyInformation.motherNationality, <Globe />)}
+            {renderDataField(
+              "NRIC/FIN",
+              familyInformation.motherNric
+                ? familyInformation.motherNric.slice(0, 3) + "****" + familyInformation.motherNric.slice(-2)
+                : null,
+              <BadgeInfo />
+            )}
+            {renderDataField("Company", familyInformation.motherCompanyName, <Briefcase />)}
+            {renderDataField("Occupation", familyInformation.motherPosition, <Briefcase />)}
+          </div>
+        </section>
       )}
 
-      {guardianEmail && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Guardian's Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name</Label>
-                  <InputWithIcon
-                    value={guardianFirstName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Middle Name</Label>
-                  <InputWithIcon
-                    value={guardianMiddleName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name</Label>
-                  <InputWithIcon
-                    value={guardianLastName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Preferred Name</Label>
-                  <InputWithIcon
-                    value={guardianPreferredName ?? "N/A"}
-                    svgIcon={<Smile className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date of Birth</Label>
-                  <InputWithIcon
-                    value={guardianBirthDay ? formatDate(guardianBirthDay, "dd/MM/yyyy") : "N/A"}
-                    svgIcon={<Cake className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Religion</Label>
-                  <InputWithIcon
-                    value={guardianReligion ?? "N/A"}
-                    svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Guardian's Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <InputWithIcon
-                    value={guardianEmail ?? "N/A"}
-                    svgIcon={<Mail className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Mobile Number</Label>
-                  <InputWithIcon
-                    value={guardianMobile ?? "N/A"}
-                    svgIcon={<Phone className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nationality</Label>
-                  <InputWithIcon
-                    value={guardianNationality ?? "N/A"}
-                    svgIcon={<Globe className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Guardian's Work Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>NRIC/FIN</Label>
-                  <InputWithIcon
-                    value={maskedGuardianNric ?? "N/A"}
-                    svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Company</Label>
-                  <InputWithIcon
-                    value={guardianCompanyName ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Position</Label>
-                  <InputWithIcon
-                    value={guardianPosition ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
+      {/* GUARDIAN SECTION (Conditional) */}
+      {familyInformation.guardianEmail && (
+        <section className="space-y-6">
+          <SectionHeader title="Guardian's Details" icon={<Users className="size-5" />} color="text-indigo-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+            {renderDataField("First Name", familyInformation.guardianFirstName, <User />)}
+            {renderDataField("Middle Name", familyInformation.guardianMiddleName, <User />)}
+            {renderDataField("Last Name", familyInformation.guardianLastName, <User />)}
+            {renderDataField("Preferred Name", familyInformation.guardianPreferredName, <Smile />)}
+            {renderDataField(
+              "Date of birth",
+              familyInformation.guardianBirthDay ? formatDate(familyInformation.guardianBirthDay, "dd MMM yyyy") : null,
+              <Cake />
+            )}
+            {renderDataField("Religion", familyInformation.guardianReligion, <Landmark />)}
+            {renderDataField("Email Address", familyInformation.guardianEmail, <Mail />)}
+            {renderDataField("Mobile No.", familyInformation.guardianMobile, <Phone />)}
+            {renderDataField("Nationality", familyInformation.guardianNationality, <Globe />)}
+            {renderDataField(
+              "NRIC/FIN",
+              familyInformation.guardianNric
+                ? familyInformation.guardianNric.slice(0, 3) + "****" + familyInformation.guardianNric.slice(-2)
+                : null,
+              <BadgeInfo />
+            )}
+            {renderDataField("Company", familyInformation.guardianCompanyName, <Briefcase />)}
+            {renderDataField("Occupation", familyInformation.guardianPosition, <Briefcase />)}
+          </div>
+        </section>
       )}
 
-      {siblings != null && siblings.length > 0 && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Sibling Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-12 p-0">
-              {siblings.map((sibling, index) => (
-                <div key={index} className="space-y-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Full Name</Label>
-                      <InputWithIcon
-                        readOnly
-                        value={(sibling.siblingFullName as string) ?? "N/A"}
-                        svgIcon={<User className="text-muted-foreground size-4" />}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Birthday</Label>
-                      <InputWithIcon
-                        readOnly
-                        value={
-                          sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "dd/MM/yyyy") : "N/A"
-                        }
-                        svgIcon={<Cake className="text-muted-foreground size-4" />}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Religion</Label>
-                      <InputWithIcon
-                        readOnly
-                        value={(sibling.siblingReligion as string) ?? "N/A"}
-                        svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                      />
-                    </div>
+      {/* SIBLINGS SECTION */}
+      {siblings && siblings.length > 0 && (
+        <section className="space-y-6">
+          <SectionHeader title="Sibling Records" icon={<Users className="size-5" />} color="text-slate-700" />
+          <div className="space-y-4">
+            {siblings.map((sibling, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {renderDataField("Full Name", sibling.siblingFullName as string, <User />)}
+                  {renderDataField(
+                    "Date of Birth",
+                    sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "dd/MM/yyyy") : null,
+                    <Cake />
+                  )}
+                  {renderDataField("Religion", sibling.siblingReligion as string, <Landmark />)}
+                  <div className="lg:col-span-2">
+                    {renderDataField("School / Company Name", sibling.siblingSchoolCompany as string, <School />)}
                   </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>School Level / Company Position</Label>
-                      <InputWithIcon
-                        readOnly
-                        value={(sibling.siblingEducationOccupation as string) ?? "N/A"}
-                        svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>School / Company Name</Label>
-                      <InputWithIcon
-                        readOnly
-                        value={(sibling.siblingSchoolCompany as string) ?? "N/A"}
-                        svgIcon={<School className="text-muted-foreground size-4" />}
-                      />
-                    </div>
-                  </div>
+                  {renderDataField("Education/Occupation", sibling.siblingEducationOccupation as string, <Briefcase />)}
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
-    </>
+    </div>
+  );
+}
+
+function SectionHeader({ title, icon, color }: { title: string; icon: React.ReactNode; color: string }) {
+  return (
+    <div className="flex items-center gap-3 pb-2">
+      <div className={cn("p-2 bg-indigo-50 rounded-lg", color)}>{icon}</div>
+      <h2 className="font-bold text-lg text-slate-800 tracking-tight">{title}</h2>
+    </div>
   );
 }
 

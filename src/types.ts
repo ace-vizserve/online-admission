@@ -9,6 +9,11 @@ import {
   StudentAddressContactSchema,
   StudentDetailsSchema,
   StudentUploadRequirementsSchema,
+  VizSchoolEnrollmentInformationSchema,
+  VizSchoolFatherInformationSchema,
+  VizSchoolGuardianInformationSchema,
+  VizSchoolMotherInformationSchema,
+  VizSchoolStudentDetailsSchema,
 } from "./zod-schema";
 
 export type DiscountCode = {
@@ -27,11 +32,14 @@ export type EnrolledStudent = {
   levelApplied: string;
   studentNumber: string;
   enroleePhoto: string;
+  nric?: string;
+  birthDay?: string;
 };
 
 export type Student = {
   id: number;
   created_at: string;
+  enroleeNumber: string;
   studentNumber: string;
   nationality: string;
   firstName: string;
@@ -332,6 +340,42 @@ export type EnrolOldStudentFormState = {
   };
 };
 
+export type VizSchoolEnrolNewStudentFormState = {
+  studentInfo: {
+    studentDetails: VizSchoolStudentDetailsSchema;
+    addressContact: StudentAddressContactSchema;
+  };
+  familyInfo: {
+    motherInfo: VizSchoolMotherInformationSchema;
+    fatherInfo: VizSchoolFatherInformationSchema;
+    guardianInfo: VizSchoolGuardianInformationSchema;
+    siblingsInfo: SiblingInformationSchema;
+  };
+  enrollmentInfo: VizSchoolEnrollmentInformationSchema;
+  uploadRequirements: {
+    studentUploadRequirements: StudentUploadRequirementsSchema;
+    parentGuardianUploadRequirements: ParentGuardianUploadRequirementsSchema;
+  };
+};
+
+export type VizSchoolEnrolOldStudentFormState = {
+  studentInfo: {
+    studentDetails: VizSchoolStudentDetailsSchema;
+    addressContact: StudentAddressContactSchema;
+  };
+  familyInfo: {
+    motherInfo: VizSchoolMotherInformationSchema;
+    fatherInfo: VizSchoolFatherInformationSchema;
+    guardianInfo: VizSchoolGuardianInformationSchema;
+    siblingsInfo: SiblingInformationSchema;
+  };
+  enrollmentInfo: VizSchoolEnrollmentInformationSchema;
+  uploadRequirements: {
+    studentUploadRequirements: StudentUploadRequirementsSchema;
+    parentGuardianUploadRequirements: ParentGuardianUploadRequirementsSchema;
+  };
+};
+
 export type StudentFileUploaderDialogProps = {
   label: string;
   description: string;
@@ -352,6 +396,28 @@ export type ParentGuardianFileUploaderDialogProps = {
   onValueChange: (files: File[] | null) => void;
   formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
+};
+
+export type VizSchoolStudentFileUploaderDialogProps = {
+  label: string;
+  description: string;
+  form: UseFormReturn<StudentUploadRequirementsSchema>;
+  name: keyof StudentUploadRequirementsSchema;
+  value: File[] | null;
+  onValueChange: (files: File[] | null) => void;
+  formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
+  setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
+};
+
+export type VizSchoolParentGuardianFileUploaderDialogProps = {
+  label: string;
+  description: string;
+  form: UseFormReturn<ParentGuardianUploadRequirementsSchema>;
+  name: keyof ParentGuardianUploadRequirementsSchema;
+  value: File[] | null;
+  onValueChange: (files: File[] | null) => void;
+  formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
+  setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
 };
 
 export type StudentInformation = {

@@ -130,8 +130,8 @@ function DocumentsList() {
   if (isPending) {
     return (
       <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-        <p className="text-sm text-muted-foreground animate-pulse">Fetching students...</p>
-        <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+        <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
+        <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching students...</p>
       </div>
     );
   }

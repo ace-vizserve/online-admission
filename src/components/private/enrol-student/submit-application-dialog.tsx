@@ -119,7 +119,12 @@ function SubmitApplicationDialog() {
           description: "Kindly double check and save your details before submitting",
           action: {
             label: "Edit Info",
-            onClick: () => navigate(`/enrol-student/${params.id}/enrollment-info?academicYear=${academicYear}`),
+            onClick: () =>
+              navigate(`/enrol-student/${params.id}/enrollment-info?academicYear=${academicYear}`, {
+                state: {
+                  triggerForm: true,
+                },
+              }),
           },
           actionButtonStyle: {
             backgroundColor: "#DC7609",
@@ -133,7 +138,12 @@ function SubmitApplicationDialog() {
           description: "Kindly double check and save your details before submitting.",
           action: {
             label: "Save Info",
-            onClick: () => navigate(`/enrol-student/${params.id}/enrollment-info?academicYear=${academicYear}`),
+            onClick: () =>
+              navigate(`/enrol-student/${params.id}/enrollment-info?academicYear=${academicYear}`, {
+                state: {
+                  triggerForm: true,
+                },
+              }),
           },
           actionButtonStyle: {
             backgroundColor: "#DC7609",
@@ -266,7 +276,7 @@ function SubmitApplicationDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button disabled={isPending} className="gap-2 bg-green-600 hover:bg-green-500">
+        <Button disabled={isPending} className="gap-2 bg-green-600 hover:bg-green-500 font-bold">
           {isPending ? (
             <>
               Sending
@@ -281,20 +291,22 @@ function SubmitApplicationDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader className="items-center">
-          <AlertDialogTitle>
+          <AlertDialogTitle className="font-black">
             <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
               <CheckCircle2 className="h-7 w-7 text-green-400" />
             </div>
             Are you absolutely sure?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-xs md:text-sm text-center">
+          <AlertDialogDescription className="text-xs md:text-sm text-center font-medium">
             Please verify the details to ensure everything is correct before submitting. Inaccurate information may
             cause delays.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-2 sm:justify-center">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="!bg-green-600 hover:!bg-green-500" onClick={() => verifyEnrollmentDetails()}>
+          <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className="!bg-green-600 hover:!bg-green-500 font-bold"
+            onClick={() => verifyEnrollmentDetails()}>
             Continue
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { EnrolNewStudentFormState, EnrolOldStudentFormState } from "./types";
+import {
+  EnrolNewStudentFormState,
+  EnrolOldStudentFormState,
+  VizSchoolEnrolNewStudentFormState,
+  VizSchoolEnrolOldStudentFormState,
+} from "./types";
 
 export type SecuritySettingsSheetStore = {
   isOpen: boolean;
@@ -10,6 +15,12 @@ export type SecuritySettingsSheetStore = {
 export type AcademicYearStore = {
   academicYear: string;
   setAcademicYear: (academicYear: string) => void;
+  clearState: () => void;
+};
+
+export type SchoolFeeStore = {
+  schoolFee: string;
+  setSchoolFee: (schoolFee: string) => void;
   clearState: () => void;
 };
 
@@ -40,13 +51,25 @@ export type EnrolOldStudentStore = {
   clearState: () => void;
 };
 
+export type VizSchoolEnrolNewStudentStore = {
+  formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
+  setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
+  clearState: () => void;
+};
+
+export type VizSchoolEnrolOldStudentStore = {
+  formState: Partial<VizSchoolEnrolOldStudentFormState> | Record<string, null>;
+  setFormState: (data: Partial<VizSchoolEnrolOldStudentFormState>) => void;
+  clearState: () => void;
+};
+
 export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateStore>()(
   persist(
-    (set) => ({
+    (set, _, store) => ({
       currentTab: "",
       activeTab: "",
       clearState: () => {
-        set({ currentTab: "", completedTabs: [] });
+        set(store.getInitialState());
       },
       completedTabs: [],
       setActiveTab: (tab: string) =>
@@ -91,10 +114,10 @@ export const usePasswordResetStore = create<PasswordResetStore>()(
 
 export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
   persist(
-    (set) => ({
+    (set, _, store) => ({
       formState: {},
       clearState: () => {
-        set({ formState: {} });
+        set(store.getInitialState());
       },
       setFormState: (data: Partial<EnrolNewStudentFormState>) =>
         set((state) => ({
@@ -113,10 +136,10 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
 
 export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
   persist(
-    (set) => ({
+    (set, _, store) => ({
       formState: {},
       clearState: () => {
-        set({ formState: {} });
+        set(store.getInitialState());
       },
       setFormState: (data: Partial<EnrolOldStudentFormState>) =>
         set((state) => ({
@@ -133,17 +156,77 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
   )
 );
 
+export const useVizSchoolEnrolNewStudentStore = create<VizSchoolEnrolNewStudentStore>()(
+  persist(
+    (set, _, store) => ({
+      formState: {},
+      clearState: () => {
+        set(store.getInitialState());
+      },
+      setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) =>
+        set((state) => ({
+          formState: {
+            ...state.formState,
+            ...data,
+          },
+        })),
+    }),
+    {
+      name: "vizSchoolEnrolNewStudentFormState",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
+
+export const useVizSchoolEnrolOldStudentStore = create<VizSchoolEnrolOldStudentStore>()(
+  persist(
+    (set, _, store) => ({
+      formState: {},
+      clearState: () => {
+        set(store.getInitialState());
+      },
+      setFormState: (data: Partial<VizSchoolEnrolOldStudentFormState>) =>
+        set((state) => ({
+          formState: {
+            ...state.formState,
+            ...data,
+          },
+        })),
+    }),
+    {
+      name: "vizSchoolEnrolOldStudentFormState",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
+
 export const useSelectAcademicYear = create<AcademicYearStore>()(
   persist(
-    (set) => ({
+    (set, _, store) => ({
       academicYear: "",
       clearState: () => {
-        set({ academicYear: "" });
+        set(store.getInitialState());
       },
       setAcademicYear: (academicYear: string) => set({ academicYear }),
     }),
     {
       name: "academicYear",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
+
+export const useSelectSchoolFee = create<SchoolFeeStore>()(
+  persist(
+    (set, _, store) => ({
+      schoolFee: "",
+      clearState: () => {
+        set(store.getInitialState());
+      },
+      setSchoolFee: (schoolFee: string) => set({ schoolFee }),
+    }),
+    {
+      name: "schoolFee",
       storage: createJSONStorage(() => sessionStorage),
     }
   )

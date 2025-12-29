@@ -94,21 +94,28 @@ function AdmissionGuidelines() {
             </p>
           </CardHeader>
 
+          {/* Refactored Requirements Section in CardContent */}
           <CardContent className="pt-8">
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {requirements.map((req, index) => {
                 const Icon = req.icon;
                 return (
-                  <div key={index} className="flex gap-4 rounded-lg border border-gray-200 bg-white p-4">
+                  <div
+                    key={index}
+                    className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-md bg-blue-600 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
+                        <Icon className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <span className="inline-block text-xs font-semibold text-blue-600">{req.category}</span>
-                      <p className="text-sm text-gray-700 leading-relaxed">{req.text}</p>
+                    <div className="space-y-1.5">
+                      <Badge
+                        variant="outline"
+                        className="uppercase text-[10px] font-bold tracking-wider text-blue-500 border-blue-100">
+                        {req.category}
+                      </Badge>
+                      <p className="text-[13px] text-slate-600 leading-relaxed font-medium">{req.text}</p>
                     </div>
                   </div>
                 );

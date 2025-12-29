@@ -4,23 +4,24 @@ import FatherInformation from "@/components/private/enrol-student/steps/family-i
 import GuardianInformation from "@/components/private/enrol-student/steps/family-information/guardian-information";
 import MotherInformation from "@/components/private/enrol-student/steps/family-information/mother-information";
 import SiblingInformation from "@/components/private/enrol-student/steps/family-information/sibling-information";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
+import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { Baby, ShieldUser, User, Users } from "lucide-react";
+import { Baby, ChevronRight, ShieldUser, User, Users } from "lucide-react";
 import { useEffect } from "react";
 import { Navigate } from "react-router";
 
 const tabs = [
   {
     name: "Mother Information",
+    description: "Required maternal legal and contact details",
     skippable: false,
     value: "mother-information",
     icon: User,
@@ -28,6 +29,7 @@ const tabs = [
   },
   {
     name: "Father Information",
+    description: "Required paternal legal and contact details",
     skippable: false,
     value: "father-information",
     icon: Users,
@@ -35,6 +37,7 @@ const tabs = [
   },
   {
     name: "Guardian Information",
+    description: "Optional info for alternative legal guardians",
     skippable: true,
     value: "guardian-information",
     icon: ShieldUser,
@@ -42,6 +45,7 @@ const tabs = [
   },
   {
     name: "Sibling Information",
+    description: "Optional info for brothers or sisters",
     skippable: true,
     value: "sibling-information",
     icon: Baby,
@@ -55,11 +59,9 @@ function FamilyInformation() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <Card className="flex-1 w-full border-none shadow-none p-0">
-        <CardContent className="px-0">
-          <FamilyInformationTabs />
-        </CardContent>
-      </Card>
+      <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <FamilyInformationTabs />
+      </div>
     </>
   );
 }
@@ -101,24 +103,54 @@ function FamilyInformationTabs() {
     <Tabs
       orientation="vertical"
       defaultValue={tabs[0].value}
-      className="w-full h-full flex flex-col lg:flex-row items-start gap-4 justify-center py-4">
-      <TabsList className="grid grid-cols-2 lg:grid-cols-1 h-auto w-full lg:w-1/4 gap-4 bg-white">
+      className="w-full h-full flex flex-col lg:flex-row items-start gap-8 xl:gap-12">
+      {/* Sidebar-style Tabs List */}
+      <TabsList className="grid grid-cols-1 h-auto w-full lg:w-[320px] gap-3 bg-transparent p-0">
+        <div className="px-2 mb-2">
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Form Sections</h3>
+        </div>
+
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}
-            className="flex flex-col gap-1 border shadow p-6 data-[state=active]:bg-primary data-[state=active]:text-white cursor-pointer">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-2 ">
-              <tab.icon /> {tab.name}
+            className={cn(
+              "relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
+              "bg-white border-slate-100 shadow-sm text-slate-800",
+              "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200"
+            )}>
+            <div
+              className={cn(
+                "flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
+                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white"
+              )}>
+              <tab.icon className="size-5" />
             </div>
-            <span className="text-xs text-muted-foreground font-semibold">{tab.skippable ? "optional" : ""}</span>
+
+            <div className="flex flex-col items-start text-left">
+              <span className="font-bold text-sm tracking-tight">{tab.name}</span>
+              <span className="text-[11px] font-medium leading-none mt-1">{tab.description}</span>
+            </div>
+
+            <ChevronRight className="ml-auto size-4 opacity-0 data-[state=active]:opacity-100 transition-opacity" />
           </TabsTrigger>
         ))}
       </TabsList>
-      <Separator className="my-4 block lg:hidden" />
-      <div className="h-full flex items-center justify-center w-full">
+
+      <div className="hidden lg:block">
+        <Separator orientation="vertical" className="h-[500px] bg-slate-100" />
+      </div>
+
+      {/* Main Form Content Area */}
+      <div className="flex-1 w-full bg-white rounded-3xl border border-slate-100 p-6 md:p-10 shadow-sm">
         {tabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value}>
+          <TabsContent className="mt-0 focus-visible:ring-0" key={tab.value} value={tab.value}>
+            <div className="mb-8">
+              <h2 className="text-2xl font-black tracking-tight text-primary">{tab.name}</h2>
+              <p className="text-slate-500 text-sm font-medium mt-1">
+                Please ensure all required fields are filled correctly.
+              </p>
+            </div>
             <tab.component />
           </TabsContent>
         ))}
@@ -130,8 +162,8 @@ function FamilyInformationTabs() {
 function Loader() {
   return (
     <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-      <p className="text-sm text-muted-foreground animate-pulse">Fetching family details...</p>
-      <Tailspin size="30" stroke="3" speed="0.9" color="#262E40" />
+      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
+      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching family details...</p>
     </div>
   );
 }

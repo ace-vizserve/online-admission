@@ -1,526 +1,173 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+"use client";
 
-import { extractSiblings } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { cn, extractSiblings } from "@/lib/utils";
 import { FamilyInfo } from "@/types";
 import { formatDate } from "date-fns";
-import { BadgeInfo, Briefcase, Cake, Globe, Landmark, Mail, Phone, School, Smile, User } from "lucide-react";
-import InputWithIcon from "./input-with-icon";
+import {
+  BadgeInfo,
+  Briefcase,
+  Cake,
+  Globe,
+  Heart,
+  Landmark,
+  Mail,
+  Phone,
+  School,
+  Smile,
+  User,
+  Users,
+} from "lucide-react";
+import React from "react";
 
 function FamilyInformation({ label, familyInformation }: { label: string; familyInformation: FamilyInfo }) {
-  const {
-    motherBirthDay,
-    motherEmail,
-    motherFirstName,
-    motherLastName,
-    motherMiddleName,
-    motherMobile,
-    motherNationality,
-    motherNric,
-    motherPreferredName,
-    motherReligion,
-    motherCompanyName,
-    motherPosition,
-    fatherEmail,
-    fatherBirthDay,
-    fatherFirstName,
-    fatherLastName,
-    fatherMiddleName,
-    fatherMobile,
-    fatherNationality,
-    fatherNric,
-    fatherPreferredName,
-    fatherReligion,
-    fatherCompanyName,
-    fatherPosition,
-    guardianBirthDay,
-    guardianReligion,
-    guardianEmail,
-    guardianFirstName,
-    guardianLastName,
-    guardianMiddleName,
-    guardianMobile,
-    guardianNationality,
-    guardianNric,
-    guardianPreferredName,
-    guardianCompanyName,
-    guardianPosition,
-  } = familyInformation;
-
   const siblings = extractSiblings(familyInformation);
 
-  const maskedFatherNric = fatherNric ? fatherNric.slice(0, 3) + "****" + fatherNric.slice(7) : undefined;
-  const maskedGuardianNric = guardianNric ? guardianNric.slice(0, 3) + "****" + guardianNric.slice(7) : undefined;
-  const maskedMotherNric = motherNric?.slice(0, 3) + "****" + motherNric?.slice(7);
+  const renderDataField = (
+    label: string,
+    value: string | null | undefined,
+    icon: React.ReactElement<{ className: string }>
+  ) => (
+    <div className="space-y-1.5 group">
+      <Label className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">{label}</Label>
+      <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white group-hover:border-slate-300 transition-all duration-200 shadow-sm">
+        {React.cloneElement(icon, {
+          className: "size-4 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors",
+        })}
+        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value || "N/A"}</span>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-8 py-6 xl:py-0">
-      <div className="space-y-2">
-        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
-        <p className="text-sm text-muted-foreground">
-          This section includes details about the student's parents, guardian, and siblings. All fields are read-only.
-        </p>
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="space-y-1">
+        <h1 className="font-black text-2xl md:text-4xl text-slate-900 tracking-tight">{label}</h1>
+        <p className="text-sm font-medium text-slate-500">View-only details about parents, guardian, and siblings.</p>
       </div>
 
-      {fatherEmail && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Father's Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherFirstName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Middle Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherMiddleName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherLastName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Preferred Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherPreferredName ?? "N/A"}
-                    svgIcon={<Smile className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date of Birth</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherBirthDay ? formatDate(fatherBirthDay, "dd/MM/yyyy") : "N/A"}
-                    svgIcon={<Cake className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Religion</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherReligion ?? "N/A"}
-                    svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="space-y-16">
+        {/* FATHER SECTION */}
+        {familyInformation.fatherEmail && (
+          <section className="space-y-6">
+            <SectionHeader title="Father's Details" icon={<User className="size-5" />} color="text-blue-600" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+              {renderDataField("First Name", familyInformation.fatherFirstName, <User />)}
+              {renderDataField("Middle Name", familyInformation.fatherMiddleName, <User />)}
+              {renderDataField("Last Name", familyInformation.fatherLastName, <User />)}
+              {renderDataField("Preferred Name", familyInformation.fatherPreferredName, <Smile />)}
+              {renderDataField(
+                "Birthday",
+                familyInformation.fatherBirthDay ? formatDate(familyInformation.fatherBirthDay, "dd MMM yyyy") : null,
+                <Cake />
+              )}
+              {renderDataField("Religion", familyInformation.fatherReligion, <Landmark />)}
+              {renderDataField("Email Address", familyInformation.fatherEmail, <Mail />)}
+              {renderDataField("Mobile No.", familyInformation.fatherMobile, <Phone />)}
+              {renderDataField("Nationality", familyInformation.fatherNationality, <Globe />)}
+              {renderDataField(
+                "Identity No.",
+                familyInformation.fatherNric
+                  ? familyInformation.fatherNric.slice(0, 3) + "****" + familyInformation.fatherNric.slice(-2)
+                  : null,
+                <BadgeInfo />
+              )}
+              {renderDataField("Employer", familyInformation.fatherCompanyName, <Briefcase />)}
+              {renderDataField("Occupation", familyInformation.fatherPosition, <Briefcase />)}
+            </div>
+          </section>
+        )}
 
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Father's Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherEmail ?? "N/A"}
-                    svgIcon={<Mail className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Mobile Number</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherMobile ?? "N/A"}
-                    svgIcon={<Phone className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nationality</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherNationality ?? "N/A"}
-                    svgIcon={<Globe className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* MOTHER SECTION */}
+        {familyInformation.motherEmail && (
+          <section className="space-y-6">
+            <SectionHeader title="Mother's Details" icon={<Heart className="size-5" />} color="text-rose-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+              {renderDataField("First Name", familyInformation.motherFirstName, <User />)}
+              {renderDataField("Middle Name", familyInformation.motherMiddleName, <User />)}
+              {renderDataField("Last Name", familyInformation.motherLastName, <User />)}
+              {renderDataField("Preferred Name", familyInformation.motherPreferredName, <Smile />)}
+              {renderDataField(
+                "Birthday",
+                familyInformation.motherBirthDay ? formatDate(familyInformation.motherBirthDay, "dd MMM yyyy") : null,
+                <Cake />
+              )}
+              {renderDataField("Religion", familyInformation.motherReligion, <Landmark />)}
+              {renderDataField("Email Address", familyInformation.motherEmail, <Mail />)}
+              {renderDataField("Mobile No.", familyInformation.motherMobile, <Phone />)}
+              {renderDataField("Nationality", familyInformation.motherNationality, <Globe />)}
+              {renderDataField(
+                "Identity No.",
+                familyInformation.motherNric
+                  ? familyInformation.motherNric.slice(0, 3) + "****" + familyInformation.motherNric.slice(-2)
+                  : null,
+                <BadgeInfo />
+              )}
+              {renderDataField("Employer", familyInformation.motherCompanyName, <Briefcase />)}
+              {renderDataField("Occupation", familyInformation.motherPosition, <Briefcase />)}
+            </div>
+          </section>
+        )}
 
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Father's Work Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>NRIC/FIN</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={maskedFatherNric ?? "N/A"}
-                    svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Company</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherCompanyName ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Position</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={fatherPosition ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+        {/* GUARDIAN SECTION (Conditional) */}
+        {familyInformation.guardianEmail && (
+          <section className="space-y-6">
+            <SectionHeader title="Guardian's Details" icon={<Users className="size-5" />} color="text-indigo-600" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+              {renderDataField("First Name", familyInformation.guardianFirstName, <User />)}
+              {renderDataField("Last Name", familyInformation.guardianLastName, <User />)}
+              {renderDataField("Email", familyInformation.guardianEmail, <Mail />)}
+              {renderDataField("Mobile", familyInformation.guardianMobile, <Phone />)}
+              {renderDataField("Employer", familyInformation.guardianCompanyName, <Briefcase />)}
+              {renderDataField("Position", familyInformation.guardianPosition, <Briefcase />)}
+            </div>
+          </section>
+        )}
 
-      {motherEmail && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Mother’s Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherFirstName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Middle Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherMiddleName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherLastName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Preferred Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherPreferredName ?? "N/A"}
-                    svgIcon={<Smile className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date of Birth</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherBirthDay ? formatDate(motherBirthDay, "dd/MM/yyyy") : "N/A"}
-                    svgIcon={<Cake className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Religion</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherReligion ?? "N/A"}
-                    svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Mother’s Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherEmail ?? "N/A"}
-                    svgIcon={<Mail className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Mobile Number</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherMobile ?? "N/A"}
-                    svgIcon={<Phone className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nationality</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherNationality ?? "N/A"}
-                    svgIcon={<Globe className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Mother’s Work Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>NRIC/FIN</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={maskedMotherNric ?? "N/A"}
-                    svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Company</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherCompanyName ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Position</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={motherPosition ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {guardianEmail && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Guardian's Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianFirstName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Middle Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianMiddleName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianLastName ?? "N/A"}
-                    svgIcon={<User className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Preferred Name</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianPreferredName ?? "N/A"}
-                    svgIcon={<Smile className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date of Birth</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianBirthDay ? formatDate(guardianBirthDay, "dd/MM/yyyy") : "N/A"}
-                    svgIcon={<Cake className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Religion</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianReligion ?? "N/A"}
-                    svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Guardian's Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianEmail ?? "N/A"}
-                    svgIcon={<Mail className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Mobile Number</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianMobile ?? "N/A"}
-                    svgIcon={<Phone className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nationality</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianNationality ?? "N/A"}
-                    svgIcon={<Globe className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Guardian's Work Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>NRIC/FIN</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={maskedGuardianNric ?? "N/A"}
-                    svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Company</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianCompanyName ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Position</Label>
-                  <InputWithIcon
-                    readOnly
-                    value={guardianPosition ?? "N/A"}
-                    svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {siblings != null && siblings.length > 0 && (
-        <>
-          <Separator />
-          <Card className="p-0 border-none shadow-none">
-            <CardHeader className="p-0">
-              <CardTitle className="font-bold text-lg">Sibling Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-12 p-0">
+        {/* SIBLINGS SECTION */}
+        {siblings && siblings.length > 0 && (
+          <section className="space-y-6">
+            <SectionHeader title="Sibling Records" icon={<Users className="size-5" />} color="text-slate-700" />
+            <div className="space-y-4">
               {siblings.map((sibling, index) => (
-                <div key={index} className="space-y-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Full Name</Label>
-                      <InputWithIcon
-                        value={(sibling.siblingFullName as string) ?? "N/A"}
-                        svgIcon={<User className="text-muted-foreground size-4" />}
-                      />
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                  <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {renderDataField("Full Name", sibling.siblingFullName as string, <User />)}
+                    {renderDataField(
+                      "Date of Birth",
+                      sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "dd/MM/yyyy") : null,
+                      <Cake />
+                    )}
+                    {renderDataField("Religion", sibling.siblingReligion as string, <Landmark />)}
+
+                    <div className="lg:col-span-2">
+                      {renderDataField("School / Company Name", sibling.siblingSchoolCompany as string, <School />)}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Birthday</Label>
-                      <InputWithIcon
-                        value={
-                          sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "dd/MM/yyyy") : "N/A"
-                        }
-                        svgIcon={<Cake className="text-muted-foreground size-4" />}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Religion</Label>
-                      <InputWithIcon
-                        value={(sibling.siblingReligion as string) ?? "N/A"}
-                        svgIcon={<Landmark className="text-muted-foreground size-4" />}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>School Level / Company Position</Label>
-                      <InputWithIcon
-                        value={(sibling.siblingEducationOccupation as string) ?? "N/A"}
-                        svgIcon={<Briefcase className="text-muted-foreground size-4" />}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>School / Company Name</Label>
-                      <InputWithIcon
-                        value={(sibling.siblingSchoolCompany as string) ?? "N/A"}
-                        svgIcon={<School className="text-muted-foreground size-4" />}
-                      />
-                    </div>
+                    {renderDataField(
+                      "Education/Occupation",
+                      sibling.siblingEducationOccupation as string,
+                      <Briefcase />
+                    )}
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-        </>
-      )}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
 
+function SectionHeader({ title, icon, color }: { title: string; icon: React.ReactNode; color: string }) {
+  return (
+    <div className="flex items-center gap-3 pb-2">
+      <div className={cn("p-2 bg-indigo-50 rounded-lg", color)}>{icon}</div>
+      <h2 className="font-bold text-lg text-slate-800 tracking-tight">{title}</h2>
+    </div>
+  );
+}
 export default FamilyInformation;

@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Student } from "@/types";
 import { differenceInYears, formatDate } from "date-fns";
 import {
@@ -20,7 +20,7 @@ import {
   Users,
   VenetianMask,
 } from "lucide-react";
-import InputWithIcon from "./input-with-icon";
+import React from "react";
 
 function StudentInformation({ label, studentInformation }: { label: string; studentInformation: Student }) {
   const {
@@ -45,195 +45,97 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
   } = studentInformation;
 
   const age = differenceInYears(new Date(), new Date(birthDay));
-  const maskedNric = nric.slice(0, 3) + "****" + nric.slice(7);
+  const maskedNric = nric ? nric.slice(0, 3) + "****" + nric.slice(-2) : "N/A";
 
   return (
-    <div className="space-y-8 py-6 xl:py-0">
-      <div className="space-y-2">
-        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="space-y-1">
+        <h1 className="font-black text-2xl md:text-4xl text-slate-900 tracking-tight">{label}</h1>
+        <p className="text-sm font-medium text-slate-500">
           Review the student's personal and household details. All fields are read-only.
         </p>
       </div>
 
-      <Separator />
-
-      <Card className="p-0 border-none shadow-none">
-        <CardHeader className="p-0">
-          <CardTitle className="font-bold text-lg">Personal Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>First Name</Label>
-              <InputWithIcon readOnly value={firstName} svgIcon={<User className="text-muted-foreground size-4" />} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Middle Name</Label>
-              <InputWithIcon
-                readOnly
-                value={middleName || "N/A"}
-                svgIcon={<User className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Last Name</Label>
-              <InputWithIcon readOnly value={lastName} svgIcon={<User className="text-muted-foreground size-4" />} />
-            </div>
+      <div className="grid grid-cols-1 gap-12">
+        {/* Section: Personal Identity */}
+        <section className="space-y-4">
+          <SectionHeader title="Personal Identity" icon={<User className="size-5 text-indigo-500" />} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+            <DataField label="First Name" value={firstName} icon={<User />} />
+            <DataField label="Middle Name" value={middleName || "—"} icon={<User />} />
+            <DataField label="Last Name" value={lastName} icon={<User />} />
+            <DataField label="Preferred Name" value={preferredName} icon={<Smile />} />
+            <DataField label="Date of Birth" value={formatDate(new Date(birthDay), "dd MMMM yyyy")} icon={<Cake />} />
+            <DataField label="Age" value={`${age} Years Old`} icon={<CalendarDays />} />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Preferred Name</Label>
-              <InputWithIcon
-                readOnly
-                value={preferredName}
-                svgIcon={<Smile className="text-muted-foreground size-4" />}
-              />
+        </section>
+
+        {/* Section: Contact & Household */}
+        <section className="space-y-4">
+          <SectionHeader title="Contact & Household" icon={<Phone className="size-5 text-indigo-500" />} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+            <DataField label="Primary Contact" value={contactPerson} icon={<Phone />} />
+            <DataField label="Emergency Number" value={contactPersonNumber} icon={<PhoneCall />} />
+            <DataField label="Home Phone" value={homePhone || "Not Provided"} icon={<Phone />} />
+            <div className="lg:col-span-2">
+              <DataField label="Residential Address" value={homeAddress} icon={<LucideMapPinHouse />} />
             </div>
-            <div className="space-y-2">
-              <Label>Date of Birth</Label>
-              <InputWithIcon
-                value={formatDate(new Date(birthDay), "dd/MM/yyyy")}
-                svgIcon={<Cake className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Age</Label>
-              <InputWithIcon
-                value={`${age} years old`}
-                svgIcon={<CalendarDays className="text-muted-foreground size-4" />}
-              />
-            </div>
+            <DataField label="Postal Code" value={postalCode} icon={<MapPin />} />
+            <DataField label="Living Arrangement" value={`Lives with ${livingWithWhom}`} icon={<Users />} />
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      <Separator />
-
-      <Card className="p-0 border-none shadow-none">
-        <CardHeader className="p-0">
-          <CardTitle className="font-bold text-lg">Contact Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Contact Person</Label>
-              <InputWithIcon
-                readOnly
-                value={contactPerson}
-                svgIcon={<Phone className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Contact Number</Label>
-              <InputWithIcon
-                value={contactPersonNumber}
-                svgIcon={<PhoneCall className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Home Phone</Label>
-              <InputWithIcon readOnly value={homePhone} svgIcon={<Phone className="text-muted-foreground size-4" />} />
-            </div>
+        {/* Section: Legal & Diversity */}
+        <section className="space-y-4">
+          <SectionHeader title="Legal & Diversity" icon={<BadgeInfo className="size-5 text-indigo-500" />} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+            <DataField label="Gender" value={gender} icon={<VenetianMask />} />
+            <DataField label="NRIC / Identity No." value={maskedNric} icon={<BadgeInfo />} />
+            <DataField label="Marital Status (Parents)" value={parentMaritalStatus} icon={<HeartHandshake />} />
+            <DataField label="Nationality" value={nationality} icon={<Globe />} />
+            <DataField label="Native Language" value={primaryLanguage} icon={<Languages />} />
+            <DataField
+              label="Religion"
+              value={religion !== "Other" ? religion : religionOther!}
+              icon={<BookOpenCheck />}
+            />
           </div>
-        </CardContent>
-      </Card>
+        </section>
+      </div>
+    </div>
+  );
+}
 
-      <Separator />
+/* Helper Component for Section Headers */
+function SectionHeader({ title, icon }: { title: string; icon: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 pb-2">
+      <div className="p-2 bg-indigo-50 rounded-lg">{icon}</div>
+      <h2 className="font-bold text-lg text-slate-800 tracking-tight">{title}</h2>
+    </div>
+  );
+}
 
-      <Card className="p-0 border-none shadow-none">
-        <CardHeader className="p-0">
-          <CardTitle className="font-bold text-lg">Home & Address</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Home Address</Label>
-              <InputWithIcon
-                value={homeAddress}
-                svgIcon={<LucideMapPinHouse className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Postal Code</Label>
-              <InputWithIcon
-                readOnly
-                value={postalCode}
-                svgIcon={<MapPin className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Living With</Label>
-              <InputWithIcon
-                readOnly
-                value={livingWithWhom}
-                svgIcon={<Users className="text-muted-foreground size-4" />}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+/* Helper Component for Data Fields */
+function DataField({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon: React.ReactElement<{ className: string }>;
+}) {
+  return (
+    <div className="space-y-1.5 group">
+      <Label className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">{label}</Label>
+      <div className="flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 bg-white border-slate-200 group-hover:border-slate-300 shadow-sm">
+        {React.cloneElement(icon, {
+          className: "size-4 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors",
+        })}
 
-      <Separator />
-
-      <Card className="p-0 border-none shadow-none">
-        <CardHeader className="p-0">
-          <CardTitle className="font-bold text-lg">Additional Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Gender</Label>
-              <InputWithIcon
-                readOnly
-                value={gender}
-                svgIcon={<VenetianMask className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>NRIC/FIN</Label>
-              <InputWithIcon
-                readOnly
-                value={maskedNric}
-                svgIcon={<BadgeInfo className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Parent Marital Status</Label>
-              <InputWithIcon
-                value={parentMaritalStatus}
-                svgIcon={<HeartHandshake className="text-muted-foreground size-4" />}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Nationality</Label>
-              <InputWithIcon
-                readOnly
-                value={nationality}
-                svgIcon={<Globe className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Primary Language</Label>
-              <InputWithIcon
-                readOnly
-                value={primaryLanguage}
-                svgIcon={<Languages className="text-muted-foreground size-4" />}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Religion</Label>
-              <InputWithIcon
-                value={religion != "Other" ? religion : religionOther!}
-                svgIcon={<BookOpenCheck className="text-muted-foreground size-4" />}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value}</span>
+      </div>
     </div>
   );
 }

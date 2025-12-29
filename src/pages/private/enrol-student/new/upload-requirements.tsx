@@ -18,11 +18,13 @@ function UploadRequirements() {
   return (
     <>
       <PageMetaData title={title} description={description} />
-      <div className="w-full flex-1">
+      <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="space-y-8 max-w-7xl mx-auto">
           <Card className="w-full mx-auto shadow-none border-none">
             <CardHeader>
-              <CardTitle className="text-center text-2xl text-primary">Upload Student Documents</CardTitle>
+              <CardTitle className="text-2xl font-black tracking-tight text-primary text-center">
+                Upload Student Documents
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <StudentUpload />
@@ -31,7 +33,9 @@ function UploadRequirements() {
           <Separator />
           <Card className="w-full mx-auto border-none shadow-none">
             <CardHeader>
-              <CardTitle className="text-center text-2xl text-primary">Parent/Guardian Documents</CardTitle>
+              <CardTitle className="text-2xl font-black tracking-tight text-primary text-center">
+                Parent/Guardian Documents
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <ParentGuardianUpload />

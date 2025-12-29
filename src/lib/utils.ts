@@ -3,12 +3,23 @@ import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
 import { ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
 import { clsx, type ClassValue } from "clsx";
-import { differenceInYears, parseISO } from "date-fns";
+import { differenceInYears, getHours, parseISO } from "date-fns";
 import { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import { supabaseAdmin } from "./admin-client";
 import { supabase } from "./client";
+
+export type DayState = "morning" | "noon" | "afternoon" | "evening";
+
+export function getCurrentDayState(date = new Date()): DayState {
+  const hour = getHours(date);
+
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 14) return "afternoon";
+  if (hour >= 14 && hour < 18) return "afternoon";
+  return "evening";
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -27,10 +38,12 @@ export function documentErrors(
   errors: FieldErrors<ParentGuardianUploadRequirementsSchema>
 ) {
   const includesPassportError = Object.keys(errors).find(
-    (key) => key === `${role}PassportExpiry` || key === `${role}PassportNumber`
+    (key) => key === `${role}Passport` || key === `${role}PassportExpiry` || key === `${role}PassportNumber`
   );
 
-  const includesPassError = Object.keys(errors).find((key) => key === `${role}PassExpiry` || key === `${role}PassType`);
+  const includesPassError = Object.keys(errors).find(
+    (key) => key === `${role}Pass` || key === `${role}PassExpiry` || key === `${role}PassType`
+  );
 
   return { includesPassportError: Boolean(includesPassportError), includesPassError: Boolean(includesPassError) };
 }
@@ -149,6 +162,7 @@ export function extractStudentInfo(studentInformation: Student[]) {
   const studentInfo = {
     id: info.id,
     created_at: info.created_at,
+    enroleeNumber: info.enroleeNumber,
     studentNumber: info.studentNumber,
     nationality: info.nationality,
     firstName: info.firstName,
@@ -376,7 +390,12 @@ export async function getStudentsList(parentEmail: string) {
         mothersName: info.motherFullName ?? "--",
         fathersName: info.fatherFullName ?? "--",
         studentNumber: info.studentNumber,
-        enrollmentStatus: academicYear === "2026" ? "Pre-Enroled for 2026" : "Registered",
+        enrollmentStatus:
+          academicYear === "2026" && (info.studentNumber as string).startsWith("V")
+            ? "Pre-Enrolled for VizSchool"
+            : academicYear === "2026" && !(info.studentNumber as string).startsWith("V")
+            ? "Pre-Enrolled for 2026"
+            : "Registered",
       }));
 
     const allStudents = [
@@ -401,8 +420,8 @@ export async function getStudentsList(parentEmail: string) {
 export async function getCurrentAYEnrolledStudents(parentEmail: string) {
   try {
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber")
+      .from(`ay${new Date().getFullYear()}_enrolment_applications`)
+      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber, nric, birthDay")
       .eq("applicationStatus", "Registered")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
       .order("enroleeNumber", { ascending: false });
@@ -414,12 +433,19 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
     const seenCurrentEnrolled = new Set();
 
     const filteredCurrentEnrolled = currentEnrolled.filter((student) => {
-      if (seenCurrentEnrolled.has(student.studentNumber)) return false;
-      seenCurrentEnrolled.add(student.studentNumber);
+      const key = JSON.stringify({
+        studentNumber: student.studentNumber,
+        nric: student.nric,
+        birthDay: student.birthDay,
+        enroleeFullName: student.enroleeFullName,
+      });
+
+      if (seenCurrentEnrolled.has(key)) return false;
+      seenCurrentEnrolled.add(key);
       return true;
     });
 
-    return { currentEnrolledStudentCount: seenCurrentEnrolled.size, currentEnrolled: filteredCurrentEnrolled };
+    return { currentEnrolled: filteredCurrentEnrolled };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -494,7 +520,7 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
 
     const mapStudents = (data: typeof ay2025Enrollment, academicYear: string) =>
       data.map((info) => ({
-        remarks: info.applicationRemarks ?? "N/A",
+        remarks: info.applicationRemarks ?? "No remarks provided",
         studentNumber: info.studentNumber,
         studentName: info.enroleeFullName,
         academicYear,

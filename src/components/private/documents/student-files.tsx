@@ -1,6 +1,5 @@
 import { studentReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
-import fileSvg from "@/assets/file.svg";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -14,23 +13,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { studentPassTypes } from "@/data";
 import useSession from "@/hooks/use-session";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { cn } from "@/lib/utils";
 import { StudentDocument, StudentDocumentUpdatePayload, StudentReuploadProps } from "@/types";
-import { Label } from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CalendarIcon, Download, EllipsisVertical, Eye, EyeClosed, RotateCcw, Save } from "lucide-react";
+import { CalendarIcon, Download, Eye, EyeClosed, FileText, RotateCcw, Save } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -42,536 +38,138 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
   const [searchParams] = useSearchParams();
   const { session } = useSession();
   const academicYear = searchParams.get("academicYear");
-  const passportDocument = documents.documentsThatExpire[0];
-  const passDocument = documents.documentsThatExpire[1];
 
-  const idPicture = documents.permanentDocuments[0];
-  const medicalCertDocument = documents.permanentDocuments[1];
-  const birthCertDocument = documents.permanentDocuments[2];
-  const eduCertDocument = documents.permanentDocuments[3];
+  // Grouping documents for cleaner rendering
+  const expiringDocs = [
+    { title: "Student Pass", type: "pass", data: documents.documentsThatExpire[1] },
+    { title: "Passport", type: "passport", data: documents.documentsThatExpire[0] },
+  ];
+
+  const permanentDocs = [
+    { title: "ID Picture", type: "idPicture", data: documents.permanentDocuments[0] },
+    { title: "Medical Exam", type: "medical", data: documents.permanentDocuments[1] },
+    { title: "Birth Certificate", type: "birthCert", data: documents.permanentDocuments[2] },
+    { title: "Transcript of Records", type: "educCert", data: documents.permanentDocuments[3] },
+  ];
 
   return (
-    <div className="space-y-8 py-6 xl:py-0">
-      <div className="w-full space-y-2">
-        <h1 className="font-bold text-2xl md:text-3xl">{label}</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      {/* Simple Header */}
+      <div className="space-y-1">
+        <h1 className="font-black text-2xl md:text-4xl text-slate-900 tracking-tight">{label}</h1>
+        <p className="text-sm font-medium text-slate-500">
           This section includes details about the student's documents for this current school year.
         </p>
       </div>
-      <h2 className="font-bold text-lg">Documents That Expire</h2>
 
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
-        {Object.values(passDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Pass</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={passDocument.passStatus ? (passDocument.passStatus as StatusProps) : "Missing"}
-              />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
-                    <EllipsisVertical />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-72">
-                  <div className="grid gap-4">
-                    <div className="space-y-1">
-                      <h4 className="font-medium text-sm">Student Pass</h4>
-                      <p className="text-xs text-muted-foreground">See the details of the Student's Pass.</p>
-                    </div>
-                    <div className="grid gap-2">
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Pass Type</Label>
-                        <Input
-                          id="passType"
-                          defaultValue={passDocument.passType ? passDocument.passType?.replace("_", " ") : "N/A"}
-                          className="col-span-2 h-8 capitalize"
-                          tabIndex={-1}
-                          readOnly
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Expires at</Label>
-                        {passDocument.passExpiry ? (
-                          <Input
-                            id="passExpirationDate"
-                            defaultValue={formatDate(new Date(passDocument.passExpiry), "dd/MM/yyyy")}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        ) : (
-                          <Input
-                            id="passExpirationDate"
-                            defaultValue={"N/A"}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Pass</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              {passDocument.pass ? (
-                <Link
-                  to={passDocument.pass}
-                  target="_blank"
-                  className={buttonVariants({
-                    className: "gap-2 text-xs  w-full",
-                    variant: "secondary",
-                  })}>
-                  View document <Eye />
-                </Link>
-              ) : (
-                <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                  View document <EyeClosed />
-                </Button>
-              )}
-
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={passDocument?.passStatus ?? "Missing"}
-                academicYear={academicYear!}
-                documentType="pass"
-                enroleeNumber={params.id!}
-                label="Student's Pass"
-                payload={{
-                  pass: passDocument.pass!,
-                  passExpiry: passDocument.passExpiry! as Date,
-                  passType: passDocument.passType!,
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {Object.values(passportDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Passport</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={passportDocument.passportStatus ? (passportDocument.passportStatus as StatusProps) : "Missing"}
-              />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button className="absolute right-0 -top-2" size={"icon"} variant={"outline"}>
-                    <EllipsisVertical />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-72">
-                  <div className="grid gap-4">
-                    <div className="space-y-1">
-                      <h4 className="font-medium text-sm">Student Passport</h4>
-                      <p className="text-xs text-muted-foreground">See the details of the Student's Passport.</p>
-                    </div>
-                    <div className="grid gap-2">
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Passport #</Label>
-                        <div className="flex items-center col-span-2 ">
-                          <PassportInput defaultValue={passportDocument.passportNumber ?? "N/A"} readOnly />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 items-center gap-4">
-                        <Label className="text-xs">Expires at</Label>
-                        {passportDocument.passportExpiry ? (
-                          <Input
-                            id="passportExpiry"
-                            defaultValue={formatDate(new Date(passportDocument.passportExpiry), "dd/MM/yyyy")}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        ) : (
-                          <Input
-                            id="passportExpiry"
-                            defaultValue={"N/A"}
-                            className="col-span-2 h-8"
-                            tabIndex={-1}
-                            readOnly
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Passport</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              {passportDocument.passport ? (
-                <Link
-                  to={passportDocument.passport!}
-                  target="_blank"
-                  className={buttonVariants({
-                    className: "gap-2 text-xs  w-full",
-                    variant: "secondary",
-                  })}>
-                  View document <Eye />
-                </Link>
-              ) : (
-                <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                  View document <EyeClosed />
-                </Button>
-              )}
-
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={passportDocument?.passportStatus ?? "Missing"}
-                academicYear={academicYear!}
-                documentType="passport"
-                enroleeNumber={params.id!}
-                label="Student's Passport"
-                payload={{
-                  passport: passportDocument.passport!,
-                  passportExpiry: passportDocument.passportExpiry! as Date,
-                  passportNumber: passportDocument.passportNumber!,
-                }}
-              />
-            </div>
-          </div>
-        )}
+      {/* Section: Expiring */}
+      <div className="space-y-4">
+        <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 px-1">Documents that expire</h2>
+        <div className="grid gap-3">
+          {expiringDocs.map((doc) => (
+            <DocumentRow
+              key={doc.type}
+              title={doc.title}
+              doc={doc.data}
+              type={doc.type}
+              id={params.id!}
+              session={session}
+              year={academicYear!}
+            />
+          ))}
+        </div>
       </div>
-      <Separator />
-      <h2 className="font-bold text-lg">Permanent Documents</h2>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-4">
-        {Object.values(idPicture).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
 
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
+      {/* Section: Permanent */}
+      <div className="space-y-4">
+        <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 px-1">Permanent documents</h2>
+        <div className="grid gap-3">
+          {permanentDocs.map((doc) => (
+            <DocumentRow
+              key={doc.type}
+              title={doc.title}
+              doc={doc.data}
+              type={doc.type}
+              id={params.id!}
+              session={session}
+              year={academicYear!}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            <div className="flex flex-col gap-2 w-full">
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
+function DocumentRow({ title, doc, type, id, session, year }: any) {
+  const isMissing = !doc || Object.values(doc).every((v) => v == null) || doc?.[`${type}Status`] === "To follow";
+  const status = doc?.[`${type}Status`] || "Missing";
 
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
-            </div>
+  return (
+    <div className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl gap-4 transition-all hover:border-slate-300">
+      {/* Header Area: Icon & Text */}
+      <div className="flex items-center gap-4 min-w-0">
+        {/* Icon Plate */}
+        <div
+          className={cn(
+            "size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+            isMissing ? "bg-slate-100 text-slate-400" : "bg-primary text-primary-foreground shadow-sm"
+          )}>
+          {isMissing ? <EyeClosed size={20} /> : <FileText size={20} />}
+        </div>
+
+        {/* Text Details */}
+        <div className="flex flex-col min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+            <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{title}</h3>
+            <StatusBadge status={status} className="text-[10px] font-bold uppercase" />
           </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={idPicture.idPictureStatus ? (idPicture.idPictureStatus as StatusProps) : "Missing"}
-              />
 
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">ID Picture</p>
+          {!isMissing && doc?.[`${type}Expiry`] ? (
+            <p className="text-[11px] text-slate-500 font-bold tracking-tight">
+              Expires: {format(new Date(doc[`${type}Expiry`]), "dd MMM yyyy")}
+            </p>
+          ) : (
+            <p
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-tighter",
+                isMissing ? "text-amber-600" : "text-slate-500"
+              )}>
+              {isMissing ? "Action Required" : "Record saved"}
+            </p>
+          )}
+        </div>
+      </div>
 
-            <div className="flex flex-col gap-2 w-full">
-              {idPicture.idPicture ? (
-                <Link
-                  to={idPicture.idPicture!}
-                  target="_blank"
-                  className={buttonVariants({
-                    className: "gap-2 text-xs  w-full",
-                    variant: "secondary",
-                  })}>
-                  View document <Eye />
-                </Link>
-              ) : (
-                <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                  View document <EyeClosed />
-                </Button>
-              )}
-
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={idPicture.idPictureStatus!}
-                academicYear={academicYear!}
-                documentType="idPicture"
-                enroleeNumber={params.id!}
-                label="Student's ID Picture"
-                payload={{
-                  idPicture: idPicture.idPicture!,
-                }}
-              />
-            </div>
-          </div>
+      {/* Action Area: Full-width on mobile, auto-width on desktop */}
+      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
+        {!isMissing && doc?.[type] && (
+          <Link
+            to={doc[type]}
+            target="_blank"
+            className={buttonVariants({
+              variant: "outline",
+              className:
+                "flex-1 sm:flex-none h-9 gap-2 text-[11px] !font-bold border-slate-200 hover:bg-slate-50 rounded-2xl",
+            })}>
+            <Eye size={14} />
+            <span>View</span>
+          </Link>
         )}
 
-        {Object.values(medicalCertDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Medical Exam</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={"Missing"}
-                academicYear={academicYear!}
-                documentType="medical"
-                enroleeNumber={params.id!}
-                label="Student's Medical"
-                payload={{
-                  medical: "",
-                }}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={medicalCertDocument.medicalStatus as StatusProps} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Medical Exam</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Link
-                to={medicalCertDocument.medical!}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 text-xs  w-full",
-                  variant: "secondary",
-                })}>
-                View document <Eye />
-              </Link>
-
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={medicalCertDocument.medicalStatus!}
-                academicYear={academicYear!}
-                documentType="medical"
-                enroleeNumber={params.id!}
-                label="Student's Medical"
-                payload={{
-                  medical: medicalCertDocument.medical!,
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {Object.values(birthCertDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Birth Certificate</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-
-              <Button disabled className="gap-2 text-xs w-full">
-                Reupload <RotateCcw />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={
-                  birthCertDocument.birthCertStatus ? (birthCertDocument.birthCertStatus as StatusProps) : "Missing"
-                }
-              />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Birth Certificate</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              {birthCertDocument.birthCert ? (
-                <Link
-                  to={birthCertDocument.birthCert!}
-                  target="_blank"
-                  className={buttonVariants({
-                    className: "gap-2 text-xs  w-full",
-                    variant: "secondary",
-                  })}>
-                  View document <Eye />
-                </Link>
-              ) : (
-                <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                  View document <EyeClosed />
-                </Button>
-              )}
-
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={birthCertDocument.birthCertStatus!}
-                academicYear={academicYear!}
-                documentType="birthCert"
-                enroleeNumber={params.id!}
-                label="Student's Birth Certificate"
-                payload={{
-                  birthCert: birthCertDocument.birthCert!,
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {Object.values(eduCertDocument).every((v) => v == null) ? (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge className="absolute -top-2" status={"Missing"} />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Transcript of Records</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                View document <EyeClosed />
-              </Button>
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={"Missing"}
-                academicYear={academicYear!}
-                documentType="educCert"
-                enroleeNumber={params.id!}
-                label="Student's Transcript of Records"
-                payload={{
-                  educCert: "",
-                }}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex items-center justify-center flex-col gap-4 border shadow rounded-lg py-6 px-4">
-            <div className="w-full flex relative">
-              <StatusBadge
-                className="absolute -top-2"
-                status={eduCertDocument.educCertStatus ? (eduCertDocument.educCertStatus as StatusProps) : "Missing"}
-              />
-
-              <div className="pt-6 w-max mx-auto">
-                <img src={fileSvg} className="size-10" />
-              </div>
-            </div>
-            <p className="text-muted-foreground font-medium text-sm">Transcript of Records</p>
-
-            <div className="flex flex-col gap-2 w-full">
-              {eduCertDocument.educCert ? (
-                <Link
-                  to={eduCertDocument.educCert!}
-                  target="_blank"
-                  className={buttonVariants({
-                    className: "gap-2 text-xs  w-full",
-                    variant: "secondary",
-                  })}>
-                  View document <Eye />
-                </Link>
-              ) : (
-                <Button disabled variant={"secondary"} className="gap-2 text-xs  w-full">
-                  View document <EyeClosed />
-                </Button>
-              )}
-
-              <StudentFileUploaderDialog
-                parentEmail={session?.user.email as string}
-                role={session?.user.user_metadata.relationship}
-                status={eduCertDocument?.educCertStatus ?? "Missing"}
-                academicYear={academicYear!}
-                documentType="educCert"
-                enroleeNumber={params.id!}
-                label="Student's Transcript of Records"
-                payload={{
-                  educCert: eduCertDocument.educCert!,
-                }}
-              />
-            </div>
-          </div>
-        )}
+        {/* Uploader Dialog Trigger */}
+        <div className="flex-1 sm:flex-none">
+          <StudentFileUploaderDialog
+            parentEmail={session?.user.email}
+            role={session?.user.user_metadata.relationship}
+            status={status}
+            academicYear={year}
+            documentType={type}
+            enroleeNumber={id}
+            label={title}
+            payload={doc}
+          />
+        </div>
       </div>
     </div>
   );
@@ -595,6 +193,12 @@ function StudentFileUploaderDialog({
       setIsOpen(false);
       queryClient.invalidateQueries({
         queryKey: ["student-documents", enroleeNumber],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pending-tasks", parentEmail],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["section-cards", parentEmail],
       });
 
       await sendEmailNotification({
@@ -756,15 +360,17 @@ function StudentFileUploaderDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button disabled={status == "Valid" || status == "Uploaded" || isPending} className="gap-2 text-xs w-full">
+        <Button
+          disabled={status == "Valid" || status == "Uploaded" || isPending}
+          className="w-full gap-2 text-xs font-bold">
           Reupload <RotateCcw />
         </Button>
       </DialogTrigger>
       <DialogContent className="!max-w-3xl">
         <form onSubmit={submitReupload} className="grid grid-cols-1 items-center space-y-4">
           <DialogHeader className="text-start">
-            <DialogTitle>{label}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+            <DialogDescription className="font-semibold">
               Upload a clear and recent document in{" "}
               <strong>{documentType == "idPicture" ? "PNG, JPG, or JPEG" : "PDF"}</strong> format.
             </DialogDescription>
@@ -881,7 +487,9 @@ function StudentFileUploaderDialog({
             </div>
           )}
           <DialogFooter>
-            <Button className="w-full gap-2" type="submit">
+            <Button
+              className="w-full py-6 rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 text-base font-bold"
+              type="submit">
               {isPending ? (
                 <>
                   Saving <DotPulse size="30" speed="1.3" color="white" />
