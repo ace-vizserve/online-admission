@@ -28,7 +28,7 @@ const academicYears = [
     name: "Vizschool AY2026",
     label: "Vizschool AY2026",
     description: "Early registration for AY 2026 starts Jan 2026.",
-    details: ["School starts Jan 5 2026", "Enrolling now for upcoming term", "Secure your spot early"],
+    details: ["Enrolling now for upcoming term", "Secure your spot early"],
     buttonText: "Enrol in Vizschool AY 2026",
     isPopular: true,
     logo: VizSchoolLogo,
@@ -73,12 +73,6 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
             {year.isClosed ? (
               <Badge className="absolute font-black uppercase tracking-widest text-[10px] top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-400 text-white border-none px-4 py-1.5 shadow-md">
                 Applications Closed
-              </Badge>
-            ) : year.isPopular ? (
-              <Badge
-                variant={"secondary"}
-                className="absolute font-black uppercase tracking-widest text-[10px] top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-secondary text-white px-4 py-1.5 shadow-lg shadow-indigo-200">
-                Launching Soon!
               </Badge>
             ) : null}
 
