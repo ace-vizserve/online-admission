@@ -1,6 +1,5 @@
 import { deleteFile, uploadFileToBucket } from "@/actions/private";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +50,7 @@ import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router";
 
 import fileSvg from "@/assets/file.svg";
+import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Badge } from "@/components/ui/badge";
 import { PassportInput } from "@/components/ui/passport-input";
 import { Switch } from "@/components/ui/switch";
@@ -143,7 +143,7 @@ const StudentFileUploaderDialog = memo(function ({
 
       const updatedStudentReqs = {
         ...formState.uploadRequirements!.studentUploadRequirements,
-        [name]: undefined,
+        [name]: "",
         isValid: false,
       };
 
@@ -160,7 +160,7 @@ const StudentFileUploaderDialog = memo(function ({
         form.setValue("passExpiry", null as unknown as undefined);
       }
 
-      form.setValue(name, undefined);
+      form.setValue(name, "");
       onValueChange(null);
 
       setFormState({
@@ -179,6 +179,7 @@ const StudentFileUploaderDialog = memo(function ({
     } catch (error) {
       setIsChangingDocument(false);
     } finally {
+      form.setValue("isValid", false);
       form.trigger();
     }
   }
@@ -472,7 +473,7 @@ const StudentFileUploaderDialog = memo(function ({
               )}
 
             {name === "pass" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="passType"
@@ -520,13 +521,8 @@ const StudentFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -550,7 +546,10 @@ const StudentFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -563,7 +562,7 @@ const StudentFileUploaderDialog = memo(function ({
             )}
 
             {name === "passport" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="passportNumber"
@@ -605,13 +604,8 @@ const StudentFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -635,7 +629,10 @@ const StudentFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -1026,7 +1023,7 @@ function StudentFileUploaderDrawer({
                           const updatedStudentReqs = {
                             ...formState.uploadRequirements!.studentUploadRequirements,
                             isValid: false,
-                            [name]: "",
+                            [name]: undefined,
                             toFollowDocs: updatedDocs,
                           };
 
@@ -1045,7 +1042,7 @@ function StudentFileUploaderDrawer({
                             }
                           }
 
-                          form.setValue(name, "");
+                          form.setValue(name, undefined);
                           form.setValue("toFollowDocs", updatedDocs);
                           onValueChange(null);
 
@@ -1113,13 +1110,8 @@ function StudentFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 
@@ -1141,7 +1133,10 @@ function StudentFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>
@@ -1194,13 +1189,8 @@ function StudentFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 
@@ -1222,7 +1212,10 @@ function StudentFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>

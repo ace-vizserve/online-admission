@@ -32,7 +32,12 @@ function SubmitLearnerApplicationDialog() {
   const { formState, clearState } = useEnrolCurrentLearnerContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      return await submitVizSchoolEnrollment(formState as VizSchoolEnrolOldStudentFormState, academicYear, schoolFee);
+      return await submitVizSchoolEnrollment(
+        formState as VizSchoolEnrolOldStudentFormState,
+        academicYear,
+        schoolFee,
+        "VizSchool Current"
+      );
     },
     onSuccess() {
       window.location.href = "/application-submitted";

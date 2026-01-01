@@ -60,7 +60,9 @@ function CurrentEnrollmentInformation() {
   });
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
     queryKey: ["current-discounts", session?.user.email],
-    queryFn: getCurrentStudentDiscounts,
+    queryFn: async () => {
+      return await getCurrentStudentDiscounts(true);
+    },
     enabled: session != null && isSuccess,
   });
 

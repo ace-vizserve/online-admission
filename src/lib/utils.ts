@@ -417,6 +417,41 @@ export async function getStudentsList(parentEmail: string) {
   }
 }
 
+export async function getPreviousAYEnrolledStudents(parentEmail: string) {
+  try {
+    const { error: currentEnrolledError, data: currentEnrolled } = await supabase
+      .from(`ay${new Date().getFullYear() - 1}_enrolment_applications`)
+      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber, nric, birthDay")
+      .eq("applicationStatus", "Registered")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .order("enroleeNumber", { ascending: false });
+
+    if (currentEnrolledError) {
+      throw new Error(currentEnrolledError.message);
+    }
+
+    const seenPreviousEnrolled = new Set();
+
+    const filteredPreviousEnrolled = currentEnrolled.filter((student) => {
+      const key = JSON.stringify({
+        studentNumber: student.studentNumber,
+        nric: student.nric,
+        birthDay: student.birthDay,
+        enroleeFullName: student.enroleeFullName,
+      });
+
+      if (seenPreviousEnrolled.has(key)) return false;
+      seenPreviousEnrolled.add(key);
+      return true;
+    });
+
+    return { previousEnrolled: filteredPreviousEnrolled };
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
 export async function getCurrentAYEnrolledStudents(parentEmail: string) {
   try {
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase

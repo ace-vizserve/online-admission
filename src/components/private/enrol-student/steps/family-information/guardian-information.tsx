@@ -1,6 +1,6 @@
+import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
@@ -305,18 +305,7 @@ function GuardianInformation() {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          if (date) {
-                            field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
-                          } else {
-                            field.onChange(date);
-                          }
-                        }}
-                        captionLayout="dropdown"
-                      />
+                      <AdvancedCalendarSelection setDate={field.onChange} date={field.value} disablePastDates={false} />
                     </PopoverContent>
                   </Popover>
                   <FormDescription>Enter the student's guardian birth date.</FormDescription>

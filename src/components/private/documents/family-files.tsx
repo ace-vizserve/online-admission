@@ -1,9 +1,9 @@
 import { parentGuardianReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
+import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -558,23 +558,7 @@ function ParentGuardianFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={motherPassExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setMotherPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
-                      } else {
-                        setMotherPassExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
-                  />
+                  <AdvancedCalendarSelection date={motherPassExpiry} setDate={setMotherPassExpiry} disablePastDates />
                 </PopoverContent>
               </Popover>
             </div>
@@ -602,24 +586,10 @@ function ParentGuardianFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={motherPassportExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setMotherPassportExpiry(
-                          new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-                        );
-                      } else {
-                        setMotherPassportExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
+                  <AdvancedCalendarSelection
+                    date={motherPassportExpiry}
+                    setDate={setMotherPassportExpiry}
+                    disablePastDates
                   />
                 </PopoverContent>
               </Popover>
@@ -651,23 +621,7 @@ function ParentGuardianFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={fatherPassExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setFatherPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
-                      } else {
-                        setFatherPassExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
-                  />
+                  <AdvancedCalendarSelection date={fatherPassExpiry} setDate={setFatherPassExpiry} disablePastDates />
                 </PopoverContent>
               </Popover>
             </div>
@@ -695,24 +649,10 @@ function ParentGuardianFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={fatherPassportExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setFatherPassportExpiry(
-                          new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-                        );
-                      } else {
-                        setFatherPassportExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
+                  <AdvancedCalendarSelection
+                    date={fatherPassportExpiry}
+                    setDate={setFatherPassportExpiry}
+                    disablePastDates
                   />
                 </PopoverContent>
               </Popover>
@@ -744,22 +684,10 @@ function ParentGuardianFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={guardianPassExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setGuardianPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
-                      } else {
-                        setGuardianPassExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
+                  <AdvancedCalendarSelection
+                    date={guardianPassExpiry}
+                    setDate={setGuardianPassExpiry}
+                    disablePastDates
                   />
                 </PopoverContent>
               </Popover>
@@ -788,24 +716,10 @@ function ParentGuardianFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={guardianPassportExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setGuardianPassportExpiry(
-                          new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-                        );
-                      } else {
-                        setGuardianPassportExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
+                  <AdvancedCalendarSelection
+                    date={guardianPassportExpiry}
+                    setDate={setGuardianPassportExpiry}
+                    disablePastDates
                   />
                 </PopoverContent>
               </Popover>

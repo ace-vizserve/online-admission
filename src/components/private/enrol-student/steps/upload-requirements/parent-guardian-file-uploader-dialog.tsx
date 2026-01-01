@@ -1,8 +1,8 @@
 import { deleteFile, uploadFileToBucket } from "@/actions/private";
 import fileSvg from "@/assets/file.svg";
+import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -512,7 +512,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               )}
 
             {name === "motherPass" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="motherPassType"
@@ -562,13 +562,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -590,7 +585,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -603,7 +601,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             )}
 
             {name === "motherPassport" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="motherPassportNumber"
@@ -645,13 +643,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -673,7 +666,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -686,7 +682,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             )}
 
             {name === "fatherPass" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="fatherPassType"
@@ -736,13 +732,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -764,7 +755,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -777,7 +771,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             )}
 
             {name === "fatherPassport" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="fatherPassportNumber"
@@ -819,13 +813,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -847,7 +836,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -860,7 +852,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             )}
 
             {name === "guardianPass" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="guardianPassType"
@@ -910,13 +902,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -938,7 +925,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -951,7 +941,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
             )}
 
             {name === "guardianPassport" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
                 <FormField
                   control={form.control}
                   name="guardianPassportNumber"
@@ -993,13 +983,8 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            captionLayout="dropdown"
-                            disabled={[{ before: new Date() }]}
-                            mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
-                            onSelect={(date) => {
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
                                   Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -1021,7 +1006,10 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               } else {
                                 field.onChange(date);
                               }
+                              form.trigger();
                             }}
+                            date={field.value}
+                            disablePastDates
                           />
                         </PopoverContent>
                       </Popover>
@@ -1522,13 +1510,8 @@ function ParentGuardianFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                               field.onChange(fixedDate);
@@ -1548,7 +1531,10 @@ function ParentGuardianFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>
@@ -1599,13 +1585,8 @@ function ParentGuardianFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                               field.onChange(fixedDate);
@@ -1625,7 +1606,10 @@ function ParentGuardianFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>
@@ -1687,13 +1671,8 @@ function ParentGuardianFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                               field.onChange(fixedDate);
@@ -1713,7 +1692,10 @@ function ParentGuardianFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>
@@ -1765,13 +1747,8 @@ function ParentGuardianFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                               field.onChange(fixedDate);
@@ -1791,7 +1768,10 @@ function ParentGuardianFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>
@@ -1853,13 +1833,8 @@ function ParentGuardianFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                               field.onChange(fixedDate);
@@ -1879,7 +1854,10 @@ function ParentGuardianFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>
@@ -1931,13 +1909,8 @@ function ParentGuardianFileUploaderDrawer({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          captionLayout="dropdown"
-                          disabled={[{ before: new Date() }]}
-                          mode="single"
-                          defaultMonth={field.value}
-                          selected={field.value}
-                          onSelect={(date) => {
+                        <AdvancedCalendarSelection
+                          setDate={(date) => {
                             if (date) {
                               const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
                               field.onChange(fixedDate);
@@ -1957,7 +1930,10 @@ function ParentGuardianFileUploaderDrawer({
                             } else {
                               field.onChange(date);
                             }
+                            form.trigger();
                           }}
+                          date={field.value}
+                          disablePastDates
                         />
                       </PopoverContent>
                     </Popover>

@@ -6,6 +6,7 @@ import {
   filterKeysBySubstring,
   flattenSiblings,
   getCurrentAYEnrolledStudents,
+  getPreviousAYEnrolledStudents,
   getStudentEnrollments,
   getStudentsList,
   removeEmptyKeys,
@@ -158,7 +159,7 @@ export async function getStudentList() {
   }
 }
 
-export async function getEnrolledStudents() {
+export async function getPreviousEnrolledStudents() {
   try {
     const {
       data: { session },
@@ -168,9 +169,9 @@ export async function getEnrolledStudents() {
       throw new Error("No user session!");
     }
 
-    const currentEnrolledStudents = await getCurrentAYEnrolledStudents(session.user.email!);
+    const previousEnrolledStudents = await getPreviousAYEnrolledStudents(session.user.email!);
 
-    return { studentsList: currentEnrolledStudents?.currentEnrolled ?? [] };
+    return { studentsList: previousEnrolledStudents?.previousEnrolled ?? [] };
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
@@ -450,16 +451,18 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
   }
 }
 
-export async function getNewStudentDiscounts() {
+export async function getNewStudentDiscounts(forVizSchool: boolean) {
   try {
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
+
+    const discountType = forVizSchool ? "VizSchool New" : "New";
 
     const { data: newStudentDiscounts, error: newStudentDiscountsError } = await supabase
       .from("ay2026_discount_codes")
       .select("*")
       .lte("startDate", today)
       .gte("endDate", today)
-      .or("enroleeType.eq.New, enroleeType.eq.Both");
+      .or(`enroleeType.eq.${discountType}, enroleeType.eq.${forVizSchool ? "VizSchool Both" : "Both"}`);
 
     if (newStudentDiscountsError) {
       throw new Error(newStudentDiscountsError.message);
@@ -481,16 +484,18 @@ export async function getNewStudentDiscounts() {
   }
 }
 
-export async function getCurrentStudentDiscounts() {
+export async function getCurrentStudentDiscounts(forVizSchool: boolean) {
   try {
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
+
+    const discountType = forVizSchool ? "VizSchool Current" : "Current";
 
     const { data: currentStudentDiscounts, error: currentStudentDiscountsError } = await supabase
       .from("ay2026_discount_codes")
       .select("*")
       .lte("startDate", today)
       .gte("endDate", today)
-      .or("enroleeType.eq.Current, enroleeType.eq.Both");
+      .or(`enroleeType.eq.${discountType}, enroleeType.eq.${forVizSchool ? "VizSchool Both" : "Both"}`);
 
     if (currentStudentDiscountsError) {
       throw new Error(currentStudentDiscountsError.message);
@@ -829,7 +834,8 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
 export async function submitVizSchoolEnrollment(
   enrollmentDetails: VizSchoolEnrolNewStudentFormState | VizSchoolEnrolOldStudentFormState,
   academicYear: string,
-  schoolFee: string
+  schoolFee: string,
+  enrolleeType: "VizSchool New" | "VizSchool Current"
 ) {
   try {
     const {
@@ -940,7 +946,7 @@ export async function submitVizSchoolEnrollment(
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: "New",
+        category: enrolleeType,
         pass: passType,
         passExpiry,
         passportNumber,
@@ -1268,7 +1274,7 @@ export async function submitVizSchoolEnrollment(
       enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
         middleName ? `, ${middleName.toUpperCase()}` : ""
       }`,
-      enroleeType: "New",
+      enroleeType: enrolleeType,
       applicationStatus: "Submitted",
     });
 
