@@ -21,6 +21,8 @@ export function SectionCards() {
     session?.user.user_metadata.fullName.split(" ")[0]
   }`;
 
+  console.log(data?.pendingTasks.pendingTasks.filter((task) => Object.keys(task).length > 1));
+
   const btnStyles =
     "group gap-2 shadow-xl bg-gradient-to-br from-primary via-blue-600 to-blue-700 text-white !rounded-xl border-b-4 border-blue-900 hover:brightness-110 hover:-translate-y-0.5 active:border-b-0 active:translate-y-0 transition-all duration-150 !font-bold uppercase tracking-wider";
 
@@ -183,7 +185,7 @@ function StatCard({
                       <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-3">
                         Enrollee <span className="font-semibold text-primary">#{pendingTask.enroleeNumber}</span> has
                         pending actions for:
-                        {pendingTask.studentDocs?.length > 0 && (
+                        {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && (
                           <span className="ml-1">
                             <span className="font-bold text-black italic">Student Documents</span> (
                             {pendingTask.studentDocs.map((task, idx) => {
@@ -200,14 +202,14 @@ function StatCard({
                                     )}>
                                     {status}
                                   </span>
-                                  {idx < pendingTask.studentDocs.length - 1 && ", "}
+                                  {idx < pendingTask.studentDocs!.length - 1 && ", "}
                                 </span>
                               );
                             })}
                             )
                           </span>
                         )}
-                        {pendingTask.parentGuardianDocs?.length > 0 && (
+                        {pendingTask.parentGuardianDocs && pendingTask.parentGuardianDocs.length > 0 && (
                           <span className="ml-1">
                             and <span className="font-bold text-black italic">Parent/Guardian Documents</span> (
                             {pendingTask.parentGuardianDocs.map((task, idx) => {
@@ -224,7 +226,7 @@ function StatCard({
                                     )}>
                                     {status}
                                   </span>
-                                  {idx < pendingTask.parentGuardianDocs.length - 1 && ", "}
+                                  {idx < pendingTask.parentGuardianDocs!.length - 1 && ", "}
                                 </span>
                               );
                             })}
@@ -241,8 +243,9 @@ function StatCard({
                       (pendingTask.enroleeNumber as string).startsWith("E26") ? "ay2026" : "ay2025"
                     }`}
                     state={{
-                      studentDocsActions: pendingTask.studentDocs.length > 0,
-                      parentGuardianDocsActions: pendingTask.parentGuardianDocs.length > 0,
+                      studentDocsActions: pendingTask.studentDocs && pendingTask.studentDocs.length > 0,
+                      parentGuardianDocsActions:
+                        pendingTask.parentGuardianDocs && pendingTask.parentGuardianDocs.length > 0,
                     }}
                     className={buttonVariants({
                       className: "!text-[0.7rem] !font-bold",
@@ -298,9 +301,11 @@ type DashboardCardsProps = {
 };
 
 type PendingTasks = {
-  enroleeNumber: any;
-  studentDocs: Record<string, string>[];
-  parentGuardianDocs: {
-    [x: string]: any;
+  enroleeNumber?: any;
+  studentDocs?: {
+    [k: string]: any;
+  }[];
+  parentGuardianDocs?: {
+    [k: string]: any;
   }[];
 }[];

@@ -64,8 +64,9 @@ function PendingTasks() {
                       </p>
 
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {task.studentDocs.length > 0 &&
-                          task.studentDocs.map((doc, i) => {
+                        {task.studentDocs &&
+                          task.studentDocs.length > 0 &&
+                          task.studentDocs.map((doc: Record<string, string>, i: number) => {
                             const [name, status] = Object.entries(doc)[0];
                             return (
                               <div
@@ -83,8 +84,9 @@ function PendingTasks() {
                             );
                           })}
 
-                        {task.parentGuardianDocs.length > 0 &&
-                          task.parentGuardianDocs.map((doc, i) => {
+                        {task.parentGuardianDocs &&
+                          task.parentGuardianDocs.length > 0 &&
+                          task.parentGuardianDocs.map((doc: Record<string, string>, i: number) => {
                             const [name, status] = Object.entries(doc)[0];
                             return (
                               <div
@@ -110,8 +112,8 @@ function PendingTasks() {
                       (task.enroleeNumber as string).startsWith("E26") ? "ay2026" : "ay2025"
                     }`}
                     state={{
-                      studentDocsActions: task.studentDocs.length > 0,
-                      parentGuardianDocsActions: task.parentGuardianDocs.length > 0,
+                      studentDocsActions: task.studentDocs && task.studentDocs.length > 0,
+                      parentGuardianDocsActions: task.parentGuardianDocs && task.parentGuardianDocs.length > 0,
                     }}
                     className={buttonVariants({
                       className: "text-xs !font-bold",
