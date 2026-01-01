@@ -49,7 +49,9 @@ function LearnerEnrollmentInformation() {
   const navigate = useNavigate();
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
     queryKey: ["new-discounts", session?.user.email],
-    queryFn: getNewStudentDiscounts,
+    queryFn: async () => {
+      return await getNewStudentDiscounts(true);
+    },
     enabled: session != null,
   });
   const [isPending, setTransition] = useTransition();

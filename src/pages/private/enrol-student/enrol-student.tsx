@@ -1,4 +1,8 @@
-import { getEnrolledStudents, lookupNewEnrolledStudent, vizSchoolLookupNewEnrolledStudent } from "@/actions/private";
+import {
+  getPreviousEnrolledStudents,
+  lookupNewEnrolledStudent,
+  vizSchoolLookupNewEnrolledStudent,
+} from "@/actions/private";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
@@ -36,7 +40,7 @@ function EnrolStudent() {
   const navigate = useNavigate();
   const { data, isPending } = useQuery({
     queryKey: ["enrolled-students", session?.user.email],
-    queryFn: getEnrolledStudents,
+    queryFn: getPreviousEnrolledStudents,
     enabled: session != null,
   });
   const [selected, setSelected] = useState<EnrolledStudent | null>(data?.studentsList[0] ?? null);

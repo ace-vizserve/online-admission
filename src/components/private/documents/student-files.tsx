@@ -1,9 +1,9 @@
 import { studentReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
+import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -424,23 +424,7 @@ function StudentFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={passExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setPassExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
-                      } else {
-                        setPassExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
-                  />
+                  <AdvancedCalendarSelection date={passExpiry} setDate={setPassExpiry} disablePastDates />
                 </PopoverContent>
               </Popover>
             </div>
@@ -465,23 +449,7 @@ function StudentFileUploaderDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    disabled={[
-                      {
-                        before: new Date(),
-                      },
-                    ]}
-                    selected={passportExpiry}
-                    onSelect={(date) => {
-                      if (date) {
-                        setPassportExpiry(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
-                      } else {
-                        setPassportExpiry(date);
-                      }
-                    }}
-                    captionLayout="dropdown"
-                  />
+                  <AdvancedCalendarSelection date={passportExpiry} setDate={setPassportExpiry} disablePastDates />
                 </PopoverContent>
               </Popover>
             </div>

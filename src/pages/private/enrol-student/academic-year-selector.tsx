@@ -66,7 +66,6 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
               "border-2 border-secondary shadow-2xl shadow-indigo-100 lg:py-12 order-first lg:order-none":
                 year.isPopular && !year.isClosed,
               "hover:-translate-y-1 hover:shadow-xl": !year.isClosed,
-
               "bg-slate-50/50 border-slate-200 opacity-75 grayscale-[0.5] cursor-not-allowed select-none":
                 year.isClosed,
             })}>
