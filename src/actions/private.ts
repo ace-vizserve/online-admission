@@ -101,17 +101,23 @@ export async function getEnrollmentPendingDocuments() {
           .filter(([, status]) => status && status !== "Valid")
           .map(([key, status]) => ({ [key]: status }));
 
-        return {
-          enroleeNumber,
-          studentDocs,
-          parentGuardianDocs,
-        };
+        return Object.fromEntries(
+          Object.entries({
+            enroleeNumber,
+            studentDocs,
+            parentGuardianDocs,
+          }).filter(([, value]) => {
+            return !Array.isArray(value) || value.length > 0;
+          })
+        );
       })
     );
 
+    const filteredPendingTasks = pendingTasks.filter((task) => Object.keys(task).length > 1);
+
     return {
-      totalPendingTasks: pendingTasks.length,
-      pendingTasks,
+      totalPendingTasks: filteredPendingTasks.length,
+      pendingTasks: filteredPendingTasks,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to load enrollment pending documents";
