@@ -362,9 +362,12 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
         <Field key={student.enroleeNumber}>
           <Radio
             value={student}
-            className={`border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-xl p-3 transition data-[checked]:outline-2 data-[checked]:${
-              forVizSChool ? "outline-secondary" : "outline-primary"
-            } data-[checked]:hover:shadow-none hover:shadow-lg`}>
+            className={cn(
+              "border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-xl p-3 transition data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg",
+              {
+                "data-[checked]:outline-secondary": forVizSChool,
+              }
+            )}>
             <div className="flex items-center justify-between gap-3 w-full">
               <div className="flex items-center justify-center gap-3">
                 <Avatar className="size-11">
@@ -385,9 +388,12 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
                 </div>
               </div>
               <CircleCheck
-                className={`size-6 md:size-8 fill-${
-                  forVizSChool ? "secondary" : "primary"
-                } stroke-white opacity-0 transition group-data-checked:opacity-100`}
+                className={cn(
+                  "size-6 md:size-8 fill-primary stroke-white opacity-0 transition group-data-checked:opacity-100",
+                  {
+                    "fill-secondary": forVizSChool,
+                  }
+                )}
               />
             </div>
           </Radio>
