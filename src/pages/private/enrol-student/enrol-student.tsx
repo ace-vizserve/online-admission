@@ -199,8 +199,8 @@ function EnrolStudent() {
                   <Separator />
                 </CardHeader>
 
-                <CardContent>
-                  <ScrollArea className="h-72">
+                <CardContent className="px-2 md:px-4">
+                  <ScrollArea className="h-52 md:h-64">
                     {isPending ? (
                       <div className="flex h-64 w-full flex-col gap-4 items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/50 transition-all">
                         <Tailspin size="24" stroke="5" speed="0.9" color="#4F46E5" />
@@ -208,7 +208,13 @@ function EnrolStudent() {
                       </div>
                     ) : data?.studentsList?.length ? (
                       <div className="space-y-3">
-                        <StudentsList selected={selected} setSelected={selectStudent} studentList={data.studentsList} />
+                        <StudentsList
+                          forVizSChool={true}
+                          selected={selected}
+                          setSelected={selectStudent}
+                          studentList={data.studentsList}
+                        />
+                        <div className="h-4" />
                       </div>
                     ) : (
                       <NoStudents />
@@ -216,7 +222,7 @@ function EnrolStudent() {
                   </ScrollArea>
                 </CardContent>
 
-                <CardFooter className="flex flex-col gap-3">
+                <CardFooter className="border-t flex flex-col gap-3 px-4">
                   <Button
                     disabled={isCheckingEnrollment || selected == null}
                     onClick={async () => await checkEnrollmentAndProceed()}
@@ -239,7 +245,7 @@ function EnrolStudent() {
                       ""
                     )}`}
                     className={cn(
-                      buttonVariants({ variant: "ghost" }),
+                      buttonVariants({ variant: "outline" }),
                       "h-14 rounded-2xl gap-3 font-bold text-slate-400 hover:text-primary hover:bg-indigo-50 transition-all w-full"
                     )}>
                     <Plus size={16} strokeWidth={3} />
@@ -278,8 +284,8 @@ function EnrolStudent() {
                   </div>
                 </CardHeader>
                 <Separator />
-                <CardContent className="px-2">
-                  <ScrollArea className="h-72">
+                <CardContent className="px-2 md:px-4">
+                  <ScrollArea className="h-52 md:h-64">
                     {isPending ? (
                       <div className="flex h-64 w-full flex-col gap-4 items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/50 transition-all">
                         <Tailspin size="24" stroke="5" speed="0.9" color="#4F46E5" />
@@ -287,14 +293,20 @@ function EnrolStudent() {
                       </div>
                     ) : data?.studentsList?.length ? (
                       <div className="space-y-3">
-                        <StudentsList selected={selected} setSelected={selectStudent} studentList={data.studentsList} />
+                        <StudentsList
+                          forVizSChool={false}
+                          selected={selected}
+                          setSelected={selectStudent}
+                          studentList={data.studentsList}
+                        />
+                        <div className="h-4" />
                       </div>
                     ) : (
                       <NoStudents />
                     )}
                   </ScrollArea>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-3">
+                <CardFooter className="border-t flex flex-col gap-3 px-4">
                   <Button
                     disabled={isCheckingEnrollment || selected == null}
                     onClick={async () => await checkEnrollmentAndProceed()}
@@ -314,7 +326,7 @@ function EnrolStudent() {
                   <Link
                     to={`/enrol-student/new/student-info?academicYear=${academicYear}`}
                     className={cn(
-                      buttonVariants({ variant: "ghost" }),
+                      buttonVariants({ variant: "outline" }),
                       "h-14 rounded-2xl gap-3 font-bold text-slate-400 hover:text-secondary hover:bg-indigo-50 transition-all w-full"
                     )}>
                     <Plus size={16} strokeWidth={3} />
@@ -334,9 +346,10 @@ type StudentsListProps = {
   selected: EnrolledStudent | null;
   setSelected: (student: EnrolledStudent) => void;
   studentList: EnrolledStudent[];
+  forVizSChool: boolean;
 };
 
-const StudentsList = memo(function ({ selected, setSelected, studentList }: StudentsListProps) {
+const StudentsList = memo(function ({ selected, setSelected, studentList, forVizSChool }: StudentsListProps) {
   return (
     <RadioGroup
       value={selected}
@@ -349,7 +362,9 @@ const StudentsList = memo(function ({ selected, setSelected, studentList }: Stud
         <Field key={student.enroleeNumber}>
           <Radio
             value={student}
-            className="border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-xl p-3 transition data-[checked]:outline data-[checked]:outline-green-600 data-[checked]:hover:shadow-none hover:shadow-lg">
+            className={`border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-xl p-3 transition data-[checked]:outline-2 data-[checked]:${
+              forVizSChool ? "outline-secondary" : "outline-primary"
+            } data-[checked]:hover:shadow-none hover:shadow-lg`}>
             <div className="flex items-center justify-between gap-3 w-full">
               <div className="flex items-center justify-center gap-3">
                 <Avatar className="size-11">
@@ -361,13 +376,19 @@ const StudentsList = memo(function ({ selected, setSelected, studentList }: Stud
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col gap-1">
-                  <span className="font-bold text-sm md:text-base capitalize">{student.enroleeFullName}</span>
-                  <span className="text-xs md:text-sm text-secondary font-semibold capitalize">
+                  <span className={`font-bold text-[15px] capitalize text-${forVizSChool ? "secondary" : "primary"}`}>
+                    {student.enroleeFullName}
+                  </span>
+                  <span className="text-xs md:text-sm font-semibold capitalize text-muted-foreground">
                     {student.levelApplied}
                   </span>
                 </div>
               </div>
-              <CircleCheck className="size-6 md:size-8 fill-green-600 stroke-white opacity-0 transition group-data-checked:opacity-100" />
+              <CircleCheck
+                className={`size-6 md:size-8 fill-${
+                  forVizSChool ? "secondary" : "primary"
+                } stroke-white opacity-0 transition group-data-checked:opacity-100`}
+              />
             </div>
           </Radio>
         </Field>

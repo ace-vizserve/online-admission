@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 type CalendarProps = {
   disablePastDates: boolean;
@@ -27,7 +28,7 @@ const AdvancedCalendarSelection = ({ disablePastDates, date = new Date(), setDat
   const years = eachYearOfInterval({
     start: startOfYear(startDate),
     end: endOfYear(endDate),
-  });
+  }).reverse();
 
   return (
     <div>
@@ -44,7 +45,7 @@ const AdvancedCalendarSelection = ({ disablePastDates, date = new Date(), setDat
         disabled={disablePastDates ? [{ before: new Date() }] : []}
         month={month}
         onMonthChange={setMonth}
-        defaultMonth={new Date()}
+        defaultMonth={date}
         startMonth={startDate}
         endMonth={endDate}
         className="overflow-hidden rounded-md border p-2"
@@ -139,7 +140,10 @@ function MonthGrid({
 
               return (
                 <div key={year.getFullYear()} ref={isCurrentYear ? currentYearRef : undefined}>
-                  <CollapsibleYear title={year.getFullYear().toString()} open={isCurrentYear}>
+                  <CollapsibleYear
+                    isCurrentYear={isCurrentYear}
+                    title={year.getFullYear().toString()}
+                    open={isCurrentYear}>
                     <div className="grid grid-cols-3 gap-2">
                       {months.map((month) => {
                         const isDisabled = isBefore(month, startDate) || isAfter(month, endDate);
@@ -180,7 +184,7 @@ function CaptionLabel({
 } & React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <Button
-      className="data-[state=open]:text-muted-foreground/80 -ms-2 flex items-center gap-2 text-sm font-medium hover:bg-transparent [&[data-state=open]>svg]:rotate-180"
+      className="data-[state=open]:text-primary [&[data-state=open]>svg]:text-primary -ms-2 flex items-center gap-2 text-sm font-bold hover:bg-transparent [&[data-state=open]>svg]:rotate-180"
       variant="ghost"
       size="sm"
       onClick={() => setIsYearView((prev) => !prev)}
@@ -194,16 +198,33 @@ function CaptionLabel({
   );
 }
 
-function CollapsibleYear({ title, children, open }: { title: string; children: React.ReactNode; open?: boolean }) {
+function CollapsibleYear({
+  title,
+  children,
+  open,
+  isCurrentYear,
+}: {
+  title: string;
+  children: React.ReactNode;
+  open?: boolean;
+  isCurrentYear: boolean;
+}) {
   return (
     <Collapsible className="border-t px-2 py-1.5" defaultOpen={open}>
       <CollapsibleTrigger asChild>
         <Button
-          className="flex w-full justify-start gap-2 text-sm font-medium hover:bg-transparent [&[data-state=open]>svg]:rotate-180"
+          className={cn(
+            "flex w-full justify-start gap-2 text-sm font-medium hover:bg-transparent [&[data-state=open]>svg]:rotate-180",
+            {
+              "text-primary font-bold": isCurrentYear,
+            }
+          )}
           variant="ghost"
           size="sm">
           <ChevronDownIcon
-            className="text-muted-foreground/80 shrink-0 transition-transform duration-200"
+            className={cn("text-muted-foreground/80 shrink-0 transition-transform duration-200", {
+              "text-primary": isCurrentYear,
+            })}
             aria-hidden="true"
           />
           {title}
