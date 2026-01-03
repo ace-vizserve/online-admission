@@ -183,7 +183,7 @@ function EnrolStudent() {
               className="w-full px-4">
               <Card className="w-full sm:max-w-xl sm:mx-auto rounded-2xl border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
                 <CardHeader className="text-center space-y-4 px-0">
-                  <VizSchoolLogo className="mx-auto h-20" />
+                  <VizSchoolLogo className="mx-auto h-16 md:h-20" />
 
                   <div className="space-y-2">
                     <CardTitle className="text-2xl md:text-3xl font-black tracking-tight text-secondary">
@@ -266,7 +266,7 @@ function EnrolStudent() {
               className="w-full px-4">
               <Card className="w-full sm:max-w-xl sm:mx-auto rounded-2xl border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
                 <CardHeader className="text-center space-y-4 px-0">
-                  <Logo className="mx-auto h-16" />
+                  <Logo className="mx-auto h-12 md:16" />
 
                   <div className="space-y-2">
                     <CardTitle className="text-2xl md:text-3xl font-black tracking-tight text-primary">
@@ -363,7 +363,7 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
           <Radio
             value={student}
             className={cn(
-              "border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-xl p-3 transition data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg",
+              "border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-xl p-3 transition data-[checked]:border-none data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg",
               {
                 "data-[checked]:outline-secondary": forVizSChool,
               }
@@ -379,17 +379,18 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col gap-1">
-                  <span className={`font-bold text-[15px] capitalize text-${forVizSChool ? "secondary" : "primary"}`}>
+                  <span
+                    className={`font-bold text-[13px] md:text-[13.5px] capitalize text-${
+                      forVizSChool ? "secondary" : "primary"
+                    }`}>
                     {student.enroleeFullName}
                   </span>
-                  <span className="text-xs md:text-sm font-semibold capitalize text-muted-foreground">
-                    {student.levelApplied}
-                  </span>
+                  <span className="text-xs font-medium capitalize text-muted-foreground">{student.levelApplied}</span>
                 </div>
               </div>
               <CircleCheck
                 className={cn(
-                  "size-6 md:size-8 fill-primary stroke-white opacity-0 transition group-data-checked:opacity-100",
+                  "size-6 md:size-7 fill-primary stroke-white opacity-0 scale-30 transition group-data-checked:opacity-100 group-data-checked:scale-100",
                   {
                     "fill-secondary": forVizSChool,
                   }
