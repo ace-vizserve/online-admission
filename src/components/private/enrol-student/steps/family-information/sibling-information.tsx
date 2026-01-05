@@ -119,7 +119,7 @@ function SiblingInformation() {
             )}
             {fields.map((field, index) => (
               <Card key={field.id} className="flex flex-col space-y-8 shadow-none border-none">
-                <CardHeader className="w-full flex items-center justify-between">
+                <CardHeader className="p-0 w-full flex items-center justify-between">
                   <CardTitle className="font-semibold text-xl">Sibling {index + 1} information</CardTitle>
                   <Button
                     variant="outline"
@@ -129,7 +129,7 @@ function SiblingInformation() {
                     <span className="text-sm font-medium">Remove</span>
                   </Button>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent className="p-0 space-y-8">
                   <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full ">
                     <FormField
                       control={form.control}

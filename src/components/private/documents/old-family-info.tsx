@@ -144,9 +144,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
       return await updateEnrollmentApplicationDetails({ academicYear, enroleeNumber: params.id, enrollmentDetails });
     },
     onSuccess: async (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["student-documents", params.id],
-      });
+      queryClient.invalidateQueries();
 
       if (initialValuesRef.current.fatherBirthDay) {
         initialValuesRef.current.fatherBirthDay = new Date(initialValuesRef.current.fatherBirthDay);
@@ -1051,7 +1049,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
         {React.cloneElement(icon, {
           className: "size-4 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors",
         })}
-        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value || "N/A"}</span>
+        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value || undefined}</span>
       </div>
     </div>
   );

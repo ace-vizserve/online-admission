@@ -62,7 +62,7 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
           <SectionHeader title="Personal Identity" icon={<User className="size-5 text-indigo-500" />} />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
             <DataField label="First Name" value={firstName} icon={<User />} />
-            <DataField label="Middle Name" value={middleName || "—"} icon={<User />} />
+            <DataField label="Middle Name" value={middleName || undefined} icon={<User />} />
             <DataField label="Last Name" value={lastName} icon={<User />} />
             <DataField label="Preferred Name" value={preferredName} icon={<Smile />} />
             <DataField label="Date of Birth" value={formatDate(new Date(birthDay), "dd MMMM yyyy")} icon={<Cake />} />
@@ -123,7 +123,7 @@ function DataField({
   icon,
 }: {
   label: string;
-  value: string;
+  value: string | undefined;
   icon: React.ReactElement<{ className: string }>;
 }) {
   return (

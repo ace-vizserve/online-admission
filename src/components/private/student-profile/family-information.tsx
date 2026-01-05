@@ -34,7 +34,7 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
         {React.cloneElement(icon, {
           className: "size-4 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors",
         })}
-        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value || "N/A"}</span>
+        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value || undefined}</span>
       </div>
     </div>
   );

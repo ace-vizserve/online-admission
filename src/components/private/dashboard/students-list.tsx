@@ -173,7 +173,6 @@ function StudentsList() {
   const { data, isPending, refetch, isRefetching } = useQuery({
     queryKey: ["students-list", session?.user.email],
     queryFn: getStudentList,
-    enabled: session != null,
   });
 
   if (isPending) {
