@@ -191,15 +191,7 @@ function StudentFileUploaderDialog({
     },
     onSuccess: async () => {
       setIsOpen(false);
-      queryClient.invalidateQueries({
-        queryKey: ["student-documents", enroleeNumber],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["pending-tasks", parentEmail],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["section-cards", parentEmail],
-      });
+      queryClient.invalidateQueries();
 
       await sendEmailNotification({
         parentEmail,

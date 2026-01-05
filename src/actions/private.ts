@@ -2565,27 +2565,14 @@ export async function updateEnrollmentApplicationDetails({
 
     delete enrollmentDetails.siblings;
 
-    const { data: existingApp, error: fetchError } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
-      .select("firstName, middleName, lastName")
-      .eq("enroleeNumber", enroleeNumber)
-      .single();
-
-    if (fetchError) {
-      throw new Error(fetchError.message);
-    }
-
-    const updatedFirstName = firstName ?? existingApp?.firstName;
-    const updatedMiddleName = middleName ?? existingApp?.middleName;
-    const updatedLastName = lastName ?? existingApp?.lastName;
-
     let fullName: string | null = null;
 
-    if (updatedFirstName && updatedLastName) {
-      const mName = updatedMiddleName && updatedMiddleName !== "N/A" ? ` ${updatedMiddleName}` : undefined;
+    const mName = middleName ? ` ${middleName}` : undefined;
+
+    if (lastName && firstName) {
       fullName = mName
-        ? `${updatedLastName.toUpperCase()}, ${updatedFirstName.toUpperCase()},${mName.toUpperCase()}`
-        : `${updatedLastName.toUpperCase()}, ${updatedFirstName.toUpperCase()}`;
+        ? `${lastName.toUpperCase()}, ${firstName.toUpperCase()},${mName.toUpperCase()}`
+        : `${lastName.toUpperCase()}, ${firstName.toUpperCase()}`;
     }
 
     const updates = {

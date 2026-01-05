@@ -298,15 +298,7 @@ function ParentGuardianFileUploaderDialog({
     },
     onSuccess: async () => {
       setIsOpen(false);
-      queryClient.invalidateQueries({
-        queryKey: ["family-documents", enroleeNumber],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["pending-tasks", parentEmail],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["section-cards", parentEmail],
-      });
+      queryClient.invalidateQueries();
 
       await sendEmailNotification({
         parentEmail,
