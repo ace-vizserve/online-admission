@@ -211,7 +211,8 @@ function StatCard({
                         )}
                         {pendingTask.parentGuardianDocs && pendingTask.parentGuardianDocs.length > 0 && (
                           <span className="ml-1">
-                            and <span className="font-bold text-black italic">Parent/Guardian Documents</span> (
+                            {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && "and"}{" "}
+                            <span className="font-bold text-black italic">Parent/Guardian Documents</span> (
                             {pendingTask.parentGuardianDocs.map((task, idx) => {
                               const [name, status] = Object.entries(task)[0];
                               return (
