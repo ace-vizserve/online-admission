@@ -2553,8 +2553,6 @@ export async function updateEnrollmentApplicationDetails({
   try {
     const { firstName, middleName, lastName, siblings } = enrollmentDetails;
 
-    console.log(enrollmentDetails);
-
     delete enrollmentDetails.noFatherInfo;
     delete enrollmentDetails.noGuardianInfo;
     delete enrollmentDetails.isValid;
