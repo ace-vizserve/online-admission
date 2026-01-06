@@ -871,12 +871,10 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-purple-50 rounded-lg">
-                    <Users className="w-5 h-5 text-purple-600" />
+                    <Users className="size-5 text-purple-600" />
                   </div>
-                  <div>
-                    <CardTitle className="text-xl font-bold text-slate-900">Siblings Information</CardTitle>
-                    <p className="text-sm text-muted-foreground font-medium">Details of brothers and sisters</p>
-                  </div>
+
+                  <CardTitle className="text-xl font-bold text-slate-900">Siblings Information</CardTitle>
                 </div>
                 <Button
                   type="button"
@@ -1152,12 +1150,16 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
       {/* SIBLINGS SECTION */}
       {siblings && siblings.length > 0 && (
         <section className="space-y-6">
-          <SectionHeader title="Sibling Records" icon={<Users className="size-5" />} color="text-slate-700" />
+          <SectionHeader
+            title="Sibling Records"
+            icon={<Users className="size-5 text-purple-600" />}
+            color="text-slate-700"
+          />
           <div className="space-y-4">
             {siblings.map((sibling, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                className="space-y-8 md:space-y-12 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
                 <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all" />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {renderDataField("Full Name", sibling.siblingFullName as string, <User />)}
