@@ -65,7 +65,7 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
             <DataField label="Middle Name" value={middleName || undefined} icon={<User />} />
             <DataField label="Last Name" value={lastName} icon={<User />} />
             <DataField label="Preferred Name" value={preferredName} icon={<Smile />} />
-            <DataField label="Date of Birth" value={formatDate(new Date(birthDay), "dd MMMM yyyy")} icon={<Cake />} />
+            <DataField label="Date of Birth" value={formatDate(new Date(birthDay), "dd/MM/yyyy")} icon={<Cake />} />
             <DataField label="Age" value={`${age} Years Old`} icon={<CalendarDays />} />
           </div>
         </section>
@@ -77,9 +77,7 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
             <DataField label="Primary Contact" value={contactPerson} icon={<Phone />} />
             <DataField label="Emergency Number" value={contactPersonNumber} icon={<PhoneCall />} />
             <DataField label="Home Phone" value={homePhone || "Not Provided"} icon={<Phone />} />
-            <div className="lg:col-span-2">
-              <DataField label="Residential Address" value={homeAddress} icon={<LucideMapPinHouse />} />
-            </div>
+            <DataField label="Residential Address" value={homeAddress} icon={<LucideMapPinHouse />} />
             <DataField label="Postal Code" value={postalCode} icon={<MapPin />} />
             <DataField label="Living Arrangement" value={`Lives with ${livingWithWhom}`} icon={<Users />} />
           </div>

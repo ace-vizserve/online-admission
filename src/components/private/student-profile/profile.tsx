@@ -1,6 +1,6 @@
 "use client";
 
-import { getStudentDetails } from "@/actions/private";
+import { getFamilyDocuments, getStudentDetails } from "@/actions/private";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { FolderOpen, Plus, ShieldCheck, User, Users } from "lucide-react";
 import { Link } from "react-router";
+import FamilyDocuments from "./family-documents";
 import FamilyInformation from "./family-information";
 import StudentDocuments from "./student-documents";
 import StudentInformation from "./student-information";
@@ -22,7 +23,8 @@ type ProfileProps = {
 const tabs = [
   { name: "Personal Info", value: "student-information", icon: User },
   { name: "Family Info", value: "family-information", icon: Users },
-  { name: "Documents", value: "student-documents", icon: FolderOpen },
+  { name: "Student Documents", value: "student-documents", icon: FolderOpen },
+  { name: "Family Documents", value: "family-documents", icon: FolderOpen },
 ];
 
 function Profile({ enroleeNumber }: ProfileProps) {
@@ -31,7 +33,16 @@ function Profile({ enroleeNumber }: ProfileProps) {
     queryFn: async () => await getStudentDetails({ enroleeNumber }),
   });
 
-  if (isPending) {
+  const { data: familyDocuments, isPending: isFamilyLoading } = useQuery({
+    queryKey: ["family-documents", enroleeNumber],
+    queryFn: async () => {
+      if (!enroleeNumber) return {};
+      return await getFamilyDocuments(enroleeNumber);
+    },
+    enabled: !!enroleeNumber,
+  });
+
+  if (isPending || isFamilyLoading) {
     return (
       <div className="h-[60vh] w-full flex flex-col gap-4 items-center justify-center">
         <Tailspin size="40" stroke="5" speed="0.9" color="#4F46E5" />
@@ -86,7 +97,12 @@ function Profile({ enroleeNumber }: ProfileProps) {
         <main className="flex-1 w-full">
           {tabs.map((tab) => (
             <TabsContent key={tab.value} value={tab.value} className="border p-6 md:p-8 rounded-xl">
-              <InfoBox studentDetails={data as unknown as StudentDetails} label={tab.name} value={tab.value} />
+              <InfoBox
+                studentDetails={data as unknown as StudentDetails}
+                familyDocuments={familyDocuments}
+                label={tab.name}
+                value={tab.value}
+              />
             </TabsContent>
           ))}
         </main>
@@ -95,8 +111,22 @@ function Profile({ enroleeNumber }: ProfileProps) {
   );
 }
 
-function InfoBox({ label, value, studentDetails }: { label: string; value: string; studentDetails: StudentDetails }) {
+function InfoBox({
+  label,
+  value,
+  studentDetails,
+  familyDocuments,
+}: {
+  label: string;
+  value: string;
+  studentDetails: StudentDetails;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  familyDocuments?: any;
+}) {
   const { familyInformation, studentDocuments, studentInformation } = studentDetails;
+
+  const fatherEmail = familyInformation?.fatherEmail;
+  const guardianEmail = familyInformation?.guardianEmail;
 
   switch (value) {
     case "family-information":
@@ -105,6 +135,15 @@ function InfoBox({ label, value, studentDetails }: { label: string; value: strin
       return <StudentInformation label={label} studentInformation={studentInformation} />;
     case "student-documents":
       return <StudentDocuments label={label} documents={studentDocuments} />;
+    case "family-documents":
+      return (
+        <FamilyDocuments
+          label={label}
+          documents={familyDocuments}
+          noFatherInfo={Boolean(!fatherEmail)}
+          noGuardianInfo={Boolean(!guardianEmail)}
+        />
+      );
     default:
       return null;
   }

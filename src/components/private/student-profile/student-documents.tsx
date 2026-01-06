@@ -1,4 +1,4 @@
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import StatusBadge from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 import { StudentDocument } from "@/types";
@@ -94,7 +94,7 @@ function DocumentRow({ title, doc, type }: any) {
 
       {/* Action Area: Full-width on mobile, auto-width on desktop */}
       <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
-        {!isMissing && doc?.[type] && (
+        {!isMissing && doc?.[type] ? (
           <Link
             to={doc[type]}
             target="_blank"
@@ -105,6 +105,13 @@ function DocumentRow({ title, doc, type }: any) {
             <Eye size={14} />
             <span>View</span>
           </Link>
+        ) : (
+          <Button
+            className="flex-1 sm:flex-none h-9 gap-2 text-[11px] !font-bold border-slate-200 hover:bg-slate-50 text-slate-600"
+            disabled
+            variant={"outline"}>
+            <EyeClosed size={14} /> <span>View</span>
+          </Button>
         )}
       </div>
     </div>
