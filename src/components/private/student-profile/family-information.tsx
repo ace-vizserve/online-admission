@@ -127,12 +127,12 @@ function FamilyInformation({ label, familyInformation }: { label: string; family
         {/* SIBLINGS SECTION */}
         {siblings && siblings.length > 0 && (
           <section className="space-y-6">
-            <SectionHeader title="Sibling Records" icon={<Users className="size-5" />} color="text-slate-700" />
+            <SectionHeader title="Sibling Records" icon={<Users className="size-5" />} color="text-purple-600" />
             <div className="space-y-4">
               {siblings.map((sibling, index) => (
                 <div
                   key={index}
-                  className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                  className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all" />
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {renderDataField("Full Name", sibling.siblingFullName as string, <User />)}
