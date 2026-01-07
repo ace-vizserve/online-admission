@@ -217,7 +217,7 @@ function EnrolStudent() {
                         <div className="h-4" />
                       </div>
                     ) : (
-                      <NoStudents />
+                      <NoStudents forVizSchool />
                     )}
                   </ScrollArea>
                 </CardContent>
@@ -246,7 +246,7 @@ function EnrolStudent() {
                     )}`}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-14 rounded-2xl gap-3 font-bold text-slate-400 hover:text-primary hover:bg-indigo-50 transition-all w-full"
+                      "h-14 rounded-2xl gap-3 font-bold text-primary hover:text-primary hover:bg-indigo-50 transition-all w-full"
                     )}>
                     <Plus size={16} strokeWidth={3} />
                     Add a new learner
@@ -302,7 +302,7 @@ function EnrolStudent() {
                         <div className="h-4" />
                       </div>
                     ) : (
-                      <NoStudents />
+                      <NoStudents forVizSchool={false} />
                     )}
                   </ScrollArea>
                 </CardContent>
@@ -327,7 +327,7 @@ function EnrolStudent() {
                     to={`/enrol-student/new/student-info?academicYear=${academicYear}`}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-14 rounded-2xl gap-3 font-bold text-slate-400 hover:text-secondary hover:bg-indigo-50 transition-all w-full"
+                      "h-14 rounded-2xl gap-3 font-bold text-secondary hover:text-secondary hover:bg-indigo-50 transition-all w-full"
                     )}>
                     <Plus size={16} strokeWidth={3} />
                     Add new student
@@ -426,13 +426,34 @@ function AcademicYearDropdown() {
   );
 }
 
-function NoStudents() {
+function NoStudents({ forVizSchool = true }: { forVizSchool: boolean }) {
   return (
-    <div className="flex h-72 w-full flex-col items-center justify-center rounded-md border border-dashed bg-muted text-muted-foreground">
-      <UserRoundPlus className="mb-4 h-10 w-10 text-primary" />
-      <div className="text-center space-y-1">
-        <p className="font-medium">No enrolled students found</p>
-        <p className="text-xs text-muted-foreground">Start by clicking the button below to enrol a child.</p>
+    <div className="flex h-72 w-full flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/30 transition-all">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 scale-150 bg-indigo-100/40 blur-2xl rounded-full" />
+        <div className="relative rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+          <UserRoundPlus
+            className={cn("h-8 w-8 text-primary", {
+              "text-secondary": forVizSchool,
+            })}
+            strokeWidth={2.5}
+          />
+        </div>
+      </div>
+
+      <div className="text-center space-y-2 px-6">
+        <h3 className="text-lg font-black tracking-tight text-slate-900">No learners found</h3>
+        <p className="text-balance text-[13px] font-medium text-slate-500 leading-relaxed max-w-[320px] mx-auto">
+          Your learner list is currently empty. Start by clicking the
+          <span
+            className={cn("font-bold text-primary", {
+              "text-secondary": forVizSchool,
+            })}>
+            {" "}
+            Add a new {forVizSchool ? "learner" : "student"}
+          </span>{" "}
+          button below.
+        </p>
       </div>
     </div>
   );
