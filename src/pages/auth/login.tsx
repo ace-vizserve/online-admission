@@ -2,12 +2,10 @@ import { userLogin } from "@/actions/auth";
 import students from "@/assets/students.webp";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
-import PageMetaData from "@/components/page-metadata";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { LOGIN_PAGE_TITLE_DESCRIPTION } from "@/data";
 import { loginSchema, LoginSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -16,9 +14,9 @@ import "ldrs/react/DotPulse.css";
 import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
+import SEO, { BASE_URL } from "../seo";
 
 function Login() {
-  const { title, description } = LOGIN_PAGE_TITLE_DESCRIPTION;
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -35,7 +33,18 @@ function Login() {
 
   return (
     <>
-      <PageMetaData title={title} description={description} />
+      <SEO
+        title="HFSE International School Online Admission | Parent Login"
+        description="Access your HFSE International School account securely. Log in to VizSchool LMS to manage admissions, courses, and student learning resources."
+        canonical={`${BASE_URL}/login`}
+        image={students}
+        schemaMarkup={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "HFSE International School Online Admission Login",
+          url: `${BASE_URL}/login`,
+        }}
+      />
 
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="w-full h-full grid lg:grid-cols-2 min-h-screen">
