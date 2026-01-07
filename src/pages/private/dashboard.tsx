@@ -14,15 +14,22 @@ function Dashboard() {
   return (
     <>
       <SEO
-        title="HFSE International School Online Admission Dashboard | Manage Your Enrollment"
-        description="Log in to HFSE International School's online admission dashboard to manage applications, track enrollment status, and access student learning resources through VizSchool LMS."
+        title="HFSE International School Online Admission Dashboard | Manage Your Enrolment"
+        description="Log in to HFSE International School's online admission dashboard to manage applications, track enrolment status, and access student learning resources through VizSchool LMS."
         canonical={`${BASE_URL}/admission/dashboard`}
         image={students}
         schemaMarkup={{
           "@context": "https://schema.org",
           "@type": "WebPage",
           name: "HFSE International School Online Admission Dashboard",
+          description:
+            "Log in to HFSE International School's online admission dashboard to manage applications, track enrolment status, and access student learning resources through VizSchool LMS.",
           url: `${BASE_URL}/admission/dashboard`,
+          inLanguage: "en-GB",
+          potentialAction: {
+            "@type": "LoginAction",
+            name: "Access HFSE Admission Dashboard",
+          },
         }}
       />
 
