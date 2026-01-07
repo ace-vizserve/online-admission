@@ -41,8 +41,15 @@ function Login() {
         schemaMarkup={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          name: "HFSE International School Online Admission Login",
+          name: "HFSE International School Online Admission | Parent Login",
+          description:
+            "Access your HFSE International School account securely. Log in to VizSchool LMS to manage admissions, courses, and student learning resources.",
           url: `${BASE_URL}/login`,
+          inLanguage: "en-GB",
+          potentialAction: {
+            "@type": "LoginAction",
+            name: "Login to HFSE Admission Portal",
+          },
         }}
       />
 
