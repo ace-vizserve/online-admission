@@ -442,7 +442,9 @@ function NoStudents({ forVizSchool = true }: { forVizSchool: boolean }) {
       </div>
 
       <div className="text-center space-y-2 px-6">
-        <h3 className="text-lg font-black tracking-tight text-slate-900">No learners found</h3>
+        <h3 className="text-lg font-black tracking-tight text-slate-900">
+          No {forVizSchool ? "learners" : "students"} found
+        </h3>
         <p className="text-balance text-[13px] font-medium text-slate-500 leading-relaxed max-w-[320px] mx-auto">
           Your learner list is currently empty. Start by clicking the
           <span
