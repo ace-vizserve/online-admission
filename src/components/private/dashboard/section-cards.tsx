@@ -17,11 +17,9 @@ export function SectionCards() {
     enabled: session != null,
   });
 
-  const greet = `${session?.user.user_metadata.relationship === "mother" ? "Ms." : "Mr."} ${
-    session?.user.user_metadata.fullName.split(" ")[0]
-  }`;
+  const nameParts = session?.user.user_metadata.fullName.replace(/,/g, "").split(" ");
 
-  console.log(data?.pendingTasks.pendingTasks.filter((task) => Object.keys(task).length > 1));
+  const greet = `${session?.user.user_metadata.relationship === "mother" ? "Ms." : "Mr."} ${nameParts[1]}`;
 
   const btnStyles =
     "group gap-2 shadow-xl bg-gradient-to-br from-primary via-blue-600 to-blue-700 text-white !rounded-xl border-b-4 border-blue-900 hover:brightness-110 hover:-translate-y-0.5 active:border-b-0 active:translate-y-0 transition-all duration-150 !font-bold uppercase tracking-wider";

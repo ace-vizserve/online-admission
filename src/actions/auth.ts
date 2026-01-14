@@ -45,7 +45,7 @@ export async function userRegister({ firstName, lastName, relationship, email, p
   try {
     const users = await listAllUsers();
 
-    const emailExist = users.find((user) => user.email === email);
+    const emailExist = users.find((user) => user.email === email && user.email_confirmed_at != null);
 
     if (emailExist) {
       throw new Error("An account with this email already exists");
@@ -85,6 +85,10 @@ export async function sendPasswordResetLink({ email }: { email: string }) {
 
     if (!emailExist) {
       throw new Error("An account with this email doesn't exists");
+    }
+
+    if (!emailExist.email_confirmed_at) {
+      throw new Error("Your email is not yet verified. Please verify your email first.");
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email);
