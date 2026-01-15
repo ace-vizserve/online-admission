@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Download, RotateCw, X, ZoomIn, ZoomOut } from "lucide-react";
+import { ArrowLeft, Download, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import NotFound from "../not-found";
@@ -9,7 +9,6 @@ function StudentPhoto() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -24,12 +23,6 @@ function StudentPhoto() {
   const goBack = () => navigate(-1);
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 0.5));
-  const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
-  const handleReset = () => {
-    setZoom(1);
-    setRotation(0);
-    setPosition({ x: 0, y: 0 });
-  };
 
   const handleDownload = async () => {
     try {
@@ -48,30 +41,47 @@ function StudentPhoto() {
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (zoom > 1) {
-      setIsDragging(true);
-      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-    }
+  const handlePanStart = (clientX: number, clientY: number) => {
+    if (zoom <= 1) return;
+    setIsDragging(true);
+    setDragStart({ x: clientX - position.x, y: clientY - position.y });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging && zoom > 1) {
-      setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-    }
+  const handlePanMove = (clientX: number, clientY: number) => {
+    if (!isDragging || zoom <= 1) return;
+    setPosition({ x: clientX - dragStart.x, y: clientY - dragStart.y });
   };
 
-  const handleMouseUp = () => setIsDragging(false);
+  const handlePanEnd = () => setIsDragging(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => handlePanStart(e.clientX, e.clientY);
+  const handleMouseMove = (e: React.MouseEvent) => handlePanMove(e.clientX, e.clientY);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      e.preventDefault(); // Prevent default browser scrolling
+      handlePanStart(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      e.preventDefault(); // Prevent default browser scrolling
+      handlePanMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
 
   if (hasError) {
     return (
-      <div className="h-dvh w-full flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <div className="size-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-4">
+      <div className="h-dvh w-full flex flex-col items-center justify-center bg-slate-900 p-6 text-center">
+        <div className="size-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mb-4">
           <X size={32} />
         </div>
-        <h2 className="text-xl font-black text-slate-900">Failed to load photo</h2>
-        <p className="text-slate-500 mb-6 max-w-xs">The image might have been moved or the link has expired.</p>
-        <Button onClick={goBack} variant="outline" className="rounded-xl px-8 font-bold">
+        <h2 className="text-xl font-black text-white">Failed to load photo</h2>
+        <p className="text-slate-400 mb-6 max-w-xs">The image might have been moved or the link has expired.</p>
+        <Button
+          onClick={goBack}
+          variant="outline"
+          className="rounded-xl px-8 font-bold border-slate-700 text-white hover:bg-slate-800 hover:text-white">
           <ArrowLeft className="mr-2" /> Go back
         </Button>
       </div>
@@ -80,54 +90,19 @@ function StudentPhoto() {
 
   return (
     <div className="relative h-dvh w-full flex flex-col overflow-hidden select-none">
-      <div className="absolute top-0 inset-x-0 z-50 flex items-center justify-between p-4 md:p-6">
-        <Button onClick={goBack} variant="ghost" className="text-primary rounded-xl font-bold backdrop-blur-md">
-          <ArrowLeft className="mr-2 size-4" />
-          Back
+      <header className="absolute top-0 right-0 z-10 p-4">
+        <Button onClick={goBack} variant="ghost" className="text-white rounded-full p-0 size-10 rounded-full">
+          <X size={24} />
         </Button>
+      </header>
 
-        <div className="flex items-center gap-1.5 bg-primary p-1.5 rounded-2xl border border-white/10">
-          <Button
-            onClick={handleZoomOut}
-            size="icon"
-            variant="ghost"
-            className="text-white size-9"
-            disabled={zoom <= 0.5}>
-            <ZoomOut size={18} />
-          </Button>
-          <div className="px-2 min-w-[50px] text-center">
-            <span className="text-[11px] font-black text-white/90 uppercase tracking-tighter">
-              {Math.round(zoom * 100)}%
-            </span>
-          </div>
-          <Button onClick={handleZoomIn} size="icon" variant="ghost" className="text-white size-9" disabled={zoom >= 3}>
-            <ZoomIn size={18} />
-          </Button>
-
-          <div className="w-px h-4 bg-white/10 mx-1" />
-
-          <Button onClick={handleRotate} size="icon" variant="ghost" className="text-white size-9">
-            <RotateCw size={18} />
-          </Button>
-          <Button onClick={handleDownload} size="icon" variant="ghost" className="text-white size-9">
-            <Download size={18} />
-          </Button>
-          <Button
-            onClick={handleReset}
-            size="icon"
-            variant="ghost"
-            className="text-rose-400 hover:text-rose-500 size-9">
-            <X size={18} />
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Canvas */}
-      <div
-        className="flex-1 relative flex items-center justify-center transition-colors duration-500"
+      <main
+        className="flex-1 relative flex items-center justify-center"
         onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}>
+        onMouseUp={handlePanEnd}
+        onMouseLeave={handlePanEnd}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handlePanEnd}>
         {isLoading && (
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-white/20 border-t-white" />
@@ -145,30 +120,52 @@ function StudentPhoto() {
             setHasError(true);
           }}
           onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
           className={cn(
-            "max-w-[90%] max-h-[85%] object-contain rounded-xl shadow-2xl transition-opacity duration-700",
+            "max-w-[90%] max-h-[85%] object-contain transition-opacity duration-700",
             isLoading ? "opacity-0" : "opacity-100",
             zoom > 1 ? "cursor-move" : "cursor-default"
           )}
           style={{
-            transform: `scale(${zoom}) rotate(${rotation}deg) translate(${position.x / zoom}px, ${
-              position.y / zoom
-            }px)`,
+            transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
             transformOrigin: "center center",
             transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.2, 0, 0, 1)",
           }}
           draggable={false}
         />
-      </div>
+      </main>
 
-      {/* Minimal Footer */}
-      <div className="absolute bottom-6 inset-x-0 flex justify-center pointer-events-none">
-        <div className="bg-primary backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-          <p className="text-[10px] text-white font-bold uppercase tracking-widest">
-            {zoom > 1 ? "Drag to pan" : "Inspection Mode"}
-          </p>
+      <footer className="absolute bottom-0 inset-x-0 p-4 flex justify-center pointer-events-none">
+        <div className="flex items-center gap-2 bg-primary p-1.5 rounded-full border border-white/10 shadow-lg pointer-events-auto">
+          <Button
+            onClick={handleZoomOut}
+            size="icon"
+            variant="ghost"
+            className="text-white size-9 rounded-full disabled:opacity-50"
+            disabled={zoom <= 0.5}>
+            <ZoomOut size={18} />
+          </Button>
+          <div className="px-2 min-w-[50px] text-center">
+            <span className="text-sm font-bold text-white tabular-nums">{Math.round(zoom * 100)}%</span>
+          </div>
+          <Button
+            onClick={handleZoomIn}
+            size="icon"
+            variant="ghost"
+            className="text-white size-9 rounded-full disabled:opacity-50"
+            disabled={zoom >= 3}>
+            <ZoomIn size={18} />
+          </Button>
+          <div className="w-px h-5 bg-white/10 mx-1.5" />
+          <Button
+            onClick={handleDownload}
+            variant="ghost"
+            className="text-white h-9 px-4 rounded-full disabled:opacity-50">
+            <Download size={16} className="mr-2" />
+            <span className="font-bold text-xs">Download</span>
+          </Button>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
