@@ -91,7 +91,7 @@ function StudentPhoto() {
   return (
     <div className="relative h-dvh w-full flex flex-col overflow-hidden select-none">
       <header className="absolute top-0 right-0 z-10 p-4">
-        <Button onClick={goBack} variant="ghost" className="text-white rounded-full p-0 size-10 rounded-full">
+        <Button onClick={goBack} variant="ghost" className="text-white p-0 size-10 rounded-full">
           <X size={24} />
         </Button>
       </header>
