@@ -216,19 +216,21 @@ const StudentFileUploaderDialog = memo(function ({
   if (isDesktop) {
     return (
       <div
-        className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
-          "bg-red-50": errors[name] != null,
-          "bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
+        className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
+          "border-red-300 bg-red-50": errors[name] != null,
+          "border-green-300 bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
+          "border-amber-300 bg-amber-50":
+            formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
         })}>
         <div className="flex items-center gap-4">
           {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-            <CheckCircle2 className="stroke-white fill-green-600" />
+            <CheckCircle2 className="stroke-white fill-green-600 size-6" />
           ) : errors[name] != null ? (
             <CircleAlert className="size-6 text-destructive" />
           ) : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name) ? (
-            <Clock className="size-6" />
+            <Clock className="size-6 text-amber-600" />
           ) : (
-            <Upload className="size-6" />
+            <Upload className="size-6 text-sky-600" />
           )}
           <div className="flex flex-col gap-1">
             <span className="text-sm font-semibold">{label}</span>
@@ -240,14 +242,15 @@ const StudentFileUploaderDialog = memo(function ({
             <Button
               className="font-semibold"
               variant={
-                errors[name] != null ||
-                (form.formState.errors.toFollowDocs != null && form.getValues("toFollowDocs")?.includes(name))
+                errors[name] != null
                   ? "destructive"
+                  : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
+                  ? "secondary"
                   : "outline"
               }>
               {formState.uploadRequirements?.studentUploadRequirements?.[name]
                 ? "View"
-                : form.getValues("toFollowDocs")?.includes(name)
+                : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
                 ? "To follow"
                 : "Upload"}
             </Button>
@@ -805,19 +808,21 @@ function StudentFileUploaderDrawer({
 
   return (
     <div
-      className={cn("flex items-center justify-between rounded-md border p-4 w-full", {
-        "bg-red-50": errors[name] != null,
-        "bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
+      className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
+        "border-red-300 bg-red-50": errors[name] != null,
+        "border-green-300 bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
+        "border-amber-300 bg-amber-50":
+          formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
       })}>
       <div className="flex items-center gap-4">
         {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-          <CheckCircle2 className="stroke-white fill-green-600" />
+          <CheckCircle2 className="stroke-white fill-green-600 size-6" />
         ) : errors[name] != null ? (
-          <CircleAlert className="text-destructive" />
+          <CircleAlert className="text-destructive size-6" />
         ) : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name) ? (
-          <Clock />
+          <Clock className="size-6 text-amber-600" />
         ) : (
-          <Upload />
+          <Upload className="size-6 text-sky-600" />
         )}
         <div className="flex flex-col gap-1">
           <span className="text-sm font-semibold">{label}</span>
@@ -829,14 +834,15 @@ function StudentFileUploaderDrawer({
           <Button
             className="font-semibold"
             variant={
-              errors[name] != null ||
-              (form.formState.errors.toFollowDocs != null && form.getValues("toFollowDocs")?.includes(name))
+              errors[name] != null
                 ? "destructive"
+                : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
+                ? "secondary"
                 : "outline"
             }>
             {formState.uploadRequirements?.studentUploadRequirements?.[name]
               ? "View"
-              : form.getValues("toFollowDocs")?.includes(name)
+              : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
               ? "To follow"
               : "Upload"}
           </Button>
