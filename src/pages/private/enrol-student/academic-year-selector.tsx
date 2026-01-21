@@ -20,8 +20,8 @@ const academicYears = [
     ],
     buttonText: "Enrol for AY 2025",
     logo: Logo,
-    isUpcoming: false,
-    isClosed: true,
+    isUpcoming: true,
+    isClosed: false,
   },
   {
     value: "vizschool-ay2026",
