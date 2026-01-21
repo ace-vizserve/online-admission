@@ -244,14 +244,14 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 errors[name] != null
                   ? "destructive"
                   : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-                  ? "secondary"
-                  : "outline"
+                    ? "secondary"
+                    : "outline"
               }>
               {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
                 ? "View"
                 : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-                ? "To follow"
-                : "Upload"}
+                  ? "To follow"
+                  : "Upload"}
             </Button>
           </DialogTrigger>
 
@@ -313,7 +313,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
                             "opacity-70 cursor-not-allowed pointer-events-none":
                               formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(
-                                name
+                                name,
                               ),
                           })}>
                           <div className="flex items-center justify-center flex-col p-8 w-full">
@@ -526,7 +526,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -538,7 +538,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
                                 field.onChange(fixedDate);
                                 setFormState({
@@ -607,7 +607,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -619,7 +619,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
                                 field.onChange(fixedDate);
                                 setFormState({
@@ -696,7 +696,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -708,7 +708,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
                                 field.onChange(fixedDate);
                                 setFormState({
@@ -777,7 +777,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -789,7 +789,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
                                 field.onChange(fixedDate);
                                 setFormState({
@@ -866,7 +866,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -878,7 +878,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
                                 field.onChange(fixedDate);
                                 setFormState({
@@ -947,7 +947,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -959,7 +959,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
                                 field.onChange(fixedDate);
                                 setFormState({
@@ -1171,14 +1171,14 @@ function ParentGuardianFileUploaderDrawer({
               errors[name] != null
                 ? "destructive"
                 : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-                ? "secondary"
-                : "outline"
+                  ? "secondary"
+                  : "outline"
             }>
             {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
               ? "View"
               : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-              ? "To follow"
-              : "Upload"}
+                ? "To follow"
+                : "Upload"}
           </Button>
         </DrawerTrigger>
 
@@ -1448,7 +1448,7 @@ function ParentGuardianFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pass expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1523,7 +1523,7 @@ function ParentGuardianFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Passport expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1609,7 +1609,7 @@ function ParentGuardianFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pass expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1685,7 +1685,7 @@ function ParentGuardianFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Passport expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1771,7 +1771,7 @@ function ParentGuardianFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pass expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1847,7 +1847,7 @@ function ParentGuardianFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Passport expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

@@ -340,13 +340,13 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
           {remainingSkips < 1 ? (
             <>
               <AlertCircle size={14} className="shrink-0" />
-              <span>{skippedDocsCount} skipped • No skips left</span>
+              <span>{skippedDocsCount} documents skipped • No more skips allowed</span>
             </>
           ) : (
             <>
               <Clock size={14} className="shrink-0 animate-pulse" />
               <span>
-                {skippedDocsCount} Following • {remainingSkips} more allowed
+                {skippedDocsCount} documents to follow • {remainingSkips} skips remaining
               </span>
             </>
           )}
@@ -354,7 +354,7 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
       ) : (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold uppercase tracking-wider">
           <Info size={14} className="text-blue-500" />
-          <span>You can skip up to {MAX_SKIPS} documents for now</span>
+          <span>You can choose to upload up to {MAX_SKIPS} documents later</span>
         </div>
       )}
     </div>

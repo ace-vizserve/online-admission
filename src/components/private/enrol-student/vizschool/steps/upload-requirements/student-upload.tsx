@@ -103,10 +103,10 @@ function LearnerUpload() {
           const includesEducCertError = Object.keys(errors).filter((key) => key.includes("educCert"));
           const includesMedicalError = Object.keys(errors).filter((key) => key.includes("medical"));
           const includesPassportError = Object.keys(errors).filter(
-            (key) => key === "passport" || key === "passportExpiry" || key === "passportNumber"
+            (key) => key === "passport" || key === "passportExpiry" || key === "passportNumber",
           );
           const includesPassError = Object.keys(errors).filter(
-            (key) => key === "pass" || key === "passType" || key === "passExpiry"
+            (key) => key === "pass" || key === "passType" || key === "passExpiry",
           );
 
           if (includesBirthCertError.length > 0) {
@@ -296,18 +296,18 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
             "flex items-center gap-2 px-4 py-2 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm",
             remainingSkips < 1
               ? "bg-rose-50 text-rose-600 border-rose-100"
-              : "bg-amber-50 text-amber-700 border-amber-100"
+              : "bg-amber-50 text-amber-700 border-amber-100",
           )}>
           {remainingSkips < 1 ? (
             <>
               <AlertCircle size={14} className="shrink-0" />
-              <span>{skippedDocsCount} skipped • No skips left</span>
+              <span>{skippedDocsCount} documents skipped • No more skips allowed</span>
             </>
           ) : (
             <>
               <Clock size={14} className="shrink-0 animate-pulse" />
               <span>
-                {skippedDocsCount} Following • {remainingSkips} more allowed
+                {skippedDocsCount} documents to follow • {remainingSkips} skips remaining
               </span>
             </>
           )}
@@ -315,7 +315,7 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
       ) : (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold uppercase tracking-wider">
           <Info size={14} className="text-blue-500" />
-          <span>You can skip up to {MAX_SKIPS} documents for now</span>
+          <span>You can choose to upload up to {MAX_SKIPS} documents later</span>
         </div>
       )}
     </div>
