@@ -20,7 +20,7 @@ const academicYears = [
     ],
     buttonText: "Enrol for AY 2025",
     logo: Logo,
-    isUpcoming: true,
+    isUpcoming: false,
     isClosed: true,
   },
   {
