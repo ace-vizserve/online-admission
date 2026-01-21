@@ -20,8 +20,8 @@ const academicYears = [
     ],
     buttonText: "Enrol for AY 2025",
     logo: Logo,
-    isUpcoming: true,
-    isClosed: false,
+    isUpcoming: false,
+    isClosed: true,
   },
   {
     value: "vizschool-ay2026",
@@ -83,7 +83,7 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
               <h3
                 className={cn(
                   "text-xl md:text-2xl font-black text-center",
-                  year.isClosed ? "text-slate-500" : year.isPopular ? "text-secondary" : "text-primary"
+                  year.isClosed ? "text-slate-500" : year.isPopular ? "text-secondary" : "text-primary",
                 )}>
                 {year.label}
               </h3>
@@ -115,7 +115,7 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
                 "text-xs mt-8 w-full py-7 rounded-xl transition-all gap-3 md:text-sm font-black uppercase tracking-widest",
                 year.isClosed
                   ? "bg-transparent border-slate-200 text-slate-400"
-                  : "shadow-xl shadow-indigo-100 hover:shadow-indigo-200"
+                  : "shadow-xl shadow-indigo-100 hover:shadow-indigo-200",
               )}>
               {year.isClosed ? "Unavailable" : year.buttonText}
               {!year.isClosed && <ArrowUpRight size={18} strokeWidth={3} />}
