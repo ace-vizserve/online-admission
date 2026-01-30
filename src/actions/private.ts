@@ -108,9 +108,9 @@ export async function getEnrollmentPendingDocuments() {
             parentGuardianDocs,
           }).filter(([, value]) => {
             return !Array.isArray(value) || value.length > 0;
-          })
+          }),
         );
-      })
+      }),
     );
 
     const filteredPendingTasks = pendingTasks.filter((task) => Object.keys(task).length > 1);
@@ -214,7 +214,7 @@ export async function getStudentDocumentsList(enroleeNumber: string) {
     const { data } = await supabase
       .from("ay2025_enrolment_documents")
       .select(
-        "medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus"
+        "medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus",
       )
       .eq("enroleeNumber", enroleeNumber);
 
@@ -746,7 +746,7 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     const { data: parentGuardianDocumentsInformation, error: parentGuardianDocumentsInformationError } = await supabase
       .from("ay2025_enrolment_applications")
       .select(
-        "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport"
+        "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
       )
       .eq("enroleeNumber", enroleeNumber)
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
@@ -841,7 +841,7 @@ export async function submitVizSchoolEnrollment(
   enrollmentDetails: VizSchoolEnrolNewStudentFormState | VizSchoolEnrolOldStudentFormState,
   academicYear: string,
   schoolFee: string,
-  enrolleeType: "VizSchool New" | "VizSchool Current"
+  enrolleeType: "VizSchool New" | "VizSchool Current",
 ) {
   try {
     const {
@@ -1078,7 +1078,7 @@ export async function submitVizSchoolEnrollment(
 
     const motherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "mother"
+      "mother",
     );
 
     const parentGuardianToFollowDocs =
@@ -1141,7 +1141,7 @@ export async function submitVizSchoolEnrollment(
 
     const fatherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "father"
+      "father",
     );
 
     if (Object.keys(fatherEnrollmentDocuments).length > 1) {
@@ -1206,7 +1206,7 @@ export async function submitVizSchoolEnrollment(
 
     const guardianEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "guardian"
+      "guardian",
     );
 
     if (Object.keys(guardianEnrollmentDocuments).length > 1) {
@@ -1529,7 +1529,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
 
     const motherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "mother"
+      "mother",
     );
 
     const parentGuardianToFollowDocs =
@@ -1592,7 +1592,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
 
     const fatherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "father"
+      "father",
     );
 
     if (Object.keys(fatherEnrollmentDocuments).length > 1) {
@@ -1657,7 +1657,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
 
     const guardianEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "guardian"
+      "guardian",
     );
 
     if (Object.keys(guardianEnrollmentDocuments).length > 1) {
@@ -1969,7 +1969,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     const motherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "mother"
+      "mother",
     );
 
     const parentGuardianToFollowDocs =
@@ -2032,7 +2032,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     const fatherEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "father"
+      "father",
     );
 
     if (Object.keys(fatherEnrollmentDocuments).length > 1) {
@@ -2097,7 +2097,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
 
     const guardianEnrollmentDocuments = filterKeysBySubstring(
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "guardian"
+      "guardian",
     );
 
     if (Object.keys(guardianEnrollmentDocuments).length > 1) {
