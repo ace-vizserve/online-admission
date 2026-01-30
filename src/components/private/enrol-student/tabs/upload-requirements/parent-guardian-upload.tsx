@@ -393,7 +393,7 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
           )}
         </div>
       ) : (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold uppercase tracking-wider">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-[9px] md:text-[11px] font-black uppercase tracking-wider">
           <Info size={14} className="text-blue-500" />
           <span>You can choose to upload up to {MAX_SKIPS} documents later</span>
         </div>
@@ -401,7 +401,6 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
     </div>
   );
 }
-
 function Loader() {
   return (
     <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
