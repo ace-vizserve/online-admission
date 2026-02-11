@@ -1,5 +1,6 @@
 import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
+import ErrorPage from "@/components/error-page";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
@@ -23,6 +24,8 @@ import OldEnrollmentInformation from "@/pages/private/enrol-student/old/old-enro
 import OldFamilyInformation from "@/pages/private/enrol-student/old/old-family-information";
 import OldStudentInformation from "@/pages/private/enrol-student/old/old-student-information";
 import OldUploadRequirements from "@/pages/private/enrol-student/old/old-upload-requirements";
+import ResidencyStatus from "@/pages/private/enrol-student/residency-status";
+import STPGuidelines from "@/pages/private/enrol-student/stp-guidelines";
 import CurrentEnrollmentInformation from "@/pages/private/enrol-student/vizschool/current/current-enrollment-information";
 import CurrentFamilyInformation from "@/pages/private/enrol-student/vizschool/current/current-family-information";
 import CurrentLearnerInformation from "@/pages/private/enrol-student/vizschool/current/current-learner-information";
@@ -38,6 +41,7 @@ import StudentPhoto from "@/pages/private/student-photo";
 import StudentProfile from "@/pages/private/student-profile";
 import Uploaded from "@/pages/private/uploaded";
 import Homepage from "@/pages/public/home-page";
+import { ErrorBoundary } from "react-error-boundary";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
 function AppRoutes() {
@@ -170,11 +174,34 @@ function AppRoutes() {
 
           <Route path="*" element={<NotFound />} />
         </Route>
+
         <Route
           path="enrol-student"
           element={
             <AuthGuard>
               <EnrolStudent />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="enrol-student/residency-status"
+          element={
+            <AuthGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <ResidencyStatus />
+              </ErrorBoundary>
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="enrol-student/stp-guidelines"
+          element={
+            <AuthGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <STPGuidelines />
+              </ErrorBoundary>
             </AuthGuard>
           }
         />

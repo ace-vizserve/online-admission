@@ -24,6 +24,14 @@ export type SchoolFeeStore = {
   clearState: () => void;
 };
 
+export type PassTypeStore = {
+  passType: string;
+  stpApplicationType: string;
+  setStpApplicationType: (state: string) => void;
+  setPassType: (state: string) => void;
+  clearState: () => void;
+};
+
 export type PasswordResetStore = {
   passwordResetState: boolean;
   setPasswordResetState: (state: boolean) => void;
@@ -91,8 +99,8 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
     {
       name: "enrolNewStudentTabState",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );
 
 export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
@@ -108,8 +116,8 @@ export const usePasswordResetStore = create<PasswordResetStore>()(
     }),
     {
       name: "password-recovery",
-    }
-  )
+    },
+  ),
 );
 
 export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
@@ -130,8 +138,8 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
     {
       name: "enrolNewStudentFormState",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );
 
 export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
@@ -152,8 +160,8 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
     {
       name: "enrolOldStudentFormState",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );
 
 export const useVizSchoolEnrolNewStudentStore = create<VizSchoolEnrolNewStudentStore>()(
@@ -174,8 +182,8 @@ export const useVizSchoolEnrolNewStudentStore = create<VizSchoolEnrolNewStudentS
     {
       name: "vizSchoolEnrolNewStudentFormState",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );
 
 export const useVizSchoolEnrolOldStudentStore = create<VizSchoolEnrolOldStudentStore>()(
@@ -196,8 +204,8 @@ export const useVizSchoolEnrolOldStudentStore = create<VizSchoolEnrolOldStudentS
     {
       name: "vizSchoolEnrolOldStudentFormState",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );
 
 export const useSelectAcademicYear = create<AcademicYearStore>()(
@@ -212,8 +220,8 @@ export const useSelectAcademicYear = create<AcademicYearStore>()(
     {
       name: "academicYear",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );
 
 export const useSelectSchoolFee = create<SchoolFeeStore>()(
@@ -228,6 +236,24 @@ export const useSelectSchoolFee = create<SchoolFeeStore>()(
     {
       name: "schoolFee",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
+);
+
+export const usePassTypeStore = create<PassTypeStore>()(
+  persist(
+    (set, _, store) => ({
+      passType: "",
+      stpApplicationType: "",
+      setPassType: (passType: string) => set({ passType }),
+      setStpApplicationType: (stpApplicationType: string) => set({ stpApplicationType }),
+      clearState: () => {
+        set(store.getInitialState());
+      },
+    }),
+    {
+      name: "pass-type",
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
 );
