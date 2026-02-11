@@ -431,7 +431,7 @@ function AdmissionGuidelines() {
             </div>
 
             <section className="space-y-10 mt-16">
-              {/* --- Studio Style Section Header --- */}
+              {/* --- Section Header --- */}
               <div className="flex flex-col items-center text-center space-y-2 mb-12">
                 <Badge
                   variant="outline"
@@ -443,7 +443,7 @@ function AdmissionGuidelines() {
 
               {/* --- Three Application Types Grid --- */}
               <div className="grid md:grid-cols-3 gap-8">
-                {/* Column 1: NEW Applications (Blue Glow) */}
+                {/* New Applications */}
                 <div className="group relative p-8 rounded-xl bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(37,99,235,0.12)] hover:-translate-y-2">
                   <div className="space-y-6">
                     <div className="flex flex-col gap-4">
@@ -451,9 +451,9 @@ function AdmissionGuidelines() {
                         <Globe2 className="size-7" />
                       </div>
                       <div className="space-y-1">
-                        <h3 className="text-xl font-black text-primary leading-tight">New Student's Pass</h3>
+                        <h3 className="text-xl font-black text-primary leading-tight">New Student’s Pass</h3>
                         <Badge className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-50 text-sm font-bold rounded-full">
-                          First-Time
+                          First-time / Fresh
                         </Badge>
                       </div>
                     </div>
@@ -463,26 +463,26 @@ function AdmissionGuidelines() {
                         <p className="text-sm font-black uppercase tracking-widest text-slate-400">Eligibility</p>
                         <ul className="space-y-2 text-base font-medium text-slate-500">
                           <li className="flex gap-2">
-                            {" "}
-                            <div className="size-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" /> International students
-                            enrolling first time
+                            <div className="size-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                            International students enrolling at HFSE for the first time
                           </li>
                           <li className="flex gap-2">
-                            {" "}
-                            <div className="size-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" /> Transferring from Gov
-                            schools
+                            <div className="size-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                            Students moving from a local / MOE school who do not currently hold a PEI Student’s Pass
                           </li>
                         </ul>
                       </div>
                       <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:border-blue-100 transition-colors">
-                        <p className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">Processing</p>
-                        <p className="text-base font-bold text-slate-700">~10 Working Days</p>
+                        <p className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">
+                          Typical ICA processing
+                        </p>
+                        <p className="text-base font-bold text-slate-700">Around 4–6 weeks</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Column 2: RENEWAL (Green Glow) */}
+                {/* Renewal */}
                 <div className="group relative p-8 rounded-xl bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(34,197,94,0.12)] hover:-translate-y-2">
                   <div className="space-y-6">
                     <div className="flex flex-col gap-4">
@@ -490,9 +490,9 @@ function AdmissionGuidelines() {
                         <RefreshCcw className="size-7" />
                       </div>
                       <div className="space-y-1">
-                        <h3 className="text-xl font-black text-primary leading-tight">Pass Renewal</h3>
+                        <h3 className="text-xl font-black text-primary leading-tight">Student’s Pass Renewal</h3>
                         <Badge className="bg-green-50 text-green-700 border-green-100 hover:bg-green-50 text-sm font-bold rounded-full">
-                          Continuing
+                          Continuing at HFSE
                         </Badge>
                       </div>
                     </div>
@@ -502,26 +502,26 @@ function AdmissionGuidelines() {
                         <p className="text-sm font-black uppercase tracking-widest text-slate-400">Eligibility</p>
                         <ul className="space-y-2 text-base font-medium text-slate-500">
                           <li className="flex gap-2">
-                            {" "}
-                            <div className="size-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" /> Existing HFSE
-                            students
+                            <div className="size-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" />
+                            Existing HFSE students who are continuing their studies
                           </li>
                           <li className="flex gap-2">
-                            {" "}
-                            <div className="size-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" /> Current pass expiring
-                            soon
+                            <div className="size-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" />
+                            Current HFSE Student’s Pass is valid but approaching expiry
                           </li>
                         </ul>
                       </div>
                       <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:border-green-100 transition-colors">
-                        <p className="text-sm font-black uppercase tracking-widest text-green-600 mb-2">Processing</p>
-                        <p className="text-base font-bold text-slate-700">~1 Week</p>
+                        <p className="text-sm font-black uppercase tracking-widest text-green-600 mb-2">
+                          Typical ICA processing
+                        </p>
+                        <p className="text-base font-bold text-slate-700">About 1–2 weeks</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Column 3: TRANSFER (Purple Glow) */}
+                {/* Transfer */}
                 <div className="group relative p-8 rounded-xl bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(147,51,234,0.12)] hover:-translate-y-2">
                   <div className="space-y-6">
                     <div className="flex flex-col gap-4">
@@ -529,9 +529,9 @@ function AdmissionGuidelines() {
                         <FileCheck2 className="size-7" />
                       </div>
                       <div className="space-y-1">
-                        <h3 className="text-xl font-black text-primary leading-tight">Pass Transfer</h3>
+                        <h3 className="text-xl font-black text-primary leading-tight">Student’s Pass Transfer</h3>
                         <Badge className="bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-50 text-sm font-bold rounded-full">
-                          Other PEIs
+                          From other PEIs
                         </Badge>
                       </div>
                     </div>
@@ -541,27 +541,27 @@ function AdmissionGuidelines() {
                         <p className="text-sm font-black uppercase tracking-widest text-slate-400">Eligibility</p>
                         <ul className="space-y-2 text-base font-medium text-slate-500">
                           <li className="flex gap-2">
-                            {" "}
-                            <div className="size-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0" /> Students from other
-                            SG schools
+                            <div className="size-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0" />
+                            Students currently holding a valid Student’s Pass under another PEI in Singapore
                           </li>
                           <li className="flex gap-2">
-                            {" "}
-                            <div className="size-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0" /> Switching to HFSE
-                            enrollment
+                            <div className="size-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0" />
+                            Intend to withdraw from the current PEI and continue studies under HFSE
                           </li>
                         </ul>
                       </div>
                       <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:border-purple-100 transition-colors">
-                        <p className="text-sm font-black uppercase tracking-widest text-purple-600 mb-2">Processing</p>
-                        <p className="text-base font-bold text-slate-700">Variable (ICA Review)</p>
+                        <p className="text-sm font-black uppercase tracking-widest text-purple-600 mb-2">
+                          Typical ICA processing
+                        </p>
+                        <p className="text-base font-bold text-slate-700">Varies by case (several weeks is common)</p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* --- Exemption Pill Card (The Amber Glow) --- */}
+              {/* --- Exemption Pill Card --- */}
               <div className="mt-12 p-8 rounded-xl bg-amber-50/50 border border-amber-100/50 backdrop-blur-md relative overflow-hidden group transition-all hover:shadow-[0_40px_80px_-15px_rgba(245,158,11,0.15)]">
                 <div className="absolute top-0 right-0 -mr-20 -mt-20 size-64 bg-amber-200/20 rounded-full blur-3xl" />
                 <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
@@ -571,24 +571,30 @@ function AdmissionGuidelines() {
                   <div className="space-y-4 flex-1">
                     <div className="space-y-1">
                       <h3 className="text-2xl font-black text-amber-900 tracking-tight">
-                        Exemptions (No STP Required)
+                        Exemptions (No Student’s Pass Required)
                       </h3>
                       <p className="text-base font-medium text-amber-700/70">
-                        The following residents do not need to apply for a Student's Pass:
+                        The following residents generally do not need to apply for a separate Student’s Pass:
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {["Singapore Citizens", "PR Holders", "Dependent Pass (DP)", "LTVP Holders"].map((type) => (
+                      {[
+                        "Singapore Citizens",
+                        "Permanent Residents (PR)",
+                        "Dependent’s Pass (DP) holders",
+                        "LTVP holders",
+                      ].map((type) => (
                         <span
                           key={type}
-                          className="px-4 py-1.5 rounded-full bg-white border border-amber-200 text-sm font-black uppercase tracking-tighter text-amber-800 shadow-sm">
+                          className="px-4 py-1.5 rounded-full bg-white border border-amber-200 text-sm font-bold uppercase tracking-tighter text-amber-800 shadow-sm">
                           {type}
                         </span>
                       ))}
                     </div>
                     <div className="flex items-center gap-3 text-sm font-bold text-amber-900/60 bg-white/40 p-3 rounded-2xl border border-amber-200/50">
                       <Info className="size-4 shrink-0" />
-                      Note: DP/LTVP holders still require formal ICA registration by the Office of Admin.
+                      Note: DP / LTVP holders still require formal registration with the school and relevant authorities
+                      before starting classes, even though a separate Student’s Pass is not needed.
                     </div>
                   </div>
                 </div>
@@ -817,7 +823,7 @@ function AdmissionGuidelines() {
                 </TabsContent>
               </Tabs>
 
-              <div className="mt-12 p-8 rounded-[2.5rem] bg-white border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden group">
+              <div className="mt-12 p-8 rounded-xl bg-white border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden group">
                 {/* Decorative subtle background icon */}
                 <Camera className="absolute -right-4 -bottom-4 size-32 text-slate-50 opacity-[0.03] -rotate-12 pointer-events-none" />
 
@@ -864,15 +870,15 @@ function AdmissionGuidelines() {
                   </div>
                 </div>
                 <div className="mt-6 w-full py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <p className="text-xs text-slate-500">
+                  <p className="font-bold text-xs text-slate-500">
                     For full ICA photo specifications, please refer to the official guidelines.
                   </p>
                   <a
                     href="https://www.ica.gov.sg/photo-guidelines"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
-                    View ICA Photo Guidelines
+                    className="font-bold flex gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline">
+                    View ICA Photo Guidelines <ExternalLink className="size-3.5" />
                   </a>
                 </div>
               </div>
@@ -1149,7 +1155,7 @@ function AdmissionGuidelines() {
 
                     <div className="lg:col-span-2 space-y-6">
                       <div className="p-8 rounded-xl bg-primary text-white shadow-xl">
-                        <h4 className="text-sm font-bold uppercase tracking-widest mb-6 text-blue-400">
+                        <h4 className="text-sm font-bold uppercase tracking-widest mb-6">
                           Recommended submission window
                         </h4>
                         <div className="space-y-6">
@@ -1158,7 +1164,7 @@ function AdmissionGuidelines() {
                               <Calendar className="size-5" />
                             </div>
                             <div>
-                              <p className="text-sm text-slate-400 font-bold">Earliest submission</p>
+                              <p className="text-sm text-slate-300 font-bold">Earliest submission</p>
                               <p className="text-base font-semibold">Up to 3 months before course start date</p>
                             </div>
                           </div>
@@ -1167,7 +1173,7 @@ function AdmissionGuidelines() {
                               <Clock className="size-5" />
                             </div>
                             <div>
-                              <p className="text-sm text-slate-400 font-bold">Latest recommended</p>
+                              <p className="text-sm text-slate-300 font-bold">Latest recommended</p>
                               <p className="text-base font-semibold">At least 2 months before course start date</p>
                             </div>
                           </div>
@@ -1228,7 +1234,7 @@ function AdmissionGuidelines() {
 
                     <div className="lg:col-span-2 space-y-6">
                       <div className="p-8 rounded-xl bg-primary text-white shadow-xl">
-                        <h4 className="text-sm font-bold uppercase tracking-widest mb-6 text-emerald-400">
+                        <h4 className="text-sm font-bold uppercase tracking-widest mb-6 text-white0">
                           Renewal checklist
                         </h4>
                         <ul className="space-y-4">
@@ -1238,8 +1244,8 @@ function AdmissionGuidelines() {
                             "Updated Singapore residential address",
                             "Satisfactory attendance and academic records",
                           ].map((item) => (
-                            <li key={item} className="flex items-center gap-3 text-base text-slate-300">
-                              <CheckCircle2 className="size-4 text-emerald-400" /> {item}
+                            <li key={item} className="flex items-center gap-3 text-base text-white">
+                              <CheckCircle2 className="size-4 text-emerald-200" /> {item}
                             </li>
                           ))}
                         </ul>
