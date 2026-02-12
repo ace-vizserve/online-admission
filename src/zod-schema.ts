@@ -1,5 +1,6 @@
 import { isBefore } from "date-fns";
 import { z } from "zod";
+import { applicationTypes } from "./data";
 import { capitalizeWords } from "./lib/utils";
 
 export const loginSchema = z.object({
@@ -70,14 +71,57 @@ export const studentDetailsSchema = z
       message: "Religion is required",
     }),
     religionOther: z.string().optional().nullable(),
-    nric: z
-      .string()
-      .min(9, {
-        message: "NRIC/FIN must be exactly 9 characters",
-      })
-      .regex(/^[STFGM]\d{7}[A-Z]$/, { message: "Invalid NRIC or FIN format" }),
+    nric: z.string().optional(),
+
+    stpApplicationType: z.string().optional(),
   })
   .superRefine((schema, ctx) => {
+    if (schema.stpApplicationType === "New Student Pass Application") {
+      if (!schema.nric || schema.nric.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["nric"],
+          message: "NRIC/FIN is required for this application type",
+        });
+      } else {
+        if (!/^[STFGM]\d{7}[A-Z]$/.test(schema.nric)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["nric"],
+            message: "Invalid NRIC or FIN format",
+          });
+        }
+
+        if (schema.nric.length !== 9) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["nric"],
+            message: "NRIC/FIN must be exactly 9 characters",
+          });
+        }
+      }
+    }
+
+    if (schema.nric && schema.nric.trim() !== "") {
+      const trimmedNric = schema.nric.trim();
+
+      if (trimmedNric.length !== 9) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["nric"],
+          message: "NRIC/FIN must be exactly 9 characters",
+        });
+      }
+
+      if (!/^[STFGM]\d{7}[A-Z]$/.test(trimmedNric)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["nric"],
+          message: "Invalid NRIC or FIN format",
+        });
+      }
+    }
+
     if (schema.religion === "Other") {
       if (!schema.religionOther) {
         ctx.addIssue({
@@ -151,42 +195,78 @@ export const vizSchoolStudentDetailsSchema = z
     }
   });
 
-export const studentAddressContactSchema = z.object({
-  isValid: z.boolean().default(false).optional(),
-  homeAddress: z.string().min(1, {
-    message: "Home address is required",
-  }),
-  postalCode: z
-    .string()
-    .min(6, { message: "Postal code must be exactly 6 digits" })
-    .max(6, { message: "Postal code must be exactly 6 digits" }),
-  nationality: z.string(),
-  homePhone: z
-    .string()
-    .min(1, { message: "Home phone number is required" })
-    .regex(/^\+?\d+$/, { message: "Home phone number must contain digits only" }),
-  contactPerson: z
-    .string()
-    .min(1, {
-      message: "Contact person is required",
-    })
-    .transform(capitalizeWords),
-  contactPersonNumber: z
-    .string()
-    .min(1, {
-      message: "Contact person's number is required",
-    })
-    .regex(/^\+?\d+$/, { message: "Contact person number must contain digits only" }),
-  livingWithWhom: z
-    .string()
-    .min(1, {
-      message: "Please indicate who the student is living with",
-    })
-    .transform(capitalizeWords),
-  parentMaritalStatus: z.string().min(1, {
-    message: "Please select the parents' marital status",
-  }),
-});
+export const studentAddressContactSchema = z
+  .object({
+    isValid: z.boolean().default(false).optional(),
+    homeAddress: z.string().min(1, {
+      message: "Home address is required",
+    }),
+    postalCode: z
+      .string()
+      .min(6, { message: "Postal code must be exactly 6 digits" })
+      .max(6, { message: "Postal code must be exactly 6 digits" }),
+    nationality: z.string(),
+    homePhone: z
+      .string()
+      .min(1, { message: "Home phone number is required" })
+      .regex(/^\+?\d+$/, { message: "Home phone number must contain digits only" }),
+    contactPerson: z
+      .string()
+      .min(1, {
+        message: "Contact person is required",
+      })
+      .transform(capitalizeWords),
+    contactPersonNumber: z
+      .string()
+      .min(1, {
+        message: "Contact person's number is required",
+      })
+      .regex(/^\+?\d+$/, { message: "Contact person number must contain digits only" }),
+    livingWithWhom: z
+      .string()
+      .min(1, {
+        message: "Please indicate who the student is living with",
+      })
+      .transform(capitalizeWords),
+    parentMaritalStatus: z.string().min(1, {
+      message: "Please select the parents' marital status",
+    }),
+    residenceHistory: z
+      .array(
+        z.object({
+          country: z.string().min(1, { message: "Country is required" }).transform(capitalizeWords),
+          cityOrTown: z.string().min(1, { message: "City or town is required" }).transform(capitalizeWords),
+          fromYear: z.coerce
+            .number({
+              required_error: "Start year is required",
+              invalid_type_error: "Please enter a valid year",
+            })
+            .int()
+            .gte(1900, { message: "Please enter a reasonable year" }),
+
+          toYear: z.union([
+            z.coerce
+              .number({
+                invalid_type_error: "Please enter a valid year or 'Present'",
+              })
+              .int()
+              .gte(1900, { message: "Please enter a reasonable year" }),
+            z.literal("Present"),
+          ]),
+        }),
+      )
+      .optional(),
+    stpApplicationType: z.string().optional(),
+  })
+  .superRefine((schema, ctx) => {
+    if (schema.stpApplicationType && applicationTypes.includes(schema.stpApplicationType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["residenceHistory"],
+        message: `Residence history is required`,
+      });
+    }
+  });
 
 export const guardianInformationSchema = z
   .object({
@@ -604,7 +684,7 @@ export const siblingInformationSchema = z
             message: "School level or position is required",
           })
           .transform(capitalizeWords),
-      })
+      }),
     ),
   })
   .superRefine((schema, ctx) => {
@@ -764,8 +844,52 @@ export const studentUploadRequirementsSchema = z
       })
       .optional(),
     toFollowDocs: z.array(z.string()).default([]).optional(),
+    skippedDocs: z.array(z.string()).default([]).optional(),
+    icaPhoto: z
+      .string()
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
+        message: "Please upload the file to continue",
+      }),
+    financialSupportDocs: z
+      .string()
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
+        message: "Please upload the file to continue",
+      }),
+    vaccinationInformation: z
+      .string()
+      .optional()
+      .transform((val) => (val === "" ? undefined : val))
+      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
+        message: "Please upload the file to continue",
+      }),
+    showVaccinationInformation: z.boolean().optional(),
+    stpApplicationType: z.string().optional(),
   })
   .superRefine((data, ctx) => {
+    if (applicationTypes.includes(data.stpApplicationType || "")) {
+      if (data.showVaccinationInformation) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["vaccinationInformation"],
+          message: "Vaccination Information is required",
+        });
+      }
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["icaPhoto"],
+        message: "ICA Photo is required",
+      });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["financialSupportDocs"],
+        message: "Financial Support Documents is required",
+      });
+    }
+
     const now = new Date();
     const TO_FOLLOW_LIMIT = 3;
 
@@ -1092,7 +1216,7 @@ export const parentGuardianUploadRequirementsSchema = z
 
 export const studentAddressContactAndInformationSchema = z.intersection(
   studentDetailsSchema,
-  studentAddressContactSchema
+  studentAddressContactSchema,
 );
 
 const parentGuardianSchema = fatherInformationSchema

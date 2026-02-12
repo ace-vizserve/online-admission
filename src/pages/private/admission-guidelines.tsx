@@ -47,7 +47,7 @@ import {
 import { useState } from "react";
 
 function AdmissionGuidelines() {
-  const [selectedApplicationType, setSelectedApplicationType] = useState<"general" | "student-pass">("general");
+  const [_, setSelectedApplicationType] = useState<"general" | "student-pass">("general");
 
   const phone = "+65 8200 0062";
 

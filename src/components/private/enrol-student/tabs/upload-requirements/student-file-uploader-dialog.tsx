@@ -60,7 +60,15 @@ const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 const NOT_FILE_INPUTS = ["passExpiry", "passType", "passportExpiry", "passportNumber"];
 
-const MULTIPLE_FILE_UPLOADS = ["medical", "passport", "pass", "birthCert", "educCert"];
+const MULTIPLE_FILE_UPLOADS = [
+  "medical",
+  "passport",
+  "pass",
+  "birthCert",
+  "educCert",
+  "vaccinationInformation",
+  "financialSupportDocs",
+];
 
 const TO_FOLLOW_DOCS = ["idPicture", "passport", "pass", "birthCert"];
 
@@ -112,7 +120,7 @@ const StudentFileUploaderDialog = memo(function ({
     maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
     accept:
-      name === "idPicture"
+      name === "idPicture" || name === "icaPhoto"
         ? {
             "image/png": [],
             "image/jpeg": [],
@@ -212,14 +220,14 @@ const StudentFileUploaderDialog = memo(function ({
                 errors[name] != null
                   ? "destructive"
                   : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-                  ? "secondary"
-                  : "outline"
+                    ? "secondary"
+                    : "outline"
               }>
               {formState.uploadRequirements?.studentUploadRequirements?.[name]
                 ? "View"
                 : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-                ? "To follow"
-                : "Upload"}
+                  ? "To follow"
+                  : "Upload"}
             </Button>
           </DialogTrigger>
 
@@ -483,7 +491,7 @@ const StudentFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -495,7 +503,7 @@ const StudentFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
 
                                 field.onChange(fixedDate);
@@ -566,7 +574,7 @@ const StudentFileUploaderDialog = memo(function ({
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -578,7 +586,7 @@ const StudentFileUploaderDialog = memo(function ({
                             setDate={(date) => {
                               if (date) {
                                 const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
                                 );
 
                                 field.onChange(fixedDate);
@@ -679,7 +687,7 @@ function StudentFileUploaderDrawer({
     maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
     accept:
-      name === "idPicture"
+      name === "idPicture" || name === "icaPhoto"
         ? {
             "image/png": [],
             "image/jpeg": [],
@@ -775,14 +783,14 @@ function StudentFileUploaderDrawer({
               errors[name] != null
                 ? "destructive"
                 : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-                ? "secondary"
-                : "outline"
+                  ? "secondary"
+                  : "outline"
             }>
             {formState.uploadRequirements?.studentUploadRequirements?.[name]
               ? "View"
               : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-              ? "To follow"
-              : "Upload"}
+                ? "To follow"
+                : "Upload"}
           </Button>
         </DrawerTrigger>
 
@@ -1046,7 +1054,7 @@ function StudentFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pass expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1125,7 +1133,7 @@ function StudentFileUploaderDrawer({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}>
                             {field.value ? format(field.value, "dd/MM/yyyy") : <span>Passport expiration date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

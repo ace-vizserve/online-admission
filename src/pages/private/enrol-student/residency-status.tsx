@@ -1,6 +1,7 @@
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { applicationTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { usePassTypeStore, useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
 import { Description, Field, Label, Radio, RadioGroup } from "@headlessui/react";
@@ -174,12 +175,6 @@ export default function StudentResidencyPage() {
   const isSTP = currentPass === "Student Pass";
   const isLocal = ["Singapore PR", "Singaporean"].includes(currentPass);
 
-  const applicationTypes = [
-    "New Student Pass Application",
-    "New STP Application (Current HFSE Student)",
-    "Student Pass Transfer Application",
-  ];
-
   function goBack() {
     setTransition(() => {
       clearState();
@@ -187,24 +182,6 @@ export default function StudentResidencyPage() {
       sessionStorage.clear();
     });
   }
-
-  useEffect(() => {
-    if (!currentPass) return;
-
-    if (isNonSTP) {
-      const opt = residencyOptions.find((o) => o.id === "non-stp" && o.willRender);
-      if (opt) setSelected(opt);
-      setPassType(currentPass);
-    } else if (isLocal) {
-      const opt = residencyOptions.find((o) => o.id === "citizen" && o.willRender);
-      if (opt) setSelected(opt);
-      setPassType(currentPass);
-    } else if (isSTP && enroleeType === "Current") {
-      const opt = residencyOptions.find((o) => o.id === "stp" && o.willRender);
-      if (opt) setSelected(opt);
-      setPassType("");
-    }
-  }, [currentPass, isNonSTP, isLocal, isSTP, enroleeType, setPassType]);
 
   useEffect(() => {
     if (!selected) return;
@@ -367,7 +344,6 @@ export default function StudentResidencyPage() {
           </RadioGroup>
         </main>
 
-        {/* STICKY ACTION FOOTER */}
         <footer className="sticky bottom-0 bg-white border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
           <div className="max-w-5xl mx-auto flex flex-col gap-4">
             <button
@@ -375,7 +351,7 @@ export default function StudentResidencyPage() {
               onClick={disableContinue ? undefined : redirect}
               className={buttonVariants({
                 className: cn(
-                  "h-16 !rounded-2xl shadow-xl transition-all !gap-3 !text-base !font-black !uppercase !tracking-[0.2em] w-full flex items-center justify-center",
+                  "h-14 !rounded-xl shadow-xl transition-all !gap-3 !font-black !uppercase w-full flex items-center justify-center",
                   disableContinue && "pointer-events-none opacity-50 grayscale",
                 ),
               })}>

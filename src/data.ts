@@ -197,6 +197,12 @@ export const features = [
   },
 ];
 
+export const applicationTypes = [
+  "New Student Pass Application",
+  "New STP Application (Current HFSE Student)",
+  "Student Pass Transfer Application",
+];
+
 export const maritalStatuses = [
   { label: "Single", value: "Single" },
   { label: "Married", value: "Married" },
