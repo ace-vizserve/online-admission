@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar as PreCourseCalendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
+import { cn } from "@/lib/utils";
+import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
 import {
   AlertCircle,
   ArrowRight,
@@ -40,8 +41,10 @@ function STPGuidelines() {
   const [icaAcknowledged, setIcaAcknowledged] = useState<boolean>(false);
   const [feesAcknowledged, setFeesAcknowledged] = useState<boolean>(false);
 
-  const [preCourseAnswer, setPreCourseAnswer] = useState<"yes" | "no" | null>(null);
-  const [preCourseDate, setPreCourseDate] = useState<Date | undefined>(undefined);
+  const preCourseAnswer = usePreCourseAcknowledgementStore((state) => state.preCourseAnswer);
+  const setPreCourseAnswer = usePreCourseAcknowledgementStore((state) => state.setPreCourseAnswer);
+  const preCourseDate = usePreCourseAcknowledgementStore((state) => state.preCourseDate);
+  const setPreCourseDate = usePreCourseAcknowledgementStore((state) => state.setPreCourseDate);
   const [open, setOpen] = useState(false);
 
   const { stpApplicationType } = usePassTypeStore();
@@ -51,7 +54,9 @@ function STPGuidelines() {
   const { enroleeType } = state;
 
   const canContinue =
-    icaAcknowledged && feesAcknowledged && preCourseAnswer && (preCourseAnswer === "no" || !!preCourseDate);
+    icaAcknowledged && feesAcknowledged && preCourseAnswer && (preCourseAnswer === "No" || !!preCourseDate);
+
+  const phone = "+65 8200 0062";
 
   function redirect() {
     if (enroleeType === "New") {
@@ -86,6 +91,7 @@ function STPGuidelines() {
           family at a time
         </p>
       </div>
+
       <section className="space-y-12 px-4">
         {/* --- Pill Header --- */}
         <div className="flex flex-col items-center text-center space-y-3">
@@ -156,7 +162,7 @@ function STPGuidelines() {
               <div className="md:col-span-2 p-8 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-xl text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 size-64 bg-white/10 rounded-full blur-3xl" />
                 <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
-                  <div className="size-16 rounded-[1.5rem] bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+                  <div className="size-16 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
                     <Syringe className="size-8 text-white" />
                   </div>
                   <div className="space-y-4 flex-1">
@@ -343,25 +349,8 @@ function STPGuidelines() {
             </a>
           </div>
         </div>
-
-        {/* --- Help Footer --- */}
-        <div className="flex flex-col md:flex-row items-center justify-between p-8 rounded-xl bg-slate-50 border border-slate-200 gap-6">
-          <div className="flex items-center gap-4">
-            <div className="size-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-              <HelpCircle className="size-6 text-slate-400" />
-            </div>
-            <div>
-              <h4 className="text-base font-black text-primary">Unsure about a specific document?</h4>
-              <p className="text-sm font-medium text-slate-500">
-                Our admissions team can review your scans before submission.
-              </p>
-            </div>
-          </div>
-          <Button className="!px-8 !py-8 rounded-full bg-blue-600 text-white text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
-            <PhoneCall /> Contact Admissions
-          </Button>
-        </div>
       </section>
+
       <section className="space-y-12 mt-20 px-4">
         {/* --- Pill Header --- */}
         <div className="flex flex-col items-center text-center space-y-4">
@@ -443,14 +432,14 @@ function STPGuidelines() {
                   href="https://www.nir.cda.gov.sg/fcine/#/navpage/home"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-white/5 border border-white/10 text-blue-400 text-sm font-bold hover:bg-white/10 hover:text-blue-600 transition-all duration-300 group/link">
+                  className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-white/5 border border-white/10 text-blue-500 text-sm font-bold hover:bg-white/10 hover:text-blue-600 transition-all duration-300 group/link">
                   CDA / NIR portal
                   <ExternalLink className="size-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                 </a>
 
                 <a
                   href="#"
-                  className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-white/5 border border-white/10 text-rose-200 text-sm font-bold hover:bg-white/10 hover:text-rose-600 transition-all duration-300 group/link">
+                  className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-white/5 border border-white/10 text-rose-500 text-sm font-bold hover:bg-white/10 hover:text-rose-600 transition-all duration-300 group/link">
                   NCIS schedule (SG)
                   <ExternalLink className="size-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                 </a>
@@ -512,13 +501,14 @@ function STPGuidelines() {
           </div>
         </div>
       </section>
+
       <section className="space-y-12 mt-24 px-4">
         {/* --- Header --- */}
         <div className="flex flex-col items-center text-center space-y-4 mb-12">
           <div className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-sm font-bold uppercase tracking-widest text-indigo-600">
             Processing Guide
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tighter text-primary">
             Processing Timeline for {stpApplicationType}
           </h2>
           <p className="text-slate-500 max-w-md text-base leading-relaxed">
@@ -748,7 +738,7 @@ function STPGuidelines() {
         {/* 1. Application Process */}
         <label
           htmlFor="ica-checkbox"
-          className={`p-8 rounded-[2rem] border-2 transition-all duration-300 cursor-pointer block
+          className={`p-8 rounded-xl border-2 transition-all duration-300 cursor-pointer block
     ${icaAcknowledged ? "bg-primary/5 border-primary/40" : "bg-slate-50 border-transparent hover:border-slate-200"}`}>
           <div className="flex justify-between items-start mb-6">
             <div
@@ -808,7 +798,7 @@ function STPGuidelines() {
         {/* 2. Fees */}
         <label
           htmlFor="fees-checkbox"
-          className={`p-8 rounded-[2rem] border-2 transition-all duration-300 cursor-pointer block
+          className={`p-8 rounded-xl border-2 transition-all duration-300 cursor-pointer block
     ${feesAcknowledged ? "bg-primary/5 border-primary/40" : "bg-slate-50 border-transparent hover:border-slate-200"}`}>
           <div className="flex justify-between items-start mb-6">
             <div
@@ -818,7 +808,6 @@ function STPGuidelines() {
               <ReceiptText className="size-6" />
             </div>
 
-            {/* Clear Checkbox */}
             <div className="flex items-center gap-2">
               <input
                 id="fees-checkbox"
@@ -871,132 +860,152 @@ function STPGuidelines() {
         </label>
       </div>
 
-      <section className="space-y-12 my-16 px-4">
-        {/* --- Section Header --- */}
-        <div className="flex flex-col md:flex-row items-start gap-6 p-6 rounded-3xl bg-amber-50 border border-amber-200">
-          <div className="size-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-            <Handshake className="size-7" />
+      <section className="rounded-2xl border border-amber-100 bg-amber-50/60 p-6 md:p-8  space-y-5 mb-12">
+        <div className="flex items-start gap-3">
+          <div className="mt-1 rounded-xl bg-amber-100 p-2 text-amber-700">
+            <Handshake className="h-5 w-5" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-lg md:text-xl font-semibold text-amber-950">
+              3. Pre‑Course Counselling Acknowledgement (Open House)
+            </h2>
+            <p className="text-sm text-amber-900/90">
+              HFSE conducts Pre‑Course Counselling during the Open House to explain the course, fees, Student’s Pass
+              procedures, and key Singapore regulations before you decide on enrolment. Parents/guardians are required
+              to acknowledge that this information has been explained.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3 pl-0 md:pl-10">
+          <p className="text-sm font-semibold text-amber-950">
+            During the Open House, did you fill in and sign the Pre‑Course Counselling Acknowledgement Form?
+          </p>
+
+          <div className="flex flex-wrap gap-4">
+            <label className="inline-flex items-center gap-2 text-sm font-semibold text-amber-950 cursor-pointer">
+              <input
+                type="radio"
+                name="preCourseSigned"
+                value="Yes"
+                checked={preCourseAnswer === "Yes"}
+                onChange={() => setPreCourseAnswer("Yes")}
+                className="size-4 accent-amber-700"
+              />
+              Yes
+            </label>
+
+            <label className="inline-flex items-center gap-2 text-sm font-semibold text-amber-950 cursor-pointer">
+              <input
+                type="radio"
+                name="preCourseSigned"
+                value="No"
+                checked={preCourseAnswer === "No"}
+                onChange={() => {
+                  setPreCourseAnswer("No");
+                  setPreCourseDate(undefined);
+                }}
+                className="size-4 accent-amber-700"
+              />
+              No
+            </label>
           </div>
 
-          <div className="space-y-4 flex-1">
-            <h4 className="text-lg font-bold text-amber-900 tracking-tight">
-              During the Open House, did you fill in and sign the Pre-Course Counselling Acknowledgement Form?
-            </h4>
-
-            {/* Yes / No choice */}
-            <div className="flex flex-wrap gap-4">
-              <label className="inline-flex items-center gap-2 text-sm font-semibold text-amber-900 cursor-pointer">
-                <input
-                  type="radio"
-                  name="preCourseSigned"
-                  value="yes"
-                  checked={preCourseAnswer === "yes"}
-                  onChange={() => setPreCourseAnswer("yes")}
-                  className="size-4 accent-amber-600"
-                />
-                Yes
+          {preCourseAnswer === "Yes" && (
+            <div className="mt-3 space-y-2">
+              <label className="block text-sm font-semibold text-amber-950">
+                On which date did you sign the form at the Open House?
               </label>
-
-              <label className="inline-flex items-center gap-2 text-sm font-semibold text-amber-900 cursor-pointer">
-                <input
-                  type="radio"
-                  name="preCourseSigned"
-                  value="no"
-                  checked={preCourseAnswer === "no"}
-                  onChange={() => {
-                    setPreCourseAnswer("no");
-                    setPreCourseDate(undefined);
-                  }}
-                  className="size-4 accent-amber-600"
-                />
-                No
-              </label>
-            </div>
-
-            {/* If YES → ask for exact date of the Open House signing */}
-            {preCourseAnswer === "yes" && (
-              <div className="mt-3 space-y-2">
-                <label className="block text-sm font-semibold text-amber-900">
-                  On which date did you sign the form at the Open House?
-                </label>
-
-                <div className="w-full max-w-xs space-y-2">
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" id="date" className="w-full justify-between font-normal">
-                        {preCourseDate ? preCourseDate.toLocaleDateString() : "Pick a date"}
-                        <ChevronDownIcon />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                      <PreCourseCalendar
-                        disabled={{
-                          after: new Date(),
-                        }}
-                        mode="single"
-                        selected={preCourseDate}
-                        onSelect={(date) => {
-                          setPreCourseDate(date);
-                          setOpen(false);
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {preCourseDate && (
-                  <p className="text-xs text-amber-800">
-                    You indicated:{" "}
-                    <span className="font-semibold">
-                      {new Date(preCourseDate).toLocaleDateString("en-SG", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </p>
-                )}
-
-                <p className="text-xs text-amber-700">
-                  This date helps the school link your acknowledgement to the correct Open House session.
-                </p>
+              <div className="w-full max-w-xs space-y-2">
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" id="pre-course-date" className="w-full justify-between font-normal">
+                      {preCourseDate ? preCourseDate.toLocaleDateString("en-SG") : "Pick a date"}
+                      <ChevronDownIcon className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                    <PreCourseCalendar
+                      disabled={{
+                        after: new Date(),
+                      }}
+                      mode="single"
+                      selected={preCourseDate}
+                      onSelect={(date) => {
+                        setPreCourseDate(date);
+                        setOpen(false);
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
-            )}
-
-            {/* If NO → simple info text */}
-            {preCourseAnswer === "no" && (
-              <p className="mt-2 text-sm text-amber-800/80">
-                Our Admissions Officer will schedule a pre-course counselling session with you before confirming your
-                child’s enrolment and any Student’s Pass application.
+              <p className="text-xs text-amber-800">
+                This date helps the school link your acknowledgement to the correct Open House session and Student
+                P‑File.
               </p>
-            )}
-          </div>
+            </div>
+          )}
+
+          {preCourseAnswer === "No" && (
+            <p className="mt-2 text-xs text-amber-900/90">
+              Our Admissions Officer will schedule a pre‑course counselling session with you before confirming your
+              child’s enrolment and any Student’s Pass application.
+            </p>
+          )}
         </div>
       </section>
 
-      <div className="flex flex-col items-center gap-8 bg-primary/5 border border-primary/10 rounded-[2.5rem] p-10 md:p-12 text-center shadow-lg relative">
-        <div className="space-y-2">
-          <h4 className="text-primary text-2xl font-black">Ready to begin the application?</h4>
+      <div
+        className="flex flex-col items-center gap-8 
+  bg-blue-50 border border-blue-200 
+  rounded-2xl p-10 md:p-12 text-center shadow-sm relative mb-12">
+        <div className="space-y-4">
+          <h4 className="text-primary text-2xl font-black uppercase">Ready to begin the application?</h4>
 
-          <p className="text-slate-600 text-sm max-w-sm mx-auto">
-            {!icaAcknowledged || !feesAcknowledged || !preCourseAnswer
-              ? "Please confirm the information above so we know the process, fees, and pre-course counselling have been clearly explained."
-              : "You’re all set. We will now guide you to the application form and required documents."}
-          </p>
+          <Button
+            onClick={redirect}
+            size="lg"
+            disabled={!canContinue}
+            className={cn(
+              "!px-8 !py-8 rounded-full bg-blue-600 text-white text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200",
+            )}>
+            Continue to Application Form
+            <ArrowRight className="ml-2 size-4" />
+          </Button>
         </div>
 
-        <Button
-          onClick={redirect}
-          size="lg"
-          disabled={!canContinue}
-          className="h-14 !px-12 rounded-xl font-bold text-sm transition-all duration-300
-      disabled:bg-slate-200 disabled:text-slate-400
-      bg-primary text-white hover:bg-primary/90 shadow-md">
-          Continue to Application Form
-          <ArrowRight className="ml-2 size-4" />
-        </Button>
+        <p
+          className={cn("uppercase italic text-sm max-w-md mx-auto font-medium", {
+            "text-amber-700": !canContinue,
+            "text-green-700": canContinue,
+          })}>
+          {!canContinue
+            ? "Please review and confirm the information above before continuing."
+            : "Thank you for confirming. You may now proceed to the application form."}
+        </p>
 
-        <p className="text-xs text-slate-500 font-medium">Estimated time to complete: 15–20 minutes</p>
+        <p className="text-sm text-gray-600 font-medium">Estimated time to complete: 15–20 minutes</p>
+      </div>
+
+      {/* --- Help Footer --- */}
+      <div className="flex flex-col md:flex-row items-center justify-between p-8 rounded-xl bg-slate-50 border border-slate-200 gap-6">
+        <div className="flex items-center gap-4">
+          <div className="size-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+            <HelpCircle className="size-6 text-slate-400" />
+          </div>
+          <div>
+            <h4 className="text-base font-black text-primary">Unsure about a specific document?</h4>
+            <p className="text-sm font-medium text-slate-500">
+              Our admissions team can review your scans before submission.
+            </p>
+          </div>
+        </div>
+
+        <a href={`tel:${phone}`}>
+          <Button className="!px-8 !py-8 rounded-full bg-blue-600 text-white text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
+            <PhoneCall /> Contact Admissions
+          </Button>
+        </a>
       </div>
     </MaxWidthWrapper>
   );

@@ -32,6 +32,14 @@ export type PassTypeStore = {
   clearState: () => void;
 };
 
+export type PreCourseAcknowledgementStore = {
+  preCourseAnswer: "Yes" | "No" | null;
+  preCourseDate: Date | undefined;
+  setPreCourseAnswer: (state: "Yes" | "No" | null) => void;
+  setPreCourseDate: (state: Date | undefined) => void;
+  clearState: () => void;
+};
+
 export type PasswordResetStore = {
   passwordResetState: boolean;
   setPasswordResetState: (state: boolean) => void;
@@ -253,6 +261,24 @@ export const usePassTypeStore = create<PassTypeStore>()(
     }),
     {
       name: "pass-type",
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
+);
+
+export const usePreCourseAcknowledgementStore = create<PreCourseAcknowledgementStore>()(
+  persist(
+    (set, _, store) => ({
+      preCourseAnswer: null,
+      preCourseDate: undefined,
+      setPreCourseAnswer: (preCourseAnswer) => set({ preCourseAnswer }),
+      setPreCourseDate: (preCourseDate) => set({ preCourseDate }),
+      clearState: () => {
+        set(store.getInitialState());
+      },
+    }),
+    {
+      name: "pre-course-acknowledgement",
       storage: createJSONStorage(() => sessionStorage),
     },
   ),

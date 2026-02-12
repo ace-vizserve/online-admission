@@ -49,6 +49,8 @@ import { useState } from "react";
 function AdmissionGuidelines() {
   const [selectedApplicationType, setSelectedApplicationType] = useState<"general" | "student-pass">("general");
 
+  const phone = "+65 8200 0062";
+
   return (
     <div className="relative w-full min-h-screen bg-[#FAFBFF]">
       <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16">
@@ -896,9 +898,11 @@ function AdmissionGuidelines() {
                     </p>
                   </div>
                 </div>
-                <Button className="!px-8 !py-8 rounded-full bg-blue-600 text-white text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
-                  <PhoneCall /> Contact Admissions
-                </Button>
+                <a href={`tel:${phone}`}>
+                  <Button className="!px-8 !py-8 rounded-full bg-blue-600 text-white text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
+                    <PhoneCall /> Contact Admissions
+                  </Button>
+                </a>
               </div>
             </section>
 
