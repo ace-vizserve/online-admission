@@ -1,6 +1,7 @@
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { applicationTypes } from "@/data";
 import { cn } from "@/lib/utils";
-import { useSelectAcademicYear } from "@/zustand-store";
+import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { AlertCircle, Search } from "lucide-react";
 import { NavLink, useParams } from "react-router";
 
@@ -8,10 +9,11 @@ function OldStudentSteps() {
   const { formState } = useEnrolOldStudentContext();
   const params = useParams();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
 
-  const { familyInfo, enrollmentInfo, uploadRequirements } = formState;
+  const { familyInfo, enrollmentInfo, uploadRequirements, studentInfo } = formState;
 
-  // Validation Logic
+  const isAddressContactInvalid = applicationTypes.includes(stpApplicationType) && !studentInfo?.addressContact.isValid;
   const isFamilyInfoInvalid = familyInfo == null;
   const enrollmentInfoIsInvalid = enrollmentInfo == null || enrollmentInfo.isValid !== true;
   const docsInvalid =
@@ -23,7 +25,7 @@ function OldStudentSteps() {
       name: "Student Information",
       path: "student-info",
       desc: "Student profile and personal data",
-      invalid: false,
+      invalid: isAddressContactInvalid,
     },
     {
       name: "Family Information",
@@ -62,10 +64,10 @@ function OldStudentSteps() {
                     step.forReview
                       ? "bg-primary text-white ring-4 ring-primary/20"
                       : isActive && !step.invalid
-                      ? "bg-primary text-white ring-4 ring-slate-100"
-                      : step.invalid
-                      ? "bg-destructive text-white border border-destructive"
-                      : "bg-slate-100 text-slate-400"
+                        ? "bg-primary text-white ring-4 ring-slate-100"
+                        : step.invalid
+                          ? "bg-destructive text-white border border-destructive"
+                          : "bg-slate-100 text-slate-400",
                   )}>
                   {step.invalid ? <AlertCircle size={14} /> : step.forReview ? <Search size={14} /> : index + 1}
                 </div>
@@ -79,8 +81,8 @@ function OldStudentSteps() {
                         isActive && !step.invalid
                           ? "text-primary"
                           : isActive && step.invalid
-                          ? "text-destructive"
-                          : "text-slate-500"
+                            ? "text-destructive"
+                            : "text-slate-500",
                       )}>
                       {step.name}
                     </p>
@@ -93,7 +95,7 @@ function OldStudentSteps() {
                   <div
                     className={cn(
                       "h-full w-full rounded-t-full transition-all duration-300",
-                      isActive ? (step.invalid ? "bg-destructive" : "bg-primary") : "bg-slate-100"
+                      isActive ? (step.invalid ? "bg-destructive" : "bg-primary") : "bg-slate-100",
                     )}
                   />
                 </div>

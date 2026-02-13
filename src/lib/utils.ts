@@ -35,14 +35,14 @@ export function capitalizeWords(str: string) {
 
 export function documentErrors(
   role: "guardian" | "mother" | "father",
-  errors: FieldErrors<ParentGuardianUploadRequirementsSchema>
+  errors: FieldErrors<ParentGuardianUploadRequirementsSchema>,
 ) {
   const includesPassportError = Object.keys(errors).find(
-    (key) => key === `${role}Passport` || key === `${role}PassportExpiry` || key === `${role}PassportNumber`
+    (key) => key === `${role}Passport` || key === `${role}PassportExpiry` || key === `${role}PassportNumber`,
   );
 
   const includesPassError = Object.keys(errors).find(
-    (key) => key === `${role}Pass` || key === `${role}PassExpiry` || key === `${role}PassType`
+    (key) => key === `${role}Pass` || key === `${role}PassExpiry` || key === `${role}PassType`,
   );
 
   return { includesPassportError: Boolean(includesPassportError), includesPassError: Boolean(includesPassError) };
@@ -132,7 +132,7 @@ export function replaceNulls<T extends Record<string, unknown>>(obj: T): T {
 export const formatBytes = (
   bytes: number,
   decimals = 2,
-  size?: "bytes" | "KB" | "MB" | "GB" | "TB" | "PB" | "EB" | "ZB" | "YB"
+  size?: "bytes" | "KB" | "MB" | "GB" | "TB" | "PB" | "EB" | "ZB" | "YB",
 ) => {
   const k = 1000;
   const dm = decimals < 0 ? 0 : decimals;
@@ -394,8 +394,8 @@ export async function getStudentsList(parentEmail: string) {
           academicYear === "2026" && (info.studentNumber as string).startsWith("V")
             ? "Pre-Enrolled for VizSchool"
             : academicYear === "2026" && !(info.studentNumber as string).startsWith("V")
-            ? "Pre-Enrolled for 2026"
-            : "Registered",
+              ? "Pre-Enrolled for 2026"
+              : "Registered",
       }));
 
     const allStudents = [
@@ -421,7 +421,7 @@ export async function getPreviousAYEnrolledStudents(parentEmail: string) {
   try {
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase
       .from(`ay${new Date().getFullYear() - 1}_enrolment_applications`)
-      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber, nric, birthDay")
+      .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber, nric, birthDay, pass")
       .eq("applicationStatus", "Registered")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
       .order("enroleeNumber", { ascending: false });
@@ -438,6 +438,7 @@ export async function getPreviousAYEnrolledStudents(parentEmail: string) {
         nric: student.nric,
         birthDay: student.birthDay,
         enroleeFullName: student.enroleeFullName,
+        pass: student.pass,
       });
 
       if (seenPreviousEnrolled.has(key)) return false;
@@ -505,7 +506,7 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
       .select("applicationRemarks, enroleeNumber, applicationStatus")
       .in(
         "enroleeNumber",
-        ay2026studentInformation.map((v) => v.enroleeNumber)
+        ay2026studentInformation.map((v) => v.enroleeNumber),
       );
 
     if (ay2026studentEnrollmentError) {
@@ -537,7 +538,7 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
       .select("applicationRemarks, enroleeNumber, applicationStatus")
       .in(
         "enroleeNumber",
-        ay2025studentInformation.map((v) => v.enroleeNumber)
+        ay2025studentInformation.map((v) => v.enroleeNumber),
       );
 
     if (ay2025studentEnrollmentError) {

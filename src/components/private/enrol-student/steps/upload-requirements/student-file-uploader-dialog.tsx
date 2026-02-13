@@ -33,7 +33,6 @@ import {
   CalendarIcon,
   CheckCircle2,
   CircleAlert,
-  Clock,
   CloudUpload,
   Download,
   ExternalLink,
@@ -63,7 +62,15 @@ const medicalExamurl = import.meta.env.VITE_MEDICAL_EXAM_FORM_URL as string;
 
 const NOT_FILE_INPUTS = ["passExpiry", "passType", "passportExpiry", "passportNumber"];
 
-const MULTIPLE_FILE_UPLOADS = ["medical", "passport", "pass", "birthCert", "educCert"];
+const MULTIPLE_FILE_UPLOADS = [
+  "medical",
+  "passport",
+  "pass",
+  "birthCert",
+  "educCert",
+  "vaccinationInformation",
+  "financialSupportDocs",
+];
 
 const TO_FOLLOW_DOCS = ["idPicture", "passport", "pass", "birthCert"];
 
@@ -210,444 +217,494 @@ const StudentFileUploaderDialog = memo(function ({
         },
       },
     },
-    0
+    0,
   );
 
   if (isDesktop) {
+    const isMissing = !formState.uploadRequirements?.studentUploadRequirements[name];
+    const isToFollow = formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name);
+    const hasError = errors[name] != null;
+
     return (
-      <div
-        className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
-          "border-red-300 bg-red-50": errors[name] != null,
-          "border-green-300 bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
-          "border-amber-300 bg-amber-50":
-            formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
-        })}>
-        <div className="flex items-center gap-4">
-          {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-            <CheckCircle2 className="stroke-white fill-green-600 size-6" />
-          ) : errors[name] != null ? (
-            <CircleAlert className="size-6 text-destructive" />
-          ) : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name) ? (
-            <Clock className="size-6 text-amber-600" />
-          ) : (
-            <Upload className="size-6 text-sky-600" />
-          )}
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-semibold">{label}</span>
-            <span className="text-muted-foreground font-medium text-xs">{description}</span>
+      <div className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl gap-4 transition-all hover:border-slate-300">
+        {/* Header Area: Icon & Text */}
+        <div className="flex items-center gap-4 min-w-0">
+          {/* Icon Plate */}
+          <div
+            className={cn(
+              "size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+              hasError
+                ? "bg-red-100 text-red-600"
+                : isToFollow
+                  ? "bg-amber-100 text-amber-600"
+                  : isMissing
+                    ? "bg-slate-100 text-slate-400"
+                    : "bg-primary text-primary-foreground shadow-sm",
+            )}>
+            {isMissing || isToFollow ? (
+              <Upload size={20} />
+            ) : hasError ? (
+              <CircleAlert size={20} />
+            ) : (
+              <CheckCircle2 size={20} />
+            )}
+          </div>
+
+          {/* Text Details */}
+          <div className="flex flex-col min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+              <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{label}</h3>
+              {isToFollow && (
+                <Badge className="text-[10px] font-bold uppercase bg-amber-100 text-amber-700 hover:bg-amber-100">
+                  To Follow
+                </Badge>
+              )}
+              {!isMissing && !isToFollow && !hasError && (
+                <Badge className="text-[10px] font-bold uppercase bg-green-100 text-green-700 hover:bg-green-100">
+                  Uploaded
+                </Badge>
+              )}
+              {hasError && (
+                <Badge className="text-[10px] font-bold uppercase bg-red-100 text-red-700 hover:bg-red-100">
+                  Required
+                </Badge>
+              )}
+            </div>
+
+            <p
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-tighter",
+                hasError
+                  ? "text-red-600"
+                  : isToFollow
+                    ? "text-amber-600"
+                    : isMissing
+                      ? "text-slate-500"
+                      : "text-green-600",
+              )}>
+              {hasError ? "Action Required" : isToFollow ? "Submit Later" : isMissing ? description : "Record Saved"}
+            </p>
           </div>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              className="font-semibold"
-              variant={
-                errors[name] != null
-                  ? "destructive"
-                  : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-                  ? "secondary"
-                  : "outline"
-              }>
-              {formState.uploadRequirements?.studentUploadRequirements?.[name]
-                ? "View"
-                : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-                ? "To follow"
-                : "Upload"}
-            </Button>
-          </DialogTrigger>
 
-          <DialogContent className="!max-w-3xl">
-            <DialogHeader className="text-start">
-              <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
-              <DialogDescription className="font-semibold">
-                Upload a clear and recent document in{" "}
-                <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
-              </DialogDescription>
-            </DialogHeader>
-
-            {MULTIPLE_FILE_UPLOADS.includes(name) ? (
-              <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-                Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save
-                Changes.
-              </Badge>
-            ) : null}
-
-            {name === "medical" && (
-              <Link
-                to={medicalExamurl}
-                target="_blank"
-                className={buttonVariants({
-                  className: "gap-2 w-max mx-auto text-xs",
-                  variant: "outline",
-                })}>
-                Download Medical Exam Form <Download />
-              </Link>
-            )}
-
-            {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-              <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
-                <Button
-                  disabled={isChangingDocument}
-                  onClick={async () => await changeDocument()}
-                  size={"sm"}
-                  className="text-xs absolute right-4 top-4 font-bold">
-                  {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
-                  Change document
-                </Button>
-                <div className="p-6 bg-white rounded-full">
-                  <img src={fileSvg} className="size-14" />
-                </div>
-                <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
-
-                {!NOT_FILE_INPUTS.includes(name) && formState.uploadRequirements?.studentUploadRequirements[name] && (
-                  <Link
-                    to={formState.uploadRequirements.studentUploadRequirements[name] as string}
-                    target="_blank"
-                    className={buttonVariants({
-                      className: "gap-2 text-xs hover:bg-white",
-                      variant: "outline",
-                    })}>
-                    View document <ExternalLink />
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <FormField
-                control={form.control}
-                name={name}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FileUploader
-                        value={value}
-                        onValueChange={onValueChange}
-                        dropzoneOptions={dropZoneConfig}
-                        className="relative bg-background rounded-lg cursor-no-drop">
-                        <FileInput
-                          {...field}
-                          id="fileInput"
-                          className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
-                            "opacity-70 cursor-not-allowed pointer-events-none":
-                              formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
-                          })}>
-                          <div className="flex items-center justify-center flex-col p-8 w-full">
-                            <CloudUpload className="text-gray-500 w-10 h-10" />
-                            <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                              <span className="font-semibold">Click to upload</span> or drag and drop
-                            </p>
-                          </div>
-                        </FileInput>
-
-                        <FileUploaderContent>
-                          {value == null && formState.uploadRequirements?.studentUploadRequirements[name] && (
-                            <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
-                              <div className="flex items-center gap-1">
-                                <Paperclip className="h-4 w-4 stroke-current" />
-                                <span className="text-sm font-medium">
-                                  {(formState.uploadRequirements.studentUploadRequirements[name] as string)
-                                    .split("\\")
-                                    .pop()}
-                                </span>
-                              </div>
-                              <Trash2
-                                className="h-4 w-4"
-                                onClick={() => {
-                                  form.reset({
-                                    ...form.getValues(),
-                                    [name]: undefined,
-                                  });
-                                  onValueChange(null);
-                                  setFormState({
-                                    ...formState,
-                                    uploadRequirements: {
-                                      ...formState.uploadRequirements!,
-                                      studentUploadRequirements: {
-                                        ...formState.uploadRequirements!.studentUploadRequirements,
-                                        [name]: undefined,
-                                      },
-                                    },
-                                  });
-                                }}
-                              />
-                            </div>
-                          )}
-                          {value &&
-                            value.length > 0 &&
-                            value.map((file, i) => (
-                              <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
-                                <Paperclip className="h-4 w-4 stroke-current" />
-                                <span>{file.name}</span>
-                              </FileUploaderItem>
-                            ))}
-                        </FileUploaderContent>
-                      </FileUploader>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {value != null && value.length > 0 && (
-              <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
-                {isPending ? (
+        {/* Action Area */}
+        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className="flex-1 sm:flex-none h-9 gap-2 text-[11px] !font-bold border-slate-200 hover:bg-slate-50 rounded-2xl"
+                variant="outline">
+                {isMissing || isToFollow ? (
                   <>
-                    Uploading <DotPulse size="30" speed="1.3" color="white" />
+                    <Upload size={14} />
+                    <span>Upload</span>
                   </>
                 ) : (
                   <>
-                    Upload file <Upload />
+                    <Upload size={14} />
+                    <span>Manage</span>
                   </>
                 )}
               </Button>
-            )}
+            </DialogTrigger>
 
-            {!formState.uploadRequirements?.studentUploadRequirements?.[name] &&
-              TO_FOLLOW_DOCS.includes(name) &&
-              !OPTIONAL_DOCS.includes(name) && (
+            <DialogContent className="!max-w-3xl">
+              <DialogHeader className="text-start">
+                <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+                <DialogDescription className="font-semibold">
+                  Upload a clear and recent document in{" "}
+                  <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
+                </DialogDescription>
+              </DialogHeader>
+
+              {MULTIPLE_FILE_UPLOADS.includes(name) ? (
+                <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+                  Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save
+                  Changes.
+                </Badge>
+              ) : null}
+
+              {name === "medical" && (
+                <Link
+                  to={medicalExamurl}
+                  target="_blank"
+                  className={buttonVariants({
+                    className: "gap-2 w-max mx-auto text-xs",
+                    variant: "outline",
+                  })}>
+                  Download Medical Exam Form <Download />
+                </Link>
+              )}
+
+              {formState.uploadRequirements?.studentUploadRequirements[name] ? (
+                <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+                  <Button
+                    disabled={isChangingDocument}
+                    onClick={async () => await changeDocument()}
+                    size={"sm"}
+                    className="text-xs absolute right-4 top-4 font-bold">
+                    {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
+                    Change document
+                  </Button>
+                  <div className="p-6 bg-white rounded-full">
+                    <img src={fileSvg} className="size-14" />
+                  </div>
+                  <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
+
+                  {!NOT_FILE_INPUTS.includes(name) && formState.uploadRequirements?.studentUploadRequirements[name] && (
+                    <Link
+                      to={formState.uploadRequirements.studentUploadRequirements[name] as string}
+                      target="_blank"
+                      className={buttonVariants({
+                        className: "gap-2 text-xs hover:bg-white",
+                        variant: "outline",
+                      })}>
+                      View document <ExternalLink />
+                    </Link>
+                  )}
+                </div>
+              ) : (
                 <FormField
                   control={form.control}
-                  name="toFollowDocs"
+                  name={name}
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-end gap-3 pt-2">
-                      <div className="flex items-center gap-2">
-                        <FormLabel>Document to follow</FormLabel>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <InfoIcon className="size-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent side="left" className="max-w-xs">
-                            <p className="text-sm">
-                              Enable this if you don't have the document ready now. You can submit it after enrollment
-                              is complete.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
+                    <FormItem>
                       <FormControl>
-                        <Switch
-                          {...field}
-                          checked={form.getValues("toFollowDocs")?.includes(name)}
-                          onCheckedChange={(checked) => {
-                            const current = form.getValues("toFollowDocs") || [];
-                            const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+                        <FileUploader
+                          value={value}
+                          onValueChange={onValueChange}
+                          dropzoneOptions={dropZoneConfig}
+                          className="relative bg-background rounded-lg cursor-no-drop">
+                          <FileInput
+                            {...field}
+                            id="fileInput"
+                            className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
+                              "opacity-70 cursor-not-allowed pointer-events-none":
+                                formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
+                            })}>
+                            <div className="flex items-center justify-center flex-col p-8 w-full">
+                              <CloudUpload className="text-gray-500 w-10 h-10" />
+                              <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold">Click to upload</span> or drag and drop
+                              </p>
+                            </div>
+                          </FileInput>
 
-                            const updatedStudentReqs = {
-                              ...formState.uploadRequirements!.studentUploadRequirements,
-                              isValid: false,
-                              [name]: "",
-                              toFollowDocs: updatedDocs,
-                            };
-
-                            if (checked) {
-                              if (name === "passport") {
-                                updatedStudentReqs.passportNumber = "";
-                                updatedStudentReqs.passportExpiry = null as unknown as undefined;
-                                form.setValue("passportNumber", "");
-                                form.setValue("passportExpiry", null as unknown as undefined);
-                              }
-                              if (name === "pass") {
-                                updatedStudentReqs.passType = "";
-                                updatedStudentReqs.passExpiry = null as unknown as undefined;
-                                form.setValue("passType", "");
-                                form.setValue("passExpiry", null as unknown as undefined);
-                              }
-                            }
-
-                            form.setValue(name, "");
-                            form.setValue("toFollowDocs", updatedDocs);
-                            onValueChange(null);
-
-                            setFormState({
-                              ...formState,
-                              uploadRequirements: {
-                                ...formState.uploadRequirements!,
-                                studentUploadRequirements: updatedStudentReqs,
-                              },
-                            });
-
-                            form.trigger();
-                          }}
-                        />
+                          <FileUploaderContent>
+                            {value == null && formState.uploadRequirements?.studentUploadRequirements[name] && (
+                              <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
+                                <div className="flex items-center gap-1">
+                                  <Paperclip className="h-4 w-4 stroke-current" />
+                                  <span className="text-sm font-medium">
+                                    {(formState.uploadRequirements.studentUploadRequirements[name] as string)
+                                      .split("\\")
+                                      .pop()}
+                                  </span>
+                                </div>
+                                <Trash2
+                                  className="h-4 w-4"
+                                  onClick={() => {
+                                    form.reset({
+                                      ...form.getValues(),
+                                      [name]: undefined,
+                                    });
+                                    onValueChange(null);
+                                    setFormState({
+                                      ...formState,
+                                      uploadRequirements: {
+                                        ...formState.uploadRequirements!,
+                                        studentUploadRequirements: {
+                                          ...formState.uploadRequirements!.studentUploadRequirements,
+                                          [name]: undefined,
+                                        },
+                                      },
+                                    });
+                                  }}
+                                />
+                              </div>
+                            )}
+                            {value &&
+                              value.length > 0 &&
+                              value.map((file, i) => (
+                                <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                                  <Paperclip className="h-4 w-4 stroke-current" />
+                                  <span>{file.name}</span>
+                                </FileUploaderItem>
+                              ))}
+                          </FileUploaderContent>
+                        </FileUploader>
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
 
-            {name === "pass" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
-                <FormField
-                  control={form.control}
-                  name="passType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pass Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+              {value != null && value.length > 0 && (
+                <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
+                  {isPending ? (
+                    <>
+                      Uploading <DotPulse size="30" speed="1.3" color="white" />
+                    </>
+                  ) : (
+                    <>
+                      Upload file <Upload />
+                    </>
+                  )}
+                </Button>
+              )}
+
+              {!formState.uploadRequirements?.studentUploadRequirements?.[name] &&
+                TO_FOLLOW_DOCS.includes(name) &&
+                !OPTIONAL_DOCS.includes(name) && (
+                  <FormField
+                    control={form.control}
+                    name="toFollowDocs"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-end gap-3 pt-2">
+                        <div className="flex items-center gap-2">
+                          <FormLabel>Document to follow</FormLabel>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-xs">
+                              <p className="text-sm">
+                                Enable this if you don't have the document ready now. You can submit it after enrollment
+                                is complete.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
                         <FormControl>
-                          <SelectTrigger disabled={form.getValues("toFollowDocs")?.includes("pass")} className="w-full">
-                            <SelectValue placeholder="Select a pass type" />
-                          </SelectTrigger>
+                          <Switch
+                            {...field}
+                            checked={form.getValues("toFollowDocs")?.includes(name)}
+                            onCheckedChange={(checked) => {
+                              const current = form.getValues("toFollowDocs") || [];
+                              const updatedDocs = checked
+                                ? [...current, name]
+                                : current.filter((item) => item !== name);
+
+                              const updatedStudentReqs = {
+                                ...formState.uploadRequirements!.studentUploadRequirements,
+                                isValid: false,
+                                [name]: "",
+                                toFollowDocs: updatedDocs,
+                              };
+
+                              if (checked) {
+                                if (name === "passport") {
+                                  updatedStudentReqs.passportNumber = "";
+                                  updatedStudentReqs.passportExpiry = null as unknown as undefined;
+                                  form.setValue("passportNumber", "");
+                                  form.setValue("passportExpiry", null as unknown as undefined);
+                                }
+                                if (name === "pass") {
+                                  updatedStudentReqs.passType = "";
+                                  updatedStudentReqs.passExpiry = null as unknown as undefined;
+                                  form.setValue("passType", "");
+                                  form.setValue("passExpiry", null as unknown as undefined);
+                                }
+                              }
+
+                              form.setValue(name, "");
+                              form.setValue("toFollowDocs", updatedDocs);
+                              onValueChange(null);
+
+                              setFormState({
+                                ...formState,
+                                uploadRequirements: {
+                                  ...formState.uploadRequirements!,
+                                  studentUploadRequirements: updatedStudentReqs,
+                                },
+                              });
+
+                              form.trigger();
+                            }}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {studentPassTypes.map((passType) => (
-                            <SelectItem key={passType.value} value={passType.value}>
-                              {passType.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>Your student's pass type.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="passExpiry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pass Expiry</FormLabel>
-                      <Popover modal>
-                        <PopoverTrigger asChild>
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+              {name === "pass" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
+                  <FormField
+                    control={form.control}
+                    name="passType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pass Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <Button
+                            <SelectTrigger
                               disabled={form.getValues("toFollowDocs")?.includes("pass")}
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}>
-                              {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                              className="w-full">
+                              <SelectValue placeholder="Select a pass type" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <AdvancedCalendarSelection
-                            setDate={(date) => {
-                              if (date) {
-                                const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-                                );
+                          <SelectContent>
+                            {studentPassTypes.map((passType) => (
+                              <SelectItem key={passType.value} value={passType.value}>
+                                {passType.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Your student's pass type.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="passExpiry"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pass Expiry</FormLabel>
+                        <Popover modal>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                disabled={form.getValues("toFollowDocs")?.includes("pass")}
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground",
+                                )}>
+                                {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <AdvancedCalendarSelection
+                              setDate={(date) => {
+                                if (date) {
+                                  const fixedDate = new Date(
+                                    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+                                  );
 
-                                field.onChange(fixedDate);
+                                  field.onChange(fixedDate);
 
-                                setFormState({
-                                  uploadRequirements: {
-                                    parentGuardianUploadRequirements: {
-                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
-                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                  setFormState({
+                                    uploadRequirements: {
+                                      parentGuardianUploadRequirements: {
+                                        ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                          ({} as ParentGuardianUploadRequirementsSchema)),
+                                      },
+                                      studentUploadRequirements: {
+                                        ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                          ({} as StudentUploadRequirementsSchema)),
+                                        passExpiry: fixedDate,
+                                      },
                                     },
-                                    studentUploadRequirements: {
-                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
-                                        ({} as StudentUploadRequirementsSchema)),
-                                      passExpiry: fixedDate,
-                                    },
-                                  },
-                                });
-                              } else {
-                                field.onChange(date);
-                              }
-                              form.trigger();
-                            }}
-                            date={field.value}
-                            disablePastDates
+                                  });
+                                } else {
+                                  field.onChange(date);
+                                }
+                                form.trigger();
+                              }}
+                              date={field.value}
+                              disablePastDates
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription>Pass expiration date.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {name === "passport" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
+                  <FormField
+                    control={form.control}
+                    name="passportNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Passport Number</FormLabel>
+                        <FormControl>
+                          <PassportInput
+                            disabled={form.getValues("toFollowDocs")?.includes("passport")}
+                            {...field}
+                            placeholder="Enter your passport number"
                           />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>Pass expiration date.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
+                        </FormControl>
+                        <FormDescription>Student's passport number.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            {name === "passport" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
-                <FormField
-                  control={form.control}
-                  name="passportNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Passport Number</FormLabel>
-                      <FormControl>
-                        <PassportInput
-                          disabled={form.getValues("toFollowDocs")?.includes("passport")}
-                          {...field}
-                          placeholder="Enter your passport number"
-                        />
-                      </FormControl>
-                      <FormDescription>Student’s passport number.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="passportExpiry"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Passport Expiry</FormLabel>
+                        <Popover modal>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                disabled={form.getValues("toFollowDocs")?.includes("passport")}
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground",
+                                )}>
+                                {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <AdvancedCalendarSelection
+                              setDate={(date) => {
+                                if (date) {
+                                  const fixedDate = new Date(
+                                    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+                                  );
 
-                <FormField
-                  control={form.control}
-                  name="passportExpiry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Passport Expiry</FormLabel>
-                      <Popover modal>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              disabled={form.getValues("toFollowDocs")?.includes("passport")}
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}>
-                              {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <AdvancedCalendarSelection
-                            setDate={(date) => {
-                              if (date) {
-                                const fixedDate = new Date(
-                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-                                );
+                                  field.onChange(fixedDate);
 
-                                field.onChange(fixedDate);
-
-                                setFormState({
-                                  uploadRequirements: {
-                                    parentGuardianUploadRequirements: {
-                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
-                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                  setFormState({
+                                    uploadRequirements: {
+                                      parentGuardianUploadRequirements: {
+                                        ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                          ({} as ParentGuardianUploadRequirementsSchema)),
+                                      },
+                                      studentUploadRequirements: {
+                                        ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                          ({} as StudentUploadRequirementsSchema)),
+                                        passportExpiry: fixedDate,
+                                      },
                                     },
-                                    studentUploadRequirements: {
-                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
-                                        ({} as StudentUploadRequirementsSchema)),
-                                      passportExpiry: fixedDate,
-                                    },
-                                  },
-                                });
-                              } else {
-                                field.onChange(date);
-                              }
-                              form.trigger();
-                            }}
-                            date={field.value}
-                            disablePastDates
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>Passport expiration date.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+                                  });
+                                } else {
+                                  field.onChange(date);
+                                }
+                                form.trigger();
+                              }}
+                              date={field.value}
+                              disablePastDates
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription>Passport expiration date.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     );
   }
@@ -803,440 +860,491 @@ function StudentFileUploaderDrawer({
         },
       },
     },
-    0
+    0,
   );
 
+  const isMissing = !formState.uploadRequirements?.studentUploadRequirements[name];
+  const isToFollow = formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name);
+  const hasError = errors[name] != null;
+
   return (
-    <div
-      className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
-        "border-red-300 bg-red-50": errors[name] != null,
-        "border-green-300 bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
-        "border-amber-300 bg-amber-50":
-          formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
-      })}>
-      <div className="flex items-center gap-4">
-        {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-          <CheckCircle2 className="stroke-white fill-green-600 size-6" />
-        ) : errors[name] != null ? (
-          <CircleAlert className="text-destructive size-6" />
-        ) : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name) ? (
-          <Clock className="size-6 text-amber-600" />
-        ) : (
-          <Upload className="size-6 text-sky-600" />
-        )}
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-semibold">{label}</span>
-          <span className="text-muted-foreground font-medium text-xs">{description}</span>
+    <div className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl gap-4 transition-all hover:border-slate-300">
+      {/* Header Area: Icon & Text */}
+      <div className="flex items-center gap-4 min-w-0">
+        {/* Icon Plate */}
+        <div
+          className={cn(
+            "size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+            hasError
+              ? "bg-red-100 text-red-600"
+              : isToFollow
+                ? "bg-amber-100 text-amber-600"
+                : isMissing
+                  ? "bg-slate-100 text-slate-400"
+                  : "bg-primary text-primary-foreground shadow-sm",
+          )}>
+          {isMissing || isToFollow ? (
+            <Upload size={20} />
+          ) : hasError ? (
+            <CircleAlert size={20} />
+          ) : (
+            <CheckCircle2 size={20} />
+          )}
+        </div>
+
+        {/* Text Details */}
+        <div className="flex flex-col min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+            <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{label}</h3>
+            {isToFollow && (
+              <Badge className="text-[10px] font-bold uppercase bg-amber-100 text-amber-700 hover:bg-amber-100">
+                To Follow
+              </Badge>
+            )}
+            {!isMissing && !isToFollow && !hasError && (
+              <Badge className="text-[10px] font-bold uppercase bg-green-100 text-green-700 hover:bg-green-100">
+                Uploaded
+              </Badge>
+            )}
+            {hasError && (
+              <Badge className="text-[10px] font-bold uppercase bg-red-100 text-red-700 hover:bg-red-100">
+                Required
+              </Badge>
+            )}
+          </div>
+
+          <p
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-tighter",
+              hasError
+                ? "text-red-600"
+                : isToFollow
+                  ? "text-amber-600"
+                  : isMissing
+                    ? "text-slate-500"
+                    : "text-green-600",
+            )}>
+            {hasError ? "Action Required" : isToFollow ? "Submit Later" : isMissing ? description : "Record Saved"}
+          </p>
         </div>
       </div>
-      <Drawer repositionInputs={false}>
-        <DrawerTrigger asChild>
-          <Button
-            className="font-semibold"
-            variant={
-              errors[name] != null
-                ? "destructive"
-                : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-                ? "secondary"
-                : "outline"
-            }>
-            {formState.uploadRequirements?.studentUploadRequirements?.[name]
-              ? "View"
-              : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-              ? "To follow"
-              : "Upload"}
-          </Button>
-        </DrawerTrigger>
 
-        <DrawerContent className="px-4 space-y-4">
-          <DrawerHeader className="!text-start px-0 mb-0">
-            <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
-
-            <DrawerDescription className="text-xs font-semibold">
-              Upload a clear and recent document in{" "}
-              <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
-            </DrawerDescription>
-          </DrawerHeader>
-
-          {MULTIPLE_FILE_UPLOADS.includes(name) ? (
-            <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
-              Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
-            </Badge>
-          ) : null}
-
-          {name === "medical" && (
-            <Link
-              to={medicalExamurl}
-              target="_blank"
-              className={buttonVariants({
-                className: "gap-2 w-max mx-auto text-xs",
-                variant: "outline",
-                size: "sm",
-              })}>
-              Download Medical Exam Form <Download />
-            </Link>
-          )}
-
-          {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-            <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
-              <Button
-                disabled={isChangingDocument}
-                onClick={async () => await changeDocument()}
-                size={"sm"}
-                className="text-xs absolute right-4 top-4 font-bold">
-                {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
-                Change
-              </Button>
-              <div className="p-6 bg-white rounded-full">
-                <img src={fileSvg} className="size-14" />
-              </div>
-              <p className="text-muted-foreground text-xs">{label} has been uploaded</p>
-
-              {!NOT_FILE_INPUTS.includes(name) && formState.uploadRequirements?.studentUploadRequirements[name] && (
-                <Link
-                  to={formState.uploadRequirements.studentUploadRequirements[name] as string}
-                  target="_blank"
-                  className={buttonVariants({
-                    className: "gap-2 text-xs hover:bg-white",
-                    size: "sm",
-                    variant: "outline",
-                  })}>
-                  View document <ExternalLink />
-                </Link>
-              )}
-            </div>
-          ) : (
-            <FormField
-              control={form.control}
-              name={name}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <FileUploader
-                      value={value}
-                      onValueChange={onValueChange}
-                      dropzoneOptions={dropZoneConfig}
-                      className="relative bg-background rounded-lg cursor-no-drop">
-                      <FileInput
-                        {...field}
-                        id="fileInput"
-                        className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
-                          "opacity-70 cursor-not-allowed pointer-events-none":
-                            formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
-                        })}>
-                        <div className="flex items-center justify-center flex-col p-8 w-full">
-                          <CloudUpload className="text-gray-500 w-10 h-10" />
-                          <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                            <span className="font-semibold">Click to upload</span> or drag and drop
-                          </p>
-                        </div>
-                      </FileInput>
-
-                      <FileUploaderContent>
-                        {value == null && formState.uploadRequirements?.studentUploadRequirements[name] && (
-                          <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
-                            <div className="flex items-center gap-1">
-                              <Paperclip className="h-4 w-4 stroke-current" />
-                              <span className="text-sm font-medium">
-                                {(formState.uploadRequirements.studentUploadRequirements[name] as string)
-                                  .split("\\")
-                                  .pop()}
-                              </span>
-                            </div>
-                            <Trash2
-                              className="h-4 w-4"
-                              onClick={() => {
-                                form.reset({
-                                  ...form.getValues(),
-                                  [name]: undefined,
-                                });
-                                onValueChange(null);
-                                setFormState({
-                                  ...formState,
-                                  uploadRequirements: {
-                                    ...formState.uploadRequirements!,
-                                    studentUploadRequirements: {
-                                      ...formState.uploadRequirements!.studentUploadRequirements,
-                                      [name]: undefined,
-                                    },
-                                  },
-                                });
-                              }}
-                            />
-                          </div>
-                        )}
-                        {value &&
-                          value.length > 0 &&
-                          value.map((file, i) => (
-                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
-                              <Paperclip className="h-4 w-4 stroke-current" />
-                              <span>{file.name}</span>
-                            </FileUploaderItem>
-                          ))}
-                      </FileUploaderContent>
-                    </FileUploader>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-
-          {value != null && value.length > 0 && (
-            <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
-              {isPending ? (
+      {/* Action Area */}
+      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
+        <Drawer repositionInputs={false}>
+          <DrawerTrigger asChild>
+            <Button
+              className="flex-1 sm:flex-none h-9 gap-2 text-[11px] !font-bold border-slate-200 hover:bg-slate-50 rounded-2xl"
+              variant="outline">
+              {isMissing || isToFollow ? (
                 <>
-                  Uploading <DotPulse size="30" speed="1.3" color="white" />
+                  <Upload size={14} />
+                  <span>Upload</span>
                 </>
               ) : (
                 <>
-                  Upload file <Upload />
+                  <Upload size={14} />
+                  <span>Manage</span>
                 </>
               )}
             </Button>
-          )}
+          </DrawerTrigger>
 
-          {!formState.uploadRequirements?.studentUploadRequirements?.[name] &&
-            TO_FOLLOW_DOCS.includes(name) &&
-            !OPTIONAL_DOCS.includes(name) && (
+          <DrawerContent className="px-4 space-y-4">
+            <DrawerHeader className="!text-start px-0 mb-0">
+              <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
+
+              <DrawerDescription className="text-xs font-semibold">
+                Upload a clear and recent document in{" "}
+                <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
+              </DrawerDescription>
+            </DrawerHeader>
+
+            {MULTIPLE_FILE_UPLOADS.includes(name) ? (
+              <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
+                Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save
+                Changes.
+              </Badge>
+            ) : null}
+
+            {name === "medical" && (
+              <Link
+                to={medicalExamurl}
+                target="_blank"
+                className={buttonVariants({
+                  className: "gap-2 w-max mx-auto text-xs",
+                  variant: "outline",
+                  size: "sm",
+                })}>
+                Download Medical Exam Form <Download />
+              </Link>
+            )}
+
+            {formState.uploadRequirements?.studentUploadRequirements[name] ? (
+              <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
+                <Button
+                  disabled={isChangingDocument}
+                  onClick={async () => await changeDocument()}
+                  size={"sm"}
+                  className="text-xs absolute right-4 top-4 font-bold">
+                  {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
+                  Change
+                </Button>
+                <div className="p-6 bg-white rounded-full">
+                  <img src={fileSvg} className="size-14" />
+                </div>
+                <p className="text-muted-foreground text-xs">{label} has been uploaded</p>
+
+                {!NOT_FILE_INPUTS.includes(name) && formState.uploadRequirements?.studentUploadRequirements[name] && (
+                  <Link
+                    to={formState.uploadRequirements.studentUploadRequirements[name] as string}
+                    target="_blank"
+                    className={buttonVariants({
+                      className: "gap-2 text-xs hover:bg-white",
+                      size: "sm",
+                      variant: "outline",
+                    })}>
+                    View document <ExternalLink />
+                  </Link>
+                )}
+              </div>
+            ) : (
               <FormField
                 control={form.control}
-                name="toFollowDocs"
+                name={name}
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-end gap-3 pt-2">
-                    <div className="flex items-center gap-2">
-                      <FormLabel>Document to follow</FormLabel>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <InfoIcon className="size-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent side="left" className="max-w-xs">
-                          <p className="text-sm">
-                            Enable this if you don't have the document ready now. You can submit it after enrollment is
-                            complete.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
+                  <FormItem>
                     <FormControl>
-                      <Switch
-                        {...field}
-                        checked={form.getValues("toFollowDocs")?.includes(name)}
-                        onCheckedChange={(checked) => {
-                          const current = form.getValues("toFollowDocs") || [];
-                          const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+                      <FileUploader
+                        value={value}
+                        onValueChange={onValueChange}
+                        dropzoneOptions={dropZoneConfig}
+                        className="relative bg-background rounded-lg cursor-no-drop">
+                        <FileInput
+                          {...field}
+                          id="fileInput"
+                          className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
+                            "opacity-70 cursor-not-allowed pointer-events-none":
+                              formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
+                          })}>
+                          <div className="flex items-center justify-center flex-col p-8 w-full">
+                            <CloudUpload className="text-gray-500 w-10 h-10" />
+                            <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="font-semibold">Click to upload</span> or drag and drop
+                            </p>
+                          </div>
+                        </FileInput>
 
-                          const updatedStudentReqs = {
-                            ...formState.uploadRequirements!.studentUploadRequirements,
-                            isValid: false,
-                            [name]: undefined,
-                            toFollowDocs: updatedDocs,
-                          };
-
-                          if (checked) {
-                            if (name === "passport") {
-                              updatedStudentReqs.passportNumber = "";
-                              updatedStudentReqs.passportExpiry = null as unknown as undefined;
-                              form.setValue("passportNumber", "");
-                              form.setValue("passportExpiry", null as unknown as undefined);
-                            }
-                            if (name === "pass") {
-                              updatedStudentReqs.passType = "";
-                              updatedStudentReqs.passExpiry = null as unknown as undefined;
-                              form.setValue("passType", "");
-                              form.setValue("passExpiry", null as unknown as undefined);
-                            }
-                          }
-
-                          form.setValue(name, undefined);
-                          form.setValue("toFollowDocs", updatedDocs);
-                          onValueChange(null);
-
-                          setFormState({
-                            ...formState,
-                            uploadRequirements: {
-                              ...formState.uploadRequirements!,
-                              studentUploadRequirements: updatedStudentReqs,
-                            },
-                          });
-
-                          form.trigger();
-                        }}
-                      />
+                        <FileUploaderContent>
+                          {value == null && formState.uploadRequirements?.studentUploadRequirements[name] && (
+                            <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
+                              <div className="flex items-center gap-1">
+                                <Paperclip className="h-4 w-4 stroke-current" />
+                                <span className="text-sm font-medium">
+                                  {(formState.uploadRequirements.studentUploadRequirements[name] as string)
+                                    .split("\\")
+                                    .pop()}
+                                </span>
+                              </div>
+                              <Trash2
+                                className="h-4 w-4"
+                                onClick={() => {
+                                  form.reset({
+                                    ...form.getValues(),
+                                    [name]: undefined,
+                                  });
+                                  onValueChange(null);
+                                  setFormState({
+                                    ...formState,
+                                    uploadRequirements: {
+                                      ...formState.uploadRequirements!,
+                                      studentUploadRequirements: {
+                                        ...formState.uploadRequirements!.studentUploadRequirements,
+                                        [name]: undefined,
+                                      },
+                                    },
+                                  });
+                                }}
+                              />
+                            </div>
+                          )}
+                          {value &&
+                            value.length > 0 &&
+                            value.map((file, i) => (
+                              <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                                <Paperclip className="h-4 w-4 stroke-current" />
+                                <span>{file.name}</span>
+                              </FileUploaderItem>
+                            ))}
+                        </FileUploaderContent>
+                      </FileUploader>
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             )}
 
-          {name === "pass" && (
-            <div className="grid grid-cols-1 gap-2 w-full">
-              <FormField
-                control={form.control}
-                name="passType"
-                render={({ field }) => (
-                  <FormItem>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+            {value != null && value.length > 0 && (
+              <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
+                {isPending ? (
+                  <>
+                    Uploading <DotPulse size="30" speed="1.3" color="white" />
+                  </>
+                ) : (
+                  <>
+                    Upload file <Upload />
+                  </>
+                )}
+              </Button>
+            )}
+
+            {!formState.uploadRequirements?.studentUploadRequirements?.[name] &&
+              TO_FOLLOW_DOCS.includes(name) &&
+              !OPTIONAL_DOCS.includes(name) && (
+                <FormField
+                  control={form.control}
+                  name="toFollowDocs"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-end gap-3 pt-2">
+                      <div className="flex items-center gap-2">
+                        <FormLabel>Document to follow</FormLabel>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-xs">
+                            <p className="text-sm">
+                              Enable this if you don't have the document ready now. You can submit it after enrollment
+                              is complete.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                       <FormControl>
-                        <SelectTrigger disabled={form.getValues("toFollowDocs")?.includes("pass")} className="w-full">
-                          <SelectValue placeholder="Select a pass type" />
-                        </SelectTrigger>
+                        <Switch
+                          {...field}
+                          checked={form.getValues("toFollowDocs")?.includes(name)}
+                          onCheckedChange={(checked) => {
+                            const current = form.getValues("toFollowDocs") || [];
+                            const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+
+                            const updatedStudentReqs = {
+                              ...formState.uploadRequirements!.studentUploadRequirements,
+                              isValid: false,
+                              [name]: undefined,
+                              toFollowDocs: updatedDocs,
+                            };
+
+                            if (checked) {
+                              if (name === "passport") {
+                                updatedStudentReqs.passportNumber = "";
+                                updatedStudentReqs.passportExpiry = null as unknown as undefined;
+                                form.setValue("passportNumber", "");
+                                form.setValue("passportExpiry", null as unknown as undefined);
+                              }
+                              if (name === "pass") {
+                                updatedStudentReqs.passType = "";
+                                updatedStudentReqs.passExpiry = null as unknown as undefined;
+                                form.setValue("passType", "");
+                                form.setValue("passExpiry", null as unknown as undefined);
+                              }
+                            }
+
+                            form.setValue(name, undefined);
+                            form.setValue("toFollowDocs", updatedDocs);
+                            onValueChange(null);
+
+                            setFormState({
+                              ...formState,
+                              uploadRequirements: {
+                                ...formState.uploadRequirements!,
+                                studentUploadRequirements: updatedStudentReqs,
+                              },
+                            });
+
+                            form.trigger();
+                          }}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        {studentPassTypes.map((passType) => (
-                          <SelectItem key={passType.value} value={passType.value}>
-                            {passType.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    </FormItem>
+                  )}
+                />
+              )}
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="passExpiry"
-                render={({ field }) => (
-                  <FormItem>
-                    <Popover modal>
-                      <PopoverTrigger asChild>
+            {name === "pass" && (
+              <div className="grid grid-cols-1 gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="passType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <Button
-                            disabled={form.getValues("toFollowDocs")?.includes("pass")}
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}>
-                            {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pass expiration date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
+                          <SelectTrigger disabled={form.getValues("toFollowDocs")?.includes("pass")} className="w-full">
+                            <SelectValue placeholder="Select a pass type" />
+                          </SelectTrigger>
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <AdvancedCalendarSelection
-                          setDate={(date) => {
-                            if (date) {
-                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                        <SelectContent>
+                          {studentPassTypes.map((passType) => (
+                            <SelectItem key={passType.value} value={passType.value}>
+                              {passType.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                              field.onChange(fixedDate);
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="passExpiry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Popover modal>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("pass")}
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
+                              )}>
+                              {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pass expiration date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
+                              if (date) {
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+                                );
 
-                              setFormState({
-                                uploadRequirements: {
-                                  parentGuardianUploadRequirements: {
-                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
-                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                field.onChange(fixedDate);
+
+                                setFormState({
+                                  uploadRequirements: {
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                    },
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                      passExpiry: fixedDate,
+                                    },
                                   },
-                                  studentUploadRequirements: {
-                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
-                                      ({} as StudentUploadRequirementsSchema)),
-                                    passExpiry: fixedDate,
-                                  },
-                                },
-                              });
-                            } else {
-                              field.onChange(date);
-                            }
-                            form.trigger();
-                          }}
-                          date={field.value}
-                          disablePastDates
+                                });
+                              } else {
+                                field.onChange(date);
+                              }
+                              form.trigger();
+                            }}
+                            date={field.value}
+                            disablePastDates
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {name === "passport" && (
+              <div className="grid grid-cols-1 gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="passportNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <PassportInput
+                          disabled={form.getValues("toFollowDocs")?.includes("passport")}
+                          placeholder="Enter your passport number"
+                          {...field}
                         />
-                      </PopoverContent>
-                    </Popover>
+                      </FormControl>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          {name === "passport" && (
-            <div className="grid grid-cols-1 gap-2 w-full">
-              <FormField
-                control={form.control}
-                name="passportNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <PassportInput
-                        disabled={form.getValues("toFollowDocs")?.includes("passport")}
-                        placeholder="Enter your passport number"
-                        {...field}
-                      />
-                    </FormControl>
+                <FormField
+                  control={form.control}
+                  name="passportExpiry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Popover modal>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              disabled={form.getValues("toFollowDocs")?.includes("passport")}
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
+                              )}>
+                              {field.value ? format(field.value, "dd/MM/yyyy") : <span>Passport expiration date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <AdvancedCalendarSelection
+                            setDate={(date) => {
+                              if (date) {
+                                const fixedDate = new Date(
+                                  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+                                );
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                                field.onChange(fixedDate);
 
-              <FormField
-                control={form.control}
-                name="passportExpiry"
-                render={({ field }) => (
-                  <FormItem>
-                    <Popover modal>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            disabled={form.getValues("toFollowDocs")?.includes("passport")}
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}>
-                            {field.value ? format(field.value, "dd/MM/yyyy") : <span>Passport expiration date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <AdvancedCalendarSelection
-                          setDate={(date) => {
-                            if (date) {
-                              const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-
-                              field.onChange(fixedDate);
-
-                              setFormState({
-                                uploadRequirements: {
-                                  parentGuardianUploadRequirements: {
-                                    ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
-                                      ({} as ParentGuardianUploadRequirementsSchema)),
+                                setFormState({
+                                  uploadRequirements: {
+                                    parentGuardianUploadRequirements: {
+                                      ...(formState.uploadRequirements?.parentGuardianUploadRequirements ??
+                                        ({} as ParentGuardianUploadRequirementsSchema)),
+                                    },
+                                    studentUploadRequirements: {
+                                      ...(formState.uploadRequirements?.studentUploadRequirements ??
+                                        ({} as StudentUploadRequirementsSchema)),
+                                      passportExpiry: fixedDate,
+                                    },
                                   },
-                                  studentUploadRequirements: {
-                                    ...(formState.uploadRequirements?.studentUploadRequirements ??
-                                      ({} as StudentUploadRequirementsSchema)),
-                                    passportExpiry: fixedDate,
-                                  },
-                                },
-                              });
-                            } else {
-                              field.onChange(date);
-                            }
-                            form.trigger();
-                          }}
-                          date={field.value}
-                          disablePastDates
-                        />
-                      </PopoverContent>
-                    </Popover>
+                                });
+                              } else {
+                                field.onChange(date);
+                              }
+                              form.trigger();
+                            }}
+                            date={field.value}
+                            disablePastDates
+                          />
+                        </PopoverContent>
+                      </Popover>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          )}
-          <DrawerFooter className="px-0 py-4">
-            <div className="h-4" />
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            <DrawerFooter className="px-0 py-4">
+              <div className="h-4" />
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
     </div>
   );
 }

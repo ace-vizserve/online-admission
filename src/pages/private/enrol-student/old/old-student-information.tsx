@@ -5,38 +5,32 @@ import StudentDetails from "@/components/private/enrol-student/tabs/student-info
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
+import { applicationTypes, ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
 import { EnrolOldStudentFormState } from "@/types";
+import { usePassTypeStore } from "@/zustand-store";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { ChevronRight, MapPin, User } from "lucide-react";
 import { useEffect } from "react";
-import { useParams } from "react-router";
-
-const tabs = [
-  {
-    name: "Student Details",
-    value: "student-details",
-    description: "Personal and academic background",
-    icon: User,
-    component: StudentDetails,
-  },
-  {
-    name: "Address & Contact",
-    value: "address-contact",
-    description: "Emergency and residence info",
-    icon: MapPin,
-    component: StudentAddressContact,
-  },
-];
+import { useLocation, useParams } from "react-router";
 
 function OldStudentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION;
   const params = useParams();
 
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+
+  const { state } = useLocation();
+
+  const activeTab = state?.activeTab;
+
   const { formState, setFormState } = useEnrolOldStudentContext();
+
+  const { studentInfo } = formState;
+
+  const isAddressContactInvalid = applicationTypes.includes(stpApplicationType) && !studentInfo?.addressContact.isValid;
 
   const { data, isSuccess, isPending, fetchStatus } = useQuery({
     queryKey: ["student-information", params.id],
@@ -48,6 +42,10 @@ function OldStudentInformation() {
 
   useEffect(() => {
     if (!isSuccess || !data) return;
+
+    const isValid = formState.studentInfo?.addressContact.isValid;
+
+    if (isValid) return;
 
     setFormState({
       studentInfo: data?.studentInfo as EnrolOldStudentFormState["studentInfo"],
@@ -66,17 +64,42 @@ function OldStudentInformation() {
     <>
       <PageMetaData title={title} description={description} />
       <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <StudentInformationTabs />
+        <StudentInformationTabs isAddressContactInvalid={isAddressContactInvalid} activeTab={activeTab} />
       </div>
     </>
   );
 }
 
-function StudentInformationTabs() {
+function StudentInformationTabs({
+  isAddressContactInvalid,
+  activeTab,
+}: {
+  isAddressContactInvalid?: boolean;
+  activeTab?: string;
+}) {
+  const tabs = [
+    {
+      name: "Student Details",
+      value: "student-details",
+      description: "Personal and academic background",
+      icon: User,
+      component: StudentDetails,
+      hasError: false,
+    },
+    {
+      name: "Address & Contact",
+      value: "address-contact",
+      description: "Emergency and residence information",
+      icon: MapPin,
+      component: StudentAddressContact,
+      hasError: isAddressContactInvalid,
+    },
+  ];
+
   return (
     <Tabs
       orientation="vertical"
-      defaultValue={tabs[0].value}
+      defaultValue={activeTab || tabs[0].value}
       className="w-full h-full flex flex-col lg:flex-row items-start gap-8 xl:gap-12">
       {/* Sidebar-style Tabs List */}
       <TabsList className="grid grid-cols-1 h-auto w-full lg:w-[320px] gap-3 bg-transparent p-0">
@@ -89,21 +112,41 @@ function StudentInformationTabs() {
             key={tab.value}
             value={tab.value}
             className={cn(
-              "relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
+              "group relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
-              "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200"
+              "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
+              tab.hasError && "border-red-300",
+              tab.hasError &&
+                "data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-red-200",
             )}>
             <div
               className={cn(
-                "flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
-                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white"
+                "relative flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
+                "bg-slate-100 text-slate-800",
+
+                tab.hasError && "bg-red-50 text-red-600",
+                tab.hasError && "group-data-[state=active]:bg-white/30 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />
+
+              {tab.hasError && (
+                <span
+                  className={cn(
+                    "absolute right-0 top-0 inline-flex size-2 items-center rounded-full bg-red-600 shadow-sm",
+                    "group-data-[state=active]:bg-red-400 group-data-[state=active]:border-2 group-data-[state=active]:border-white group-data-[state=active]:shadow-sm",
+                  )}></span>
+              )}
             </div>
 
-            <div className="flex flex-col items-start text-left">
-              <span className="font-bold text-sm tracking-tight">{tab.name}</span>
-              <span className="text-[11px] font-medium leading-none mt-1">{tab.description}</span>
+            <div className=" flex flex-col items-start text-left">
+              <span className="font-bold text-sm tracking-tight flex items-center gap-1.5">{tab.name}</span>
+              {tab.hasError ? (
+                <span className="group-data-[state=active]:text-white text-red-600 text-[11px] font-medium leading-none mt-1">
+                  Action Required
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium leading-none mt-1">{tab.description}</span>
+              )}
             </div>
 
             <ChevronRight className="ml-auto size-4 opacity-0 data-[state=active]:opacity-100 transition-opacity" />

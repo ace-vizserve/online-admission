@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { applicationTypes } from "@/data";
 import useSession from "@/hooks/use-session";
 import { EnrolOldStudentFormState } from "@/types";
-import { useSelectAcademicYear } from "@/zustand-store";
+import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
@@ -29,6 +30,7 @@ function SubmitApplicationDialog() {
   const { session } = useSession();
   const queryClient = useQueryClient();
   const { formState, clearState } = useEnrolOldStudentContext();
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       return await submitExistingEnrollment(formState as EnrolOldStudentFormState, params.id!);
@@ -56,6 +58,28 @@ function SubmitApplicationDialog() {
 
   async function verifyEnrollmentDetails() {
     try {
+      const isAddressContactInvalid =
+        applicationTypes.includes(stpApplicationType) && !formState.studentInfo?.addressContact.isValid;
+
+      if (isAddressContactInvalid) {
+        toast.warning("Review Address & Contact Information!", {
+          description: "Please double-check all family details before submitting",
+          action: {
+            label: "View Info",
+            onClick: () =>
+              navigate(`/enrol-student/${params.id}/student-info?academicYear=${academicYear}`, {
+                state: {
+                  activeTab: "address-contact",
+                },
+              }),
+          },
+          actionButtonStyle: {
+            backgroundColor: "#DC7609",
+          },
+        });
+        return;
+      }
+
       const { contactPersonNumber, homePhone, postalCode } = formState.studentInfo!.addressContact;
 
       if (isNaN(Number(contactPersonNumber))) {

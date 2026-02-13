@@ -7,11 +7,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { religions } from "@/data";
+import { applicationTypes, religions } from "@/data";
 import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
+import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
 import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
@@ -21,6 +22,8 @@ import { toast } from "sonner";
 
 function StudentDetails() {
   const { formState, setFormState } = useEnrolNewStudentContext();
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+
   const [isReligionOther, setIsReligionOther] = useState<boolean>(false);
 
   const form = useForm<StudentDetailsSchema>({
@@ -70,7 +73,7 @@ function StudentDetails() {
         studentDetails: { ...debouncedAutoSaveValue },
       },
     },
-    0
+    0,
   );
 
   return (
@@ -166,7 +169,7 @@ function StudentDetails() {
                         variant={"outline"}
                         className={cn(
                           "w-full lg:w-[240px] pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
+                          !field.value && "text-muted-foreground",
                         )}>
                         {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -291,7 +294,12 @@ function StudentDetails() {
             name="nric"
             render={({ field }) => (
               <FormItem className="relative">
-                <FormLabel>NRIC / FIN</FormLabel>
+                <FormLabel>
+                  NRIC / FIN{" "}
+                  {applicationTypes.includes(stpApplicationType) && (
+                    <span className="text-xs text-muted-foreground">(optional)</span>
+                  )}
+                </FormLabel>
 
                 <FormControl>
                   <Input {...field} />

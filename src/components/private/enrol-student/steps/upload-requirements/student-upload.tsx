@@ -1,14 +1,18 @@
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
+import { applicationTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import {
   ParentGuardianUploadRequirementsSchema,
   studentUploadRequirementsSchema,
   StudentUploadRequirementsSchema,
 } from "@/zod-schema";
+import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { differenceInYears } from "date-fns";
 import { AlertCircle, Clock, Info, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,11 +29,32 @@ function StudentUpload() {
   const [medicalExam, setMedicalExam] = useState<File[] | null>(null);
   const [passport, setPassport] = useState<File[] | null>(null);
   const [pass, setPass] = useState<File[] | null>(null);
+  const [financialSupportDocs, setFinancialSupportDocs] = useState<File[] | null>(null);
+  const [icaPhoto, setIcaPhoto] = useState<File[] | null>(null);
+  const [vaccinationInformation, setVaccinationInformation] = useState<File[] | null>(null);
+
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+  const birthDate = formState.studentInfo?.studentDetails.birthDay;
+  const studentAge = birthDate ? differenceInYears(new Date(), new Date(birthDate)) : undefined;
+  const showVaccinationInformation =
+    studentAge !== undefined && studentAge <= 12 && applicationTypes.includes(stpApplicationType);
 
   const form = useForm<StudentUploadRequirementsSchema>({
     resolver: zodResolver(studentUploadRequirementsSchema),
     defaultValues: {
       ...formState.uploadRequirements?.studentUploadRequirements,
+      toFollowDocs: applicationTypes.includes(stpApplicationType) ? ["pass"] : undefined,
+      pass: applicationTypes.includes(stpApplicationType)
+        ? undefined
+        : formState.uploadRequirements?.studentUploadRequirements.pass,
+      passExpiry: applicationTypes.includes(stpApplicationType)
+        ? undefined
+        : formState.uploadRequirements?.studentUploadRequirements.passExpiry,
+      passType: applicationTypes.includes(stpApplicationType)
+        ? undefined
+        : formState.uploadRequirements?.studentUploadRequirements.passType,
+      stpApplicationType,
+      showVaccinationInformation,
     },
     mode: "onChange",
     reValidateMode: "onChange",
@@ -262,6 +287,52 @@ function StudentUpload() {
             onValueChange={setPass}
           />
         </div>
+
+        {applicationTypes.includes(stpApplicationType) && (
+          <>
+            <br />
+            <Separator />
+            <h3 className="text-2xl font-black tracking-tight text-primary text-center">
+              Upload Documents for {stpApplicationType}{" "}
+            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+              <StudentFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="ICA Photo"
+                description="Upload recent medical result of student"
+                form={form}
+                name="icaPhoto"
+                value={icaPhoto}
+                onValueChange={setIcaPhoto}
+              />
+
+              <StudentFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="Financial Support Documents"
+                description="Upload scanned passport copy"
+                form={form}
+                name="financialSupportDocs"
+                value={financialSupportDocs}
+                onValueChange={setFinancialSupportDocs}
+              />
+
+              {showVaccinationInformation && (
+                <StudentFileUploaderDialog
+                  formState={formState}
+                  setFormState={setFormState}
+                  label="Vaccination Information"
+                  description="Upload the type of Pass the student holds."
+                  form={form}
+                  name="vaccinationInformation"
+                  value={vaccinationInformation}
+                  onValueChange={setVaccinationInformation}
+                />
+              )}
+            </div>
+          </>
+        )}
 
         <Button
           size="lg"

@@ -115,16 +115,20 @@ function EnrolStudent() {
         return;
       }
 
+      const ay = academicYear.replace(/vizschool-/g, "");
       const isVizSchool = academicYear.startsWith("vizschool-");
 
-      navigate(
-        isVizSchool
-          ? `/vizschool/enrol-student/${selected.enroleeNumber}/student-info?academicYear=${academicYear.replace(
-              /vizschool-/g,
-              ""
-            )}`
-          : `/enrol-student/${selected.enroleeNumber}/student-info?academicYear=${academicYear}`
-      );
+      if (isVizSchool) {
+        navigate(`/vizschool/enrol-student/${selected.enroleeNumber}/student-info?academicYear=${ay}`);
+        return;
+      }
+      navigate("/enrol-student/residency-status", {
+        state: {
+          enroleeType: "Current",
+          enroleeNumber: selected.enroleeNumber,
+          currentPass: selected.pass,
+        },
+      });
     } catch (error) {
       const err = error as Error;
       toast.warning(err.message, {
@@ -228,7 +232,7 @@ function EnrolStudent() {
                     onClick={async () => await checkEnrollmentAndProceed()}
                     variant="secondary"
                     className={cn(
-                      "h-14 rounded-2xl shadow-lg transition-all gap-3 text-xs md:text-sm font-black uppercase tracking-widest w-full"
+                      "h-14 rounded-2xl shadow-lg transition-all gap-3 text-xs md:text-sm font-black uppercase tracking-widest w-full",
                     )}>
                     {isCheckingEnrollment ? (
                       <DotPulse size="30" speed="1.3" color="#FFF" />
@@ -242,11 +246,11 @@ function EnrolStudent() {
                   <Link
                     to={`/vizschool/enrol-student/new/student-info?academicYear=${academicYear.replace(
                       /vizschool-/g,
-                      ""
+                      "",
                     )}`}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-14 rounded-2xl gap-3 font-bold text-primary hover:text-primary hover:bg-indigo-50 transition-all w-full"
+                      "h-14 rounded-2xl gap-3 font-bold text-primary hover:text-primary hover:bg-indigo-50 transition-all w-full",
                     )}>
                     <Plus size={16} strokeWidth={3} />
                     Add a new learner
@@ -312,7 +316,7 @@ function EnrolStudent() {
                     onClick={async () => await checkEnrollmentAndProceed()}
                     size={"lg"}
                     className={cn(
-                      "h-14 rounded-2xl shadow-lg transition-all gap-3 text-xs md:text-sm font-black uppercase tracking-widest w-full"
+                      "h-14 rounded-2xl shadow-lg transition-all gap-3 text-xs md:text-sm font-black uppercase tracking-widest w-full",
                     )}>
                     {isCheckingEnrollment ? (
                       <DotPulse size="30" speed="1.3" color="#FFF" />
@@ -324,10 +328,13 @@ function EnrolStudent() {
                   </Button>
 
                   <Link
-                    to={`/enrol-student/new/student-info?academicYear=${academicYear}`}
+                    state={{
+                      enroleeType: "New",
+                    }}
+                    to={"/enrol-student/residency-status"}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-14 rounded-2xl gap-3 font-bold text-secondary hover:text-secondary hover:bg-indigo-50 transition-all w-full"
+                      "h-14 rounded-2xl gap-3 font-bold text-secondary hover:text-secondary hover:bg-indigo-50 transition-all w-full",
                     )}>
                     <Plus size={16} strokeWidth={3} />
                     Add new student
@@ -366,7 +373,7 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
               "border border-muted-foreground/30 w-full group relative flex justify-between items-center cursor-pointer rounded-xl p-3 transition data-[checked]:border-none data-[checked]:outline-2 data-[checked]:outline-primary data-[checked]:hover:shadow-none hover:shadow-lg",
               {
                 "data-[checked]:outline-secondary": forVizSChool,
-              }
+              },
             )}>
             <div className="flex items-center justify-between gap-3 w-full">
               <div className="flex items-center justify-center gap-3">
@@ -393,7 +400,7 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
                   "size-6 md:size-7 fill-primary stroke-white opacity-0 scale-30 transition group-data-checked:opacity-100 group-data-checked:scale-100",
                   {
                     "fill-secondary": forVizSChool,
-                  }
+                  },
                 )}
               />
             </div>

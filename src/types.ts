@@ -34,6 +34,7 @@ export type EnrolledStudent = {
   enroleePhoto: string;
   nric?: string;
   birthDay?: string;
+  pass?: string;
 };
 
 export type Student = {
@@ -241,7 +242,7 @@ export type StudentDocument = {
       passType: string | null;
       passStatus: string | null;
       passExpiry: string | Date | null;
-    }
+    },
   ];
   permanentDocuments: [
     {
@@ -260,7 +261,7 @@ export type StudentDocument = {
     {
       educCert: string | null;
       educCertStatus: string | null;
-    }
+    },
   ];
 };
 
@@ -378,7 +379,7 @@ export type VizSchoolEnrolOldStudentFormState = {
 
 export type StudentFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<StudentUploadRequirementsSchema>;
   name: keyof StudentUploadRequirementsSchema;
   value: File[] | null;
