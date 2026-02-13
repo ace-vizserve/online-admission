@@ -95,6 +95,7 @@ function StudentInformationTabs({
       hasError: isAddressContactInvalid,
     },
   ];
+
   return (
     <Tabs
       orientation="vertical"

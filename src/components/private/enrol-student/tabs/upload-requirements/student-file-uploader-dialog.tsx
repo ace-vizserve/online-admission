@@ -38,12 +38,13 @@ import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import {
   CalendarIcon,
-  CheckCircle2,
-  CircleAlert,
-  Clock,
   CloudUpload,
   Download,
   ExternalLink,
+  EyeClosed,
+  FileClock,
+  FileText,
+  FileX,
   InfoIcon,
   Loader2,
   Paperclip,
@@ -73,6 +74,16 @@ const MULTIPLE_FILE_UPLOADS = [
 const TO_FOLLOW_DOCS = ["idPicture", "passport", "pass", "birthCert"];
 
 const OPTIONAL_DOCS = ["medical", "educCert"];
+
+const NON_EXPIRING_DOCS = ["medical", "educCert", "idPicture", "birthCert"];
+
+const EXPIRING_DOCS = ["pass", "passport"];
+
+type DocDescription = {
+  description: string;
+  status: string;
+  expirationDate?: string;
+};
 
 const StudentFileUploaderDialog = memo(function ({
   form,
@@ -120,7 +131,7 @@ const StudentFileUploaderDialog = memo(function ({
     maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
     accept:
-      name === "idPicture" || name === "icaPhoto"
+      name === "idPicture"
         ? {
             "image/png": [],
             "image/jpeg": [],
@@ -188,41 +199,114 @@ const StudentFileUploaderDialog = memo(function ({
     }
   }
 
+  const hasError = errors[name] != null;
+  const isToFollow = formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name);
+  const isUploaded = formState.uploadRequirements?.studentUploadRequirements[name];
+  const isOptional = OPTIONAL_DOCS.includes(name);
+  const isExpiringDocs = EXPIRING_DOCS.includes(name);
+  const isNonExpiringDocs = NON_EXPIRING_DOCS.includes(name);
+  const isValid =
+    isExpiringDocs &&
+    formState.uploadRequirements?.studentUploadRequirements[
+      `${name}Expiry` as keyof typeof formState.uploadRequirements.studentUploadRequirements
+    ];
+
+  const expirationDate: string | null = isExpiringDocs
+    ? (formState.uploadRequirements?.studentUploadRequirements[
+        `${name}Expiry` as keyof typeof formState.uploadRequirements.studentUploadRequirements
+      ] as string | null)
+    : null;
+
+  let docDescription: DocDescription = {
+    description: "",
+    status: "",
+  };
+
+  if (hasError) {
+    docDescription = {
+      description: "Action Required",
+      status: "Missing",
+    };
+  } else if (isToFollow) {
+    docDescription = {
+      description: "Marked to follow",
+      status: "",
+    };
+  } else if (isOptional && !isUploaded) {
+    docDescription = {
+      description: "",
+      status: "Optional",
+    };
+  } else if (isExpiringDocs && isValid) {
+    docDescription = {
+      description: "",
+      status: "Valid",
+      expirationDate: expirationDate || "",
+    };
+  } else if (isExpiringDocs && !isValid) {
+    docDescription = {
+      description: "",
+      status: "Expired",
+      expirationDate: expirationDate || "",
+    };
+  } else if (isNonExpiringDocs && isUploaded) {
+    docDescription = {
+      description: "Record saved",
+      status: "Uploaded",
+    };
+  }
+
   if (isDesktop) {
     return (
-      <div
-        className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
-          "border-red-300 bg-red-50": errors[name] != null,
-          "border-green-300 bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
-          "border-amber-300 bg-amber-50":
-            formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
-        })}>
+      <div className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {})}>
         <div className="flex items-center gap-4">
-          {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-            <CheckCircle2 className="stroke-white fill-green-600 size-6" />
-          ) : errors[name] != null ? (
-            <CircleAlert className="size-6 text-destructive" />
-          ) : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name) ? (
-            <Clock className="size-6 text-amber-600" />
-          ) : (
-            <Upload className="size-6 text-sky-600" />
-          )}
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-semibold">{label}</span>
-            <span className="text-muted-foreground font-medium text-xs">{description}</span>
+          <div
+            className={cn(
+              "bg-slate-100 text-slate-400 size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+              {
+                "bg-primary text-primary-foreground shadow-sm": isUploaded,
+                "bg-destructive text-white": hasError && isUploaded,
+                "bg-amber-600 text-white": isToFollow,
+              },
+            )}>
+            {isUploaded ? (
+              <FileText className="stroke-white size-6" />
+            ) : hasError && isUploaded ? (
+              <FileX className="size-6" />
+            ) : isToFollow ? (
+              <FileClock className="size-6 " />
+            ) : (
+              <EyeClosed className="size-6 " />
+            )}
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-sm font-bold uppercase">{label}</span>
+              <span
+                className={cn("uppercase font-bold text-[10px]", {
+                  "text-green-600": isValid || isUploaded,
+                  "text-blue-600": isToFollow,
+                  "text-red-600": hasError,
+                })}>
+                {docDescription.status}
+              </span>
+            </div>
+            <span
+              className={cn("uppercase text-muted-foreground font-bold text-xs", {
+                "text-amber-600": isToFollow || docDescription.description === "Action Required",
+              })}>
+              {docDescription.description}
+            </span>
+            {docDescription.expirationDate && (
+              <span className="uppercase text-muted-foreground font-bold text-xs">
+                Expires: {format(new Date(docDescription.expirationDate), "d MMMM yyyy")}
+              </span>
+            )}
           </div>
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              className="font-semibold"
-              variant={
-                errors[name] != null
-                  ? "destructive"
-                  : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
-                    ? "secondary"
-                    : "outline"
-              }>
+            <Button className="!text-xs font-bold" variant={errors[name] != null ? "destructive" : "outline"}>
               {formState.uploadRequirements?.studentUploadRequirements?.[name]
                 ? "View"
                 : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name)
@@ -233,7 +317,22 @@ const StudentFileUploaderDialog = memo(function ({
 
           <DialogContent className="!max-w-3xl">
             <DialogHeader className="text-start">
-              <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+              <div className="flex items-center gap-4">
+                <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+                <Badge
+                  variant={"outline"}
+                  className={cn("uppercase font-bold text-[12px]", {
+                    "text-green-600": isValid || isUploaded,
+                    "text-amber-600": isToFollow,
+                    "text-red-600": hasError,
+                  })}>
+                  {docDescription.status
+                    ? docDescription.status
+                    : docDescription.description === "Marked to follow"
+                      ? "Marked to follow"
+                      : ""}
+                </Badge>
+              </div>
               <DialogDescription className="font-semibold">
                 Upload a clear and recent document in{" "}
                 <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
@@ -687,7 +786,7 @@ function StudentFileUploaderDrawer({
     maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
     accept:
-      name === "idPicture" || name === "icaPhoto"
+      name === "idPicture"
         ? {
             "image/png": [],
             "image/jpeg": [],
@@ -752,27 +851,108 @@ function StudentFileUploaderDrawer({
     }
   }
 
+  const hasError = errors[name] != null;
+  const isToFollow = formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name);
+  const isUploaded = formState.uploadRequirements?.studentUploadRequirements[name];
+  const isOptional = OPTIONAL_DOCS.includes(name);
+  const isExpiringDocs = EXPIRING_DOCS.includes(name);
+  const isNonExpiringDocs = NON_EXPIRING_DOCS.includes(name);
+  const isValid =
+    isExpiringDocs &&
+    formState.uploadRequirements?.studentUploadRequirements[
+      `${name}Expiry` as keyof typeof formState.uploadRequirements.studentUploadRequirements
+    ];
+
+  const expirationDate: string | null = isExpiringDocs
+    ? (formState.uploadRequirements?.studentUploadRequirements[
+        `${name}Expiry` as keyof typeof formState.uploadRequirements.studentUploadRequirements
+      ] as string | null)
+    : null;
+
+  let docDescription: DocDescription = {
+    description: "",
+    status: "",
+  };
+
+  if (hasError) {
+    docDescription = {
+      description: "Action Required",
+      status: "Missing",
+    };
+  } else if (isToFollow) {
+    docDescription = {
+      description: "Marked to follow",
+      status: "",
+    };
+  } else if (isOptional && !isUploaded) {
+    docDescription = {
+      description: "",
+      status: "Optional",
+    };
+  } else if (isExpiringDocs && isValid) {
+    docDescription = {
+      description: "",
+      status: "Valid",
+      expirationDate: expirationDate || "",
+    };
+  } else if (isExpiringDocs && !isValid) {
+    docDescription = {
+      description: "",
+      status: "Expired",
+      expirationDate: expirationDate || "",
+    };
+  } else if (isNonExpiringDocs && isUploaded) {
+    docDescription = {
+      description: "Record saved",
+      status: "Uploaded",
+    };
+  }
+
   return (
-    <div
-      className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
-        "border-red-300 bg-red-50": errors[name] != null,
-        "border-green-300 bg-green-50": formState.uploadRequirements?.studentUploadRequirements[name],
-        "border-amber-300 bg-amber-50":
-          formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name),
-      })}>
+    <div className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {})}>
       <div className="flex items-center gap-4">
-        {formState.uploadRequirements?.studentUploadRequirements[name] ? (
-          <CheckCircle2 className="stroke-white fill-green-600 size-6" />
-        ) : errors[name] != null ? (
-          <CircleAlert className="text-destructive size-6" />
-        ) : formState.uploadRequirements?.studentUploadRequirements.toFollowDocs?.includes(name) ? (
-          <Clock className="size-6 text-amber-600" />
-        ) : (
-          <Upload className="size-6 text-sky-600" />
-        )}
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-semibold">{label}</span>
-          <span className="text-muted-foreground font-medium text-xs">{description}</span>
+        <div
+          className={cn(
+            "bg-slate-100 text-slate-400 size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+            {
+              "bg-primary text-primary-foreground shadow-sm": isUploaded,
+              "bg-destructive text-white": hasError && isUploaded,
+              "bg-amber-600 text-white": isToFollow,
+            },
+          )}>
+          {isUploaded ? (
+            <FileText className="stroke-white size-6" />
+          ) : hasError && isUploaded ? (
+            <FileX className="size-6" />
+          ) : isToFollow ? (
+            <FileClock className="size-6 " />
+          ) : (
+            <EyeClosed className="size-6 " />
+          )}
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-sm font-bold uppercase">{label}</span>
+            <span
+              className={cn("uppercase font-bold text-[10px]", {
+                "text-green-600": isValid || isUploaded,
+                "text-blue-600": isToFollow,
+                "text-red-600": hasError,
+              })}>
+              {docDescription.status}
+            </span>
+          </div>
+          <span
+            className={cn("uppercase text-muted-foreground font-bold text-xs", {
+              "text-amber-600": isToFollow || docDescription.description === "Action Required",
+            })}>
+            {docDescription.description}
+          </span>
+          {docDescription.expirationDate && (
+            <span className="uppercase text-muted-foreground font-bold text-xs">
+              Expires: {format(new Date(docDescription.expirationDate), "d MMMM yyyy")}
+            </span>
+          )}
         </div>
       </div>
       <Drawer repositionInputs={false}>
@@ -796,7 +976,22 @@ function StudentFileUploaderDrawer({
 
         <DrawerContent className="px-4 space-y-4">
           <DrawerHeader className="!text-start px-0 mb-0">
-            <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
+            <div className="flex items-center justify-between gap-4">
+              <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
+              <Badge
+                variant={"outline"}
+                className={cn("uppercase font-bold text-[12px]", {
+                  "text-green-600": isValid || isUploaded,
+                  "text-amber-600": isToFollow,
+                  "text-red-600": hasError,
+                })}>
+                {docDescription.status
+                  ? docDescription.status
+                  : docDescription.description === "Marked to follow"
+                    ? "Marked to follow"
+                    : ""}
+              </Badge>
+            </div>
 
             <DrawerDescription className="text-xs font-semibold">
               Upload a clear and recent document in{" "}

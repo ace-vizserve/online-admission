@@ -255,7 +255,7 @@ function StudentUpload() {
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
-            label="Student ID Picture"
+            label="ID Picture"
             description="Upload a recent photo of the student"
             form={form}
             name="idPicture"
@@ -266,7 +266,7 @@ function StudentUpload() {
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
-            label="Student Birth Certificate"
+            label="Birth Certificate"
             description="Upload a recent copy of birth certificate"
             form={form}
             name="birthCert"
@@ -324,15 +324,18 @@ function StudentUpload() {
         {applicationTypes.includes(stpApplicationType) && (
           <>
             <br />
+            <br />
             <Separator />
+            <br />
+            <br />
             <h3 className="text-2xl font-black tracking-tight text-primary text-center">
-              Upload Documents for {stpApplicationType}{" "}
+              Documents for {stpApplicationType}{" "}
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
               <StudentFileUploaderDialog
                 formState={formState}
                 setFormState={setFormState}
-                label="ICA Photo"
+                label="Photo for ICA Student's Pass"
                 description="Upload recent medical result of student"
                 form={form}
                 name="icaPhoto"
@@ -364,6 +367,7 @@ function StudentUpload() {
                 />
               )}
             </div>
+            <br />
           </>
         )}
 
