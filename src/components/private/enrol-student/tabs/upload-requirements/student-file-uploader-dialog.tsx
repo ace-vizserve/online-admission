@@ -91,7 +91,6 @@ const StudentFileUploaderDialog = memo(function ({
   onValueChange,
   name,
   label,
-  description,
   formState,
   setFormState,
 }: StudentFileUploaderDialogProps) {
@@ -729,7 +728,6 @@ const StudentFileUploaderDialog = memo(function ({
   return (
     <StudentFileUploaderDrawer
       form={form}
-      description={description}
       formState={formState}
       label={label}
       name={name}
@@ -741,7 +739,6 @@ const StudentFileUploaderDialog = memo(function ({
 });
 
 function StudentFileUploaderDrawer({
-  description,
   form,
   formState,
   label,

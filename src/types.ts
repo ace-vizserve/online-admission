@@ -379,7 +379,7 @@ export type VizSchoolEnrolOldStudentFormState = {
 
 export type StudentFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<StudentUploadRequirementsSchema>;
   name: keyof StudentUploadRequirementsSchema;
   value: File[] | null;
