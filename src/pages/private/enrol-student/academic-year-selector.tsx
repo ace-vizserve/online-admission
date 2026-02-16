@@ -52,7 +52,7 @@ type Props = {
 
 const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
   return (
-    <div className="relative min-h-screen flex items-center justify-center flex-col px-4 py-12 md:py-16 lg:py-0">
+    <div className="animate-in fade-in duration-500 relative min-h-screen flex items-center justify-center flex-col px-4 py-12 md:py-16 lg:py-0">
       <div className="text-center space-y-6 max-w-3xl">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">Choose Academic Year</h1>
         <p className="text-lg md:text-xl text-muted-foreground text-pretty">

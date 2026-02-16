@@ -1287,6 +1287,7 @@ export async function submitVizSchoolEnrollment(
     if (enrollmentApplicationStatusError) {
       throw new Error(enrollmentApplicationStatusError.message);
     }
+    return { generatedEnroleeNumber };
   } catch (error) {
     console.log(error);
     const err = error as AuthError;
@@ -1738,6 +1739,8 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
     if (enrollmentApplicationStatusError) {
       throw new Error(enrollmentApplicationStatusError.message);
     }
+
+    return { generatedEnroleeNumber };
   } catch (error) {
     const err = error as AuthError;
     throw err;

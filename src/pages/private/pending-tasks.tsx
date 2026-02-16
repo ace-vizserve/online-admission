@@ -22,7 +22,7 @@ function PendingTasks() {
   const tasks = data?.pendingTasks.pendingTasks ?? [];
 
   return (
-    <MaxWidthWrapper className="w-full max-w-6xl mx-auto py-10">
+    <MaxWidthWrapper className="animate-in fade-in slide-in-from-bottom-2 duration-500 w-full max-w-6xl mx-auto py-10">
       <div className="mb-8">
         <Link
           to="/admission/dashboard"
@@ -76,7 +76,7 @@ function PendingTasks() {
                                 <span
                                   className={cn(
                                     "font-bold uppercase text-[10px]",
-                                    status === "To follow" ? "text-primary" : "text-destructive"
+                                    status === "To follow" ? "text-primary" : "text-destructive",
                                   )}>
                                   {status}
                                 </span>
@@ -96,7 +96,7 @@ function PendingTasks() {
                                 <span
                                   className={cn(
                                     "font-bold uppercase text-[10px]",
-                                    status === "To follow" ? "text-primary" : "text-destructive"
+                                    status === "To follow" ? "text-primary" : "text-destructive",
                                   )}>
                                   {status}
                                 </span>

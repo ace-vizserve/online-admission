@@ -36,11 +36,16 @@ function SubmitLearnerApplicationDialog() {
         formState as VizSchoolEnrolOldStudentFormState,
         academicYear,
         schoolFee,
-        "VizSchool Current"
+        "VizSchool Current",
       );
     },
     onSuccess() {
-      window.location.href = "/application-submitted";
+      navigate("/application-submitted", {
+        state: {
+          academicYear,
+          enroleeNumber: params.id,
+        },
+      });
       queryClient.invalidateQueries({
         queryKey: ["section-cards", session?.user.email],
       });

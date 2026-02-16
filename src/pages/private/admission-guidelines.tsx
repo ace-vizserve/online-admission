@@ -52,7 +52,7 @@ function AdmissionGuidelines() {
   const phone = "+65 8200 0062";
 
   return (
-    <div className="relative w-full min-h-screen bg-[#FAFBFF]">
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 relative w-full min-h-screen bg-[#FAFBFF]">
       <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16">
         <div className="text-center space-y-6 mb-16">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">

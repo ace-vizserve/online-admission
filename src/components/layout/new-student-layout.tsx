@@ -103,8 +103,13 @@ function SubmitApplicationDialog() {
     mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
       return await submitEnrollment(enrollmentDetails, academicYear);
     },
-    onSuccess() {
-      window.location.href = "/application-submitted";
+    onSuccess(data) {
+      navigate("/application-submitted", {
+        state: {
+          academicYear,
+          enroleeNumber: data.generatedEnroleeNumber,
+        },
+      });
       queryClient.invalidateQueries({
         queryKey: ["section-cards", session?.user.email],
       });

@@ -105,8 +105,13 @@ function SubmitApplicationDialog() {
     mutationFn: async (enrollmentDetails: VizSchoolEnrolNewStudentFormState) => {
       return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, schoolFee, "VizSchool New");
     },
-    onSuccess() {
-      window.location.href = "/application-submitted";
+    onSuccess(data) {
+      navigate("/application-submitted", {
+        state: {
+          academicYear,
+          enroleeNumber: data.generatedEnroleeNumber,
+        },
+      });
       queryClient.invalidateQueries({
         queryKey: ["section-cards", session?.user.email],
       });

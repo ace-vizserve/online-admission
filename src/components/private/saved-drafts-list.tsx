@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, listNewStudentDrafts } from "@/lib/utils";
-import { ChevronRight, CircleX, GraduationCap, Layers, Trash2 } from "lucide-react";
+import { ChevronRight, CircleX, GraduationCap, Inbox, Layers, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 const STEPS = [
@@ -72,7 +72,7 @@ export default function AdmissionDraftsDialog() {
     setTimeout(() => setDeletingId(null), 300);
   };
 
-  console.log(studentDrafts);
+  const isEmpty = studentDrafts.length === 0;
 
   return (
     <Dialog>
@@ -83,8 +83,7 @@ export default function AdmissionDraftsDialog() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-2xl border-none bg-[#F2F2F7] shadow-2xl overflow-hidden rounded-2xl">
-        {/* Sticky Header */}
+      <DialogContent className="flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-2xl border-none bg-[#F2F2F7] shadow-2xl overflow-hidden rounded-2xl">
         <DialogHeader className="contents space-y-0 text-left">
           <div className="sticky top-0 z-10 border-b border-slate-200/50 bg-white/90 backdrop-blur-xl px-6 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -102,70 +101,81 @@ export default function AdmissionDraftsDialog() {
             </div>
           </div>
 
-          <ScrollArea className="h-[85vh] overflow-hidden">
-            <div className="p-6 space-y-5">
-              {draftsData.map((draft) => {
-                const isDeleting = deletingId === draft.id;
-                const currentStepData = STEPS[draft.currentStep - 1];
+          {isEmpty ? (
+            <div className="flex flex-col items-center justify-center text-center py-20 px-10">
+              <div className="size-24 bg-white rounded-[28px] shadow-sm border border-slate-200 flex items-center justify-center mb-6">
+                <Inbox className="size-10 text-slate-200" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-[20px] font-extrabold text-slate-900 tracking-tight mb-2">No Drafts Found</h3>
+              <p className="text-[15px] text-slate-500 font-medium leading-relaxed max-w-[280px] mb-8">
+                You haven't started any applications yet. All your in-progress work will appear here.
+              </p>
+            </div>
+          ) : (
+            <ScrollArea className="h-[85vh] overflow-hidden">
+              <div className="p-6 space-y-5">
+                {draftsData.map((draft) => {
+                  const isDeleting = deletingId === draft.id;
+                  const currentStepData = STEPS[draft.currentStep - 1];
 
-                return (
-                  <div
-                    key={draft.id}
-                    className={cn(
-                      "bg-white rounded-2xl p-6 border border-slate-200 shadow-sm transition-all duration-300",
-                      isDeleting && "opacity-0 translate-x-4 scale-95",
-                    )}>
-                    <div className="flex justify-between items-start mb-5">
-                      <div>
-                        <h3 className="text-[22px] font-extrabold text-slate-900 tracking-tight leading-none mb-1.5">
-                          {draft.studentName}
-                        </h3>
-                        <p className="text-[14px] text-slate-500 font-semibold uppercase tracking-wide">
-                          {draft.grade} <span className="mx-1 opacity-30">•</span> {draft.lastEdited}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDelete(draft.id)}
-                        className="cursor-pointer p-2 text-slate-300 hover:text-destructive hover:bg-destructive/5 rounded-full transition-all">
-                        <Trash2 className="size-5" />
-                      </button>
-                    </div>
-
-                    {/* Step Info Box: Increased sizes for readability */}
-                    <div className="p-4 rounded-2xl mb-6 bg-[#F8F9FB] border border-slate-200/60">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-1.5">
-                          <p className="text-[11px] font-black uppercase tracking-widest text-primary opacity-80">
-                            {currentStepData?.name}
+                  return (
+                    <div
+                      key={draft.id}
+                      className={cn(
+                        "bg-white rounded-2xl p-6 border border-slate-200 shadow-sm transition-all duration-300",
+                        isDeleting && "opacity-0 translate-x-4 scale-95",
+                      )}>
+                      <div className="flex justify-between items-start mb-5">
+                        <div>
+                          <h3 className="text-[22px] font-extrabold text-slate-900 tracking-tight leading-none mb-1.5">
+                            {draft.studentName}
+                          </h3>
+                          <p className="text-[14px] text-slate-500 font-semibold uppercase tracking-wide">
+                            {draft.grade} <span className="mx-1 opacity-30">•</span> {draft.lastEdited}
                           </p>
-                          <p className="text-[16px] font-bold text-slate-800 leading-snug">{draft.nextAction}</p>
-                          <p className="text-[13px] text-slate-500 font-medium">{currentStepData?.desc}</p>
                         </div>
+                        <button
+                          onClick={() => handleDelete(draft.id)}
+                          className="cursor-pointer p-2 text-slate-300 hover:text-destructive hover:bg-destructive/5 rounded-full transition-all">
+                          <Trash2 className="size-5" />
+                        </button>
+                      </div>
 
-                        <div className="text-right pl-4">
-                          <div className="flex flex-col items-center justify-center bg-white border border-slate-200 shadow-sm rounded-xl py-2 px-3">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1.5">
-                              Step
-                            </span>
-                            <div className="flex items-baseline gap-0.5 leading-none">
-                              <span className="text-xl font-black text-primary">{draft.currentStep}</span>
-                              <span className="text-[12px] font-bold text-slate-300">/{STEPS.length}</span>
+                      <div className="p-4 rounded-2xl mb-6 bg-[#F8F9FB] border border-slate-200/60">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-1.5">
+                            <p className="text-[11px] font-black uppercase tracking-widest text-primary opacity-80">
+                              {currentStepData?.name}
+                            </p>
+                            <p className="text-[16px] font-bold text-slate-800 leading-snug">{draft.nextAction}</p>
+                            <p className="text-[13px] text-slate-500 font-medium">{currentStepData?.desc}</p>
+                          </div>
+
+                          <div className="text-right pl-4">
+                            <div className="flex flex-col items-center justify-center bg-white border border-slate-200 shadow-sm rounded-xl py-2 px-3">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1.5">
+                                Step
+                              </span>
+                              <div className="flex items-baseline gap-0.5 leading-none">
+                                <span className="text-xl font-black text-primary">{draft.currentStep}</span>
+                                <span className="text-[12px] font-bold text-slate-300">/{STEPS.length}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <Button className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-lg shadow-primary/10 active:scale-[0.98] transition-all">
-                      Resume Application
-                      <ChevronRight className="ml-1 size-5 opacity-70" strokeWidth={3} />
-                    </Button>
-                  </div>
-                );
-              })}
-              <div className="py-2" />
-            </div>
-          </ScrollArea>
+                      <Button className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-lg shadow-primary/10 active:scale-[0.98] transition-all">
+                        Resume Application
+                        <ChevronRight className="ml-1 size-5 opacity-70" strokeWidth={3} />
+                      </Button>
+                    </div>
+                  );
+                })}
+                <div className="py-2" />
+              </div>
+            </ScrollArea>
+          )}
         </DialogHeader>
 
         {/* Sticky Footer */}
