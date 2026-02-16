@@ -47,7 +47,7 @@ function CurrentLearnerLayout() {
 
   return (
     <EnrolCurrentLearnerContextProvider>
-      <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+      <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl flex items-center justify-between px-4 md:px-6">
           <ExitApplicationDialog />
           <SubmitLearnerApplicationDialog />

@@ -109,7 +109,15 @@ function StudentAddressContact() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          if (errors.nationality) {
+            toast.error("Please select a student nationality!", {
+              description: "Make sure to double check everything",
+            });
+          }
+        })}
+        className="space-y-8 max-w-5xl mx-auto">
         <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
           <Info className="h-4 w-4 !text-blue-500" />
           <div className="space-y-1 text-pretty">

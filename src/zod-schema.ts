@@ -844,7 +844,6 @@ export const studentUploadRequirementsSchema = z
       })
       .optional(),
     toFollowDocs: z.array(z.string()).default([]).optional(),
-    skippedDocs: z.array(z.string()).default([]).optional(),
     icaPhoto: z
       .string()
       .optional()
@@ -871,23 +870,33 @@ export const studentUploadRequirementsSchema = z
   })
   .superRefine((data, ctx) => {
     if (applicationTypes.includes(data.stpApplicationType || "")) {
-      if (data.showVaccinationInformation) {
+      if (data.showVaccinationInformation && !data.vaccinationInformation) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["vaccinationInformation"],
           message: "Vaccination Information is required",
         });
       }
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["icaPhoto"],
-        message: "ICA Photo is required",
-      });
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["financialSupportDocs"],
-        message: "Financial Support Documents is required",
-      });
+
+      if (!data.icaPhoto || !data.icaPhoto.startsWith("http") || !z.string().url().safeParse(data.icaPhoto).success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["icaPhoto"],
+          message: "ICA Photo is required",
+        });
+      }
+
+      if (
+        !data.financialSupportDocs ||
+        !data.financialSupportDocs.startsWith("http") ||
+        !z.string().url().safeParse(data.financialSupportDocs).success
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["financialSupportDocs"],
+          message: "Financial Support Documents is required",
+        });
+      }
     }
 
     const now = new Date();

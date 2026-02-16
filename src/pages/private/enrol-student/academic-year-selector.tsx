@@ -9,6 +9,27 @@ import { memo } from "react";
 
 const academicYears = [
   {
+    value: "ay2026",
+    name: "AY 2026",
+    label: "Academic Year 2026",
+    description: "Early registration for AY 2026 starts July 2025.",
+    details: ["Secure a slot early", "Registration opens 1 July 2025", "Classes begin January 2026"],
+    buttonText: "Register for AY 2026",
+    isUpcoming: true,
+    logo: Logo,
+  },
+
+  {
+    value: "vizschool-ay2026",
+    name: "Vizschool AY2026",
+    label: "Vizschool AY2026",
+    description: "Early registration for AY 2026 starts Jan 2026.",
+    details: ["Enrolling now for upcoming term", "Secure your spot early"],
+    buttonText: "Enrol in Vizschool AY 2026",
+    isPopular: true,
+    logo: VizSchoolLogo,
+  },
+  {
     value: "ay2025",
     name: "AY 2025",
     label: "Academic Year 2025",
@@ -22,26 +43,6 @@ const academicYears = [
     logo: Logo,
     isUpcoming: false,
     isClosed: true,
-  },
-  {
-    value: "vizschool-ay2026",
-    name: "Vizschool AY2026",
-    label: "Vizschool AY2026",
-    description: "Early registration for AY 2026 starts Jan 2026.",
-    details: ["Enrolling now for upcoming term", "Secure your spot early"],
-    buttonText: "Enrol in Vizschool AY 2026",
-    isPopular: true,
-    logo: VizSchoolLogo,
-  },
-  {
-    value: "ay2026",
-    name: "AY 2026",
-    label: "Academic Year 2026",
-    description: "Early registration for AY 2026 starts July 2025.",
-    details: ["Secure a slot early", "Registration opens 1 July 2025", "Classes begin January 2026"],
-    buttonText: "Register for AY 2026",
-    isUpcoming: true,
-    logo: Logo,
   },
 ];
 

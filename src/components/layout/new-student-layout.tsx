@@ -54,7 +54,7 @@ function NewStudentLayout() {
 
   return (
     <EnrolNewStudentContextProvider>
-      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full flex justify-between items-center max-w-screen-2xl px-4 md:px-6">
           <ExitApplicationDialog />
           <SubmitApplicationDialog />

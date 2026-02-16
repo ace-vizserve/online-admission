@@ -581,3 +581,38 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
     toast.error(err.message);
   }
 }
+
+const NEW_STUDENT_DRAFT_PREFIX = "enrolNewStudent:draft:";
+const MAX_NEW_STUDENT_DRAFTS = 3;
+
+export function createNewStudentDraft() {
+  const draftKeys = Object.keys(localStorage).filter((k) => k.startsWith(NEW_STUDENT_DRAFT_PREFIX));
+
+  if (draftKeys.length >= MAX_NEW_STUDENT_DRAFTS) {
+    const drafts = draftKeys
+      .map((key) => {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const { lastSavedAt } = JSON.parse(raw);
+        return { key, lastSavedAt };
+      })
+      .filter(Boolean)
+      .sort((a, b) => new Date(a!.lastSavedAt).getTime() - new Date(b!.lastSavedAt).getTime());
+
+    if (drafts[0]) localStorage.removeItem(drafts[0]!.key);
+  }
+
+  const draftId = crypto.randomUUID();
+
+  return draftId;
+}
+
+export function listNewStudentDrafts(type: "viz-school" | "hfse-is") {
+  return Object.keys(localStorage)
+    .filter((k) => k.startsWith(`enrolNewStudent:draft:`) && k.endsWith(`:${type}`))
+    .map((key) => {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    })
+    .filter(Boolean);
+}

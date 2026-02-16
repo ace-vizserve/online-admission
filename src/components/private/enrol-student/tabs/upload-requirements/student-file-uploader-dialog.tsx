@@ -33,7 +33,7 @@ import { StudentFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isAfter } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import {
@@ -75,7 +75,15 @@ const TO_FOLLOW_DOCS = ["idPicture", "passport", "pass", "birthCert"];
 
 const OPTIONAL_DOCS = ["medical", "educCert"];
 
-const NON_EXPIRING_DOCS = ["medical", "educCert", "idPicture", "birthCert"];
+const NON_EXPIRING_DOCS = [
+  "medical",
+  "educCert",
+  "idPicture",
+  "birthCert",
+  "icaPhoto",
+  "vaccinationInformation",
+  "financialSupportDocs",
+];
 
 const EXPIRING_DOCS = ["pass", "passport"];
 
@@ -130,7 +138,7 @@ const StudentFileUploaderDialog = memo(function ({
     maxFiles: MULTIPLE_FILE_UPLOADS.includes(name) ? 4 : 1,
     maxSize: 1024 * 1024 * 4, // 4MB max
     accept:
-      name === "idPicture"
+      name === "idPicture" || name === "icaPhoto"
         ? {
             "image/png": [],
             "image/jpeg": [],
@@ -204,11 +212,6 @@ const StudentFileUploaderDialog = memo(function ({
   const isOptional = OPTIONAL_DOCS.includes(name);
   const isExpiringDocs = EXPIRING_DOCS.includes(name);
   const isNonExpiringDocs = NON_EXPIRING_DOCS.includes(name);
-  const isValid =
-    isExpiringDocs &&
-    formState.uploadRequirements?.studentUploadRequirements[
-      `${name}Expiry` as keyof typeof formState.uploadRequirements.studentUploadRequirements
-    ];
 
   const expirationDate: string | null = isExpiringDocs
     ? (formState.uploadRequirements?.studentUploadRequirements[
@@ -216,12 +219,15 @@ const StudentFileUploaderDialog = memo(function ({
       ] as string | null)
     : null;
 
+  const isExpired = !!expirationDate && !isAfter(new Date(expirationDate), new Date());
+  const isValid = isUploaded && !isExpired;
+
   let docDescription: DocDescription = {
     description: "",
     status: "",
   };
 
-  if (hasError) {
+  if (hasError && !isUploaded) {
     docDescription = {
       description: "Action Required",
       status: "Missing",
@@ -231,27 +237,35 @@ const StudentFileUploaderDialog = memo(function ({
       description: "Marked to follow",
       status: "",
     };
-  } else if (isOptional && !isUploaded) {
-    docDescription = {
-      description: "",
-      status: "Optional",
-    };
-  } else if (isExpiringDocs && isValid) {
-    docDescription = {
-      description: "",
-      status: "Valid",
-      expirationDate: expirationDate || "",
-    };
-  } else if (isExpiringDocs && !isValid) {
-    docDescription = {
-      description: "",
-      status: "Expired",
-      expirationDate: expirationDate || "",
-    };
+  } else if (isExpiringDocs) {
+    if (isUploaded && isValid) {
+      docDescription = {
+        description: "",
+        status: "Valid",
+        expirationDate: expirationDate || "",
+      };
+    } else if (isUploaded && isExpired) {
+      docDescription = {
+        description: "",
+        status: "Expired",
+        expirationDate: expirationDate || "",
+      };
+    } else {
+      docDescription = {
+        description: "",
+        status: "Missing",
+        expirationDate: expirationDate || "",
+      };
+    }
   } else if (isNonExpiringDocs && isUploaded) {
     docDescription = {
       description: "Record saved",
       status: "Uploaded",
+    };
+  } else if (isOptional && !isUploaded) {
+    docDescription = {
+      description: "Optional document",
+      status: "",
     };
   }
 
@@ -854,11 +868,6 @@ function StudentFileUploaderDrawer({
   const isOptional = OPTIONAL_DOCS.includes(name);
   const isExpiringDocs = EXPIRING_DOCS.includes(name);
   const isNonExpiringDocs = NON_EXPIRING_DOCS.includes(name);
-  const isValid =
-    isExpiringDocs &&
-    formState.uploadRequirements?.studentUploadRequirements[
-      `${name}Expiry` as keyof typeof formState.uploadRequirements.studentUploadRequirements
-    ];
 
   const expirationDate: string | null = isExpiringDocs
     ? (formState.uploadRequirements?.studentUploadRequirements[
@@ -866,12 +875,15 @@ function StudentFileUploaderDrawer({
       ] as string | null)
     : null;
 
+  const isExpired = !!expirationDate && !isAfter(new Date(expirationDate), new Date());
+  const isValid = isUploaded && !isExpired;
+
   let docDescription: DocDescription = {
     description: "",
     status: "",
   };
 
-  if (hasError) {
+  if (hasError && !isUploaded) {
     docDescription = {
       description: "Action Required",
       status: "Missing",
@@ -881,27 +893,35 @@ function StudentFileUploaderDrawer({
       description: "Marked to follow",
       status: "",
     };
-  } else if (isOptional && !isUploaded) {
-    docDescription = {
-      description: "",
-      status: "Optional",
-    };
-  } else if (isExpiringDocs && isValid) {
-    docDescription = {
-      description: "",
-      status: "Valid",
-      expirationDate: expirationDate || "",
-    };
-  } else if (isExpiringDocs && !isValid) {
-    docDescription = {
-      description: "",
-      status: "Expired",
-      expirationDate: expirationDate || "",
-    };
+  } else if (isExpiringDocs) {
+    if (isUploaded && isValid) {
+      docDescription = {
+        description: "",
+        status: "Valid",
+        expirationDate: expirationDate || "",
+      };
+    } else if (isUploaded && isExpired) {
+      docDescription = {
+        description: "",
+        status: "Expired",
+        expirationDate: expirationDate || "",
+      };
+    } else {
+      docDescription = {
+        description: "",
+        status: "Missing",
+        expirationDate: expirationDate || "",
+      };
+    }
   } else if (isNonExpiringDocs && isUploaded) {
     docDescription = {
       description: "Record saved",
       status: "Uploaded",
+    };
+  } else if (isOptional && !isUploaded) {
+    docDescription = {
+      description: "Optional document",
+      status: "",
     };
   }
 
@@ -973,7 +993,7 @@ function StudentFileUploaderDrawer({
 
         <DrawerContent className="px-4 space-y-4">
           <DrawerHeader className="!text-start px-0 mb-0">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
               <Badge
                 variant={"outline"}

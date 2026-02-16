@@ -7,6 +7,7 @@ import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import EnrollmentStepper from "@/components/private/enrol-student/enrollment-stepper";
+import SavedDraftsList from "@/components/private/saved-drafts-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,9 +154,9 @@ function EnrolStudent() {
 
       <div
         className={
-          "w-full sticky lg:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-16 md:h-20 flex items-center border-b"
+          "w-full sticky lg:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b"
         }>
-        <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
+        <MaxWidthWrapper className="flex items-center justify-between w-full max-w-screen-2xl px-4 md:px-6">
           <Link
             onClick={goBack}
             to={"/admission/dashboard"}
@@ -165,8 +166,10 @@ function EnrolStudent() {
             })}>
             <ArrowLeft /> Go back
           </Link>
+          <SavedDraftsList />
         </MaxWidthWrapper>
       </div>
+
       {academicYear === "" ? (
         <AcademicYearSelector setSelectedAy={setAcademicYear} />
       ) : (

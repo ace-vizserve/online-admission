@@ -1,4 +1,5 @@
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -243,6 +244,12 @@ function StudentAddressContact() {
               <div className="mb-10 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 relative overflow-hidden">
                 {/* Decorative Background Icon - Gives it a modern, premium feel */}
                 <Globe className="absolute -right-6 -top-6 size-40 text-slate-200/40 rotate-12" />
+
+                {!formState.studentInfo?.addressContact.isValid && (
+                  <Badge variant={"destructive"} className="uppercase mb-6 rounded-full font-bold">
+                    Action required
+                  </Badge>
+                )}
 
                 <div className="relative z-10 space-y-4">
                   <div className="flex items-center gap-3">

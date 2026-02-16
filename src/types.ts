@@ -390,7 +390,7 @@ export type StudentFileUploaderDialogProps = {
 
 export type ParentGuardianFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<ParentGuardianUploadRequirementsSchema>;
   name: keyof ParentGuardianUploadRequirementsSchema;
   value: File[] | null;

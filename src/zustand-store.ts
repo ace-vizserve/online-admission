@@ -7,6 +7,17 @@ import {
   VizSchoolEnrolOldStudentFormState,
 } from "./types";
 
+export type EnrolNewStudentDraftStore = {
+  draftId: string;
+  lastSavedAt: Date;
+  formState: Partial<EnrolNewStudentFormState | Record<string, unknown>>;
+  setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
+  currentTab: string;
+  activeTab: string;
+  completedTabs: string[];
+  clearState: () => void;
+};
+
 export type SecuritySettingsSheetStore = {
   isOpen: boolean;
   setIsOpen: (state: boolean) => void;
@@ -82,11 +93,11 @@ export type VizSchoolEnrolOldStudentStore = {
 export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateStore>()(
   persist(
     (set, _, store) => ({
-      currentTab: "",
-      activeTab: "",
       clearState: () => {
         set(store.getInitialState());
       },
+      currentTab: "",
+      activeTab: "",
       completedTabs: [],
       setActiveTab: (tab: string) =>
         set((state) => ({
@@ -283,3 +294,31 @@ export const usePreCourseAcknowledgementStore = create<PreCourseAcknowledgementS
     },
   ),
 );
+
+export const createEnrolNewStudentStore = (type: "viz-school" | "hfse-is", draftId: string) =>
+  create<EnrolNewStudentDraftStore>()(
+    persist(
+      (set, _, store) => ({
+        draftId: draftId,
+        lastSavedAt: new Date(),
+        activeTab: "",
+        completedTabs: [],
+        currentTab: "",
+        formState: {},
+        clearState: () => {
+          set(store.getInitialState());
+        },
+        setFormState: (data: Partial<EnrolNewStudentFormState>) =>
+          set((state) => ({
+            formState: { ...state.formState, ...data },
+          })),
+      }),
+      {
+        name:
+          type == "hfse-is"
+            ? `enrolNewStudent:draft:${draftId}:hfse-is`
+            : `enrolNewStudent:draft:${draftId}:viz-school`,
+        storage: createJSONStorage(() => localStorage),
+      },
+    ),
+  );

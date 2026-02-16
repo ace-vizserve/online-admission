@@ -60,8 +60,6 @@ function StudentUpload() {
 
     if (isValid) return;
 
-    console.log("Triggered");
-
     setFormState({
       uploadRequirements: {
         parentGuardianUploadRequirements: {
@@ -88,7 +86,7 @@ function StudentUpload() {
     form.trigger();
 
     hydratedRef.current = true;
-  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
+  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     const isPassExpiryNull = values.passExpiry?.getFullYear() === 1970 && values.passExpiry?.getTime() === 0;

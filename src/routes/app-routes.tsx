@@ -355,7 +355,9 @@ function AppRoutes() {
           path="/application-submitted"
           element={
             <AuthGuard>
-              <ApplicationSubmitted />
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <ApplicationSubmitted />
+              </ErrorBoundary>
             </AuthGuard>
           }
         />

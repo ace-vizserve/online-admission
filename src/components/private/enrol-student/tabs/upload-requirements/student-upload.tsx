@@ -53,6 +53,8 @@ function StudentUpload() {
   const showVaccinationInformation =
     studentAge !== undefined && studentAge <= 12 && applicationTypes.includes(stpApplicationType);
 
+  const isStpApplication = stpApplicationType === "New Student Pass Application";
+  const passType = usePassTypeStore((state) => state.passType);
   const hydratedRef = useRef<boolean>(false);
 
   const form = useForm<StudentUploadRequirementsSchema>({
@@ -81,14 +83,12 @@ function StudentUpload() {
         } as ParentGuardianUploadRequirementsSchema,
         studentUploadRequirements: {
           ...data.studentUploadRequirements,
-          toFollowDocs: applicationTypes.includes(stpApplicationType) ? ["pass"] : undefined,
-          pass: applicationTypes.includes(stpApplicationType) ? undefined : data.studentUploadRequirements.pass,
-          passExpiry: applicationTypes.includes(stpApplicationType)
-            ? undefined
-            : data.studentUploadRequirements.passExpiry,
-          passType: applicationTypes.includes(stpApplicationType) ? undefined : data.studentUploadRequirements.passType,
-          stpApplicationType,
           showVaccinationInformation,
+          stpApplicationType,
+          toFollowDocs: isStpApplication ? ["pass"] : undefined,
+          pass: isStpApplication ? undefined : data.studentUploadRequirements.pass,
+          passExpiry: isStpApplication ? undefined : data.studentUploadRequirements.passExpiry,
+          passType: isStpApplication ? undefined : data.studentUploadRequirements.passType,
         } as StudentUploadRequirementsSchema,
       },
     });
@@ -99,20 +99,39 @@ function StudentUpload() {
     if (hydratedRef.current) return;
     if (!studentReq || Object.keys(studentReq).length < 1) return;
 
-    form.reset(studentReq, {
-      keepErrors: false,
-    });
+    form.reset(
+      { ...studentReq, showVaccinationInformation },
+      {
+        keepErrors: false,
+      },
+    );
 
     form.trigger();
 
     hydratedRef.current = true;
-  }, [form, formState.uploadRequirements?.parentGuardianUploadRequirements]);
+  }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
+    const isPassTypeInCorrect = !isStpApplication && values.passType !== passType;
     const isPassExpiryNull = values.passExpiry?.getFullYear() === 1970 && values.passExpiry?.getTime() === 0;
 
     const isPassportExpiryNull =
       values.passportExpiry?.getFullYear() === 1970 && values.passportExpiry?.getTime() === 0;
+
+    if (isPassTypeInCorrect) {
+      form.setError("pass", {
+        type: "manual",
+        message: "",
+      });
+      form.setError("passType", {
+        type: "manual",
+        message: "Selected pass type does not match the student’s current pass.",
+      });
+      toast.error("Pass type mismatch!", {
+        description: "The selected pass type does not match what the student currently holds.",
+      });
+      return;
+    }
 
     if (isPassExpiryNull) {
       values.passExpiry = undefined;
@@ -149,11 +168,18 @@ function StudentUpload() {
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
           if (Object.keys(errors).includes("toFollowDocs")) {
-            toast.warning("Too many skipped documents!", {
+            toast.error("Too many skipped documents!", {
               description: "You can only skip up to 3 student documents.",
             });
           }
 
+          const includesIcaPhotoError = Object.keys(errors).filter((key) => key.includes("icaPhoto"));
+          const inCludesFinancialSupportDocsError = Object.keys(errors).filter((key) =>
+            key.includes("financialSupportDocs"),
+          );
+          const includesVaccinationInformationError = Object.keys(errors).filter((key) =>
+            key.includes("vaccinationInformation"),
+          );
           const includesIDPictureError = Object.keys(errors).filter((key) => key.includes("idPicture"));
           const includesBirthCertError = Object.keys(errors).filter((key) => key.includes("birthCert"));
           const includesEducCertError = Object.keys(errors).filter((key) => key.includes("educCert"));
@@ -164,6 +190,36 @@ function StudentUpload() {
           const includesPassError = Object.keys(errors).filter(
             (key) => key === "pass" || key === "passType" || key === "passExpiry",
           );
+
+          if (includesIcaPhotoError.length > 0) {
+            form.setError("icaPhoto", {
+              type: "manual",
+              message: "Please upload a valid file to continue",
+            });
+            toast.warning("Invalid ICA Photo document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (inCludesFinancialSupportDocsError.length > 0) {
+            form.setError("financialSupportDocs", {
+              type: "manual",
+              message: "Please upload a valid file to continue",
+            });
+            toast.warning("Invalid Financial Support documents!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
+
+          if (includesVaccinationInformationError.length > 0) {
+            form.setError("vaccinationInformation", {
+              type: "manual",
+              message: "Please upload a valid file to continue",
+            });
+            toast.warning("Invalid Vaccination Information document!", {
+              description: "Please upload a valid file to continue.",
+            });
+          }
 
           if (includesBirthCertError.length > 0) {
             form.setError("birthCert", {
@@ -256,7 +312,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="ID Picture"
-            description="Upload a recent photo of the student"
             form={form}
             name="idPicture"
             value={idPicture}
@@ -267,7 +322,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Birth Certificate"
-            description="Upload a recent copy of birth certificate"
             form={form}
             name="birthCert"
             value={birthCertificate}
@@ -278,7 +332,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Transcript of Records"
-            description="Upload the student's copy of TOR"
             form={form}
             name="educCert"
             value={transcriptOfRecords}
@@ -291,7 +344,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Medical Examination"
-            description="Upload recent medical result of student"
             form={form}
             name="medical"
             value={medicalExam}
@@ -302,23 +354,23 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Passport Copy"
-            description="Upload scanned passport copy"
             form={form}
             name="passport"
             value={passport}
             onValueChange={setPassport}
           />
 
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Singapore Pass"
-            description="Upload the type of Pass the student holds."
-            form={form}
-            name="pass"
-            value={pass}
-            onValueChange={setPass}
-          />
+          {!isStpApplication && (
+            <StudentFileUploaderDialog
+              formState={formState}
+              setFormState={setFormState}
+              label="Singapore Pass"
+              form={form}
+              name="pass"
+              value={pass}
+              onValueChange={setPass}
+            />
+          )}
         </div>
 
         {applicationTypes.includes(stpApplicationType) && (
@@ -336,7 +388,6 @@ function StudentUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Photo for ICA Student's Pass"
-                description="Upload recent medical result of student"
                 form={form}
                 name="icaPhoto"
                 value={icaPhoto}
@@ -347,7 +398,6 @@ function StudentUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Financial Support Documents"
-                description="Upload scanned passport copy"
                 form={form}
                 name="financialSupportDocs"
                 value={financialSupportDocs}
@@ -359,7 +409,6 @@ function StudentUpload() {
                   formState={formState}
                   setFormState={setFormState}
                   label="Vaccination Information"
-                  description="Upload the type of Pass the student holds."
                   form={form}
                   name="vaccinationInformation"
                   value={vaccinationInformation}

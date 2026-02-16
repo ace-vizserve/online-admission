@@ -2289,8 +2289,6 @@ export async function vizSchoolLookupNewEnrolledStudent({
   fullName: string;
 }) {
   try {
-    console.log(nric, birthDay);
-
     const namePattern = `%${fullName}%`;
 
     const { data, error } = await supabase
@@ -2607,6 +2605,45 @@ export async function updateEnrollmentApplicationDetails({
 
     toast.success("Application updated!", {
       description: "Enrollment application details have been saved successfully.",
+    });
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message);
+  }
+}
+
+type Feedback = {
+  academicYear: string;
+  enroleeNumber: string;
+  feedbackRating: number;
+  feedbackComments?: string;
+  feedbackConsent: boolean;
+};
+
+export async function submitParentFeedback({
+  academicYear,
+  enroleeNumber,
+  feedbackConsent,
+  feedbackRating,
+  feedbackComments,
+}: Feedback) {
+  try {
+    const { error } = await supabase
+      .from(`${academicYear}_enrolment_applications`)
+      .update({
+        feedbackRating,
+        feedbackComments,
+        feedbackConsent,
+        feedbackSubmittedAt: new Date(),
+      })
+      .eq("enroleeNumber", enroleeNumber);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    toast.success("Feedback submitted successfully! 🎉", {
+      description: "Thank you for sharing your feedback. This helps us improve our admission process.",
     });
   } catch (error) {
     const err = error as AuthError;

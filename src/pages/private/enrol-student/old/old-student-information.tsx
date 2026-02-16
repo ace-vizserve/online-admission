@@ -115,7 +115,7 @@ function StudentInformationTabs({
               "group relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
               "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
-              tab.hasError && "border-red-300",
+              tab.hasError && "bg-red-50",
               tab.hasError &&
                 "data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-red-200",
             )}>
@@ -124,7 +124,7 @@ function StudentInformationTabs({
                 "relative flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
                 "bg-slate-100 text-slate-800",
 
-                tab.hasError && "bg-red-50 text-red-600",
+                tab.hasError && "bg-white text-red-600",
                 tab.hasError && "group-data-[state=active]:bg-white/30 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />

@@ -62,8 +62,6 @@ function ParentGuardianUpload() {
 
     if (isValid) return;
 
-    console.log("Triggered");
-
     setFormState({
       uploadRequirements: {
         studentUploadRequirements: {

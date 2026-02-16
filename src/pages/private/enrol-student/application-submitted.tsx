@@ -1,10 +1,8 @@
 import PageMetaData from "@/components/page-metadata";
-import { buttonVariants } from "@/components/ui/button";
+import ParentFeedbackSurvey from "@/components/private/parent-survey-feedback";
 import { Confetti } from "@/components/ui/confetti";
 import { APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION } from "@/data";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router";
 
 function ApplicationSubmitted() {
   const { title, description } = APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION;
@@ -48,14 +46,7 @@ function ApplicationSubmitted() {
             </div>
           </div>
 
-          <Link
-            to={"/admission/dashboard"}
-            className={buttonVariants({
-              className: "!px-10 !py-6 !rounded-xl gap-2 !font-bold !shadow-lg !shadow-primary/20",
-              size: "lg",
-            })}>
-            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-          </Link>
+          <ParentFeedbackSurvey />
         </div>
       </div>
     </>

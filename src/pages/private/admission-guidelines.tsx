@@ -82,11 +82,11 @@ function AdmissionGuidelines() {
         </div>
 
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-xl mx-auto mb-12 h-16 p-2 rounded-full bg-slate-100/80 border border-slate-200/50 backdrop-blur-md shadow-inner relative">
+          <TabsList className="grid w-full grid-cols-1 lg:grid-cols-2 gap-4 max-w-xl mx-auto mb-12 h-max p-2 relative">
             <TabsTrigger
               value="general"
               onClick={() => setSelectedApplicationType("general")}
-              className="group rounded-full h-full flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.15em] transition-all duration-500
+              className="rounded-full shadow cursor-pointer py-2 group h-full flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.15em] transition-all duration-500
                data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)] 
                data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-600 focus-visible:outline-none">
               <div
@@ -100,7 +100,7 @@ function AdmissionGuidelines() {
             <TabsTrigger
               value="student-pass"
               onClick={() => setSelectedApplicationType("student-pass")}
-              className="group rounded-full h-full flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.15em] transition-all duration-500
+              className="rounded-full shadow cursor-pointer py-2 group h-full flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.15em] transition-all duration-500
                data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)] 
                data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-600 focus-visible:outline-none">
               <div
@@ -112,8 +112,8 @@ function AdmissionGuidelines() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="general">
-            <Card className="border border-gray-100 shadow-2xl mb-12">
+          <TabsContent className="animate-in fade-in slide-in-from-top-2 duration-500" value="general">
+            <Card className="shadow-none mb-12 border-none">
               <CardHeader className="space-y-4 pb-8 border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-xl">
@@ -301,7 +301,7 @@ function AdmissionGuidelines() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="student-pass">
+          <TabsContent className="animate-in fade-in slide-in-from-top-2 duration-500" value="student-pass">
             <div className="relative space-y-10 mb-20 p-8 rounded-xl bg-gradient-to-b from-white to-slate-50/50 border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.03)]">
               {/* --- Floating Status Pill --- */}
               <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-blue-100 shadow-[0_2px_10px_rgba(37,99,235,0.08)]">
@@ -1770,7 +1770,7 @@ function AdmissionGuidelines() {
           </TabsContent>
         </Tabs>
 
-        <Card className="border border-gray-100 shadow-2xl overflow-hidden py-0 mt-12">
+        <Card className="border-none shadow-none overflow-hidden py-0 mt-12">
           <CardHeader className="space-y-4 pt-6 pb-6 bg-gradient-to-r from-blue-50 to-amber-50">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white rounded-xl shadow-sm">
@@ -1846,7 +1846,7 @@ function EducationLevelTable() {
         <p className="text-gray-600">Admission requirements based on student's age and academic completion</p>
       </div>
 
-      <div className="border-2 border-gray-100 rounded-xl overflow-hidden shadow-lg bg-white">
+      <div className="rounded-xl overflow-hidden bg-white">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
