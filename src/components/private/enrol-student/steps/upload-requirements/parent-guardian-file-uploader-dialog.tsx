@@ -1135,7 +1135,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 });
 
 function ParentGuardianFileUploaderDrawer({
-  description,
   form,
   formState,
   label,
