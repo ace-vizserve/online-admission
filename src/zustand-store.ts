@@ -8,17 +8,26 @@ import {
 } from "./types";
 
 export type EnrolNewStudentDraftStore = {
-  draftId: string;
   lastSavedAt: Date;
+  createdAt: Date;
+  expiresAt: Date;
+  draftId: string;
   formState: Partial<EnrolNewStudentFormState | Record<string, unknown>>;
   setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
   currentTab: string;
   activeTab: string;
   completedTabs: string[];
+  academicYear: string;
+  type: "viz-school" | "hfse-is";
   clearState: () => void;
 };
 
 export type SecuritySettingsSheetStore = {
+  isOpen: boolean;
+  setIsOpen: (state: boolean) => void;
+};
+
+export type ApplicationDraftsDialogStore = {
   isOpen: boolean;
   setIsOpen: (state: boolean) => void;
 };
@@ -62,7 +71,7 @@ export type EnrolNewStudentTabStateStore = {
   completedTabs: string[];
   setActiveTab: (tab: string) => void;
   setCurrentTab: (tab: string) => void;
-  setCompletedTabs: (tab: string) => void;
+  setCompletedTabs: (tab: string | string[]) => void;
   clearState: () => void;
 };
 
@@ -79,6 +88,8 @@ export type EnrolOldStudentStore = {
 };
 
 export type VizSchoolEnrolNewStudentStore = {
+  draftId?: string;
+  createdAt: Date;
   formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
   clearState: () => void;
@@ -109,10 +120,10 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
           ...state,
           currentTab: tab,
         })),
-      setCompletedTabs: (tab: string) =>
+      setCompletedTabs: (tab: string | string[]) =>
         set((state) => ({
           ...state,
-          completedTabs: [...state.completedTabs, tab],
+          completedTabs: Array.isArray(tab) ? [...state.completedTabs, ...tab] : [...state.completedTabs, tab],
         })),
     }),
     {
@@ -123,6 +134,11 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
 );
 
 export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
+  isOpen: false,
+  setIsOpen: (state) => set(() => ({ isOpen: state })),
+}));
+
+export const useApplicationDraftsDialogStore = create<ApplicationDraftsDialogStore>()((set) => ({
   isOpen: false,
   setIsOpen: (state) => set(() => ({ isOpen: state })),
 }));
@@ -142,6 +158,7 @@ export const usePasswordResetStore = create<PasswordResetStore>()(
 export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
   persist(
     (set, _, store) => ({
+      createdAt: new Date(),
       formState: {},
       clearState: () => {
         set(store.getInitialState());
@@ -186,6 +203,7 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
 export const useVizSchoolEnrolNewStudentStore = create<VizSchoolEnrolNewStudentStore>()(
   persist(
     (set, _, store) => ({
+      createdAt: new Date(),
       formState: {},
       clearState: () => {
         set(store.getInitialState());
@@ -295,12 +313,16 @@ export const usePreCourseAcknowledgementStore = create<PreCourseAcknowledgementS
   ),
 );
 
-export const createEnrolNewStudentStore = (type: "viz-school" | "hfse-is", draftId: string) =>
+export const createNewStudentDraftStore = (type: "viz-school" | "hfse-is", draftId: string) =>
   create<EnrolNewStudentDraftStore>()(
     persist(
       (set, _, store) => ({
+        type,
+        academicYear: "",
         draftId: draftId,
         lastSavedAt: new Date(),
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         activeTab: "",
         completedTabs: [],
         currentTab: "",
@@ -318,7 +340,6 @@ export const createEnrolNewStudentStore = (type: "viz-school" | "hfse-is", draft
           type == "hfse-is"
             ? `enrolNewStudent:draft:${draftId}:hfse-is`
             : `enrolNewStudent:draft:${draftId}:viz-school`,
-        storage: createJSONStorage(() => localStorage),
       },
     ),
   );

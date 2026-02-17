@@ -198,8 +198,7 @@ function LearnerUpload() {
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
-            label="Student ID Picture"
-            description="Upload a recent photo of the student"
+            label="ID Picture"
             form={form}
             name="idPicture"
             value={idPicture}
@@ -209,8 +208,7 @@ function LearnerUpload() {
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
-            label="Student Birth Certificate"
-            description="Upload a recent copy of birth certificate"
+            label="Birth Certificate"
             form={form}
             name="birthCert"
             value={birthCertificate}
@@ -221,7 +219,6 @@ function LearnerUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Transcript of Records"
-            description="Upload the student's copy of TOR"
             form={form}
             name="educCert"
             value={transcriptOfRecords}
@@ -234,7 +231,6 @@ function LearnerUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Medical Examination"
-            description="Upload recent medical result of student"
             form={form}
             name="medical"
             value={medicalExam}
@@ -245,7 +241,6 @@ function LearnerUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Passport Copy"
-            description="Upload scanned passport copy"
             form={form}
             name="passport"
             value={passport}
@@ -256,7 +251,6 @@ function LearnerUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Singapore Pass"
-            description="Upload the type of Pass the student holds"
             form={form}
             name="pass"
             value={pass}

@@ -1,9 +1,10 @@
-import { ArrowLeft, CheckCircle2, Send } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FilePen, Send } from "lucide-react";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
 
 import { submitVizSchoolEnrollment } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import NewLearnerSteps from "@/components/private/enrol-student/vizschool/new-learner-steps";
+import VizSchoolSavedDraftsDialog from "@/components/private/vizschool-drafts-list";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,76 +21,163 @@ import EnrolNewLearnerContextProvider, {
   useEnrolNewLearnerContext,
 } from "@/context/vizschool/enrol-new-learner-context";
 import useSession from "@/hooks/use-session";
+import { createNewStudentDraft, listNewStudentDrafts, wait } from "@/lib/utils";
 import { VizSchoolEnrolNewStudentFormState } from "@/types";
-import { useEnrolNewStudentTabStateStore, useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
+import {
+  createNewStudentDraftStore,
+  useApplicationDraftsDialogStore,
+  useEnrolNewStudentTabStateStore,
+  useSelectAcademicYear,
+  useSelectSchoolFee,
+} from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { addDays } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
-import { useCallback, useEffect, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+const academicYears = ["vizschool-ay2025", "vizschool-ay2026", "vizschool-ay2027"];
+
 function NewLearnerLayout() {
+  const studentDrafts = listNewStudentDrafts("viz-school").reverse() || [];
+  const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
+  const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isPending, setTransition] = useTransition();
-
-  const redirectToDashboard = useCallback(() => {
-    setTransition(() => {
-      navigate("/admission/dashboard");
-    });
-  }, [navigate]);
+  const academicYearParams = searchParams.get("academicYear");
+  const [isPending, setIsPending] = useState<boolean>(false);
 
   useEffect(() => {
-    const academicYearParams = searchParams.get("academicYear");
+    if (!academicYears.includes(academicYear)) {
+      setIsPending(true);
 
-    if (!academicYearParams) {
-      redirectToDashboard();
+      const timeout = setTimeout(() => {
+        navigate("/admission/dashboard");
+      }, 1500);
+
+      return () => clearTimeout(timeout);
     }
 
-    if (academicYearParams != academicYear) {
+    if (academicYearParams !== academicYear) {
       setSearchParams({ academicYear });
     }
-  }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
+
+    setIsPending(false);
+  }, [academicYear, navigate]);
+
+  useEffect(() => {
+    if (studentDrafts.length > 0 && academicYears.includes(academicYear)) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  }, [studentDrafts.length]);
 
   return (
     <EnrolNewLearnerContextProvider>
-      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
-        <MaxWidthWrapper className="w-full flex justify-between items-center max-w-screen-2xl px-4 md:px-6">
-          <ExitApplicationDialog />
-          <SubmitApplicationDialog />
-        </MaxWidthWrapper>
-      </div>
-      <MaxWidthWrapper className="max-w-screen-2xl">
-        <div className="min-h-dvh w-full flex flex-col md:gap-12 items-center justify-start">
-          <div className="w-full overflow-x-auto">
-            <NewLearnerSteps />
+      {isOpen ? (
+        <VizSchoolSavedDraftsDialog />
+      ) : (
+        <>
+          <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
+            <MaxWidthWrapper className="w-full flex justify-between items-center max-w-screen-2xl px-4 md:px-6">
+              <ExitApplicationDialog />
+              <SubmitApplicationDialog />
+            </MaxWidthWrapper>
           </div>
-          <div className="w-full">
-            {isPending ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-50 animate-in fade-in duration-300">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="relative flex items-center justify-center">
-                    <div className="h-12 w-12 rounded-full border-4 border-indigo-100"></div>
-                    <div className="absolute h-12 w-12 animate-spin rounded-full border-6 border-transparent border-t-indigo-600"></div>
-                  </div>
-
-                  <div className="space-y-1 text-center">
-                    <p className="font-bold text-slate-800 tracking-tight">Preparing Enrolment</p>
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-widest animate-pulse">
-                      Updating Information...
-                    </p>
-                  </div>
-                </div>
+          <MaxWidthWrapper className="max-w-screen-2xl">
+            <div className="min-h-dvh w-full flex flex-col md:gap-12 items-center justify-start">
+              <div className="w-full overflow-x-auto">
+                <NewLearnerSteps />
               </div>
-            ) : (
-              <Outlet />
-            )}
-          </div>
-        </div>
-      </MaxWidthWrapper>
+              <div className="w-full">
+                {isPending ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-50 animate-in fade-in duration-300">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-full border-4 border-indigo-100"></div>
+                        <div className="absolute h-12 w-12 animate-spin rounded-full border-6 border-transparent border-t-indigo-600"></div>
+                      </div>
+
+                      <div className="space-y-1 text-center">
+                        <p className="font-bold text-slate-800 tracking-tight">Loading Enrolment</p>
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-widest animate-pulse">
+                          Preparing Information...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <Outlet />
+                )}
+              </div>
+            </div>
+          </MaxWidthWrapper>
+        </>
+      )}
     </EnrolNewLearnerContextProvider>
+  );
+}
+
+function DraftApplication() {
+  const navigate = useNavigate();
+  const { formState, setFormState } = useEnrolNewLearnerContext();
+  const { currentTab, completedTabs, activeTab } = useEnrolNewLearnerContext();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+
+  async function saveApplication() {
+    const DRAFT_EXPIRY_DAYS = 30;
+    const now = new Date();
+
+    let draftId = formState?.draftId;
+
+    if (!formState.draftId) {
+      draftId = createNewStudentDraft();
+      setFormState({ draftId });
+    }
+
+    createNewStudentDraftStore("viz-school", draftId!).setState({
+      academicYear,
+      currentTab,
+      activeTab,
+      completedTabs,
+      formState,
+      lastSavedAt: new Date(),
+      createdAt: formState?.createdAt ?? new Date(),
+      expiresAt: addDays(now, DRAFT_EXPIRY_DAYS),
+    });
+    setIsLoading(true);
+
+    await wait(1000);
+    toast.success("Your application has been saved!", {
+      description: "Your progress is saved. You may leave this page and resume later from Drafts.",
+    });
+    setIsLoading(false);
+    await wait(500);
+    navigate("/admission/dashboard");
+  }
+
+  return (
+    <Button
+      variant={"outline"}
+      disabled={isLoading}
+      onClick={async () => await saveApplication()}
+      className="gap-2 font-bold">
+      {isLoading ? (
+        <>
+          Saving
+          <DotPulse size="30" speed="1.3" color="black" />
+        </>
+      ) : (
+        <>
+          <FilePen /> Save & exit
+        </>
+      )}
+    </Button>
   );
 }
 
@@ -242,14 +330,16 @@ function ExitApplicationDialog() {
             </div>
             Exit Application?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-xs md:text-sm text-center font-medium">
-            Are you sure you want to exit this page? Both saved and unsaved information will be removed and cannot be
-            recovered.
+          <AlertDialogDescription className="text-xs md:text-sm text-center font-medium leading-relaxed">
+            You are about to leave this application page. Any changes you have made will not be kept unless you choose
+            <span className="text-black font-bold"> Save & exit</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="mt-2 sm:justify-center">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={exitApplication} className={buttonVariants({ variant: "destructive" })}>
+        <AlertDialogFooter className="mt-2 !flex-col sm:justify-center">
+          <DraftApplication />
+          <AlertDialogAction
+            onClick={async () => await exitApplication()}
+            className={buttonVariants({ variant: "destructive", className: "font-bold" })}>
             Exit Anyway
           </AlertDialogAction>
         </AlertDialogFooter>

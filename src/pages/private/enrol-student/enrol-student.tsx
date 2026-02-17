@@ -7,7 +7,6 @@ import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import EnrollmentStepper from "@/components/private/enrol-student/enrollment-stepper";
-import SavedDraftsList from "@/components/private/saved-drafts-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -166,7 +165,6 @@ function EnrolStudent() {
             })}>
             <ArrowLeft /> Go back
           </Link>
-          <SavedDraftsList />
         </MaxWidthWrapper>
       </div>
 

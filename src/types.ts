@@ -306,6 +306,8 @@ export type SingleStudent = {
 };
 
 export type EnrolNewStudentFormState = {
+  draftId?: string;
+  createdAt?: Date;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
@@ -342,6 +344,8 @@ export type EnrolOldStudentFormState = {
 };
 
 export type VizSchoolEnrolNewStudentFormState = {
+  draftId?: string;
+  createdAt?: Date;
   studentInfo: {
     studentDetails: VizSchoolStudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
@@ -401,7 +405,7 @@ export type ParentGuardianFileUploaderDialogProps = {
 
 export type VizSchoolStudentFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<StudentUploadRequirementsSchema>;
   name: keyof StudentUploadRequirementsSchema;
   value: File[] | null;
@@ -412,7 +416,7 @@ export type VizSchoolStudentFileUploaderDialogProps = {
 
 export type VizSchoolParentGuardianFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<ParentGuardianUploadRequirementsSchema>;
   name: keyof ParentGuardianUploadRequirementsSchema;
   value: File[] | null;

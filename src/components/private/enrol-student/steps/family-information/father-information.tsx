@@ -204,7 +204,7 @@ function FatherInformation() {
         },
       },
     },
-    0
+    0,
   );
 
   return (
@@ -300,7 +300,7 @@ function FatherInformation() {
                           variant={"outline"}
                           className={cn(
                             "w-full lg:w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}>
                           {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

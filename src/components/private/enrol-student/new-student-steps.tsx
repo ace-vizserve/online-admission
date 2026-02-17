@@ -54,18 +54,17 @@ function NewStudentSteps() {
               }}
               className={cn(
                 "relative flex-1 group transition-all duration-300",
-                isLocked ? "cursor-not-allowed" : "cursor-pointer"
+                isLocked ? "cursor-not-allowed" : "cursor-pointer",
               )}>
               <div className="flex items-center lg:flex-col lg:text-center px-6 py-5 gap-4 lg:gap-2">
-                {/* Step Number / Icon */}
                 <div
                   className={cn(
                     "size-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-black transition-all",
                     isCurrent
                       ? "bg-primary text-white ring-4 ring-slate-100"
                       : isCompleted
-                      ? "bg-green-600 text-white"
-                      : "bg-slate-100 text-slate-400"
+                        ? "bg-green-600 text-white"
+                        : "bg-slate-100 text-slate-400",
                   )}>
                   {isCompleted ? <Check size={14} strokeWidth={3} /> : index + 1}
                 </div>
@@ -75,7 +74,7 @@ function NewStudentSteps() {
                   <p
                     className={cn(
                       "text-xs font-black uppercase tracking-tight transition-colors",
-                      isCurrent ? "text-primary" : isCompleted ? "text-green-700" : "text-slate-400"
+                      isCurrent ? "text-primary" : isCompleted ? "text-green-700" : "text-slate-400",
                     )}>
                     {step.name}
                   </p>
@@ -83,12 +82,11 @@ function NewStudentSteps() {
                 </div>
               </div>
 
-              {/* Bottom Progress Indicator */}
               <div className="absolute bottom-0 left-0 w-full h-1 bg-transparent px-2">
                 <div
                   className={cn(
                     "h-full w-full rounded-t-full transition-all duration-500",
-                    isCurrent ? "bg-primary" : isCompleted ? "bg-green-600/40" : "bg-slate-100"
+                    isCurrent ? "bg-primary" : isCompleted ? "bg-green-600/40" : "bg-slate-100",
                   )}
                 />
               </div>

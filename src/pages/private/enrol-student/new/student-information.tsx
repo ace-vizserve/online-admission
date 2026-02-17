@@ -58,12 +58,12 @@ function StudentInformationTabs() {
             className={cn(
               "relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
-              "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200"
+              "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
             )}>
             <div
               className={cn(
                 "flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
-                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white"
+                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />
             </div>
@@ -82,7 +82,6 @@ function StudentInformationTabs() {
         <Separator orientation="vertical" className="h-[500px] bg-slate-100" />
       </div>
 
-      {/* Main Form Content Area */}
       <div className="flex-1 w-full bg-white rounded-3xl border border-slate-100 p-6 md:p-10 shadow-sm">
         {tabs.map((tab) => (
           <TabsContent className="mt-0 focus-visible:ring-0" key={tab.value} value={tab.value}>

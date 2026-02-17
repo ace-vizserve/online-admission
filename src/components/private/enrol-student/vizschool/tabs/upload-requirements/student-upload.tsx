@@ -77,8 +77,6 @@ function StudentUpload() {
     if (hydratedRef.current) return;
     if (!studentReq || Object.keys(studentReq).length < 1) return;
 
-    console.log("Triggered");
-
     form.reset(studentReq, {
       keepErrors: false,
     });
@@ -230,13 +228,11 @@ function StudentUpload() {
         </Alert>
 
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
-            label="Student ID Picture"
-            description="Upload a recent photo of the student"
+            label="ID Picture"
             form={form}
             name="idPicture"
             value={idPicture}
@@ -246,8 +242,7 @@ function StudentUpload() {
           <StudentFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
-            label="Student Birth Certificate"
-            description="Upload a recent copy of birth certificate"
+            label="Birth Certificate"
             form={form}
             name="birthCert"
             value={birthCertificate}
@@ -258,7 +253,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Transcript of Records"
-            description="Upload the student's copy of TOR"
             form={form}
             name="educCert"
             value={transcriptOfRecords}
@@ -271,7 +265,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Medical Examination"
-            description="Upload recent medical result of student"
             form={form}
             name="medical"
             value={medicalExam}
@@ -282,7 +275,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Passport Copy"
-            description="Upload scanned passport copy"
             form={form}
             name="passport"
             value={passport}
@@ -293,7 +285,6 @@ function StudentUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Singapore Pass"
-            description="Upload the type of Pass the student holds."
             form={form}
             name="pass"
             value={pass}

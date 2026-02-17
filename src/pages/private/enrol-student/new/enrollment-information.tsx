@@ -79,7 +79,7 @@ function EnrollmentInformation() {
   const [isPending, setTransition] = useTransition();
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
-    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
+    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false,
   );
 
   const form = useForm<EnrollmentInformationSchema>({
@@ -110,7 +110,7 @@ function EnrollmentInformation() {
         ...debouncedAutoSaveValue,
       },
     },
-    0
+    0,
   );
 
   if (formState.familyInfo?.motherInfo == null) {

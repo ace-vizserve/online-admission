@@ -1,6 +1,7 @@
 import { classLevels } from "@/data";
 import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
 import { ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
+import { EnrolNewStudentDraftStore } from "@/zustand-store";
 import { AuthError } from "@supabase/supabase-js";
 import { clsx, type ClassValue } from "clsx";
 import { differenceInYears, getHours, parseISO } from "date-fns";
@@ -583,23 +584,51 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
 }
 
 const NEW_STUDENT_DRAFT_PREFIX = "enrolNewStudent:draft:";
-const MAX_NEW_STUDENT_DRAFTS = 3;
+
+type DraftMeta = {
+  createdAt: string;
+  lastSavedAt: string;
+  expiresAt: string;
+};
+
+export function isExpired(expiresAt?: string | Date) {
+  if (!expiresAt) return false;
+
+  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+
+  if (Number.isNaN(expiry.getTime())) return false;
+
+  return expiry < new Date();
+}
+
+export function isExpiringSoon(expiresAt?: string | Date, days = 5) {
+  if (!expiresAt) return false;
+
+  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+
+  if (Number.isNaN(expiry.getTime())) return false;
+
+  const now = new Date();
+  const soon = new Date();
+  soon.setDate(now.getDate() + days);
+
+  return expiry > now && expiry <= soon;
+}
 
 export function createNewStudentDraft() {
+  const now = new Date();
+
   const draftKeys = Object.keys(localStorage).filter((k) => k.startsWith(NEW_STUDENT_DRAFT_PREFIX));
 
-  if (draftKeys.length >= MAX_NEW_STUDENT_DRAFTS) {
-    const drafts = draftKeys
-      .map((key) => {
-        const raw = localStorage.getItem(key);
-        if (!raw) return null;
-        const { lastSavedAt } = JSON.parse(raw);
-        return { key, lastSavedAt };
-      })
-      .filter(Boolean)
-      .sort((a, b) => new Date(a!.lastSavedAt).getTime() - new Date(b!.lastSavedAt).getTime());
+  for (const key of draftKeys) {
+    const raw = localStorage.getItem(key);
+    if (!raw) continue;
 
-    if (drafts[0]) localStorage.removeItem(drafts[0]!.key);
+    const meta: DraftMeta = JSON.parse(raw);
+
+    if (new Date(meta.expiresAt) < now) {
+      localStorage.removeItem(key);
+    }
   }
 
   const draftId = crypto.randomUUID();
@@ -615,4 +644,39 @@ export function listNewStudentDrafts(type: "viz-school" | "hfse-is") {
       return raw ? JSON.parse(raw) : null;
     })
     .filter(Boolean);
+}
+
+export type DraftSort = "lastUpdated" | "expiringSoon" | "expired" | "oldest";
+
+export function sortDrafts(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  drafts: any[],
+  sortBy: DraftSort,
+) {
+  const now = new Date();
+
+  const draftsWithState = drafts as { state: EnrolNewStudentDraftStore }[];
+
+  switch (sortBy) {
+    case "lastUpdated":
+      return [...draftsWithState].sort(
+        (a, b) => new Date(b.state.lastSavedAt).getTime() - new Date(a.state.lastSavedAt).getTime(),
+      );
+
+    case "oldest":
+      return [...draftsWithState].sort(
+        (a, b) => new Date(a.state.createdAt).getTime() - new Date(b.state.createdAt).getTime(),
+      );
+
+    case "expiringSoon":
+      return [...draftsWithState].sort(
+        (a, b) => new Date(a.state.expiresAt ?? 0).getTime() - new Date(b.state.expiresAt ?? 0).getTime(),
+      );
+
+    case "expired":
+      return draftsWithState.filter((draft) => draft.state.expiresAt && new Date(draft.state.expiresAt) < now);
+
+    default:
+      return draftsWithState;
+  }
 }

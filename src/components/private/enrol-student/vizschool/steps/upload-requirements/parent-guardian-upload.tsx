@@ -222,7 +222,6 @@ function ParentGuardianUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Passport Copy"
-            description="Upload scanned passport copy"
             form={form}
             name="motherPassport"
             value={motherPassport}
@@ -233,7 +232,6 @@ function ParentGuardianUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Singapore Pass"
-            description="Upload the type of Pass the mother holds."
             form={form}
             name="motherPass"
             value={motherPass}
@@ -250,7 +248,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Passport Copy"
-                description="Upload scanned passport copy"
                 form={form}
                 name="fatherPassport"
                 value={fatherPassport}
@@ -261,7 +258,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Singapore Pass"
-                description="Upload the type of Pass the father holds."
                 form={form}
                 name="fatherPass"
                 value={fatherPass}
@@ -280,7 +276,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Passport Copy"
-                description="Upload scanned passport copy"
                 form={form}
                 name="guardianPassport"
                 value={guardianPassport}
@@ -291,7 +286,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Singapore Pass"
-                description="Upload the type of Pass the guardian holds."
                 form={form}
                 name="guardianPass"
                 value={guardianPass}

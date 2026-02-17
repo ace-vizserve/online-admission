@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 export function useAutoSave(
   setterFunc: (params: Record<string, unknown>) => void,
   data: Record<string, unknown>,
-  delay: number
+  delay: number,
 ) {
   const prevDataRef = useRef<string>("");
 

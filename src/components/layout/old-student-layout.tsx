@@ -18,33 +18,38 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useSelectAcademicYear } from "@/zustand-store";
+import { wait } from "@/lib/utils";
+import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
+import { DotPulse } from "ldrs/react";
 import { OctagonAlert } from "lucide-react";
-import { useCallback, useEffect, useTransition } from "react";
+import { useEffect, useState } from "react";
+
+const academicYears = ["ay2025", "ay2026", "ay2027"];
 
 function OldStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isPending, setTransition] = useTransition();
-
-  const redirectToDashboard = useCallback(() => {
-    setTransition(() => {
-      navigate("/admission/dashboard");
-    });
-  }, [navigate]);
+  const academicYearParams = searchParams.get("academicYear");
+  const [isPending, setIsPending] = useState<boolean>(false);
 
   useEffect(() => {
-    const academicYearParams = searchParams.get("academicYear");
+    if (!academicYears.includes(academicYear)) {
+      setIsPending(true);
 
-    if (!academicYearParams) {
-      redirectToDashboard();
+      const timeout = setTimeout(() => {
+        navigate("/admission/dashboard");
+      }, 1500);
+
+      return () => clearTimeout(timeout);
     }
 
-    if (academicYearParams != academicYear) {
+    if (academicYearParams !== academicYear) {
       setSearchParams({ academicYear });
     }
-  }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
+
+    setIsPending(false);
+  }, [academicYear, navigate]);
 
   return (
     <EnrolOldStudentContextProvider>
@@ -90,11 +95,24 @@ function OldStudentLayout() {
 function ExitApplicationDialog() {
   const { clearState } = useEnrolOldStudentContext();
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+  const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
+  const clearPassType = usePassTypeStore((state) => state.clearState);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  function exitApplication() {
+  async function exitApplication() {
+    setIsLoading(true);
+    clearPassType();
+    clearPreCourse();
     clearState();
     clearAcademicYearState();
     sessionStorage.clear();
+
+    await wait(1000);
+    setIsLoading(false);
+
+    await wait(500);
+    navigate("/admission/dashboard");
   }
 
   return (
@@ -121,9 +139,17 @@ function ExitApplicationDialog() {
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={exitApplication}
+            disabled={isLoading}
+            onClick={async () => await exitApplication()}
             className={buttonVariants({ variant: "destructive", className: "font-bold" })}>
-            Exit Anyway
+            {isLoading ? (
+              <>
+                Exiting
+                <DotPulse size="30" speed="1.3" color="white" />
+              </>
+            ) : (
+              <>Exit Anyway</>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

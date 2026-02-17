@@ -18,32 +18,35 @@ import EnrolCurrentLearnerContextProvider, {
 } from "@/context/vizschool/enrol-current-learner-context";
 import { useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
 import { ArrowLeft, OctagonAlert } from "lucide-react";
-import { useCallback, useEffect, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
+
+const academicYears = ["vizschool-ay2025", "vizschool-ay2026", "vizschool-ay2027"];
 
 function CurrentLearnerLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isPending, setTransition] = useTransition();
-
-  const redirectToDashboard = useCallback(() => {
-    setTransition(() => {
-      navigate("/admission/dashboard");
-    });
-  }, [navigate]);
+  const academicYearParams = searchParams.get("academicYear");
+  const [isPending, setIsPending] = useState<boolean>(false);
 
   useEffect(() => {
-    const academicYearParams = searchParams.get("academicYear");
+    if (!academicYears.includes(academicYear)) {
+      setIsPending(true);
 
-    if (!academicYearParams) {
-      redirectToDashboard();
+      const timeout = setTimeout(() => {
+        navigate("/admission/dashboard");
+      }, 1500);
+
+      return () => clearTimeout(timeout);
     }
 
-    if (academicYearParams != academicYear) {
+    if (academicYearParams !== academicYear) {
       setSearchParams({ academicYear });
     }
-  }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
+
+    setIsPending(false);
+  }, [academicYear, navigate]);
 
   return (
     <EnrolCurrentLearnerContextProvider>
@@ -69,9 +72,9 @@ function CurrentLearnerLayout() {
                   </div>
 
                   <div className="space-y-1 text-center">
-                    <p className="font-bold text-slate-800 tracking-tight">Preparing Enrolment</p>
+                    <p className="font-bold text-slate-800 tracking-tight">Loading Enrolment</p>
                     <p className="text-xs font-medium text-slate-400 uppercase tracking-widest animate-pulse">
-                      Updating Information...
+                      Preparing Information...
                     </p>
                   </div>
                 </div>

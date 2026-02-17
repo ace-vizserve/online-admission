@@ -262,13 +262,13 @@ function ParentGuardianUpload() {
         </Alert>
 
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
+
         <h1 className="max-w-4xl mx-auto font-bold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
           <ParentGuardianFileUploaderDialog
             formState={formState}
             setFormState={setFormState}
             label="Passport Copy"
-            description="Upload scanned passport copy"
             form={form}
             name="motherPassport"
             value={motherPassport}
@@ -279,7 +279,6 @@ function ParentGuardianUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Singapore Pass"
-            description="Upload the type of Pass the mother holds."
             form={form}
             name="motherPass"
             value={motherPass}
@@ -295,7 +294,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Passport Copy"
-                description="Upload scanned passport copy"
                 form={form}
                 name="fatherPassport"
                 value={fatherPassport}
@@ -306,7 +304,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Singapore Pass"
-                description="Upload the type of Pass the father holds."
                 form={form}
                 name="fatherPass"
                 value={fatherPass}
@@ -324,7 +321,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Passport Copy"
-                description="Upload scanned passport copy"
                 form={form}
                 name="guardianPassport"
                 value={guardianPassport}
@@ -335,7 +331,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Singapore Pass"
-                description="Upload the type of Pass the guardian holds."
                 form={form}
                 name="guardianPass"
                 value={guardianPass}
@@ -344,6 +339,7 @@ function ParentGuardianUpload() {
             </div>
           </>
         )}
+
         <Button
           size="lg"
           className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"

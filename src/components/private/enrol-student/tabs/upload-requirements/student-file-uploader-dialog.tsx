@@ -993,7 +993,7 @@ function StudentFileUploaderDrawer({
       <Drawer repositionInputs={false}>
         <DrawerTrigger asChild>
           <Button
-            className="font-semibold"
+            className="!text-xs font-bold"
             variant={
               errors[name] != null
                 ? "destructive"
