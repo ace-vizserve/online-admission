@@ -88,8 +88,6 @@ export type EnrolOldStudentStore = {
 };
 
 export type VizSchoolEnrolNewStudentStore = {
-  draftId?: string;
-  createdAt: Date;
   formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
   clearState: () => void;
