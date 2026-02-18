@@ -336,7 +336,7 @@ function ExitApplicationDialog() {
             <span className="text-black font-bold"> Save & exit</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="mt-2 !flex-col sm:justify-center">
+        <AlertDialogFooter className="mt-2 !flex-col sm:justify-center gap-4">
           <DraftApplication />
           <AlertDialogAction
             onClick={async () => await exitApplication()}

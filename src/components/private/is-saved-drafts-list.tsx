@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { cn, DraftSort, isExpired, isExpiringSoon, listNewStudentDrafts, sortDrafts, wait } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
@@ -26,6 +27,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router";
 import Logo from "../logo";
 import {
@@ -35,6 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
+import { ScrollArea } from "../ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -66,6 +69,9 @@ export default function ISSavedDraftsDialog() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const studentDrafts = listNewStudentDrafts("hfse-is") || [];
   const [sortBy, setSortBy] = useState<DraftSort>("lastUpdated");
+  const isDesktop = useMediaQuery({
+    query: "(min-width: 786px)",
+  });
 
   const memoizedSetSort = useCallback((newSort: DraftSort) => {
     setSortBy(newSort);
@@ -137,6 +143,213 @@ export default function ISSavedDraftsDialog() {
     navigate("/admission/dashboard");
   }
 
+  if (!isDesktop) {
+    return (
+      <Drawer dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
+        <DrawerContent className="bg-[#F2F2F7] p-0 overflow-hidden">
+          {isLoading ? (
+            <SavedDraftsLoader />
+          ) : (
+            <>
+              {/* Header */}
+              <DrawerHeader className="mt-4 p-0">
+                <div className="sticky top-0 z-10 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-5">
+                  <div className="w-full flex items-center gap-4 px-2 py-2">
+                    <Logo className="w-16" />
+
+                    <div className="h-12 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
+
+                    <div className="flex flex-col items-start gap-0.5">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-[0.25em] leading-none">
+                        Enrollment Portal
+                      </p>
+                      <DrawerTitle className="text-xl font-black tracking-tight text-slate-900 leading-tight">
+                        Saved Applications
+                      </DrawerTitle>
+                    </div>
+                  </div>
+                </div>
+              </DrawerHeader>
+
+              {/* Scrollable content */}
+              <ScrollArea className="h-96">
+                <div className="p-6 space-y-4">
+                  <div className="flex flex-wrap-reverse justify-between gap-4">
+                    <SortDraft sortBy={sortBy} setSortBy={memoizedSetSort} />
+                    <div className="w-max flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-red-50 border-red-100 text-red-600 font-bold text-[10px] uppercase">
+                      <Info className="size-3.5" />
+                      Drafts expires after 30 days
+                    </div>
+                  </div>
+
+                  {isEmpty ? (
+                    <div className="flex flex-col items-center justify-center text-center py-20 px-10">
+                      <div className="size-20 bg-white rounded-[32px] shadow-sm border border-slate-200 flex items-center justify-center mb-6">
+                        <Inbox className="size-8 text-slate-200" strokeWidth={1.5} />
+                      </div>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">No Drafts Found</h3>
+                      <p className="text-sm text-slate-400 font-medium mt-1">
+                        Draft applications are saved automatically and kept for 30 days.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="relative grid grid-cols-1 gap-2">
+                      {sortedDrafts.map(({ state }) => {
+                        const internalState = state;
+                        const formState = internalState.formState as EnrolNewStudentFormState;
+
+                        const expired = isExpired(internalState.expiresAt);
+                        const expiringSoon = isExpiringSoon(internalState.expiresAt);
+
+                        const stepIndex = STEPS.findIndex((s) => s.path === internalState.activeTab);
+                        const stepData = STEPS[stepIndex] || STEPS[0];
+
+                        const progressPercent = Math.round((internalState.completedTabs.length / STEPS.length) * 100);
+
+                        const fullName =
+                          formState?.studentInfo?.studentDetails?.firstName ||
+                          formState?.studentInfo?.studentDetails?.lastName
+                            ? `${formState.studentInfo.studentDetails.firstName ?? ""} ${
+                                formState.studentInfo.studentDetails.lastName ?? ""
+                              }`.trim()
+                            : "New Application";
+
+                        return (
+                          <div
+                            key={internalState.draftId}
+                            className={cn(
+                              "bg-white rounded-xl p-5 border shadow-sm transition-all",
+                              expired ? "opacity-50 border-red-200 bg-red-50/40" : "border-slate-200",
+                            )}>
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className="text-base font-black text-slate-900 tracking-tight capitalize">
+                                    {fullName}
+                                  </h3>
+
+                                  {!expired && expiringSoon && (
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-100 px-2 py-1 rounded-full">
+                                      Expires {formatDistanceToNow(new Date(internalState.expiresAt))}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider">
+                                  {internalState.academicYear?.replace("ay", "AY ")} • Saved{" "}
+                                  {formatDistanceToNow(new Date(internalState.lastSavedAt), { addSuffix: true })}
+                                </p>
+                              </div>
+
+                              <button
+                                onClick={() => handleDelete(internalState.draftId, internalState.type)}
+                                className="p-2 text-destructive hover:bg-destructive/10 rounded-full">
+                                <Trash2 className="size-5" />
+                              </button>
+                            </div>
+
+                            {/* Progress */}
+                            <div className="py-4 mb-5">
+                              <div className="flex items-center gap-5">
+                                <div className="relative size-16 flex items-center justify-center">
+                                  <svg className="size-full -rotate-90" viewBox="0 0 64 64">
+                                    <circle
+                                      cx="32"
+                                      cy="32"
+                                      r="28"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="5"
+                                      className="text-slate-100"
+                                    />
+                                    <circle
+                                      cx="32"
+                                      cy="32"
+                                      r="28"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="5"
+                                      strokeDasharray={176}
+                                      strokeDashoffset={176 - (176 * progressPercent) / 100}
+                                      strokeLinecap="round"
+                                      className="text-primary transition-all duration-1000"
+                                    />
+                                  </svg>
+
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase">Step</span>
+                                    <span className="text-[14px] font-black">
+                                      {internalState.completedTabs.length}
+                                      <span className="text-slate-300 mx-0.5 text-[10px]">/</span>4
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <p className="text-[10px] font-black text-primary uppercase tracking-widest">
+                                    Active Tab
+                                  </p>
+                                  <p className="text-[15px] font-bold text-slate-700">{stepData.name}</p>
+                                  <p className="text-[12px] text-slate-500 font-medium line-clamp-1">{stepData.desc}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Action */}
+                            <Button
+                              variant="outline"
+                              disabled={expired}
+                              onClick={() =>
+                                initializeFormState({
+                                  internalState,
+                                  formState,
+                                })
+                              }
+                              className={cn(
+                                "w-full h-12 rounded-xl font-black uppercase tracking-[0.1em] text-[11px] text-primary bg-primary/10",
+                                expired ? "bg-slate-200 text-slate-400" : "shadow-lg shadow-primary/10",
+                              )}>
+                              {expired ? "Draft expired" : "Resume Application"}
+                              {!expired && <ChevronRight className="ml-1 size-4 opacity-70" strokeWidth={3} />}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Footer */}
+              <DrawerFooter className="border-t border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-6 flex flex-col gap-3">
+                <Button
+                  onClick={() => {
+                    setIsOpen(false);
+                    navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
+                  }}
+                  className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
+                  <Plus className="mr-2 size-4" strokeWidth={3} />
+                  Start New Application
+                </Button>
+
+                <DrawerClose asChild>
+                  <Button
+                    onClick={async () => await exitApplication()}
+                    variant="outline"
+                    className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px] text-destructive hover:bg-destructive/5">
+                    <LogOut className="mr-2 size-4" />
+                    Exit Application
+                  </Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </>
+          )}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent
@@ -152,7 +365,7 @@ export default function ISSavedDraftsDialog() {
             <AlertDialogHeader className="contents space-y-0 text-left">
               <div className="sticky top-0 z-10 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-5 ">
                 <div className="w-full flex items-center gap-4 md:gap-6 px-2 py-2">
-                  <Logo className="w-20 md:w-24" />
+                  <Logo className="w-16 md:w-20 lg:w-24" />
 
                   <div className="h-12 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
 
@@ -171,7 +384,7 @@ export default function ISSavedDraftsDialog() {
                 <div className="p-6 space-y-4">
                   <div className="flex flex-wrap-reverse justify-between gap-4">
                     <SortDraft sortBy={sortBy} setSortBy={memoizedSetSort} />
-                    <div className="w-max flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-red-50 border-red-100 text-red-600 font-bold text-xs uppercase">
+                    <div className="w-max flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-red-50 border-red-100 text-red-600 font-bold text-[10px] md:text-xs uppercase">
                       <Info className="size-3.5" />
                       Drafts expires after 30 days
                     </div>
@@ -210,7 +423,7 @@ export default function ISSavedDraftsDialog() {
                           <div
                             key={internalState.draftId}
                             className={cn(
-                              "group bg-white rounded-[24px] p-5 border shadow-sm transition-all",
+                              "group bg-white rounded-xl p-5 border shadow-sm transition-all",
                               expired
                                 ? "opacity-50 border-red-200 bg-red-50/40"
                                 : "border-slate-200 hover:border-primary/20 hover:shadow-md",
@@ -219,7 +432,7 @@ export default function ISSavedDraftsDialog() {
                             <div className="flex justify-between items-start mb-4">
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <h3 className="text-lg font-black text-slate-900 tracking-tight capitalize">
+                                  <h3 className="text-base md:text-lg font-black text-slate-900 tracking-tight capitalize">
                                     {fullName}
                                   </h3>
                                   {expired && (
@@ -246,7 +459,7 @@ export default function ISSavedDraftsDialog() {
                               </button>
                             </div>
 
-                            <div className="p-4 mb-5">
+                            <div className="py-4 mb-5">
                               <div className="flex justify-between items-end mb-2">
                                 <div className="flex-1 flex items-center gap-5">
                                   <div className="relative size-16 shrink-0 flex items-center justify-center">
@@ -276,8 +489,10 @@ export default function ISSavedDraftsDialog() {
                                       />
                                     </svg>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-                                      <span className="text-[12px] font-black text-slate-400 uppercase">Step</span>
-                                      <span className="text-[14px] font-black">
+                                      <span className="text-[10px] md:text-[12px] font-black text-slate-400 uppercase">
+                                        Step
+                                      </span>
+                                      <span className="text-[12px] md:text-[14px] font-black">
                                         {internalState.completedTabs.length}
                                         <span className="text-slate-300 mx-0.5 text-[10px]">/</span>4
                                       </span>
@@ -287,12 +502,12 @@ export default function ISSavedDraftsDialog() {
                                   {/* Content Area */}
                                   <div className="space-y-0.5">
                                     <div className="flex items-center gap-2">
-                                      <p className="text-[11px] font-black text-primary uppercase tracking-widest">
+                                      <p className="text-[10px] md:text-[11px] font-black text-primary uppercase tracking-widest">
                                         Active Tab
                                       </p>
                                     </div>
 
-                                    <p className="text-[15px] font-bold text-slate-700 leading-tight">
+                                    <p className="text-[14px] md:text-[15px] font-bold text-slate-700 leading-tight">
                                       {stepData.name}
                                     </p>
 
@@ -331,7 +546,7 @@ export default function ISSavedDraftsDialog() {
                     setIsOpen(false);
                     navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
                   }}
-                  className="w-full !h-14 rounded-2xl font-black tracking-widest uppercase text-xs">
+                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
                   <Plus className="mr-2 size-4" strokeWidth={3} />
                   Start New Application
                 </Button>
@@ -339,7 +554,7 @@ export default function ISSavedDraftsDialog() {
                 <Button
                   onClick={async () => await exitApplication()}
                   variant={"outline"}
-                  className="w-full !h-14 rounded-2xl font-black tracking-widest uppercase text-xs text-destructive hover:bg-destructive/5 hover:text-destructive">
+                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs text-destructive hover:bg-destructive/5 hover:text-destructive">
                   <LogOut className="mr-2 size-4" />
                   Exit Application
                 </Button>
@@ -355,7 +570,7 @@ export default function ISSavedDraftsDialog() {
 function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortBy: DraftSort) => void }) {
   return (
     <Select value={sortBy} onValueChange={(value) => setSortBy(value as typeof sortBy)}>
-      <SelectTrigger className="w-3/5 md:w-[220px] h-11 px-4 rounded-xl border-slate-200 bg-white shadow-sm font-black text-xs uppercase tracking-widest text-slate-600 focus:ring-primary/20 transition-all hover:bg-slate-50 active:scale-[0.98]">
+      <SelectTrigger className="w-max md:w-[220px] h-11 px-4 rounded-xl border-slate-200 bg-white shadow-sm font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-600 focus:ring-primary/20 transition-all hover:bg-slate-50 active:scale-[0.98]">
         <div className="flex items-center gap-2.5">
           <ListFilter className="size-4 text-primary" strokeWidth={2.5} />
           <SelectValue placeholder="Sort drafts" />
@@ -373,7 +588,7 @@ function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortB
             className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-primary/5 focus:text-primary transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               <History className="size-4 opacity-50" />
-              <span>Last updated</span>
+              <span className="text-[10px] md:text-xs uppercase">Last updated</span>
             </div>
           </SelectItem>
 
@@ -382,7 +597,7 @@ function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortB
             className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-primary/5 focus:text-primary transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               <CalendarDays className="size-4 opacity-50" />
-              <span>Oldest first</span>
+              <span className="text-[10px] md:text-xs uppercase">Oldest first</span>
             </div>
           </SelectItem>
         </SelectGroup>
@@ -399,7 +614,7 @@ function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortB
             className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-amber-50 focus:text-amber-600 transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               <Hourglass className="size-4 opacity-50" />
-              <span>Expiring soon</span>
+              <span className="text-[10px] md:text-xs uppercase">Expiring soon</span>
             </div>
           </SelectItem>
 
@@ -408,7 +623,7 @@ function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortB
             className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-destructive/5 focus:text-destructive transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               <Ban className="size-4 opacity-50" />
-              <span>Expired</span>
+              <span className="text-[10px] md:text-xs uppercase">Expired</span>
             </div>
           </SelectItem>
         </SelectGroup>

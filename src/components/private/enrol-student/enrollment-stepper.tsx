@@ -42,7 +42,7 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
       onFinalStepCompleted={() => setShowEnrollmentProcess(false)}
       hideStepIndicators
       backButtonText="Go Back"
-      nextButtonText="I've Read This, Next Step">
+      nextButtonText="Proceed to Next Step">
       {/* Step 1: Enrollment Process */}
       <Step>
         <div className="space-y-8 py-4">
@@ -53,11 +53,11 @@ export default function EnrollmentStepper({ setShowEnrollmentProcess, academicYe
             </p>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl">
-            <InnerImageZoom hideCloseButton src={enrollmentProcess} className="w-full h-auto" />
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-slate-700 shadow-lg backdrop-blur-md">
+          <div className="relative overflow-hidden">
+            <InnerImageZoom hideCloseButton src={enrollmentProcess} className="w-full h-auto rounded-2xl" />
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-slate-700 shadow-lg backdrop-blur-md">
               <Maximize2 className="size-3 text-primary" />
-              Pinch or Hover to Zoom
+              <span className="text-[9px] md:text-xs"> Click or Tap to Zoom</span>
             </div>
           </div>
 

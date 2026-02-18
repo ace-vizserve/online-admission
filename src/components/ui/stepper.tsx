@@ -130,11 +130,11 @@ export default function Stepper({
           <div className={`px-8 pb-8 ${footerClassName}`}>
             <div className={`mt-10 flex justify-between`}>
               {isLastStep ? (
-                <div className="w-full flex flex-col-reverse gap-6 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                <div className="w-full flex flex-col-reverse gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
                   <Button
-                    variant={"outline"}
+                    variant={"ghost"}
                     onClick={handleBack}
-                    className={`!p-6 rounded-xl bg-slate-100 duration-350 transition gap-2 font-bold ${
+                    className={`w-full sm:w-max !p-6 rounded-xl bg-slate-100 duration-350 transition gap-2 font-bold ${
                       currentStep === 1
                         ? "pointer-events-none opacity-50 text-neutral-400"
                         : "text-muted-foreground hover:text-neutral-800"
@@ -144,7 +144,7 @@ export default function Stepper({
 
                     {backButtonText}
                   </Button>
-                  <div className="p-4 rounded-xl bg-green-50 border border-green-400 flex justify-center items-center space-x-2">
+                  <div className="w-full sm:w-max p-4 rounded-xl bg-green-50 border border-green-400 flex justify-center items-center space-x-2">
                     <Checkbox
                       className="cursor-pointer size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       onCheckedChange={async (checked) => {
@@ -163,8 +163,8 @@ export default function Stepper({
                   </div>
                 </div>
               ) : (
-                <div className="w-full flex flex-col gap-6 md:flex-row md:gap-0 justify-between items-center space-x-2">
-                  <div className="p-4 rounded-xl bg-green-50 border border-green-400 flex justify-center items-center space-x-2">
+                <div className="w-full flex flex-col gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                  <div className="w-full sm:w-max p-4 rounded-xl bg-green-50 border border-green-400 flex justify-center items-center space-x-2">
                     <Checkbox
                       className="cursor-pointer size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       checked={isFirstPageChecked}
@@ -181,7 +181,7 @@ export default function Stepper({
                   <Button
                     disabled={!isFirstPageChecked}
                     onClick={handleNext}
-                    className="font-bold gap-2 !p-6 !rounded-xl"
+                    className="font-bold gap-2 !p-6 !rounded-xl w-full sm:w-max"
                     {...nextButtonProps}>
                     {nextButtonText}
                     <ArrowRight />
