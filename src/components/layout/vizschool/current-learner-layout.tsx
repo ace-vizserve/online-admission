@@ -13,12 +13,23 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import EnrolCurrentLearnerContextProvider, {
   useEnrolCurrentLearnerContext,
 } from "@/context/vizschool/enrol-current-learner-context";
 import { useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
 import { ArrowLeft, OctagonAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "react-responsive";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
 
 const academicYears = ["vizschool-ay2025", "vizschool-ay2026", "vizschool-ay2027"];
@@ -93,12 +104,58 @@ function ExitApplicationDialog() {
   const { clearState } = useEnrolCurrentLearnerContext();
   const clearSchoolFeeState = useSelectSchoolFee((state) => state.clearState);
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+  const isDesktop = useMediaQuery({
+    query: "(min-width: 786px)",
+  });
 
   function exitApplication() {
     clearSchoolFeeState();
     clearState();
     clearAcademicYearState();
     sessionStorage.clear();
+  }
+
+  if (!isDesktop) {
+    return (
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant="link" className="gap-2 font-bold">
+            <ArrowLeft />
+            Cancel
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader className="items-center text-center">
+            <DrawerTitle className="font-black">
+              <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                <OctagonAlert className="h-7 w-7 text-destructive" />
+              </div>
+              Exit Application?
+            </DrawerTitle>
+            <DrawerDescription className="text-xs md:text-sm text-center font-medium">
+              Are you sure you want to exit this page? Both saved and unsaved information will be removed and cannot be
+              recovered.
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <DrawerFooter className="mt-2 !flex-col sm:justify-center gap-4">
+            <DrawerClose asChild>
+              <Button className="font-bold" variant={"outline"}>
+                Cancel
+              </Button>
+            </DrawerClose>
+            <DrawerClose>
+              <Button
+                variant="destructive"
+                className="font-bold w-full sm:w-auto"
+                onClick={async () => await exitApplication()}>
+                Exit Anyway
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   return (

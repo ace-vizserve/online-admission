@@ -17,6 +17,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import EnrolNewLearnerContextProvider, {
   useEnrolNewLearnerContext,
 } from "@/context/vizschool/enrol-new-learner-context";
@@ -36,6 +46,7 @@ import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "react-responsive";
 import { toast } from "sonner";
 
 const academicYears = ["vizschool-ay2025", "vizschool-ay2026", "vizschool-ay2027"];
@@ -248,6 +259,14 @@ function SubmitApplicationDialog() {
       return;
     }
 
+    if (formState.createdAt) {
+      delete formState.createdAt;
+    }
+
+    if (formState.draftId) {
+      delete formState.draftId;
+    }
+
     mutate(formState as VizSchoolEnrolNewStudentFormState);
   }
 
@@ -305,6 +324,9 @@ function ExitApplicationDialog() {
   const clearSchoolFeeState = useSelectSchoolFee((state) => state.clearState);
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+  const isDesktop = useMediaQuery({
+    query: "(min-width: 786px)",
+  });
 
   function exitApplication() {
     clearSchoolFeeState();
@@ -312,6 +334,47 @@ function ExitApplicationDialog() {
     clearAcademicYearState();
     clearEnrolNewStudentTabState();
     sessionStorage.clear();
+  }
+
+  if (!isDesktop) {
+    return (
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant="link" className="gap-2 font-bold">
+            <ArrowLeft />
+            Cancel
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent
+          className="pointer-events-auto select-none" // optional, prevent accidental drag
+        >
+          <DrawerHeader className="items-center text-center">
+            <DrawerTitle className="font-black">
+              <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                <OctagonAlert className="h-7 w-7 text-destructive" />
+              </div>
+              Exit Application?
+            </DrawerTitle>
+            <DrawerDescription className="text-xs md:text-sm font-medium leading-relaxed">
+              You are about to leave this application page. Any changes you have made will not be kept unless you choose
+              <span className="text-black font-bold"> Save & exit</span>.
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <DrawerFooter className="mt-2 !flex-col sm:justify-center gap-4">
+            <DraftApplication />
+            <DrawerClose asChild>
+              <Button
+                variant="destructive"
+                className="font-bold w-full sm:w-auto"
+                onClick={async () => await exitApplication()}>
+                Exit Anyway
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   return (

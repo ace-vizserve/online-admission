@@ -18,11 +18,21 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { wait } from "@/lib/utils";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
 import { DotPulse } from "ldrs/react";
 import { OctagonAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "react-responsive";
 
 const academicYears = ["ay2025", "ay2026", "ay2027"];
 
@@ -97,8 +107,10 @@ function ExitApplicationDialog() {
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const clearPassType = usePassTypeStore((state) => state.clearState);
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const isDesktop = useMediaQuery({
+    query: "(min-width: 786px)",
+  });
 
   async function exitApplication() {
     setIsLoading(true);
@@ -107,12 +119,49 @@ function ExitApplicationDialog() {
     clearState();
     clearAcademicYearState();
     sessionStorage.clear();
+  }
 
-    await wait(1000);
-    setIsLoading(false);
+  if (!isDesktop) {
+    return (
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant="link" className="gap-2 font-bold">
+            <ArrowLeft />
+            Cancel
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader className="items-center text-center">
+            <DrawerTitle className="font-black">
+              <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                <OctagonAlert className="h-7 w-7 text-destructive" />
+              </div>
+              Exit Application?
+            </DrawerTitle>
+            <DrawerDescription className="text-xs md:text-sm text-center font-medium">
+              Are you sure you want to exit this page? Both saved and unsaved information will be removed and cannot be
+              recovered.
+            </DrawerDescription>
+          </DrawerHeader>
 
-    await wait(500);
-    navigate("/admission/dashboard");
+          <DrawerFooter className="mt-2 !flex-col sm:justify-center gap-4">
+            <DrawerClose asChild>
+              <Button className="font-bold" variant={"outline"}>
+                Cancel
+              </Button>
+            </DrawerClose>
+            <DrawerClose>
+              <Button
+                variant="destructive"
+                className="font-bold w-full sm:w-auto"
+                onClick={async () => await exitApplication()}>
+                Exit Anyway
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   return (

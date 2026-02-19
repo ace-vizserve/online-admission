@@ -151,7 +151,6 @@ export default function ISSavedDraftsDialog() {
             <SavedDraftsLoader />
           ) : (
             <>
-              {/* Header */}
               <DrawerHeader className="mt-4 p-0">
                 <div className="sticky top-0 z-10 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-5">
                   <div className="w-full flex items-center gap-4 px-2 py-2">
@@ -171,7 +170,6 @@ export default function ISSavedDraftsDialog() {
                 </div>
               </DrawerHeader>
 
-              {/* Scrollable content */}
               <ScrollArea className="h-96">
                 <div className="p-6 space-y-4">
                   <div className="flex flex-wrap-reverse justify-between gap-4">
@@ -322,7 +320,7 @@ export default function ISSavedDraftsDialog() {
               </ScrollArea>
 
               {/* Footer */}
-              <DrawerFooter className="border-t border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-6 flex flex-col gap-3">
+              <DrawerFooter className="border-t border-slate-200/50 bg-white px-6 pt-6 py-8 flex flex-col gap-3">
                 <Button
                   onClick={() => {
                     setIsOpen(false);
@@ -336,8 +334,8 @@ export default function ISSavedDraftsDialog() {
                 <DrawerClose asChild>
                   <Button
                     onClick={async () => await exitApplication()}
-                    variant="outline"
-                    className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px] text-destructive hover:bg-destructive/5">
+                    variant="destructive"
+                    className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
                     <LogOut className="mr-2 size-4" />
                     Exit Application
                   </Button>
@@ -553,8 +551,8 @@ export default function ISSavedDraftsDialog() {
 
                 <Button
                   onClick={async () => await exitApplication()}
-                  variant={"outline"}
-                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs text-destructive hover:bg-destructive/5 hover:text-destructive">
+                  variant={"destructive"}
+                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
                   <LogOut className="mr-2 size-4" />
                   Exit Application
                 </Button>

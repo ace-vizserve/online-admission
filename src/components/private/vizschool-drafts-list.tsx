@@ -330,7 +330,7 @@ export default function VizSchoolSavedDraftsDialog() {
               </ScrollArea>
 
               {/* Footer */}
-              <DrawerFooter className="border-t border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-6 flex flex-col gap-3">
+              <DrawerFooter className="border-t border-slate-200/50 bg-white px-6 pt-6 py-8 flex flex-col gap-3">
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -345,8 +345,8 @@ export default function VizSchoolSavedDraftsDialog() {
                 <DrawerClose asChild>
                   <Button
                     onClick={async () => await exitApplication()}
-                    variant="outline"
-                    className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px] text-destructive hover:bg-destructive/5">
+                    variant="destructive"
+                    className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
                     <LogOut className="mr-2 size-4" />
                     Exit Application
                   </Button>
@@ -563,8 +563,8 @@ export default function VizSchoolSavedDraftsDialog() {
 
                 <Button
                   onClick={async () => await exitApplication()}
-                  variant={"outline"}
-                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs text-destructive hover:bg-destructive/5 hover:text-destructive">
+                  variant={"destructive"}
+                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
                   <LogOut className="mr-2 size-4" />
                   Exit Application
                 </Button>
