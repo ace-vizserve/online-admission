@@ -36,7 +36,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { ArrowRight, CircleHelp, FilePen, Info } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -74,7 +74,7 @@ function LearnerEnrollmentInformation() {
     },
     enabled: session != null,
   });
-  const [isPending, setTransition] = useTransition();
+
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
     formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false,
@@ -150,10 +150,6 @@ function LearnerEnrollmentInformation() {
 
   async function saveForLater() {
     await saveApplication({ willExit: true });
-  }
-
-  if (isPending) {
-    return <Loader />;
   }
 
   return (
@@ -555,15 +551,6 @@ function CDFDetailsDialog() {
         <img src={cdfDetails} alt="CDF Details" className="object-cover aspect-video rounded-lg" />
       </DialogContent>
     </Dialog>
-  );
-}
-
-function Loader() {
-  return (
-    <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
-      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching enrolment details...</p>
-    </div>
   );
 }
 
