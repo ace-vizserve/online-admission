@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
-import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Baby, ChevronRight, ShieldUser, User, Users } from "lucide-react";
 import { Navigate } from "react-router";
@@ -150,15 +149,6 @@ function FamilyInformationTabs() {
         ))}
       </div>
     </Tabs>
-  );
-}
-
-function Loader() {
-  return (
-    <div className="h-96 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
-      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
-      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching family details...</p>
-    </div>
   );
 }
 
