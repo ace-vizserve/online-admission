@@ -5,6 +5,7 @@ import {
   GuardianInformationSchema,
   MotherInformationSchema,
   ParentGuardianUploadRequirementsSchema,
+  RegistrationSchema,
   SiblingInformationSchema,
   StudentAddressContactSchema,
   StudentDetailsSchema,
@@ -308,6 +309,26 @@ export type SingleStudent = {
 export type EnrolNewStudentFormState = {
   draftId?: string;
   createdAt?: Date;
+  stpApplicationType?: string;
+  studentInfo: {
+    studentDetails: StudentDetailsSchema;
+    addressContact: StudentAddressContactSchema;
+  };
+  familyInfo: {
+    motherInfo: MotherInformationSchema;
+    fatherInfo: FatherInformationSchema;
+    guardianInfo: GuardianInformationSchema;
+    siblingsInfo: SiblingInformationSchema;
+  };
+  enrollmentInfo: EnrollmentInformationSchema;
+  uploadRequirements: {
+    studentUploadRequirements: StudentUploadRequirementsSchema;
+    parentGuardianUploadRequirements: ParentGuardianUploadRequirementsSchema;
+  };
+};
+
+export type OpenHouseFormState = {
+  accountInfo: RegistrationSchema;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
@@ -326,6 +347,7 @@ export type EnrolNewStudentFormState = {
 };
 
 export type EnrolOldStudentFormState = {
+  stpApplicationType?: string;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;

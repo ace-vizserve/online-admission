@@ -5,11 +5,12 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
@@ -19,19 +20,40 @@ import {
   ParentGuardianUploadRequirementsSchema,
   StudentUploadRequirementsSchema,
 } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, Info, Save } from "lucide-react";
+import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, FilePen, Info } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function GuardianInformation() {
   const { session } = useSession();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewStudentContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const {
+    formState,
+    setFormState,
+    setCompletedTabs,
+    setCurrentTab,
+    setActiveTab,
+    activeTab,
+    completedTabs,
+    currentTab,
+  } = useEnrolNewStudentContext();
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "hfse-is",
+  });
 
   const form = useForm<GuardianInformationSchema>({
     resolver: zodResolver(guardianInformationSchema),
@@ -40,7 +62,27 @@ function GuardianInformation() {
     },
   });
 
-  function onSubmit(values: GuardianInformationSchema) {
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
+  }
+
+  function proceedToNextStep(values: GuardianInformationSchema) {
+    if (!formState.familyInfo?.motherInfo.isValid) {
+      toast.warning("Mother's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
+      });
+      form.setError("root", {});
+      return;
+    }
+
+    if (!formState.familyInfo?.fatherInfo.isValid) {
+      toast.warning("Father's information not confirmed!", {
+        description: "Please review and confirm all required fields before proceeding",
+      });
+      form.setError("root", {});
+      return;
+    }
+
     const insertedValues = Object.keys(values).filter((v) => {
       const key = v as keyof GuardianInformationSchema;
       return values[key] != undefined && typeof values[key] != "boolean" && values[key] != "";
@@ -64,7 +106,7 @@ function GuardianInformation() {
     setFormState({
       ...formState,
       familyInfo: {
-        ...formState.familyInfo!,
+        ...formState.familyInfo,
         guardianInfo: { ...values, guardianEmail: values.guardianEmail?.toLowerCase() },
       },
       uploadRequirements: {
@@ -78,32 +120,13 @@ function GuardianInformation() {
         },
       },
     });
-    toast.success("Guardian information details saved!", {
-      description: "Make sure to double check everything",
-    });
-  }
-
-  function proceedToNextStep() {
-    if (!formState.familyInfo?.motherInfo.isValid) {
-      toast.warning("Mother's information not confirmed!", {
-        description: "Please review and confirm all required fields before proceeding",
-      });
-      form.setError("root", {});
-      return;
-    }
-
-    if (!formState.familyInfo?.fatherInfo.isValid) {
-      toast.warning("Father's information not confirmed!", {
-        description: "Please review and confirm all required fields before proceeding",
-      });
-      form.setError("root", {});
-      return;
-    }
 
     setCompletedTabs("/enrol-student/new/family-info");
+
+    if (completedTabs.includes("/enrol-student/new/enrollment-info")) return;
+
     setCurrentTab("/enrol-student/new/enrollment-info");
     setActiveTab("/enrol-student/new/enrollment-info");
-    navigate("/enrol-student/new/enrollment-info");
   }
 
   async function hasGuardianInfoToggle(checked: boolean) {
@@ -171,25 +194,42 @@ function GuardianInformation() {
     }
   }
 
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
 
-  useAutoSave(
-    setFormState,
-    {
+  useEffect(() => {
+    setFormState({
       ...formState,
       familyInfo: {
-        ...formState.familyInfo,
+        ...formState.familyInfo!,
         guardianInfo: {
-          ...debouncedAutoSaveValue,
+          ...form.watch(),
         },
       },
-    },
-    0,
-  );
+    });
+  }, [debouncedValues]);
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Guardian information details saved!", {
+          description: "Make sure to double check everything",
+        });
+
+        navigate("/enrol-student/new/enrollment-info");
+      })();
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+      <form onSubmit={form.handleSubmit(proceedToNextStep)} className="space-y-8 max-w-5xl mx-auto">
         <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
           <Info className="h-4 w-4 !text-blue-500" />
           <div className="space-y-1 text-pretty">
@@ -208,7 +248,7 @@ function GuardianInformation() {
                 <AlertTitle className="text-amber-600 font-bold">Confirmation Required</AlertTitle>
                 <p className="text-amber-500 col-start-2 text-sm">
                   Please save and confirm the father's and mother's information by clicking the{" "}
-                  <span className="font-bold text-amber-600">"Confirm & Save"</span> button on each tab separately
+                  <span className="font-bold text-amber-600">"Confirm Details"</span> button on each tab separately
                   before proceeding.
                 </p>
               </Alert>
@@ -459,35 +499,21 @@ function GuardianInformation() {
             )}
           />
         </div>
+
+        <br />
+        <Separator />
+        <br />
+
         <div className="flex flex-col gap-4">
-          <Button
-            size={"lg"}
-            variant={"secondary"}
-            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-            type="submit">
-            Confirm & Save
-            <Save />
-          </Button>
-
-          <Button
-            variant={"secondary"}
-            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-            type="submit">
-            Confirm & Save
-            <Save />
-          </Button>
-
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="hidden lg:block w-full">
                   <Button
-                    disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
-                    onClick={proceedToNextStep}
                     size={"lg"}
                     className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-                    type="button">
-                    Proceed to Next Step
+                    type="submit">
+                    Confirm & Proceed
                     <ArrowRight />
                   </Button>
                 </span>
@@ -501,12 +527,31 @@ function GuardianInformation() {
           </TooltipProvider>
 
           <Button
-            disabled={!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid}
-            onClick={proceedToNextStep}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
+            Confirm & Proceed
+            <ArrowRight />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Proceed to Next Step
-            <ArrowRight />
+            Save for later & exit
+            <FilePen />
           </Button>
         </div>
       </form>

@@ -7,8 +7,6 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useEnrolCurrentLearnerContext } from "@/context/vizschool/enrol-current-learner-context";
-import { useAutoSave } from "@/hooks/use-autosave";
-import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -38,22 +36,6 @@ function GuardianInformation() {
       noGuardianInfo: formState.familyInfo?.guardianInfo?.noGuardianInfo,
     },
   });
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo,
-        guardianInfo: {
-          ...debouncedAutoSaveValue,
-        },
-      },
-    },
-    0
-  );
 
   function onSubmit(values: VizSchoolGuardianInformationSchema) {
     const insertedValues = Object.keys(values).filter((v) => {
@@ -260,7 +242,7 @@ function GuardianInformation() {
                           variant={"outline"}
                           className={cn(
                             "w-full lg:w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}>
                           {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

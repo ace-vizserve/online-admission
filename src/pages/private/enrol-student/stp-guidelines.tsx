@@ -333,8 +333,8 @@ function STPGuidelines() {
                 onClick={redirect}
                 size="lg"
                 disabled={!canContinue}
-                className="!px-8 !py-8 rounded-2xl bg-blue-600 text-white text-xs md:text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 gap-4">
-                Continue to Application Form
+                className="!px-8 !py-8 rounded-xl text-white text-xs md:text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 gap-4">
+                Proceed to Application
                 <ArrowUpRight className="size-4 stroke-3" />
               </Button>
 

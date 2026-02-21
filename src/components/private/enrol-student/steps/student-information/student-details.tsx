@@ -6,25 +6,39 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { applicationTypes, religions } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
-import { usePassTypeStore } from "@/zustand-store";
+import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
-import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
-import { useState } from "react";
+import { Calendar as CalendarIcon, FilePen, Info, Save } from "lucide-react";
+import { memo, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 
-function StudentDetails() {
+const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOpened: (tab: string) => void }) {
   const { formState, setFormState } = useEnrolNewStudentContext();
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const { activeTab, completedTabs, currentTab } = useEnrolNewStudentContext();
 
   const [isReligionOther, setIsReligionOther] = useState<boolean>(false);
+
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "hfse-is",
+  });
 
   const form = useForm<StudentDetailsSchema>({
     resolver: zodResolver(studentDetailsSchema),
@@ -33,7 +47,59 @@ function StudentDetails() {
     },
   });
 
-  function onSubmit(values: StudentDetailsSchema) {
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      studentInfo: {
+        ...formState.studentInfo!,
+        studentDetails: {
+          ...form.watch(),
+        },
+      },
+    });
+
+    form.reset(
+      { ...form.watch() },
+      {
+        keepErrors: true,
+      },
+    );
+  }, [debouncedValues]);
+
+  useEffect(() => {
+    form.trigger();
+  }, []);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Student details saved!", {
+          description: "You're now ready to fill out the Address & Contact tab.",
+        });
+
+        const isValid = formState.studentInfo?.addressContact.isValid === true;
+
+        if (!isValid) {
+          setTabOpened("address-contact");
+        }
+      })();
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
+  }
+
+  async function onSubmit(values: StudentDetailsSchema) {
     const age = differenceInYears(new Date(), values.birthDay);
 
     if (age < 3) {
@@ -45,10 +111,6 @@ function StudentDetails() {
       return;
     }
 
-    toast.success("Student details saved!", {
-      description: "You're now ready to fill out the Address & Contact tab.",
-    });
-
     setFormState({
       ...formState,
       studentInfo: {
@@ -59,22 +121,6 @@ function StudentDetails() {
       },
     });
   }
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      studentInfo: {
-        addressContact: {
-          ...formState.studentInfo?.addressContact,
-        },
-        studentDetails: { ...debouncedAutoSaveValue },
-      },
-    },
-    0,
-  );
 
   return (
     <Form {...form}>
@@ -311,23 +357,50 @@ function StudentDetails() {
           />
         </div>
 
-        <Button
-          size={"lg"}
-          className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-          type="submit">
-          Save details
-          <Save />
-        </Button>
+        <br />
+        <Separator />
+        <br />
 
-        <Button
-          className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-          type="submit">
-          Save details
-          <Save />
-        </Button>
+        <div className="flex flex-col gap-4">
+          <Button
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="submit">
+            Save details
+            <Save />
+          </Button>
+
+          <Button
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
+            Save details
+            <Save />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+        </div>
       </form>
     </Form>
   );
-}
+});
 
 export default StudentDetails;

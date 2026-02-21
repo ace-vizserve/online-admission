@@ -1404,6 +1404,7 @@ export async function submitEnrollment(enrollmentDetails: EnrolNewStudentFormSta
         enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
+        stpApplicationType: enrollmentDetails?.stpApplicationType,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
         category: "New",
         pass: passType,
@@ -1863,6 +1864,7 @@ export async function submitExistingEnrollment(enrollmentDetails: EnrolOldStuden
         enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
+        stpApplicationType: enrollmentDetails?.stpApplicationType,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
         category: "Current",
         pass: passType,

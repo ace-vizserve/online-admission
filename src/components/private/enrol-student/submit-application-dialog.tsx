@@ -33,7 +33,10 @@ function SubmitApplicationDialog() {
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      return await submitExistingEnrollment(formState as EnrolOldStudentFormState, params.id!);
+      return await submitExistingEnrollment(
+        { ...(formState as EnrolOldStudentFormState), stpApplicationType },
+        params.id!,
+      );
     },
     onSuccess() {
       navigate("/application-submitted", {
@@ -291,6 +294,18 @@ function SubmitApplicationDialog() {
           });
           return;
         }
+      }
+
+      //       if (formState.createdAt) {
+      //   delete formState.createdAt;
+      // }
+
+      // if (formState.draftId) {
+      //   delete formState.draftId;
+      // }
+
+      if (formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation) {
+        delete formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation;
       }
 
       mutate();

@@ -26,8 +26,6 @@ import {
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
 } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
-import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { getNextGradeLevel } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
@@ -71,7 +69,7 @@ function OldEnrollmentInformation() {
   const { session } = useSession();
   const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
-    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
+    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false,
   );
   const params = useParams();
   const { data, isPending, isSuccess } = useQuery({
@@ -110,19 +108,6 @@ function OldEnrollmentInformation() {
       form.trigger();
     }
   }, [location.state?.triggerForm]);
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      enrollmentInfo: {
-        ...debouncedAutoSaveValue,
-      },
-    },
-    0
-  );
 
   function onSubmit(values: EnrollmentInformationSchema) {
     if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {

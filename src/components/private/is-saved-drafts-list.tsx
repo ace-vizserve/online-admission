@@ -67,6 +67,7 @@ const STEPS = [
 export default function ISSavedDraftsDialog() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isExiting, setIsExiting] = useState<boolean>(false);
   const studentDrafts = listNewStudentDrafts("hfse-is") || [];
   const [sortBy, setSortBy] = useState<DraftSort>("lastUpdated");
   const isDesktop = useMediaQuery({
@@ -85,13 +86,13 @@ export default function ISSavedDraftsDialog() {
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
-  const { setFormState, setActiveTab, setCompletedTabs, setCurrentTab } = useEnrolNewStudentContext();
+  const { setFormState, setActiveTab, setCompletedTabs, setCurrentTab, formState } = useEnrolNewStudentContext();
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const clearPassType = usePassTypeStore((state) => state.clearState);
   const { clearState } = useEnrolNewStudentContext();
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
-
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [currentDraftCount, setCurrentDraftCount] = useState<number>(sortedDrafts.length);
 
@@ -124,13 +125,14 @@ export default function ISSavedDraftsDialog() {
     setActiveTab(internalState.activeTab);
     setCurrentTab(internalState.currentTab);
     setCompletedTabs(internalState.completedTabs);
-    setFormState({ ...formState, draftId: internalState.draftId });
+    setFormState({ ...formState, draftId: internalState.draftId, stpApplicationType });
 
     setIsOpen(false);
     setIsLoading(false);
   }
 
   async function exitApplication() {
+    setIsExiting(true);
     clearState();
     clearAcademicYearState();
     clearEnrolNewStudentTabState();
@@ -139,7 +141,7 @@ export default function ISSavedDraftsDialog() {
     sessionStorage.clear();
 
     await wait(500);
-
+    setIsExiting(false);
     navigate("/admission/dashboard");
   }
 
@@ -194,7 +196,7 @@ export default function ISSavedDraftsDialog() {
                     <div className="relative grid grid-cols-1 gap-2">
                       {sortedDrafts.map(({ state }) => {
                         const internalState = state;
-                        const formState = internalState.formState as EnrolNewStudentFormState;
+                        const internalFormState = internalState.formState as EnrolNewStudentFormState;
 
                         const expired = isExpired(internalState.expiresAt);
                         const expiringSoon = isExpiringSoon(internalState.expiresAt);
@@ -234,16 +236,62 @@ export default function ISSavedDraftsDialog() {
                                   )}
                                 </div>
 
-                                <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider">
-                                  {internalState.academicYear?.replace("ay", "AY ")} • Saved{" "}
-                                  {formatDistanceToNow(new Date(internalState.lastSavedAt), { addSuffix: true })}
-                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-black text-primary uppercase tracking-wider border border-slate-200/50">
+                                    {internalState.academicYear?.replace("ay", "AY ")}
+                                  </span>
+
+                                  <span className="text-slate-300 text-sm font-black">•</span>
+
+                                  <div className="flex items-center gap-1.5">
+                                    {internalState.draftId === formState.draftId ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 shadow-sm animate-pulse">
+                                        <span className="text-[11px] font-black text-amber-700 uppercase tracking-wider">
+                                          In progress
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-tight">
+                                        <span>Saved</span>
+                                        <span className="text-slate-600">
+                                          {formatDistanceToNow(new Date(internalState.lastSavedAt), {
+                                            addSuffix: true,
+                                          })}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
 
                               <button
+                                disabled={internalFormState.draftId === formState.draftId}
                                 onClick={() => handleDelete(internalState.draftId, internalState.type)}
-                                className="p-2 text-destructive hover:bg-destructive/10 rounded-full">
-                                <Trash2 className="size-5" />
+                                className={cn(
+                                  "group relative p-2.5 rounded-xl transition-all duration-200",
+                                  "disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale",
+                                  "hover:bg-destructive/10 active:scale-90",
+                                )}
+                                title={
+                                  internalFormState.draftId === formState.draftId
+                                    ? "Active draft cannot be deleted"
+                                    : "Delete Draft"
+                                }>
+                                <Trash2
+                                  className={cn(
+                                    "size-5 transition-colors",
+                                    internalFormState.draftId === formState.draftId
+                                      ? "text-slate-400"
+                                      : "text-slate-300 group-hover:text-destructive",
+                                  )}
+                                  strokeWidth={2.5}
+                                />
+
+                                {internalFormState.draftId === formState.draftId && (
+                                  <div className="absolute -top-1 -right-1">
+                                    <div className="size-2.5 bg-slate-400 rounded-full border-2 border-white" />
+                                  </div>
+                                )}
                               </button>
                             </div>
 
@@ -301,7 +349,7 @@ export default function ISSavedDraftsDialog() {
                               onClick={() =>
                                 initializeFormState({
                                   internalState,
-                                  formState,
+                                  formState: internalFormState,
                                 })
                               }
                               className={cn(
@@ -320,16 +368,19 @@ export default function ISSavedDraftsDialog() {
               </ScrollArea>
 
               {/* Footer */}
-              <DrawerFooter className="border-t border-slate-200/50 bg-white px-6 pt-6 py-8 flex flex-col gap-3">
-                <Button
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
-                  }}
-                  className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
-                  <Plus className="mr-2 size-4" strokeWidth={3} />
-                  Start New Application
-                </Button>
+              <DrawerFooter className="border-t border-slate-200/50 bg-white p-6 pb-10 flex flex-col gap-3">
+                {!formState?.draftId && (
+                  <Button
+                    disabled={isExiting}
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
+                    }}
+                    className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
+                    <Plus className="mr-2 size-4" strokeWidth={3} />
+                    Start New Application
+                  </Button>
+                )}
 
                 <DrawerClose asChild>
                   <Button
@@ -401,7 +452,7 @@ export default function ISSavedDraftsDialog() {
                     <div className="relative grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2">
                       {sortedDrafts.map(({ state }) => {
                         const internalState = state;
-                        const formState = internalState.formState as EnrolNewStudentFormState;
+                        const internalFormState = internalState.formState as EnrolNewStudentFormState;
                         const isDeleting = deletingId === internalState.draftId;
                         const stepIndex = STEPS.findIndex((s) => s.path === internalState.activeTab);
                         const stepData = STEPS[stepIndex] || STEPS[0];
@@ -445,15 +496,62 @@ export default function ISSavedDraftsDialog() {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider">
-                                  {internalState.academicYear?.replace("ay", "AY ")} • Saved{" "}
-                                  {formatDistanceToNow(new Date(internalState.lastSavedAt), { addSuffix: true })}
-                                </p>
+
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-black text-primary uppercase tracking-wider border border-slate-200/50">
+                                    {internalState.academicYear?.replace("ay", "AY ")}
+                                  </span>
+
+                                  <span className="text-slate-300 text-sm font-black">•</span>
+
+                                  <div className="flex items-center gap-1.5">
+                                    {internalState.draftId === formState.draftId ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 shadow-sm animate-pulse">
+                                        <span className="text-[11px] font-black text-amber-700 uppercase tracking-wider">
+                                          In progress
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-tight">
+                                        <span>Saved</span>
+                                        <span className="text-slate-600">
+                                          {formatDistanceToNow(new Date(internalState.lastSavedAt), {
+                                            addSuffix: true,
+                                          })}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                               <button
+                                disabled={internalFormState.draftId === formState.draftId}
                                 onClick={() => handleDelete(internalState.draftId, internalState.type)}
-                                className="cursor-pointer p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                                <Trash2 className="size-5" />
+                                className={cn(
+                                  "group relative p-2.5 rounded-xl transition-all duration-200",
+                                  "disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale",
+                                  "hover:bg-destructive/5 active:scale-90",
+                                )}
+                                title={
+                                  internalFormState.draftId === formState.draftId
+                                    ? "Active draft cannot be deleted"
+                                    : "Delete Draft"
+                                }>
+                                <Trash2
+                                  className={cn(
+                                    "size-5 transition-colors",
+                                    internalFormState.draftId === formState.draftId
+                                      ? "text-slate-400"
+                                      : "text-slate-300 group-hover:text-destructive",
+                                  )}
+                                  strokeWidth={2.5}
+                                />
+
+                                {internalFormState.draftId === formState.draftId && (
+                                  <div className="absolute -top-1 -right-1">
+                                    <div className="size-2.5 bg-slate-400 rounded-full border-2 border-white" />
+                                  </div>
+                                )}
                               </button>
                             </div>
 
@@ -520,7 +618,7 @@ export default function ISSavedDraftsDialog() {
                             <Button
                               variant={"outline"}
                               disabled={expired}
-                              onClick={() => initializeFormState({ internalState, formState })}
+                              onClick={() => initializeFormState({ internalState, formState: internalFormState })}
                               className={cn(
                                 "w-full !h-12 !rounded-xl !font-black text-[11px] uppercase tracking-[0.1em] text-primary bg-primary/10",
                                 expired
@@ -539,15 +637,18 @@ export default function ISSavedDraftsDialog() {
               </div>
 
               <AlertDialogFooter className="border-t border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-6 flex !flex-col gap-3">
-                <Button
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
-                  }}
-                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
-                  <Plus className="mr-2 size-4" strokeWidth={3} />
-                  Start New Application
-                </Button>
+                {!formState?.draftId && (
+                  <Button
+                    disabled={isExiting}
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
+                    }}
+                    className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
+                    <Plus className="mr-2 size-4" strokeWidth={3} />
+                    Start New Application
+                  </Button>
+                )}
 
                 <Button
                   onClick={async () => await exitApplication()}

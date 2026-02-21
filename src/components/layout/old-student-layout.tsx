@@ -29,7 +29,6 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
-import { DotPulse } from "ldrs/react";
 import { OctagonAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
@@ -107,13 +106,12 @@ function ExitApplicationDialog() {
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const clearPassType = usePassTypeStore((state) => state.clearState);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const isDesktop = useMediaQuery({
     query: "(min-width: 786px)",
   });
 
-  async function exitApplication() {
-    setIsLoading(true);
+  function exitApplication() {
     clearPassType();
     clearPreCourse();
     clearState();
@@ -188,17 +186,9 @@ function ExitApplicationDialog() {
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
           <AlertDialogAction
-            disabled={isLoading}
             onClick={async () => await exitApplication()}
             className={buttonVariants({ variant: "destructive", className: "font-bold" })}>
-            {isLoading ? (
-              <>
-                Exiting
-                <DotPulse size="30" speed="1.3" color="white" />
-              </>
-            ) : (
-              <>Exit Anyway</>
-            )}
+            Exit Anyway
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

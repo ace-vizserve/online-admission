@@ -26,8 +26,6 @@ import {
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
   vizSchoolClassLevels,
 } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
-import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { vizSchoolEnrollmentInformationSchema, VizSchoolEnrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,7 +47,7 @@ function CurrentEnrollmentInformation() {
   const { session } = useSession();
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
-    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false
+    formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false,
   );
   const params = useParams();
   const { data, isPending, isSuccess } = useQuery({
@@ -75,8 +73,6 @@ function CurrentEnrollmentInformation() {
     },
   });
 
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
   useEffect(() => {
     const triggerForm = location.state?.triggerForm as boolean | undefined;
 
@@ -84,17 +80,6 @@ function CurrentEnrollmentInformation() {
       form.trigger();
     }
   }, [location.state?.triggerForm]);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      enrollmentInfo: {
-        ...debouncedAutoSaveValue,
-      },
-    },
-    0
-  );
 
   function onSubmit(values: VizSchoolEnrollmentInformationSchema) {
     if (

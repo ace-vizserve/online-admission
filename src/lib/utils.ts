@@ -585,6 +585,9 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
 
 const NEW_STUDENT_DRAFT_PREFIX = "enrolNewStudent:draft:";
 
+export const DRAFT_EXPIRY_DAYS = 30;
+export const now = new Date();
+
 type DraftMeta = {
   createdAt: string;
   lastSavedAt: string;

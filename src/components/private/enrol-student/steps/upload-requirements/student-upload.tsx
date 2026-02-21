@@ -4,25 +4,39 @@ import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { applicationTypes } from "@/data";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import { cn } from "@/lib/utils";
 import {
   ParentGuardianUploadRequirementsSchema,
   studentUploadRequirementsSchema,
   StudentUploadRequirementsSchema,
 } from "@/zod-schema";
-import { usePassTypeStore } from "@/zustand-store";
+import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears } from "date-fns";
-import { AlertCircle, Clock, Info, Save } from "lucide-react";
+import { AlertCircle, Clock, FilePen, Info, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 import StudentFileUploaderDialog from "./student-file-uploader-dialog";
 
 const MAX_SKIPS = 3;
 
 function StudentUpload() {
-  const { formState, setFormState } = useEnrolNewStudentContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const { formState, setFormState, setCompletedTabs, activeTab, completedTabs, currentTab } =
+    useEnrolNewStudentContext();
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "hfse-is",
+  });
   const [idPicture, setIdPicture] = useState<File[] | null>(null);
   const [birthCertificate, setBirthCertificate] = useState<File[] | null>(null);
   const [transcriptOfRecords, setTranscriptOfRecords] = useState<File[] | null>(null);
@@ -46,58 +60,59 @@ function StudentUpload() {
     resolver: zodResolver(studentUploadRequirementsSchema),
     mode: "onChange",
     reValidateMode: "onChange",
+    defaultValues: {
+      ...formState.uploadRequirements?.studentUploadRequirements,
+    },
   });
 
   const toFollowDocs = form.watch("toFollowDocs");
   const skippedDocsCount = toFollowDocs?.length ?? 0;
 
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
+  }
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
   useEffect(() => {
-    const studentReq = formState.uploadRequirements?.studentUploadRequirements;
-    if (!studentReq) return;
-
-    form.setValue("showVaccinationInformation", showVaccinationInformation, {
-      shouldDirty: false,
-      shouldValidate: true,
-    });
-
-    if (!showVaccinationInformation) {
-      form.setValue("vaccinationInformation", undefined, {
-        shouldDirty: false,
-        shouldValidate: false,
-      });
-    }
-
     setFormState({
+      ...formState,
       uploadRequirements: {
-        parentGuardianUploadRequirements: {
-          ...formState.uploadRequirements?.parentGuardianUploadRequirements,
-        },
+        ...formState.uploadRequirements!,
         studentUploadRequirements: {
-          ...studentReq,
-          toFollowDocs: isStpApplication
-            ? studentReq.toFollowDocs?.includes("pass")
-              ? studentReq.toFollowDocs
-              : [...(studentReq.toFollowDocs ?? []), "pass"]
-            : [...(studentReq.toFollowDocs ?? [])],
-          pass: isStpApplication ? undefined : formState.uploadRequirements?.studentUploadRequirements.pass,
-          passExpiry: isStpApplication ? undefined : formState.uploadRequirements?.studentUploadRequirements.passExpiry,
-          passType: isStpApplication ? undefined : formState.uploadRequirements?.studentUploadRequirements.passType,
-          stpApplicationType,
-          showVaccinationInformation,
-          isValid: false,
+          ...form.watch(),
         },
       },
     });
 
     form.reset(
-      { ...studentReq, showVaccinationInformation },
+      { ...form.watch(), showVaccinationInformation, stpApplicationType },
       {
-        keepErrors: false,
+        keepErrors: true,
       },
     );
+  }, [debouncedValues, showVaccinationInformation]);
 
+  useEffect(() => {
     form.trigger();
-  }, [showVaccinationInformation]);
+  }, []);
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Student documents saved!", {
+          description: "Make sure to double check everything",
+        });
+      })();
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     const isPassTypeInCorrect = !isStpApplication && values.passType !== passType;
@@ -142,6 +157,10 @@ function StudentUpload() {
         },
       },
     });
+
+    if (formState.uploadRequirements?.parentGuardianUploadRequirements.isValid) {
+      setCompletedTabs("/enrol-student/new/upload-requirements");
+    }
 
     toast.success("Student documents saved!", {
       description: "You're now ready to upload the Parent/Guardian documents",
@@ -265,6 +284,8 @@ function StudentUpload() {
             });
           }
 
+          form.setValue("isValid", false);
+
           setFormState({
             uploadRequirements: {
               parentGuardianUploadRequirements: {
@@ -276,6 +297,10 @@ function StudentUpload() {
               },
             },
           });
+
+          (async () => {
+            await saveApplication({ willExit: false });
+          })();
         })}
         className="space-y-6 lg:space-y-8 w-full mx-auto">
         <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
@@ -342,17 +367,15 @@ function StudentUpload() {
             onValueChange={setPassport}
           />
 
-          {!isStpApplication && (
-            <StudentFileUploaderDialog
-              formState={formState}
-              setFormState={setFormState}
-              label="Singapore Pass"
-              form={form}
-              name="pass"
-              value={pass}
-              onValueChange={setPass}
-            />
-          )}
+          <StudentFileUploaderDialog
+            formState={formState}
+            setFormState={setFormState}
+            label="Singapore Pass"
+            form={form}
+            name="pass"
+            value={pass}
+            onValueChange={setPass}
+          />
         </div>
 
         {applicationTypes.includes(stpApplicationType) && (
@@ -398,24 +421,50 @@ function StudentUpload() {
                 />
               )}
             </div>
-            <br />
           </>
         )}
 
-        <Button
-          size="lg"
-          className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
-          type="submit">
-          Save documents
-          <Save />
-        </Button>
+        <br />
+        <br />
+        <Separator />
 
-        <Button
-          className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-          type="submit">
-          Save documents
-          <Save />
-        </Button>
+        <div className="flex flex-col gap-4 mb-4 max-w-4xl mx-auto">
+          <Button
+            size="lg"
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="submit">
+            Save documents
+            <Save />
+          </Button>
+
+          <Button
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
+            Save documents
+            <Save />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+        </div>
       </form>
     </Form>
   );

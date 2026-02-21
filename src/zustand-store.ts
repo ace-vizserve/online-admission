@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import {
   EnrolNewStudentFormState,
   EnrolOldStudentFormState,
+  OpenHouseFormState,
   VizSchoolEnrolNewStudentFormState,
   VizSchoolEnrolOldStudentFormState,
 } from "./types";
@@ -35,6 +36,12 @@ export type ApplicationDraftsDialogStore = {
 export type AcademicYearStore = {
   academicYear: string;
   setAcademicYear: (academicYear: string) => void;
+  clearState: () => void;
+};
+
+export type OpenHouseInstitutionStore = {
+  institution: string;
+  setInstitution: (institution: string) => void;
   clearState: () => void;
 };
 
@@ -81,6 +88,12 @@ export type EnrolNewStudentStore = {
   clearState: () => void;
 };
 
+export type OpenHouseStore = {
+  formState: Partial<OpenHouseFormState> | Record<string, null>;
+  setFormState: (data: Partial<OpenHouseFormState>) => void;
+  clearState: () => void;
+};
+
 export type EnrolOldStudentStore = {
   formState: Partial<EnrolOldStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolOldStudentFormState>) => void;
@@ -119,10 +132,14 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
           currentTab: tab,
         })),
       setCompletedTabs: (tab: string | string[]) =>
-        set((state) => ({
-          ...state,
-          completedTabs: Array.isArray(tab) ? [...state.completedTabs, ...tab] : [...state.completedTabs, tab],
-        })),
+        set((state) => {
+          const nextTabs = Array.isArray(tab) ? [...state.completedTabs, ...tab] : [...state.completedTabs, tab];
+
+          return {
+            ...state,
+            completedTabs: Array.from(new Set(nextTabs)),
+          };
+        }),
     }),
     {
       name: "enrolNewStudentTabState",
@@ -149,6 +166,28 @@ export const usePasswordResetStore = create<PasswordResetStore>()(
     }),
     {
       name: "password-recovery",
+    },
+  ),
+);
+
+export const useOpenHouseStore = create<OpenHouseStore>()(
+  persist(
+    (set, _, store) => ({
+      formState: {},
+      clearState: () => {
+        set(store.getInitialState());
+      },
+      setFormState: (data: Partial<OpenHouseFormState>) =>
+        set((state) => ({
+          formState: {
+            ...state.formState,
+            ...data,
+          },
+        })),
+    }),
+    {
+      name: "openHouseFormState",
+      storage: createJSONStorage(() => sessionStorage),
     },
   ),
 );
@@ -254,6 +293,22 @@ export const useSelectAcademicYear = create<AcademicYearStore>()(
     }),
     {
       name: "academicYear",
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
+);
+
+export const useSelectOpenHouseInstitution = create<OpenHouseInstitutionStore>()(
+  persist(
+    (set, _, store) => ({
+      institution: "",
+      clearState: () => {
+        set(store.getInitialState());
+      },
+      setInstitution: (institution: string) => set({ institution }),
+    }),
+    {
+      name: "openHouseInstitution",
       storage: createJSONStorage(() => sessionStorage),
     },
   ),

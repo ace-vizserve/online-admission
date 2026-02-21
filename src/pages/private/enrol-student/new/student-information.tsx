@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
 import { ChevronRight, MapPin, User } from "lucide-react";
+import { useCallback, useState } from "react";
 
 const tabs = [
   {
@@ -40,10 +41,20 @@ function StudentInformation() {
 }
 
 function StudentInformationTabs() {
+  const [tabOpened, setTabOpened] = useState<string>(tabs[0].value);
+
+  const memoizedCb = useCallback(
+    (tab: string) => {
+      setTabOpened(tab);
+    },
+    [tabOpened],
+  );
+
   return (
     <Tabs
       orientation="vertical"
-      defaultValue={tabs[0].value}
+      value={tabOpened}
+      defaultValue={tabOpened}
       className="w-full h-full flex flex-col lg:flex-row items-start gap-8 xl:gap-12">
       {/* Sidebar-style Tabs List */}
       <TabsList className="grid grid-cols-1 h-auto w-full lg:w-[320px] gap-3 bg-transparent p-0">
@@ -53,6 +64,7 @@ function StudentInformationTabs() {
 
         {tabs.map((tab) => (
           <TabsTrigger
+            onClick={() => memoizedCb(tab.value)}
             key={tab.value}
             value={tab.value}
             className={cn(
@@ -91,7 +103,7 @@ function StudentInformationTabs() {
                 Please ensure all required fields are filled correctly.
               </p>
             </div>
-            <tab.component />
+            <tab.component setTabOpened={memoizedCb} />
           </TabsContent>
         ))}
       </div>

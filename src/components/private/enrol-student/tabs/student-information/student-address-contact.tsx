@@ -9,8 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, maritalStatuses } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
-import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { studentAddressContactSchema, StudentAddressContactSchema, StudentDetailsSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
@@ -50,20 +48,6 @@ function StudentAddressContact() {
     control: form.control,
     name: "residenceHistory",
   });
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      studentInfo: {
-        studentDetails: { ...formState.studentInfo?.studentDetails },
-        addressContact: { ...debouncedAutoSaveValue },
-      },
-    },
-    0,
-  );
 
   function onSubmit(values: StudentAddressContactSchema) {
     setFormState({

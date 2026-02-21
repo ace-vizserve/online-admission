@@ -28,11 +28,11 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
-import { createNewStudentDraft, listNewStudentDrafts, wait } from "@/lib/utils";
+import { listNewStudentDrafts } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
-  createNewStudentDraftStore,
   useApplicationDraftsDialogStore,
   useEnrolNewStudentTabStateStore,
   usePassTypeStore,
@@ -40,11 +40,10 @@ import {
   useSelectAcademicYear,
 } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addDays } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { toast } from "sonner";
 import ISSavedDraftsDialog from "../private/is-saved-drafts-list";
@@ -52,7 +51,7 @@ import ISSavedDraftsDialog from "../private/is-saved-drafts-list";
 const academicYears = ["ay2025", "ay2026", "ay2027"];
 
 function NewStudentLayout() {
-  const studentDrafts = listNewStudentDrafts("hfse-is").reverse() || [];
+  const studentDrafts = listNewStudentDrafts("hfse-is") || [];
   const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
@@ -79,13 +78,17 @@ function NewStudentLayout() {
     setIsPending(false);
   }, [academicYear, navigate]);
 
+  const hasCheckedDrafts = useRef<boolean>(false);
+
   useEffect(() => {
+    if (hasCheckedDrafts.current) return;
+
     if (studentDrafts.length > 0 && academicYears.includes(academicYear)) {
       setIsOpen(true);
-    } else {
-      setIsOpen(false);
     }
-  }, [studentDrafts.length]);
+
+    hasCheckedDrafts.current = true;
+  }, []);
 
   return (
     <EnrolNewStudentContextProvider>
@@ -134,49 +137,25 @@ function NewStudentLayout() {
 }
 
 function DraftApplication() {
-  const navigate = useNavigate();
   const { formState, setFormState } = useEnrolNewStudentContext();
   const { currentTab, completedTabs, activeTab } = useEnrolNewStudentContext();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
 
-  async function saveApplication() {
-    const DRAFT_EXPIRY_DAYS = 30;
-    const now = new Date();
-
-    let draftId = formState?.draftId;
-
-    if (!formState.draftId) {
-      draftId = createNewStudentDraft();
-      setFormState({ draftId });
-    }
-
-    createNewStudentDraftStore("hfse-is", draftId!).setState({
-      academicYear,
-      currentTab,
-      activeTab,
-      completedTabs,
-      formState,
-      lastSavedAt: new Date(),
-      createdAt: formState?.createdAt ?? new Date(),
-      expiresAt: addDays(now, DRAFT_EXPIRY_DAYS),
-    });
-    setIsLoading(true);
-
-    await wait(1000);
-    toast.success("Your application has been saved!", {
-      description: "Your progress is saved. You may leave this page and resume later from Drafts.",
-    });
-    setIsLoading(false);
-    await wait(500);
-    navigate("/admission/dashboard");
-  }
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "hfse-is",
+  });
 
   return (
     <Button
       variant={"outline"}
       disabled={isLoading}
-      onClick={async () => await saveApplication()}
+      onClick={async () => await saveApplication({ willExit: true })}
       className="gap-2 font-bold">
       {isLoading ? (
         <>
@@ -198,6 +177,7 @@ function SubmitApplicationDialog() {
   const queryClient = useQueryClient();
   const { session } = useSession();
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const { formState } = useEnrolNewStudentContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
@@ -266,7 +246,11 @@ function SubmitApplicationDialog() {
       delete formState.draftId;
     }
 
-    mutate(formState as EnrolNewStudentFormState);
+    if (formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation) {
+      delete formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation;
+    }
+
+    mutate({ ...(formState as EnrolNewStudentFormState), stpApplicationType });
   }
 
   return (

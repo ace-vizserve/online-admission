@@ -285,13 +285,13 @@ export default function StudentResidencyPage() {
                     disabled={disabled}
                     value={option}
                     className={cn(
-                      "h-full group relative flex flex-col w-full cursor-pointer rounded-3xl border-2 p-6 transition-all duration-300 shadow-sm",
+                      "h-full group relative flex flex-col w-full cursor-pointer rounded-2xl border-2 p-6 transition-all duration-300 shadow-sm",
                       "border-white bg-white hover:border-blue-200 hover:shadow-md",
                       "data-[checked]:border-blue-600 data-[checked]:bg-blue-50/50 data-[checked]:shadow-blue-100",
                       disabled && "opacity-50 cursor-not-allowed hover:border-white hover:shadow-sm",
                     )}>
                     <div className="flex items-start gap-5 mb-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition-colors group-data-[checked]:bg-blue-600 group-data-[checked]:text-white">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-data-[checked]:bg-blue-600 group-data-[checked]:text-white">
                         <Icon size={28} />
                       </div>
                       <div className="flex flex-col gap-1">

@@ -26,14 +26,14 @@ export function SectionCards() {
 
   return (
     <div className="space-y-6 md:space-y-8 py-4">
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 py-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start xl:items-center gap-6 py-4">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">
               Good {getCurrentDayState()}, <span className="capitalize text-primary">{greet}!</span>
             </h1>
 
-            <span className="text-3xl md:text-4xl inline-block">👋</span>
+            <span className="text-2xl lg:text-3xl inline-block">👋</span>
           </div>
 
           <p className="text-slate-500 text-sm md:text-base font-medium flex items-center gap-2">
@@ -42,25 +42,27 @@ export function SectionCards() {
           </p>
         </div>
 
-        <Link
-          to="/enrol-student"
-          className={buttonVariants({
-            size: "lg",
-            className: `text-sm w-full flex xl:hidden py-8 ${btnStyles}`,
-          })}>
-          Enrol Student
-          <UserPlus className="size-4 group-hover:scale-110 transition-transform" />
-        </Link>
+        <div className="w-full lg:max-w-sm flex flex-col gap-2">
+          <Link
+            to="/enrol-student"
+            className={buttonVariants({
+              size: "lg",
+              className: `text-sm w-full flex xl:hidden py-8 ${btnStyles}`,
+            })}>
+            Enrol Student
+            <UserPlus className="size-4 group-hover:scale-110 transition-transform" />
+          </Link>
 
-        <Link
-          to="/enrol-student"
-          className={buttonVariants({
-            size: "lg",
-            className: `!hidden xl:!flex order-1 xl:order-last h-max w-full xl:w-1/4 py-8 ${btnStyles}`,
-          })}>
-          Enrol Student
-          <UserPlus className="size-6 group-hover:rotate-12 transition-transform" />
-        </Link>
+          <Link
+            to="/enrol-student"
+            className={buttonVariants({
+              size: "lg",
+              className: `!hidden xl:!flex order-1 xl:order-last h-max w-full py-8 ${btnStyles}`,
+            })}>
+            Enrol Student
+            <UserPlus className="size-6 group-hover:rotate-12 transition-transform" />
+          </Link>
+        </div>
       </div>
       <div className="py-4">
         {isPending ? (
@@ -123,7 +125,7 @@ function StatCard({
   description?: string;
 }) {
   const isPendingTasks = Array.isArray(value);
-  const count = isPendingTasks ? value.length ?? 0 : value;
+  const count = isPendingTasks ? (value.length ?? 0) : value;
 
   return (
     <Card className={cn("w-full shadow-sm transition-all duration-300 hover:shadow-md", className)}>
@@ -196,7 +198,7 @@ function StatCard({
                                   <span
                                     className={cn(
                                       "ml-1 font-bold uppercase text-[10px]",
-                                      status === "To follow" ? "text-primary" : "text-destructive"
+                                      status === "To follow" ? "text-primary" : "text-destructive",
                                     )}>
                                     {status}
                                   </span>
@@ -221,7 +223,7 @@ function StatCard({
                                   <span
                                     className={cn(
                                       "ml-1 font-bold uppercase text-[10px]",
-                                      status === "To follow" ? "text-primary" : "text-destructive"
+                                      status === "To follow" ? "text-primary" : "text-destructive",
                                     )}>
                                     {status}
                                   </span>

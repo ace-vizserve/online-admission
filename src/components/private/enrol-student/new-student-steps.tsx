@@ -40,7 +40,8 @@ function NewStudentSteps() {
     <nav className="w-full bg-white mb-12 md:mb-0">
       <ol className="flex flex-col lg:flex-row max-w-screen mx-auto">
         {STEPS.map((step, index) => {
-          const isCurrent = currentTab === step.url;
+          const isActive = activeTab === step.url && completedTabs.length > 1;
+          const isCurrent = currentTab === step.url && !completedTabs.includes(step.url);
           const isCompleted = completedTabs.includes(step.url);
           const isLocked = !isCurrent && !isCompleted;
 
@@ -56,6 +57,14 @@ function NewStudentSteps() {
                 "relative flex-1 group transition-all duration-300",
                 isLocked ? "cursor-not-allowed" : "cursor-pointer",
               )}>
+              {isActive && (
+                <div className="absolute top-3 right-4 flex flex-col items-end gap-1 animate-in fade-in slide-in-from-right-2 duration-500">
+                  <span className="bg-blue-100/80 backdrop-blur-sm border border-blue-200 px-2 py-0.5 rounded-md text-[9.5px] font-black text-blue-700 uppercase tracking-tighter shadow-sm">
+                    Active Tab
+                  </span>
+                </div>
+              )}
+
               <div className="flex items-center lg:flex-col lg:text-center px-6 py-5 gap-4 lg:gap-2">
                 <div
                   className={cn(

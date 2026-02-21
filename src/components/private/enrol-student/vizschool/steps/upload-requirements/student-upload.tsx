@@ -1,24 +1,40 @@
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import { cn } from "@/lib/utils";
 import {
   ParentGuardianUploadRequirementsSchema,
   studentUploadRequirementsSchema,
   StudentUploadRequirementsSchema,
 } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Clock, Info, Save } from "lucide-react";
+import { AlertCircle, Clock, FilePen, Info, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 import StudentFileUploaderDialog from "./student-file-uploader-dialog";
 
 const MAX_SKIPS = 3;
 
 function LearnerUpload() {
-  const { formState, setFormState } = useEnrolNewLearnerContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const { formState, setFormState, setCompletedTabs, activeTab, completedTabs, currentTab } =
+    useEnrolNewLearnerContext();
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "viz-school",
+  });
   const [idPicture, setIdPicture] = useState<File[] | null>(null);
   const [birthCertificate, setBirthCertificate] = useState<File[] | null>(null);
   const [transcriptOfRecords, setTranscriptOfRecords] = useState<File[] | null>(null);
@@ -41,6 +57,52 @@ function LearnerUpload() {
 
   const toFollowDocs = form.watch("toFollowDocs");
   const skippedDocsCount = toFollowDocs?.length ?? 0;
+
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
+  }
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      uploadRequirements: {
+        ...formState.uploadRequirements!,
+        studentUploadRequirements: {
+          ...form.watch(),
+        },
+      },
+    });
+
+    form.reset(
+      { ...form.watch() },
+      {
+        keepErrors: true,
+      },
+    );
+  }, [debouncedValues]);
+
+  useEffect(() => {
+    form.trigger();
+  }, []);
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Student documents saved!", {
+          description: "Make sure to double check everything",
+        });
+      })();
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
     const isPassExpiryNull = values.passExpiry?.getFullYear() === 1970 && values.passExpiry?.getTime() === 0;
@@ -83,9 +145,9 @@ function LearnerUpload() {
       },
     });
 
-    toast.success("Student documents saved!", {
-      description: "You're now ready to upload the Parent/Guardian documents",
-    });
+    if (formState.uploadRequirements?.parentGuardianUploadRequirements.isValid) {
+      setCompletedTabs("/vizschool/enrol-student/new/upload-requirements");
+    }
   }
 
   return (
@@ -169,6 +231,8 @@ function LearnerUpload() {
             });
           }
 
+          form.setValue("isValid", false);
+
           setFormState({
             uploadRequirements: {
               parentGuardianUploadRequirements: {
@@ -180,6 +244,10 @@ function LearnerUpload() {
               },
             },
           });
+
+          (async () => {
+            await saveApplication({ willExit: false });
+          })();
         })}
         className="space-y-6 lg:space-y-8 w-full mx-auto">
         <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
@@ -258,22 +326,47 @@ function LearnerUpload() {
           />
         </div>
 
-        <Button
-          variant={"secondary"}
-          size="lg"
-          className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
-          type="submit">
-          Save documents
-          <Save />
-        </Button>
+        <br />
+        <br />
+        <Separator />
 
-        <Button
-          variant={"secondary"}
-          className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-          type="submit">
-          Save documents
-          <Save />
-        </Button>
+        <div className="flex flex-col gap-4 mb-4 max-w-4xl mx-auto">
+          <Button
+            variant={"secondary"}
+            size="lg"
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="submit">
+            Save documents
+            <Save />
+          </Button>
+
+          <Button
+            variant={"secondary"}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
+            Save documents
+            <Save />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+        </div>
       </form>
     </Form>
   );

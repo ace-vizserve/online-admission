@@ -7,8 +7,6 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { useAutoSave } from "@/hooks/use-autosave";
-import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
@@ -42,22 +40,6 @@ function FatherInformation() {
       noFatherInfo: formState.familyInfo?.fatherInfo?.noFatherInfo ?? false,
     },
   });
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo,
-        fatherInfo: {
-          ...debouncedAutoSaveValue,
-        },
-      },
-    },
-    0
-  );
 
   function onSubmit(values: FatherInformationSchema) {
     const insertedValues = Object.keys(values).filter((v) => {
@@ -278,7 +260,7 @@ function FatherInformation() {
                           variant={"outline"}
                           className={cn(
                             "w-full lg:w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}>
                           {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

@@ -75,6 +75,7 @@ const STEPS = [
 export default function VizSchoolSavedDraftsDialog() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isExiting, setIsExiting] = useState<boolean>(false);
   const studentDrafts = listNewStudentDrafts("viz-school") || [];
   const [sortBy, setSortBy] = useState<DraftSort>("lastUpdated");
   const isDesktop = useMediaQuery({
@@ -93,7 +94,7 @@ export default function VizSchoolSavedDraftsDialog() {
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
-  const { setFormState, setActiveTab, setCompletedTabs, setCurrentTab } = useEnrolNewLearnerContext();
+  const { setFormState, setActiveTab, setCompletedTabs, setCurrentTab, formState } = useEnrolNewLearnerContext();
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const clearPassType = usePassTypeStore((state) => state.clearState);
   const { clearState } = useEnrolNewLearnerContext();
@@ -139,6 +140,7 @@ export default function VizSchoolSavedDraftsDialog() {
   }
 
   async function exitApplication() {
+    setIsExiting(true);
     clearState();
     clearAcademicYearState();
     clearEnrolNewStudentTabState();
@@ -147,7 +149,7 @@ export default function VizSchoolSavedDraftsDialog() {
     sessionStorage.clear();
 
     await wait(500);
-
+    setIsExiting(false);
     navigate("/admission/dashboard");
   }
 
@@ -204,7 +206,7 @@ export default function VizSchoolSavedDraftsDialog() {
                     <div className="relative grid grid-cols-1 gap-2">
                       {sortedDrafts.map(({ state }) => {
                         const internalState = state;
-                        const formState = internalState.formState as EnrolNewStudentFormState;
+                        const internalFormState = internalState.formState as EnrolNewStudentFormState;
 
                         const expired = isExpired(internalState.expiresAt);
                         const expiringSoon = isExpiringSoon(internalState.expiresAt);
@@ -244,16 +246,62 @@ export default function VizSchoolSavedDraftsDialog() {
                                   )}
                                 </div>
 
-                                <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider">
-                                  {internalState.academicYear?.replace("ay", "AY ").replace(/vizschool-/g, "")} • Saved{" "}
-                                  {formatDistanceToNow(new Date(internalState.lastSavedAt), { addSuffix: true })}
-                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-black text-secondary uppercase tracking-wider border border-slate-200/50">
+                                    {internalState.academicYear?.replace("ay", "AY ")}
+                                  </span>
+
+                                  <span className="text-slate-300 text-sm font-black">•</span>
+
+                                  <div className="flex items-center gap-1.5">
+                                    {internalState.draftId === formState.draftId ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 shadow-sm animate-pulse">
+                                        <span className="text-[11px] font-black text-amber-700 uppercase tracking-wider">
+                                          In progress
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-tight">
+                                        <span>Saved</span>
+                                        <span className="text-slate-600">
+                                          {formatDistanceToNow(new Date(internalState.lastSavedAt), {
+                                            addSuffix: true,
+                                          })}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
 
                               <button
+                                disabled={internalFormState.draftId === formState.draftId}
                                 onClick={() => handleDelete(internalState.draftId, internalState.type)}
-                                className="p-2 text-destructive hover:bg-destructive/10 rounded-full">
-                                <Trash2 className="size-5" />
+                                className={cn(
+                                  "group relative p-2.5 rounded-xl transition-all duration-200",
+                                  "disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale",
+                                  "hover:bg-destructive/10 active:scale-90",
+                                )}
+                                title={
+                                  internalFormState.draftId === formState.draftId
+                                    ? "Active draft cannot be deleted"
+                                    : "Delete Draft"
+                                }>
+                                <Trash2
+                                  className={cn(
+                                    "size-5 transition-colors",
+                                    internalFormState.draftId === formState.draftId
+                                      ? "text-slate-400"
+                                      : "text-slate-300 group-hover:text-destructive",
+                                  )}
+                                  strokeWidth={2.5}
+                                />
+
+                                {internalFormState.draftId === formState.draftId && (
+                                  <div className="absolute -top-1 -right-1">
+                                    <div className="size-2.5 bg-slate-400 rounded-full border-2 border-white" />
+                                  </div>
+                                )}
                               </button>
                             </div>
 
@@ -311,7 +359,7 @@ export default function VizSchoolSavedDraftsDialog() {
                               onClick={() =>
                                 initializeFormState({
                                   internalState,
-                                  formState,
+                                  formState: internalFormState,
                                 })
                               }
                               className={cn(
@@ -330,17 +378,19 @@ export default function VizSchoolSavedDraftsDialog() {
               </ScrollArea>
 
               {/* Footer */}
-              <DrawerFooter className="border-t border-slate-200/50 bg-white px-6 pt-6 py-8 flex flex-col gap-3">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate(`/vizschool/enrol-student/new/student-info?academicYear=${academicYear}`);
-                  }}
-                  className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
-                  <Plus className="mr-2 size-4" strokeWidth={3} />
-                  Start New Application
-                </Button>
+              <DrawerFooter className="border-t border-slate-200/50 bg-white p-6 pb-10 flex flex-col gap-3">
+                {!formState?.draftId && (
+                  <Button
+                    disabled={isExiting}
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate(`/vizschool/enrol-student/new/student-info?academicYear=${academicYear}`);
+                    }}
+                    className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
+                    <Plus className="mr-2 size-4" strokeWidth={3} />
+                    Start New Application
+                  </Button>
+                )}
 
                 <DrawerClose asChild>
                   <Button
@@ -412,7 +462,7 @@ export default function VizSchoolSavedDraftsDialog() {
                     <div className="relative grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2">
                       {sortedDrafts.map(({ state }) => {
                         const internalState = state;
-                        const formState = internalState.formState as EnrolNewStudentFormState;
+                        const internalFormState = internalState.formState as EnrolNewStudentFormState;
                         const isDeleting = deletingId === internalState.draftId;
                         const stepIndex = STEPS.findIndex((s) => s.path === internalState.activeTab);
                         const stepData = STEPS[stepIndex] || STEPS[0];
@@ -435,7 +485,7 @@ export default function VizSchoolSavedDraftsDialog() {
                               "group bg-white rounded-xl p-5 border shadow-sm transition-all",
                               expired
                                 ? "opacity-50 border-red-200 bg-red-50/40"
-                                : "border-slate-200 hover:border-primary/20 hover:shadow-md",
+                                : "border-slate-200 hover:border-secondary/20 hover:shadow-md",
                               isDeleting && "opacity-0 translate-x-8 scale-95",
                             )}>
                             <div className="flex justify-between items-start mb-4">
@@ -456,15 +506,61 @@ export default function VizSchoolSavedDraftsDialog() {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider">
-                                  {internalState.academicYear?.replace("ay", "AY ").replace(/vizschool-/g, "")} • Saved{" "}
-                                  {formatDistanceToNow(new Date(internalState.lastSavedAt), { addSuffix: true })}
-                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-black text-secondary uppercase tracking-wider border border-slate-200/50">
+                                    {internalState.academicYear?.replace("ay", "AY ")}
+                                  </span>
+
+                                  <span className="text-slate-300 text-sm font-black">•</span>
+
+                                  <div className="flex items-center gap-1.5">
+                                    {internalState.draftId === formState.draftId ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 shadow-sm animate-pulse">
+                                        <span className="text-[11px] font-black text-amber-700 uppercase tracking-wider">
+                                          In progress
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-tight">
+                                        <span>Saved</span>
+                                        <span className="text-slate-600">
+                                          {formatDistanceToNow(new Date(internalState.lastSavedAt), {
+                                            addSuffix: true,
+                                          })}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                               <button
+                                disabled={internalFormState.draftId === formState.draftId}
                                 onClick={() => handleDelete(internalState.draftId, internalState.type)}
-                                className="cursor-pointer p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                                <Trash2 className="size-5" />
+                                className={cn(
+                                  "group relative p-2.5 rounded-xl transition-all duration-200",
+                                  "disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale",
+                                  "hover:bg-destructive/5 active:scale-90",
+                                )}
+                                title={
+                                  internalFormState.draftId === formState.draftId
+                                    ? "Active draft cannot be deleted"
+                                    : "Delete Draft"
+                                }>
+                                <Trash2
+                                  className={cn(
+                                    "size-5 transition-colors",
+                                    internalFormState.draftId === formState.draftId
+                                      ? "text-slate-400"
+                                      : "text-slate-300 group-hover:text-destructive",
+                                  )}
+                                  strokeWidth={2.5}
+                                />
+
+                                {internalFormState.draftId === formState.draftId && (
+                                  <div className="absolute -top-1 -right-1">
+                                    <div className="size-2.5 bg-slate-400 rounded-full border-2 border-white" />
+                                  </div>
+                                )}
                               </button>
                             </div>
 
@@ -531,7 +627,7 @@ export default function VizSchoolSavedDraftsDialog() {
                             <Button
                               variant={"outline"}
                               disabled={expired}
-                              onClick={() => initializeFormState({ internalState, formState })}
+                              onClick={() => initializeFormState({ internalState, formState: internalFormState })}
                               className={cn(
                                 "w-full !h-12 !rounded-xl !font-black text-[11px] uppercase tracking-[0.1em] text-secondary bg-secondary/10",
                                 expired
@@ -550,16 +646,19 @@ export default function VizSchoolSavedDraftsDialog() {
               </div>
 
               <AlertDialogFooter className="border-t border-slate-200/50 bg-white/80 backdrop-blur-xl px-6 py-6 flex !flex-col gap-3">
-                <Button
-                  variant={"secondary"}
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate(`/vizschool/enrol-student/new/student-info?academicYear=${academicYear}`);
-                  }}
-                  className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
-                  <Plus className="mr-2 size-4" strokeWidth={3} />
-                  Start New Application
-                </Button>
+                {!formState?.draftId && (
+                  <Button
+                    variant={"secondary"}
+                    disabled={isExiting}
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate(`/vizschool/enrol-student/new/student-info?academicYear=${academicYear}`);
+                    }}
+                    className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
+                    <Plus className="mr-2 size-4" strokeWidth={3} />
+                    Start New Application
+                  </Button>
+                )}
 
                 <Button
                   onClick={async () => await exitApplication()}
@@ -580,9 +679,9 @@ export default function VizSchoolSavedDraftsDialog() {
 function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortBy: DraftSort) => void }) {
   return (
     <Select value={sortBy} onValueChange={(value) => setSortBy(value as typeof sortBy)}>
-      <SelectTrigger className="w-max md:w-[220px] h-11 px-4 rounded-xl border-slate-200 bg-white shadow-sm font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-600 focus:ring-primary/20 transition-all hover:bg-slate-50 active:scale-[0.98]">
+      <SelectTrigger className="w-max md:w-[220px] h-11 px-4 rounded-xl border-slate-200 bg-white shadow-sm font-black text-[10px] md:text-xs uppercase tracking-widest text-slate-600 focus:ring-secondary/20 transition-all hover:bg-slate-50 active:scale-[0.98]">
         <div className="flex items-center gap-2.5">
-          <ListFilter className="size-4 text-primary" strokeWidth={2.5} />
+          <ListFilter className="size-4 text-secondary" strokeWidth={2.5} />
           <SelectValue placeholder="Sort drafts" />
         </div>
       </SelectTrigger>
@@ -595,7 +694,7 @@ function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortB
 
           <SelectItem
             value="lastUpdated"
-            className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-primary/5 focus:text-primary transition-colors cursor-pointer">
+            className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-secondary/5 focus:text-secondary transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               <History className="size-4 opacity-50" />
               <span className="uppercase text-[10px] md:text-xs">Last updated</span>
@@ -604,7 +703,7 @@ function SortDraft({ sortBy, setSortBy }: { sortBy: DraftSort; setSortBy: (sortB
 
           <SelectItem
             value="oldest"
-            className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-primary/5 focus:text-primary transition-colors cursor-pointer">
+            className="rounded-lg py-2.5 font-bold text-slate-700 focus:bg-secondary/5 focus:text-secondary transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               <CalendarDays className="size-4 opacity-50" />
               <span className="uppercase text-[10px] md:text-xs">Oldest first</span>
@@ -646,9 +745,9 @@ function SavedDraftsLoader() {
   return (
     <div className="flex flex-col items-center justify-center p-12 space-y-6 animate-in fade-in zoom-in-95 duration-500">
       <div className="relative">
-        <div className="absolute inset-0 size-16 bg-primary/10 rounded-full animate-ping" />
+        <div className="absolute inset-0 size-16 bg-secondary/10 rounded-full animate-ping" />
         <div className="relative size-16 bg-white rounded-2xl shadow-xl flex items-center justify-center border border-slate-100">
-          <Loader2 className="size-8 text-primary animate-spin" strokeWidth={2.5} />
+          <Loader2 className="size-8 text-secondary animate-spin" strokeWidth={2.5} />
         </div>
       </div>
       <div className="text-center space-y-1">

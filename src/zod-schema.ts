@@ -867,6 +867,7 @@ export const studentUploadRequirementsSchema = z
       }),
     showVaccinationInformation: z.boolean().optional(),
     stpApplicationType: z.string().optional(),
+    isOpenHouseApplication: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     if (applicationTypes.includes(data.stpApplicationType || "")) {
@@ -901,13 +902,16 @@ export const studentUploadRequirementsSchema = z
 
     const now = new Date();
     const TO_FOLLOW_LIMIT = 3;
+    const isStpApplication = data.stpApplicationType === "New Student Pass Application";
 
-    const keyLabels = {
-      passport: "Passport",
-      pass: "Pass",
-      idPicture: "ID Picture",
-      birthCert: "Birth Certificate",
-    };
+    const keyLabels = data.isOpenHouseApplication
+      ? {}
+      : {
+          passport: "Passport",
+          idPicture: "ID Picture",
+          birthCert: "Birth Certificate",
+          ...(isStpApplication ? {} : { pass: "Pass" }),
+        };
 
     if (data.toFollowDocs && data.toFollowDocs.length > TO_FOLLOW_LIMIT) {
       ctx.addIssue({
@@ -1007,7 +1011,12 @@ export const studentUploadRequirementsSchema = z
       });
     }
 
-    if (!data.toFollowDocs?.includes("pass") && data.passExpiry && isBefore(data.passExpiry, now)) {
+    if (
+      Object.keys(keyLabels).includes("pass") &&
+      !data.toFollowDocs?.includes("pass") &&
+      data.passExpiry &&
+      isBefore(data.passExpiry, now)
+    ) {
       ctx.addIssue({
         code: "custom",
         message: "Pass is expired",
@@ -1021,7 +1030,12 @@ export const studentUploadRequirementsSchema = z
       });
     }
 
-    if (!data.toFollowDocs?.includes("pass") && data.pass && !data.passExpiry) {
+    if (
+      Object.keys(keyLabels).includes("pass") &&
+      !data.toFollowDocs?.includes("pass") &&
+      data.pass &&
+      !data.passExpiry
+    ) {
       ctx.addIssue({
         code: "custom",
         message: "Enter a valid pass expiry date.",
@@ -1035,7 +1049,12 @@ export const studentUploadRequirementsSchema = z
       });
     }
 
-    if (!data.toFollowDocs?.includes("pass") && data.pass && !data.passType) {
+    if (
+      Object.keys(keyLabels).includes("pass") &&
+      !data.toFollowDocs?.includes("pass") &&
+      data.pass &&
+      !data.passType
+    ) {
       ctx.addIssue({
         code: "custom",
         message: "Pass Type is required",
@@ -1134,6 +1153,7 @@ export const parentGuardianUploadRequirementsSchema = z
       })
       .optional(),
     toFollowDocs: z.array(z.string()).default([]).optional(),
+    isOpenHouseApplication: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     const now = new Date();
@@ -1218,9 +1238,11 @@ export const parentGuardianUploadRequirementsSchema = z
       addIssue("toFollowDocs", "You may only skip up to 2 documents.");
     }
 
-    validateSet("mother", true);
-    validateSet("father", data.hasFatherInfo || false);
-    validateSet("guardian", data.hasGuardianInfo || false);
+    if (!data?.isOpenHouseApplication) {
+      validateSet("mother", true);
+      validateSet("father", data.hasFatherInfo || false);
+      validateSet("guardian", data.hasGuardianInfo || false);
+    }
   });
 
 export const studentAddressContactAndInformationSchema = z.intersection(
@@ -1254,3 +1276,5 @@ export type VizSchoolEnrollmentInformationSchema = z.infer<typeof vizSchoolEnrol
 export type VizSchoolFatherInformationSchema = z.infer<typeof vizSchoolFatherInformationSchema>;
 export type VizSchoolMotherInformationSchema = z.infer<typeof vizSchoolMotherInformationSchema>;
 export type VizSchoolGuardianInformationSchema = z.infer<typeof vizSchoolGuardianInformationSchema>;
+
+export type OpenHouseAccountInformationSchema = z.infer<typeof registrationSchema>;

@@ -8,8 +8,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, religions } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
-import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
@@ -33,22 +31,6 @@ function StudentDetails() {
       ...formState.studentInfo?.studentDetails,
     },
   });
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      studentInfo: {
-        addressContact: {
-          ...formState.studentInfo?.addressContact,
-        },
-        studentDetails: { ...debouncedAutoSaveValue },
-      },
-    },
-    0,
-  );
 
   async function onSubmit(values: StudentDetailsSchema) {
     const age = differenceInYears(new Date(), values.birthDay);

@@ -1,7 +1,6 @@
 import { getNewStudentDiscounts } from "@/actions/private";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
-import EnrolNewStudentStepsLoader from "@/components/private/enrol-student/steps/enrol-new-student-steps-loader";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,18 +26,19 @@ import {
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
 } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { ArrowRight, CircleHelp, Info } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { ArrowRight, CircleHelp, FilePen, Info } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate, useNavigate } from "react-router";
+import { Navigate, useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 const MORNING_AFTERNOON_CLASS_LEVEL = [
@@ -67,7 +67,26 @@ const ENRICHMENT_CLASS_LEVELS = [
 function EnrollmentInformation() {
   const { session } = useSession();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
-  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewStudentContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const {
+    formState,
+    setFormState,
+    setCompletedTabs,
+    setCurrentTab,
+    setActiveTab,
+    activeTab,
+    completedTabs,
+    currentTab,
+  } = useEnrolNewStudentContext();
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "hfse-is",
+  });
   const navigate = useNavigate();
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
     queryKey: ["new-discounts", session?.user.email],
@@ -76,7 +95,7 @@ function EnrollmentInformation() {
     },
     enabled: session != null,
   });
-  const [isPending, setTransition] = useTransition();
+
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
     formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false,
@@ -92,30 +111,35 @@ function EnrollmentInformation() {
     },
   });
 
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
   useEffect(() => {
-    if (form.formState.isSubmitSuccessful) {
-      setTransition(() => {
-        navigate("/enrol-student/new/upload-requirements");
-      });
-    }
-  }, [form.formState.isSubmitSuccessful, navigate]);
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
+    setFormState({
       ...formState,
       enrollmentInfo: {
-        ...debouncedAutoSaveValue,
+        ...form.watch(),
       },
-    },
-    0,
-  );
+    });
+  }, [debouncedValues]);
 
-  if (formState.familyInfo?.motherInfo == null) {
-    return <Navigate to={"/enrol-student/new/family-info"} />;
-  }
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Enrolment information details saved!", {
+          description: "Proceeding to the next step...",
+        });
+
+        navigate("/enrol-student/new/upload-requirements");
+      })();
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
 
   function onSubmit(values: EnrollmentInformationSchema) {
     if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {
@@ -187,16 +211,18 @@ function EnrollmentInformation() {
       ...formState,
       enrollmentInfo: { ...values },
     });
-    toast.success("Enrolment information details saved!", {
-      description: "Proceeding to the next step...",
-    });
+
     setCompletedTabs("/enrol-student/new/enrollment-info");
     setCurrentTab("/enrol-student/new/upload-requirements");
     setActiveTab("/enrol-student/new/upload-requirements");
   }
 
-  if (isPending) {
-    return <EnrolNewStudentStepsLoader />;
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
+  }
+
+  if (formState.familyInfo?.motherInfo == null) {
+    return <Navigate to={"/enrol-student/new/family-info"} />;
   }
 
   return (
@@ -609,20 +635,43 @@ function EnrollmentInformation() {
                   )}
                 </div>
 
-                <Button
-                  size={"lg"}
-                  className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
-                  type="submit">
-                  Proceed to Next Step
-                  <ArrowRight />
-                </Button>
+                <div className="flex flex-col gap-4 mb-4 max-w-4xl mx-auto">
+                  <Button
+                    size={"lg"}
+                    className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+                    type="submit">
+                    Save & Proceed to next step
+                    <ArrowRight />
+                  </Button>
 
-                <Button
-                  className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-                  type="submit">
-                  Proceed to Next Step
-                  <ArrowRight />
-                </Button>
+                  <Button
+                    className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+                    type="submit">
+                    Save & Proceed to next step
+                    <ArrowRight />
+                  </Button>
+
+                  <Button
+                    onClick={async () => await saveForLater()}
+                    disabled={isLoading}
+                    variant={"secondary"}
+                    size={"lg"}
+                    className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+                    type="button">
+                    Save for later & exit
+                    <FilePen />
+                  </Button>
+
+                  <Button
+                    onClick={async () => await saveForLater()}
+                    disabled={isLoading}
+                    variant={"secondary"}
+                    className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+                    type="button">
+                    Save for later & exit
+                    <FilePen />
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
