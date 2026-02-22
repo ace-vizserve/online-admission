@@ -1,9 +1,11 @@
 import { getNewStudentDiscounts } from "@/actions/private";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
+import AdditionalLearningNeedsComboBox from "@/components/ui/additional-learning-needs-combo-box";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import {
@@ -29,13 +32,14 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
+import { cn } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { ArrowRight, CircleHelp, FilePen, Info } from "lucide-react";
+import { ArrowRight, CircleHelp, FilePen, ImageIcon, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useBeforeUnload, useNavigate } from "react-router";
@@ -247,7 +251,23 @@ function EnrollmentInformation() {
           </Alert>
           <CardContent className="px-0">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-6xl mx-auto py-10">
+              <form
+                onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                  if (Object.keys(errors).length > 0) {
+                    setFormState({
+                      ...formState,
+                      enrollmentInfo: {
+                        ...formState.enrollmentInfo!,
+                        isValid: false,
+                      },
+                    });
+
+                    form.setValue("isValid", false);
+
+                    form.trigger();
+                  }
+                })}
+                className="space-y-8 max-w-6xl mx-auto py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
@@ -370,26 +390,8 @@ function EnrollmentInformation() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-4 lg:gap-6 w-full">
-                  <FormField
-                    control={form.control}
-                    name="additionalLearningNeeds"
-                    render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>
-                          Additional learning or Special needs{" "}
-                          <span className="text-xs text-muted-foreground">(optional)</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Indicate if the student has any learning needs or special requirements.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-y-4 lg:gap-6 w-full">
+                  <AdditionalLearningNeedsComboBox form={form} />
 
                   <FormField
                     control={form.control}
@@ -415,7 +417,7 @@ function EnrollmentInformation() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
                     name="availUniform"
@@ -441,28 +443,57 @@ function EnrollmentInformation() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="availStudentCare"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Student Care</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Yes or No" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Yes">Yes</SelectItem>
-                            <SelectItem value="No">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>Will you avail student care service?</FormDescription>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="flex flex-col w-full gap-6">
+                    <FormField
+                      control={form.control}
+                      name="availStudentCare"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Student Care</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Yes or No" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Yes">Yes</SelectItem>
+                              <SelectItem value="No">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>Will you avail student care service?</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {form.watch("availStudentCare") === "Yes" && (
+                      <FormField
+                        control={form.control}
+                        name="studentCareProgram"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Student Care Program</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select a student care program" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Full day">Full-Day Program</SelectItem>
+                                <SelectItem value="Daily">Daily Program</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Select the student care program that suits your child's schedule.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
+                  </div>
 
                   <FormField
                     control={form.control}
@@ -496,6 +527,46 @@ function EnrollmentInformation() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="socialMediaConsent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div
+                        className={cn(
+                          "max-w-xl mx-auto w-full p-6 rounded-xl border-2 transition-all duration-300",
+                          field.value
+                            ? "bg-emerald-50/50 border-emerald-200 shadow-sm"
+                            : "bg-slate-50 border-slate-100",
+                        )}>
+                        <label className="flex items-start gap-4 cursor-pointer">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              className="mt-1 size-5 rounded-md data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                            />
+                          </FormControl>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <ImageIcon className="size-4 text-emerald-600" />
+                              <span className="text-sm font-bold text-slate-800">Social Media Consent</span>
+                            </div>
+                            <span className="text-sm leading-relaxed text-slate-700">
+                              I give consent for <span className="font-bold text-emerald-700">HFSE</span> to use my
+                              child's photo/videos on official school social media platforms.
+                            </span>
+                            <FormDescription className="mt-2 text-xs font-semibold text-amber-700 leading-normal">
+                              Note: Photos will never include full names or personal details.
+                            </FormDescription>
+                          </div>
+                        </label>
+                      </div>
+                      <FormMessage className="text-[10px] font-bold uppercase" />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="max-w-2xl mx-auto space-y-4 bg-secondary p-6 rounded-2xl border border-muted shadow-sm">
                   <FormField
@@ -634,6 +705,10 @@ function EnrollmentInformation() {
                     </>
                   )}
                 </div>
+
+                <br />
+                <Separator />
+                <br />
 
                 <div className="flex flex-col gap-4 mb-4 max-w-4xl mx-auto">
                   <Button

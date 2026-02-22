@@ -40,7 +40,7 @@ function NewLearnerSteps() {
     <nav className="w-full bg-white mb-12 md:mb-0">
       <ol className="flex flex-col lg:flex-row max-w-screen mx-auto">
         {STEPS.map((step, index) => {
-          const isActive = activeTab === step.url && completedTabs.length > 1;
+          const isActive = activeTab === step.url && completedTabs.length > 0;
           const isCurrent = currentTab === step.url && !completedTabs.includes(step.url);
           const isCompleted = completedTabs.includes(step.url);
           const isLocked = !isCurrent && !isCompleted;

@@ -1,6 +1,7 @@
 import { ArrowLeft, CheckCircle2, OctagonAlert, Send } from "lucide-react";
 import { Outlet, useNavigate } from "react-router";
 
+import { userRegister } from "@/actions/auth";
 import { submitEnrollment, submitVizSchoolEnrollment } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import OpenHouseSteps from "@/components/private/open-house/open-house-steps";
@@ -28,13 +29,8 @@ import {
 } from "@/components/ui/drawer";
 import OpenHouseContextProvider, { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
 import useSession from "@/hooks/use-session";
-import { EnrolNewStudentFormState } from "@/types";
-import {
-  useEnrolNewStudentTabStateStore,
-  usePassTypeStore,
-  useSelectAcademicYear,
-  useSelectOpenHouseInstitution,
-} from "@/zustand-store";
+import { OpenHouseFormState } from "@/types";
+import { useEnrolNewStudentTabStateStore, useSelectAcademicYear, useSelectOpenHouseInstitution } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
@@ -108,21 +104,30 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
   const queryClient = useQueryClient();
   const { session } = useSession();
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
-  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+
   const { formState } = useOpenHouseContext();
   const { mutate, isPending } = useMutation({
-    mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
-      if (institution === "hfse") {
-        return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, "", "VizSchool New");
-      } else {
-        return await submitEnrollment(enrollmentDetails, academicYear);
+    mutationFn: async (enrollmentDetails: OpenHouseFormState) => {
+      const { email, firstName, lastName, password, relationship, confirmPassword } = enrollmentDetails.accountInfo;
+
+      try {
+        await userRegister({ firstName, lastName, email, password, relationship, confirmPassword });
+
+        if (institution === "hfse") {
+          return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, "", "VizSchool New");
+        } else {
+          return await submitEnrollment(enrollmentDetails, academicYear);
+        }
+      } catch (error) {
+        const err = error as Error;
+        toast.error(err.message);
       }
     },
     onSuccess(data) {
       navigate("/application-submitted", {
         state: {
           academicYear,
-          enroleeNumber: data.generatedEnroleeNumber,
+          enroleeNumber: data?.generatedEnroleeNumber,
         },
       });
       queryClient.invalidateQueries({
@@ -177,7 +182,7 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
       delete formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation;
     }
 
-    mutate({ ...(formState as EnrolNewStudentFormState), stpApplicationType });
+    mutate({ ...(formState as OpenHouseFormState) });
   }
 
   return (

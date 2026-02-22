@@ -1,13 +1,14 @@
 "use client";
 
 import PageMetaData from "@/components/page-metadata";
+import MedicalInformationSection from "@/components/private/enrol-student/steps/student-information/medical-information";
 import StudentAddressContact from "@/components/private/enrol-student/steps/student-information/student-address-contact";
 import StudentDetails from "@/components/private/enrol-student/steps/student-information/student-details";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
-import { ChevronRight, MapPin, User } from "lucide-react";
+import { BriefcaseMedical, ChevronRight, MapPin, User } from "lucide-react";
 import { useCallback, useState } from "react";
 
 const tabs = [
@@ -24,6 +25,13 @@ const tabs = [
     description: "Emergency and residence info",
     icon: MapPin,
     component: StudentAddressContact,
+  },
+  {
+    name: "Medical Information",
+    value: "medical-information",
+    description: "Child safety and wellbeing information",
+    icon: BriefcaseMedical,
+    component: MedicalInformationSection,
   },
 ];
 

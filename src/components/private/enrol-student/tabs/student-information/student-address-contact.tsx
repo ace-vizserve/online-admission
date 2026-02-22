@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, maritalStatuses } from "@/data";
 import { cn } from "@/lib/utils";
-import { studentAddressContactSchema, StudentAddressContactSchema, StudentDetailsSchema } from "@/zod-schema";
+import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
@@ -52,7 +52,7 @@ function StudentAddressContact() {
   function onSubmit(values: StudentAddressContactSchema) {
     setFormState({
       studentInfo: {
-        studentDetails: { ...(formState.studentInfo?.studentDetails ?? ({} as unknown as StudentDetailsSchema)) },
+        ...formState.studentInfo!,
         addressContact: {
           ...values,
           isValid: true,

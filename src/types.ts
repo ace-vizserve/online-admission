@@ -3,6 +3,7 @@ import {
   EnrollmentInformationSchema,
   FatherInformationSchema,
   GuardianInformationSchema,
+  MedicalChecklistFormValues,
   MotherInformationSchema,
   ParentGuardianUploadRequirementsSchema,
   RegistrationSchema,
@@ -313,6 +314,7 @@ export type EnrolNewStudentFormState = {
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
+    medicalInformation: MedicalChecklistFormValues;
   };
   familyInfo: {
     motherInfo: MotherInformationSchema;
@@ -332,6 +334,7 @@ export type OpenHouseFormState = {
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
+    medicalInformation: MedicalChecklistFormValues;
   };
   familyInfo: {
     motherInfo: MotherInformationSchema;
@@ -351,6 +354,7 @@ export type EnrolOldStudentFormState = {
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
+    medicalInformation: MedicalChecklistFormValues;
   };
   familyInfo: {
     motherInfo: MotherInformationSchema;

@@ -11,21 +11,17 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { StudentAddressContactSchema, studentAddressContactSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Info } from "lucide-react";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useBeforeUnload, useNavigate } from "react-router";
+import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 
-function StudentAddressContact() {
-  const {
-    formState,
-    setFormState,
-    setCompletedTabs,
-    setCurrentTab,
-    setActiveTab,
-
-    completedTabs,
-  } = useOpenHouseContext();
+const StudentAddressContact = memo(function StudentAddressContact({
+  setTabOpened,
+}: {
+  setTabOpened: (tab: string) => void;
+}) {
+  const { formState, setFormState } = useOpenHouseContext();
 
   const savedAddressContact = formState.studentInfo?.addressContact;
 
@@ -35,8 +31,6 @@ function StudentAddressContact() {
       ...savedAddressContact,
     },
   });
-
-  const navigate = useNavigate();
 
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
@@ -90,18 +84,15 @@ function StudentAddressContact() {
       },
     });
 
-    setCompletedTabs("/open-house/student-info");
-
-    if (completedTabs.includes("/open-house/family-info")) return;
-
-    setCurrentTab("/open-house/family-info");
-    setActiveTab("/open-house/family-info");
-
-    navigate("/open-house/family-info");
-
     toast.success("Student Address & Contact details saved!", {
       description: "Please double check everything before proceeding.",
     });
+
+    const isValid = Boolean(formState.studentInfo?.medicalInformation?.isValid);
+
+    if (!isValid) {
+      setTabOpened("medical-information");
+    }
   }
 
   return (
@@ -290,6 +281,6 @@ function StudentAddressContact() {
       </form>
     </Form>
   );
-}
+});
 
 export default StudentAddressContact;

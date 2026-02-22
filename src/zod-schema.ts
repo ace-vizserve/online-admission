@@ -268,8 +268,68 @@ export const studentAddressContactSchema = z
     }
   });
 
+export const medicalChecklistSchema = z
+  .object({
+    isValid: z.boolean().default(false).optional(),
+    medicalChecklist: z.object({
+      allergies: z.boolean().default(false).optional(),
+      asthma: z.boolean().default(false).optional(),
+      heartConditions: z.boolean().default(false).optional(),
+      epilepsy: z.boolean().default(false).optional(),
+      diabetes: z.boolean().default(false).optional(),
+      eczema: z.boolean().default(false).optional(),
+      foodAllergies: z.boolean().default(false).optional(),
+      other: z.boolean().default(false).optional(),
+      none: z.boolean().default(false).optional(),
+      allergyDetails: z.string().optional(),
+      foodAllergyDetails: z.string().optional(),
+      otherDetails: z.string().optional(),
+    }),
+    paracetamolConsent: z.boolean(),
+  })
+  .superRefine((data, ctx) => {
+    const c = data.medicalChecklist;
+
+    if (c.allergies && !c.allergyDetails?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["medicalChecklist", "allergyDetails"],
+        message: "Please specify the allergy details",
+      });
+    }
+
+    if (c.foodAllergies && !c.foodAllergyDetails?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["medicalChecklist", "foodAllergyDetails"],
+        message: "Please specify the allergy details",
+      });
+    }
+
+    if (c.other && !c.otherDetails?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["medicalChecklist", "otherDetails"],
+        message: "Please describe the medical condition",
+      });
+    }
+
+    const anySelected = Object.entries(c)
+      .filter(([key]) => !["allergyDetails", "otherDetails"].includes(key))
+      .some(([, val]) => val === true);
+
+    if (!anySelected) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["medicalChecklist"],
+        message: "Please select at least one health condition or 'None of the above'",
+      });
+    }
+  });
+
 export const guardianInformationSchema = z
   .object({
+    guardianWhatsappTeamsConsent: z.boolean().default(false).optional(),
     guardianFirstName: z.string().transform(capitalizeWords).optional(),
     guardianMiddleName: z.string().transform(capitalizeWords).optional(),
     guardianLastName: z.string().transform(capitalizeWords).optional(),
@@ -404,6 +464,7 @@ export const vizSchoolGuardianInformationSchema = z
 export const fatherInformationSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
+    fatherWhatsappTeamsConsent: z.boolean().default(false).optional(),
     noFatherInfo: z.boolean().default(false).optional(),
     fatherFirstName: z.string().transform(capitalizeWords).optional(),
     fatherMiddleName: z.string().transform(capitalizeWords).optional(),
@@ -535,6 +596,7 @@ export const vizSchoolFatherInformationSchema = z
   });
 
 export const motherInformationSchema = z.object({
+  motherWhatsappTeamsConsent: z.boolean().default(false).optional(),
   isValid: z.boolean().default(false).optional(),
   motherFirstName: z
     .string()
@@ -711,7 +773,8 @@ export const enrollmentInformationSchema = z
     preferredSchedule: z.string().min(1, {
       message: "Preferred schedule is required",
     }),
-    additionalLearningNeeds: z.string().optional(),
+    additionalLearningNeeds: z.array(z.string()).optional(),
+    additionalLearningNeedsOthers: z.string().optional(),
     availSchoolBus: z.string().min(1, {
       message: "Bus service selection is required",
     }),
@@ -721,6 +784,7 @@ export const enrollmentInformationSchema = z
     availStudentCare: z.string().min(1, {
       message: "Student care selection is required",
     }),
+    studentCareProgram: z.string().optional(),
     paymentOption: z.string().min(1, {
       message: "Campus development fee selection is required",
     }),
@@ -733,6 +797,7 @@ export const enrollmentInformationSchema = z
     contractSignatory: z.string().min(1, {
       message: "Parent contract signatory is required",
     }),
+    socialMediaConsent: z.boolean().default(false).optional(),
   })
   .superRefine((schema, ctx) => {
     if (schema.referrerName) {
@@ -741,6 +806,27 @@ export const enrollmentInformationSchema = z
           code: z.ZodIssueCode.custom,
           message: "Please enter your referrer's mobile phone",
           path: ["referrerMobile"],
+        });
+      }
+    }
+
+    if (schema.additionalLearningNeeds?.includes("Others (please specify)")) {
+      if (!schema.additionalLearningNeedsOthers?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please specify the learning need",
+          path: ["additionalLearningNeedsOthers"],
+        });
+      }
+    }
+
+    if (schema.availStudentCare === "Yes") {
+      const studentCarePrograms = ["Full day", "Daily"];
+      if (!studentCarePrograms.includes(schema.studentCareProgram || "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please select a student care program",
+          path: ["studentCareProgram"],
         });
       }
     }
@@ -865,9 +951,9 @@ export const studentUploadRequirementsSchema = z
       .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
         message: "Please upload the file to continue",
       }),
-    showVaccinationInformation: z.boolean().optional(),
+    showVaccinationInformation: z.boolean().default(false).optional(),
     stpApplicationType: z.string().optional(),
-    isOpenHouseApplication: z.boolean().optional(),
+    isOpenHouseApplication: z.boolean().default(false).optional(),
   })
   .superRefine((data, ctx) => {
     if (applicationTypes.includes(data.stpApplicationType || "")) {
@@ -1072,8 +1158,8 @@ export const studentUploadRequirementsSchema = z
 export const parentGuardianUploadRequirementsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
-    hasFatherInfo: z.boolean().optional(),
-    hasGuardianInfo: z.boolean().optional(),
+    hasFatherInfo: z.boolean().default(false).optional(),
+    hasGuardianInfo: z.boolean().default(false).optional(),
     motherPassport: z
       .string()
       .optional()
@@ -1153,7 +1239,7 @@ export const parentGuardianUploadRequirementsSchema = z
       })
       .optional(),
     toFollowDocs: z.array(z.string()).default([]).optional(),
-    isOpenHouseApplication: z.boolean().optional(),
+    isOpenHouseApplication: z.boolean().default(false).optional(),
   })
   .superRefine((data, ctx) => {
     const now = new Date();
@@ -1269,6 +1355,7 @@ export type SiblingInformationSchema = z.infer<typeof siblingInformationSchema>;
 export type EnrollmentInformationSchema = z.infer<typeof enrollmentInformationSchema>;
 export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequirementsSchema>;
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
+export type MedicalChecklistFormValues = z.infer<typeof medicalChecklistSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
 
 export type VizSchoolStudentDetailsSchema = z.infer<typeof vizSchoolStudentDetailsSchema>;

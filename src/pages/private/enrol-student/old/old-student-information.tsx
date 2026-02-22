@@ -1,5 +1,6 @@
 import { getStudentInformation } from "@/actions/private";
 import PageMetaData from "@/components/page-metadata";
+import MedicalInformationSection from "@/components/private/enrol-student/tabs/student-information/medical-information";
 import StudentAddressContact from "@/components/private/enrol-student/tabs/student-information/student-address-contact";
 import StudentDetails from "@/components/private/enrol-student/tabs/student-information/student-details";
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +13,7 @@ import { usePassTypeStore } from "@/zustand-store";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { ChevronRight, MapPin, User } from "lucide-react";
+import { BriefcaseMedical, ChevronRight, MapPin, User } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation, useParams } from "react-router";
 
@@ -93,6 +94,14 @@ function StudentInformationTabs({
       icon: MapPin,
       component: StudentAddressContact,
       hasError: isAddressContactInvalid,
+    },
+    {
+      name: "Medical Information",
+      value: "medical-information",
+      description: "Child safety and wellbeing information",
+      icon: BriefcaseMedical,
+      component: MedicalInformationSection,
+      hasError: false,
     },
   ];
 

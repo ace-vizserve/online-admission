@@ -119,34 +119,54 @@ export default function OpenHouseLanding() {
               </p>
             </div>
 
-            {/* Selection Card */}
             <div className="bg-white/90 backdrop-blur-2xl rounded-xl border border-slate-200 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] p-6 md:p-8 mb-8">
               <div className="space-y-8">
-                {/* Academic Year Toggle */}
                 <div className="space-y-3">
-                  <label className="block text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">
-                    Target Academic Year
+                  <label className="block text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-1">
+                    Select academic year
                   </label>
-                  <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-lg border border-slate-200">
-                    {["2026", "2027"].map((year) => (
-                      <button
-                        key={year}
-                        onClick={() => setAcademicYear(year)}
-                        className={cn(
-                          "cursor-pointer h-10 rounded-md text-xs font-black transition-all duration-200",
-                          academicYear === year
-                            ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-400 hover:text-slate-600",
-                        )}>
-                        AY {year}
-                      </button>
-                    ))}
+
+                  <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 rounded-xl border border-slate-200">
+                    {["2026", "2027"].map((year) => {
+                      const isSelected = academicYear === year;
+
+                      return (
+                        <button
+                          key={year}
+                          type="button"
+                          onClick={() => setAcademicYear(year)}
+                          className={cn(
+                            "relative cursor-pointer h-14 rounded-lg transition-all duration-300 group overflow-hidden",
+                            isSelected
+                              ? "bg-white text-primary shadow-md ring-1 ring-slate-200"
+                              : "text-slate-400 hover:bg-slate-50 hover:text-slate-600",
+                          )}>
+                          <div className="flex flex-col items-center justify-center space-y-0.5">
+                            <span
+                              className={cn(
+                                "text-[10px] uppercase tracking-tighter font-black opacity-60 transition-colors",
+                                isSelected ? "text-primary" : "text-slate-400",
+                              )}>
+                              {year === "2026" ? "Current Year" : "Upcoming Year"}
+                            </span>
+                            <span className="text-base font-black tracking-tight">AY {year}</span>
+                          </div>
+
+                          {/* Active Indicator Pin */}
+                          {isSelected && (
+                            <div className="absolute top-2 right-2">
+                              <div className="size-1.5 rounded-full bg-primary" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Programme Selection */}
                 <div className="space-y-3">
-                  <label className="block text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">
+                  <label className="block text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-1">
                     Select Programme
                   </label>
 
@@ -223,12 +243,12 @@ export default function OpenHouseLanding() {
               </span>
             </Button>
 
-            {/* Compact Footer Links */}
             <div className="mt-8">
               <div className="flex items-center justify-center gap-2 pt-4 border-t border-slate-200/60 max-w-[280px] mx-auto">
                 <p className="text-[11px] text-slate-500 font-bold">Already registered?</p>
                 <Link
                   to="/admission/dashboard"
+                  target="_parent"
                   className="inline-flex items-center gap-1 text-xs font-black text-primary hover:underline underline-offset-4 group">
                   Access Dashboard
                   <ArrowUpRight className="size-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

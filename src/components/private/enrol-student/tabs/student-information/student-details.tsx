@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, religions } from "@/data";
 import { cn } from "@/lib/utils";
-import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
+import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
@@ -46,9 +46,7 @@ function StudentDetails() {
 
     setFormState({
       studentInfo: {
-        addressContact: {
-          ...(formState.studentInfo?.addressContact ?? ({} as unknown as StudentAddressContactSchema)),
-        },
+        ...formState.studentInfo!,
         studentDetails: { ...values, isValid: true },
       },
     });

@@ -288,6 +288,18 @@ export const campusDevelopmentFee = [
   { label: "Option 3 – Monthly only (S$125/mo)", value: "Option 3" },
 ] as const;
 
+export const medicalConditions = [
+  { id: "allergies", label: "Allergies", requiresDetails: true },
+  { id: "asthma", label: "Asthma" },
+  { id: "heartConditions", label: "Heart Conditions" },
+  { id: "epilepsy", label: "Epilepsy / Seizures" },
+  { id: "diabetes", label: "Diabetes" },
+  { id: "eczema", label: "Eczema / Skin Conditions" },
+  { id: "foodAllergies", label: "Food Allergies", requiresDetails: true },
+  { id: "other", label: "Other Medical Condition", requiresDetails: true },
+  { id: "none", label: "None of the above" },
+];
+
 export const languages = [
   { label: "Afar", value: "aa" },
   { label: "Abkhazian", value: "ab" },

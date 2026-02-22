@@ -11,7 +11,7 @@ import { useOpenHouseContext } from "@/context/open-house/open-house-student-con
 import { religions } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
-import { StudentAddressContactSchema, StudentDetailsSchema, studentDetailsSchema } from "@/zod-schema";
+import { StudentDetailsSchema, studentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
 import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
@@ -77,9 +77,7 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
     setFormState({
       ...formState,
       studentInfo: {
-        addressContact: {
-          ...(formState.studentInfo?.addressContact as unknown as StudentAddressContactSchema),
-        },
+        ...formState.studentInfo!,
         studentDetails: { ...values, isValid: true },
       },
     });
@@ -88,7 +86,7 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
       description: "You're now ready to fill out the Address & Contact tab.",
     });
 
-    const isValid = formState.studentInfo?.addressContact.isValid === true;
+    const isValid = Boolean(formState.studentInfo?.addressContact?.isValid);
 
     if (!isValid) {
       setTabOpened("address-contact");

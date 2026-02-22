@@ -1,6 +1,7 @@
 import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
@@ -22,7 +23,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, Info } from "lucide-react";
+import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, Info, MessageCircle } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload, useNavigate } from "react-router";
@@ -439,6 +440,46 @@ function GuardianInformation() {
             )}
           />
         </div>
+
+        {!formState.familyInfo?.guardianInfo?.noGuardianInfo && (
+          <FormField
+            control={form.control}
+            name="guardianWhatsappTeamsConsent"
+            render={({ field }) => (
+              <FormItem>
+                <div
+                  className={cn(
+                    "p-6 rounded-xl border-2 transition-all duration-300 max-w-xl w-full mx-auto",
+                    field.value ? "bg-emerald-50/50 border-emerald-200 shadow-sm" : "bg-slate-50 border-slate-100",
+                  )}>
+                  <label className="flex items-start gap-4 cursor-pointer">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1 size-5 rounded-md data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                      />
+                    </FormControl>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MessageCircle className="size-4 text-emerald-600" />
+                        <span className="text-sm font-bold text-slate-800">Communication Consent</span>
+                      </div>
+                      <span className="text-sm leading-relaxed text-slate-700">
+                        Include this mobile number in the class{" "}
+                        <span className="font-bold text-emerald-700">WhatsApp/Teams</span> group chat.
+                      </span>
+                      <FormDescription className="mt-2 text-xs font-semibold text-amber-700 leading-normal">
+                        Note: Your number will only be used for official school communications.
+                      </FormDescription>
+                    </div>
+                  </label>
+                </div>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
+        )}
 
         <div className="!space-y-4">
           <FormField

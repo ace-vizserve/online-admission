@@ -15,7 +15,7 @@ import { OpenHouseAccountInformationSchema, registrationSchema } from "@/zod-sch
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/Tailspin.css";
 import { ArrowRight, Info } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import { toast } from "sonner";
 function AccountInformation() {
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useOpenHouseContext();
 
   const navigate = useNavigate();
@@ -58,6 +59,7 @@ function AccountInformation() {
     const email = values.email;
 
     try {
+      setIsLoading(true);
       const users = await listAllUsers();
 
       const emailExist = users.find((user) => user.email === email && user.email_confirmed_at != null);
@@ -89,6 +91,8 @@ function AccountInformation() {
       } else {
         toast.error(err.message);
       }
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -233,6 +237,7 @@ function AccountInformation() {
 
                 <div className="flex flex-col gap-4 mb-4 max-w-4xl mx-auto">
                   <Button
+                    disabled={isLoading}
                     size={"lg"}
                     className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
                     type="submit">
@@ -241,6 +246,7 @@ function AccountInformation() {
                   </Button>
 
                   <Button
+                    disabled={isLoading}
                     className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
                     type="submit">
                     Save & Proceed to next step

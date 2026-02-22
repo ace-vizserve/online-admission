@@ -15,23 +15,18 @@ import { cn } from "@/lib/utils";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Check, FilePen, Globe, Info, PlusCircle, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { Check, FilePen, Globe, Info, PlusCircle, Save, Trash2 } from "lucide-react";
+import { memo, useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useBeforeUnload, useNavigate } from "react-router";
+import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 
-function StudentAddressContact() {
-  const {
-    formState,
-    setFormState,
-    setCompletedTabs,
-    setCurrentTab,
-    setActiveTab,
-    activeTab,
-    completedTabs,
-    currentTab,
-  } = useEnrolNewStudentContext();
+const StudentAddressContact = memo(function StudentAddressContact({
+  setTabOpened,
+}: {
+  setTabOpened: (tab: string) => void;
+}) {
+  const { formState, setFormState, activeTab, completedTabs, currentTab } = useEnrolNewStudentContext();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { isLoading, saveApplication } = useSaveApplication({
     academicYear,
@@ -72,8 +67,6 @@ function StudentAddressContact() {
     name: "residenceHistory",
   });
 
-  const navigate = useNavigate();
-
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
 
@@ -113,7 +106,11 @@ function StudentAddressContact() {
           description: "Please double check everything before proceeding.",
         });
 
-        navigate("/enrol-student/new/family-info");
+        const isValid = Boolean(formState.studentInfo?.medicalInformation.isValid);
+
+        if (!isValid) {
+          setTabOpened("medical-information");
+        }
       })();
     }
   }, [form.formState.isSubmitSuccessful]);
@@ -143,13 +140,6 @@ function StudentAddressContact() {
         addressContact: { ...values, isValid: true },
       },
     });
-
-    setCompletedTabs("/enrol-student/new/student-info");
-
-    if (completedTabs.includes("/enrol-student/new/family-info")) return;
-
-    setCurrentTab("/enrol-student/new/family-info");
-    setActiveTab("/enrol-student/new/family-info");
   }
 
   return (
@@ -325,7 +315,7 @@ function StudentAddressContact() {
                 {/* Decorative Background Icon - Gives it a modern, premium feel */}
                 <Globe className="absolute -right-6 -top-6 size-40 text-slate-200/40 rotate-12" />
 
-                {!formState.studentInfo?.addressContact.isValid && (
+                {!formState.studentInfo?.addressContact?.isValid && (
                   <Badge variant={"destructive"} className="uppercase mb-6 rounded-full font-bold">
                     Action required
                   </Badge>
@@ -520,15 +510,15 @@ function StudentAddressContact() {
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="submit">
-            Save & proceed to next step
-            <ArrowRight />
+            Save details
+            <Save />
           </Button>
 
           <Button
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="submit">
-            Save & proceed to next step
-            <ArrowRight />
+            Save details
+            <Save />
           </Button>
 
           <Button
@@ -555,6 +545,6 @@ function StudentAddressContact() {
       </form>
     </Form>
   );
-}
+});
 
 export default StudentAddressContact;
