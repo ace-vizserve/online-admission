@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, religions } from "@/data";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
@@ -15,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -31,6 +32,21 @@ function StudentDetails() {
       ...formState.studentInfo?.studentDetails,
     },
   });
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      studentInfo: {
+        ...formState.studentInfo!,
+        studentDetails: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
 
   async function onSubmit(values: StudentDetailsSchema) {
     const age = differenceInYears(new Date(), values.birthDay);

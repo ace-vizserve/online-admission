@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEnrolCurrentLearnerContext } from "@/context/vizschool/enrol-current-learner-context";
+import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { vizSchoolMotherInformationSchema, VizSchoolMotherInformationSchema } from "@/zod-schema";
@@ -35,6 +36,21 @@ function MotherInformation() {
 
     form.reset(formState.familyInfo.motherInfo);
   }, [form, formState.familyInfo?.motherInfo]);
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo!,
+        motherInfo: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
 
   function onSubmit(values: VizSchoolMotherInformationSchema) {
     if (isMotherAccount) {

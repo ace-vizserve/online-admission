@@ -6,10 +6,12 @@ import LocationSelector from "@/components/ui/location-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolCurrentLearnerContext } from "@/context/vizschool/enrol-current-learner-context";
 import { maritalStatuses } from "@/data";
+import { useDebounce } from "@/hooks/use-debounce";
 import { studentAddressContactSchema, StudentAddressContactSchema, VizSchoolStudentDetailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import { Info, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -22,6 +24,21 @@ function LearnerAddressContact() {
       ...formState.studentInfo?.addressContact,
     },
   });
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      studentInfo: {
+        ...formState.studentInfo!,
+        addressContact: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
 
   function onSubmit(values: StudentAddressContactSchema) {
     setFormState({

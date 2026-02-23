@@ -26,6 +26,7 @@ import {
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
   vizSchoolClassLevels,
 } from "@/data";
+import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { vizSchoolEnrollmentInformationSchema, VizSchoolEnrollmentInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -80,6 +81,18 @@ function CurrentEnrollmentInformation() {
       form.trigger();
     }
   }, [location.state?.triggerForm]);
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      enrollmentInfo: {
+        ...form.watch(),
+      },
+    });
+  }, [debouncedValues]);
 
   function onSubmit(values: VizSchoolEnrollmentInformationSchema) {
     if (

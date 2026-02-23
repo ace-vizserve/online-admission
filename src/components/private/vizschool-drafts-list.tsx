@@ -137,6 +137,7 @@ export default function VizSchoolSavedDraftsDialog() {
 
     setIsOpen(false);
     setIsLoading(false);
+    navigate(`${internalState.activeTab}?academicYear=${internalState.academicYear}`);
   }
 
   async function exitApplication() {
@@ -248,7 +249,7 @@ export default function VizSchoolSavedDraftsDialog() {
 
                                 <div className="flex items-center gap-2 mt-1">
                                   <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-black text-secondary uppercase tracking-wider border border-slate-200/50">
-                                    {internalState.academicYear?.replace("ay", "AY ")}
+                                    {internalState.academicYear?.replace("ay", "AY ").replace("vizschool-", "")}
                                   </span>
 
                                   <span className="text-slate-300 text-sm font-black">•</span>
@@ -508,7 +509,7 @@ export default function VizSchoolSavedDraftsDialog() {
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
                                   <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-black text-secondary uppercase tracking-wider border border-slate-200/50">
-                                    {internalState.academicYear?.replace("ay", "AY ")}
+                                    {internalState.academicYear?.replace("ay", "AY ").replace("vizschool-", "")}
                                   </span>
 
                                   <span className="text-slate-300 text-sm font-black">•</span>

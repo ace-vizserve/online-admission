@@ -160,11 +160,8 @@ export default function MedicalInformationSection() {
 
     setCompletedTabs("/enrol-student/new/student-info");
 
-    if (completedTabs.includes("/enrol-student/new/family-info")) {
-      setActiveTab("/enrol-student/new/family-info");
-      setCurrentTab("/enrol-student/new/family-info");
-      return;
-    }
+    setActiveTab("/enrol-student/new/family-info");
+    setCurrentTab("/enrol-student/new/family-info");
   }
 
   return (
@@ -219,7 +216,7 @@ export default function MedicalInformationSection() {
             </div>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid md:grid-cols-2 gap-3">
             {medicalConditions.map((condition) => (
               <div key={condition.id}>
                 <label

@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -22,6 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Info, MessageCircle, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -38,6 +40,21 @@ function GuardianInformation() {
       noGuardianInfo: formState.familyInfo?.guardianInfo?.noGuardianInfo,
     },
   });
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo!,
+        guardianInfo: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
 
   function onSubmit(values: GuardianInformationSchema) {
     const insertedValues = Object.keys(values).filter((v) => {

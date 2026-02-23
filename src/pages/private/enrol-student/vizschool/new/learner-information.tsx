@@ -51,6 +51,7 @@ function LearnerInformationTabs() {
     <Tabs
       orientation="vertical"
       defaultValue={tabOpened}
+      value={tabOpened}
       className="w-full h-full flex flex-col lg:flex-row items-start gap-8 xl:gap-12">
       {/* Sidebar-style Tabs List */}
       <TabsList className="grid grid-cols-1 h-auto w-full lg:w-[320px] gap-3 bg-transparent p-0">

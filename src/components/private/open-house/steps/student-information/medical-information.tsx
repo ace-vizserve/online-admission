@@ -21,8 +21,7 @@ type ConditionId = (typeof medicalConditions)[number]["id"];
 
 export default function MedicalInformationSection() {
   const navigate = useNavigate();
-  const { formState, setFormState, completedTabs, setActiveTab, setCompletedTabs, setCurrentTab } =
-    useOpenHouseContext();
+  const { formState, setFormState, setActiveTab, setCompletedTabs, setCurrentTab } = useOpenHouseContext();
 
   const form = useForm<MedicalChecklistFormValues>({
     resolver: zodResolver(medicalChecklistSchema),
@@ -122,11 +121,8 @@ export default function MedicalInformationSection() {
 
     setCompletedTabs("/open-house/student-info");
 
-    if (completedTabs.includes("/open-house/family-info")) {
-      setActiveTab("/open-house/family-info");
-      setCurrentTab("/open-house/family-info");
-      return;
-    }
+    setActiveTab("/open-house/family-info");
+    setCurrentTab("/open-house/family-info");
 
     navigate("/open-house/family-info");
 
@@ -187,7 +183,7 @@ export default function MedicalInformationSection() {
             </div>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid md:grid-cols-2 gap-3">
             {medicalConditions.map((condition) => (
               <div key={condition.id}>
                 <label

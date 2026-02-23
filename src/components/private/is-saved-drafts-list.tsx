@@ -129,6 +129,7 @@ export default function ISSavedDraftsDialog() {
 
     setIsOpen(false);
     setIsLoading(false);
+    navigate(`${internalState.activeTab}?academicYear=${internalState.academicYear}`);
   }
 
   async function exitApplication() {

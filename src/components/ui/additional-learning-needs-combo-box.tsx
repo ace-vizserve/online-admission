@@ -47,7 +47,6 @@ function AdditionalLearningNeedsComboBox({ form }: Props) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  // Drive selected values directly from form state — single source of truth
   const selectedValues = form.watch("additionalLearningNeeds") ?? [];
 
   const toggleSelection = (value: string) => {
@@ -58,7 +57,6 @@ function AdditionalLearningNeedsComboBox({ form }: Props) {
 
     form.setValue("additionalLearningNeeds", updated, { shouldValidate: true });
 
-    // Clear "others" text when deselecting Others
     if (value === OTHERS_VALUE && isSelected) {
       form.setValue("additionalLearningNeedsOthers", "", { shouldValidate: true });
     }
@@ -162,14 +160,14 @@ function AdditionalLearningNeedsComboBox({ form }: Props) {
           <FormDescription>
             Indicate if the student has any learning needs or special requirements. You may select multiple.
           </FormDescription>
-          <FormMessage className="text-[10px] font-bold uppercase" />
+          <FormMessage />
 
           {showOthersTextarea && (
             <FormField
               control={form.control}
               name="additionalLearningNeedsOthers"
               render={({ field }) => (
-                <FormItem className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <FormItem className="mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div
                     className={cn(
                       "space-y-3 rounded-xl border-2 p-4 transition-all duration-300",
@@ -179,7 +177,7 @@ function AdditionalLearningNeedsComboBox({ form }: Props) {
                     )}>
                     <Label
                       className={cn(
-                        "text-[10px] font-black uppercase tracking-[0.2em]",
+                        "text-xs font-bold uppercase tracking-wider",
                         form.formState.errors.additionalLearningNeedsOthers ? "text-destructive" : "text-amber-700",
                       )}>
                       Specify Learning Needs
@@ -198,11 +196,7 @@ function AdditionalLearningNeedsComboBox({ form }: Props) {
                       />
                     </FormControl>
 
-                    {form.formState.errors.additionalLearningNeedsOthers && (
-                      <p className="text-[10px] font-bold uppercase text-destructive tracking-wide ml-1">
-                        {form.formState.errors.additionalLearningNeedsOthers.message}
-                      </p>
-                    )}
+                    <FormMessage />
                   </div>
                 </FormItem>
               )}

@@ -85,10 +85,6 @@ function StudentUpload() {
           ...data.studentUploadRequirements,
           showVaccinationInformation,
           stpApplicationType,
-          toFollowDocs: isStpApplication ? ["pass"] : undefined,
-          pass: isStpApplication ? undefined : data.studentUploadRequirements.pass,
-          passExpiry: isStpApplication ? undefined : data.studentUploadRequirements.passExpiry,
-          passType: isStpApplication ? undefined : data.studentUploadRequirements.passType,
         } as StudentUploadRequirementsSchema,
       },
     });
@@ -360,17 +356,15 @@ function StudentUpload() {
             onValueChange={setPassport}
           />
 
-          {!isStpApplication && (
-            <StudentFileUploaderDialog
-              formState={formState}
-              setFormState={setFormState}
-              label="Singapore Pass"
-              form={form}
-              name="pass"
-              value={pass}
-              onValueChange={setPass}
-            />
-          )}
+          <StudentFileUploaderDialog
+            formState={formState}
+            setFormState={setFormState}
+            label="Singapore Pass"
+            form={form}
+            name="pass"
+            value={pass}
+            onValueChange={setPass}
+          />
         </div>
 
         {applicationTypes.includes(stpApplicationType) && (

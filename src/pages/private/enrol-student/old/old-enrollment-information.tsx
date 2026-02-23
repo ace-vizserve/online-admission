@@ -28,6 +28,7 @@ import {
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
 } from "@/data";
+import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn, getNextGradeLevel } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
@@ -110,6 +111,18 @@ function OldEnrollmentInformation() {
       form.trigger();
     }
   }, [location.state?.triggerForm]);
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      enrollmentInfo: {
+        ...form.watch(),
+      },
+    });
+  }, [debouncedValues]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
     if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {

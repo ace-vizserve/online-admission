@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, maritalStatuses } from "@/data";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import { Check, Globe, Info, PlusCircle, Save, Trash2 } from "lucide-react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -43,6 +45,21 @@ function StudentAddressContact() {
         : [],
     },
   });
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      studentInfo: {
+        ...formState.studentInfo!,
+        addressContact: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
 
   const { append, fields, remove } = useFieldArray({
     control: form.control,

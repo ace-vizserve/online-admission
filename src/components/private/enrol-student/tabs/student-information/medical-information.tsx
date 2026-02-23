@@ -6,10 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { medicalConditions } from "@/data";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { MedicalChecklistFormValues, medicalChecklistSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ClipboardList, Info, Pill, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -22,8 +24,24 @@ export default function MedicalInformationSection() {
     resolver: zodResolver(medicalChecklistSchema),
     defaultValues: {
       ...formState.studentInfo?.medicalInformation,
+      paracetamolConsent: formState.studentInfo?.medicalInformation?.paracetamolConsent ?? false,
     },
   });
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      studentInfo: {
+        ...formState.studentInfo!,
+        medicalInformation: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
 
   const watchChecklist = form.watch("medicalChecklist");
   const isChecked = (id: ConditionId) => !!watchChecklist?.[id as keyof typeof watchChecklist];
@@ -125,7 +143,7 @@ export default function MedicalInformationSection() {
             </div>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid md:grid-cols-2 gap-3">
             {medicalConditions.map((condition) => (
               <div key={condition.id}>
                 <label

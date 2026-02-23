@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Baby, CalendarIcon, Info, MinusCircle, PlusCircle, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -25,6 +27,21 @@ function SiblingInformation() {
       ...formState.familyInfo?.siblingsInfo,
     },
   });
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo!,
+        siblingsInfo: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
 
   const { append, fields, remove } = useFieldArray({
     control: form.control,
