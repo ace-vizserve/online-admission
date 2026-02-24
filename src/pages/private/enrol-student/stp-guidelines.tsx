@@ -17,7 +17,7 @@ import {
   ReceiptText,
   ShieldCheck,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 function STPGuidelines() {
@@ -33,7 +33,13 @@ function STPGuidelines() {
   const { academicYear } = useSelectAcademicYear();
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { enroleeType } = state;
+  const { enroleeType, isOpenHouseRegistration } = state;
+
+  useEffect(() => {
+    if (!isOpenHouseRegistration) return;
+    setPreCourseAnswer("Yes");
+    setPreCourseDate(new Date());
+  }, [isOpenHouseRegistration]);
 
   const canContinue =
     icaAcknowledged && feesAcknowledged && preCourseAnswer && (preCourseAnswer === "No" || !!preCourseDate);
@@ -41,6 +47,11 @@ function STPGuidelines() {
   const phone = "+65 8200 0062";
 
   function redirect() {
+    if (enroleeType === "New" && isOpenHouseRegistration) {
+      navigate("/open-house/account-info");
+      return;
+    }
+
     if (enroleeType === "New") {
       navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
       return;
@@ -235,97 +246,101 @@ function STPGuidelines() {
 
           {/* 2. Pre-Course Counselling Section */}
           <div className="mt-8 rounded-2xl bg-white border border-amber-200 p-8 space-y-6 shadow-sm">
-            <div className="flex items-center gap-3">
-              <Handshake className="size-6 text-amber-700" />
-              <h2 className="text-xl font-bold text-amber-700">Pre-Course Counselling Acknowledgement</h2>
-            </div>
-
-            <p className="text-sm text-amber-700 font-medium leading-relaxed">
-              Before enrolment, HFSE provides <strong>Pre-Course Counselling</strong> on course information, fees,
-              refund policy, Student's Pass procedures, and key regulations. Please confirm whether you have already
-              completed and signed the Pre-Course Counselling Acknowledgement Form.
-            </p>
-
-            <div className="flex flex-wrap gap-6 pt-2">
-              <label className="flex gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="preCourseSigned"
-                  value="Yes"
-                  checked={preCourseAnswer === "Yes"}
-                  onChange={() => setPreCourseAnswer("Yes")}
-                  className="size-5 accent-green-700"
-                />
-                <span
-                  className={cn("text-sm font-medium text-slate-600 hover:text-slate-900", {
-                    "text-slate-900 font-semibold": preCourseAnswer === "Yes",
-                  })}>
-                  Yes, I have completed Pre-Course Counselling and signed the acknowledgement form.
-                </span>
-              </label>
-
-              <label className="flex gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="preCourseSigned"
-                  value="No"
-                  checked={preCourseAnswer === "No"}
-                  onChange={() => {
-                    setPreCourseAnswer("No");
-                    setPreCourseDate(undefined);
-                  }}
-                  className="size-5 accent-green-700"
-                />
-                <span
-                  className={cn("text-sm font-medium text-slate-600 hover:text-slate-900", {
-                    "text-slate-900 font-semibold": preCourseAnswer === "No",
-                  })}>
-                  No, I have not completed Pre-Course Counselling yet.
-                </span>
-              </label>
-            </div>
-
-            {preCourseAnswer === "Yes" && (
-              <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center gap-6 animate-in fade-in slide-in-from-top-2">
-                <p className="text-sm font-semibold text-red-600">
-                  *Select the date you signed the Pre-Course Counselling Acknowledgement
-                </p>
-                <Popover open={open} onOpenChange={setOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full md:w-48 justify-between">
-                      {preCourseDate ? preCourseDate.toLocaleDateString("en-SG") : "Pick a date"}
-                      <ChevronDownIcon className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0">
-                    <PreCourseCalendar
-                      className={"w-full"}
-                      mode="single"
-                      disabled={{
-                        after: new Date(),
-                      }}
-                      selected={preCourseDate}
-                      onSelect={(d) => {
-                        setPreCourseDate(d);
-                        setOpen(false);
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
-            {preCourseAnswer === "No" && (
-              <div className="flex flex-col gap-3 p-5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 shadow-sm animate-in fade-in slide-in-from-top-2">
+            {!isOpenHouseRegistration && (
+              <>
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-6 h-6" />
-                  <h3 className="text-sm font-semibold">Important Notice</h3>
+                  <Handshake className="size-6 text-amber-700" />
+                  <h2 className="text-xl font-bold text-amber-700">Pre-Course Counselling Acknowledgement</h2>
                 </div>
-                <p className="font-medium text-sm leading-relaxed">
-                  Our Admissions Officer will reach out to schedule a <strong>Pre‑Course Counselling session</strong>.
-                  You can continue with the online enrolment now, but the counselling must be completed and acknowledged
-                  before your child begins the course.
+
+                <p className="text-sm text-amber-700 font-medium leading-relaxed">
+                  Before enrolment, HFSE provides <strong>Pre-Course Counselling</strong> on course information, fees,
+                  refund policy, Student's Pass procedures, and key regulations. Please confirm whether you have already
+                  completed and signed the Pre-Course Counselling Acknowledgement Form.
                 </p>
-              </div>
+
+                <div className="flex flex-wrap gap-6 pt-2">
+                  <label className="flex gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="preCourseSigned"
+                      value="Yes"
+                      checked={preCourseAnswer === "Yes"}
+                      onChange={() => setPreCourseAnswer("Yes")}
+                      className="size-5 accent-green-700"
+                    />
+                    <span
+                      className={cn("text-sm font-medium text-slate-600 hover:text-slate-900", {
+                        "text-slate-900 font-semibold": preCourseAnswer === "Yes",
+                      })}>
+                      Yes, I have completed Pre-Course Counselling and signed the acknowledgement form.
+                    </span>
+                  </label>
+
+                  <label className="flex gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="preCourseSigned"
+                      value="No"
+                      checked={preCourseAnswer === "No"}
+                      onChange={() => {
+                        setPreCourseAnswer("No");
+                        setPreCourseDate(undefined);
+                      }}
+                      className="size-5 accent-green-700"
+                    />
+                    <span
+                      className={cn("text-sm font-medium text-slate-600 hover:text-slate-900", {
+                        "text-slate-900 font-semibold": preCourseAnswer === "No",
+                      })}>
+                      No, I have not completed Pre-Course Counselling yet.
+                    </span>
+                  </label>
+                </div>
+
+                {preCourseAnswer === "Yes" && (
+                  <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center gap-6 animate-in fade-in slide-in-from-top-2">
+                    <p className="text-sm font-semibold text-red-600">
+                      *Select the date you signed the Pre-Course Counselling Acknowledgement
+                    </p>
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full md:w-48 justify-between">
+                          {preCourseDate ? preCourseDate.toLocaleDateString("en-SG") : "Pick a date"}
+                          <ChevronDownIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <PreCourseCalendar
+                          className={"w-full"}
+                          mode="single"
+                          disabled={{
+                            after: new Date(),
+                          }}
+                          selected={preCourseDate}
+                          onSelect={(d) => {
+                            setPreCourseDate(d);
+                            setOpen(false);
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+                {preCourseAnswer === "No" && (
+                  <div className="flex flex-col gap-3 p-5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="w-6 h-6" />
+                      <h3 className="text-sm font-semibold">Important Notice</h3>
+                    </div>
+                    <p className="font-medium text-sm leading-relaxed">
+                      Our Admissions Officer will reach out to schedule a{" "}
+                      <strong>Pre‑Course Counselling session</strong>. You can continue with the online enrolment now,
+                      but the counselling must be completed and acknowledged before your child begins the course.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="text-center space-y-6 pt-8">

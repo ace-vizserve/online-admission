@@ -3,14 +3,15 @@ import { sendEmailNotification } from "@/actions/send-email-notification";
 import InputWithIcon from "@/components/private/student-profile/input-with-icon";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { maritalStatuses, religions } from "@/data";
+import { applicationTypes, maritalStatuses, religions } from "@/data";
 import useSession from "@/hooks/use-session";
 import { cn, getChangedKeys } from "@/lib/utils";
 import { Student } from "@/types";
@@ -26,6 +27,8 @@ import {
   Cake,
   CalendarDays,
   CalendarIcon,
+  Check,
+  FileText,
   Globe,
   HeartHandshake,
   Languages,
@@ -33,14 +36,16 @@ import {
   MapPin,
   Phone,
   PhoneCall,
+  PlusCircle,
   Save,
   Smile,
+  Trash2,
   User,
   Users,
   VenetianMask,
 } from "lucide-react";
 import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
@@ -62,7 +67,7 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
             "w-full md:max-w-xs flex items-center justify-between gap-4 rounded-xl border p-4 transition-all duration-200",
             editMode
               ? "bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20"
-              : "bg-primary/5 border-border hover:bg-primary/10"
+              : "bg-primary/5 border-border hover:bg-primary/10",
           )}>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
@@ -111,8 +116,17 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
   const academicYear = searchParams.get("academicYear");
   const params = useParams();
   const queryClient = useQueryClient();
-  const { nationality, middleName, birthDay, gender, contactPersonNumber, homePhone, postalCode, religionOther } =
-    studentInformation;
+  const {
+    nationality,
+    middleName,
+    birthDay,
+    gender,
+    contactPersonNumber,
+    homePhone,
+    postalCode,
+    religionOther,
+    residenceHistory,
+  } = studentInformation;
   const [isOtherReligion, setIsOtherReligion] = useState<boolean>(religionOther ? true : false);
 
   const form = useForm<StudentAddressContactAndInformationSchema>({
@@ -123,6 +137,7 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
       contactPersonNumber: String(contactPersonNumber),
       homePhone: String(homePhone),
       postalCode: String(postalCode),
+      residenceHistory,
     },
   });
 
@@ -156,7 +171,14 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
     },
   });
 
+  const { append, fields, remove } = useFieldArray({
+    control: form.control,
+    name: "residenceHistory",
+  });
+
   const age = differenceInYears(new Date(), birthDay);
+
+  const isStpApplication = applicationTypes.includes(studentInformation.stpApplicationType || "");
 
   function onSubmit(values: StudentAddressContactAndInformationSchema) {
     if (values.birthDay) {
@@ -578,6 +600,192 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
           </div>
         </section>
 
+        {isStpApplication && (
+          <>
+            <section className="space-y-8">
+              <SectionHeader title="Residence History" icon={<Globe className="size-5 text-indigo-500" />} />
+              {fields.map((field, idx) => (
+                <Card
+                  key={field.id}
+                  className="py-0 relative overflow-hidden border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md rounded-[2rem]">
+                  {/* Decorative Index Header */}
+                  <CardHeader className="bg-slate-50/80 px-8 !pt-6 border-b border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-black">
+                        {idx + 1}
+                      </div>
+                      <CardTitle className="text-lg font-bold text-slate-800">Residence History</CardTitle>
+                    </div>
+
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-8 px-3 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                        onClick={() => remove(idx)}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        <span className="text-xs font-black uppercase tracking-widest">Remove</span>
+                      </Button>
+                    )}
+                  </CardHeader>
+
+                  <CardContent className="p-8 md:p-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                      {/* Country */}
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${idx}.country`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Country</FormLabel>
+                            <FormControl>
+                              <InputWithIcon
+                                svgIcon={<Globe className="text-muted-foreground size-4" />}
+                                placeholder="e.g. Philippines"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* City or Town */}
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${idx}.cityOrTown`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>City or Town</FormLabel>
+                            <FormControl>
+                              <InputWithIcon
+                                svgIcon={<MapPin className="text-muted-foreground size-4" />}
+                                placeholder="e.g. Makati City"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* From Year */}
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${idx}.fromYear`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Year you moved in</FormLabel>
+                            <FormControl>
+                              <InputWithIcon
+                                svgIcon={<CalendarIcon className="text-muted-foreground size-4" />}
+                                placeholder="YYYY"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.valueAsNumber || e.target.value)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* To Year */}
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${idx}.toYear`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Year you moved out</FormLabel>
+                            <div className="flex flex-row items-center gap-3">
+                              <div className="flex-1">
+                                <FormControl>
+                                  <InputWithIcon
+                                    svgIcon={<CalendarIcon className="text-muted-foreground size-4" />}
+                                    disabled={field.value === "Present"}
+                                    placeholder={field.value === "Present" ? "Current Residence" : "YYYY"}
+                                    value={field.value === "Present" ? "" : field.value || ""}
+                                    onChange={(e) => field.onChange(e.target.valueAsNumber || e.target.value)}
+                                  />
+                                </FormControl>
+                              </div>
+
+                              <label
+                                className={cn(
+                                  "flex items-center gap-2 h-10 px-2 rounded-lg border-2 cursor-pointer transition-all duration-300 select-none whitespace-nowrap",
+                                  field.value === "Present"
+                                    ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200"
+                                    : "bg-white border-slate-200 text-slate-500 hover:border-slate-300",
+                                )}>
+                                <div className="relative flex items-center justify-center">
+                                  <input
+                                    type="checkbox"
+                                    className="sr-only"
+                                    checked={field.value === "Present"}
+                                    onChange={() => field.onChange(field.value === "Present" ? "" : "Present")}
+                                  />
+                                  <div
+                                    className={cn(
+                                      "size-4 rounded border flex items-center justify-center transition-colors",
+                                      field.value === "Present" ? "bg-white border-white" : "border-slate-300 bg-white",
+                                    )}>
+                                    {field.value === "Present" && (
+                                      <Check className="size-3 text-emerald-600 stroke-[4]" />
+                                    )}
+                                  </div>
+                                </div>
+
+                                <span className="text-[11px] font-black uppercase tracking-widest">Still here?</span>
+                              </label>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${idx}.purposeOfStay`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-1 md:col-span-2">
+                            <FormLabel>Purpose of Stay</FormLabel>
+                            <FormControl>
+                              <InputWithIcon
+                                svgIcon={<FileText className="text-muted-foreground size-4" />}
+                                placeholder="e.g. Study, Work, Family, Tourism"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>Briefly describe the reason for staying in this location.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </section>
+
+            <div className="flex pt-4">
+              <Button
+                type="button"
+                className="group !h-14 !px-8 rounded-xl"
+                onClick={() =>
+                  append({
+                    purposeOfStay: "",
+                    country: "",
+                    cityOrTown: "",
+                    fromYear: undefined as unknown as number,
+                    toYear: undefined as unknown as number,
+                  })
+                }>
+                <PlusCircle className="mr-2 size-5 transition-transform group-hover:rotate-90" />
+                <span className="font-black uppercase tracking-widest text-xs">Add another residence</span>
+              </Button>
+            </div>
+          </>
+        )}
+
         <div className="pt-4">
           <Button
             disabled={isPending}
@@ -624,6 +832,8 @@ function ViewStudentInformation({ studentInformation }: { studentInformation: St
   const age = differenceInYears(new Date(), new Date(birthDay));
   const maskedNric = nric ? nric.slice(0, 3) + "****" + nric.slice(7) : "";
 
+  const isStpApplication = applicationTypes.includes(studentInformation.stpApplicationType || "");
+
   return (
     <div className="grid grid-cols-1 gap-12">
       {/* Section: Personal Identity */}
@@ -668,6 +878,25 @@ function ViewStudentInformation({ studentInformation }: { studentInformation: St
           />
         </div>
       </section>
+
+      {isStpApplication && (
+        <section className="space-y-8">
+          <SectionHeader title="Residence History" icon={<Globe className="size-5 text-indigo-500" />} />
+          {studentInformation.residenceHistory?.map((residence, idx) => (
+            <div key={idx} className="space-y-4">
+              <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+                <DataField label="Country" value={residence.country} icon={<Globe />} />
+                <DataField label="City / Town" value={residence.cityOrTown} icon={<MapPin />} />
+              </div>
+              <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+                <DataField label="From Year" value={String(residence.fromYear)} icon={<CalendarIcon />} />
+                <DataField label="To Year" value={String(residence.toYear)} icon={<CalendarIcon />} />
+              </div>
+              <DataField label="Purpose of Stay" value={residence.purposeOfStay} icon={<FileText />} />
+            </div>
+          ))}
+        </section>
+      )}
     </div>
   );
 }

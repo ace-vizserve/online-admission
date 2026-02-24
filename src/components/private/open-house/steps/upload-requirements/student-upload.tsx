@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
+import { applicationTypes } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import {
@@ -10,7 +11,9 @@ import {
   studentUploadRequirementsSchema,
   StudentUploadRequirementsSchema,
 } from "@/zod-schema";
+import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { differenceInYears } from "date-fns";
 import { AlertCircle, Clock, Info, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -29,6 +32,18 @@ function StudentUpload() {
   const [medicalExam, setMedicalExam] = useState<File[] | null>(null);
   const [passport, setPassport] = useState<File[] | null>(null);
   const [pass, setPass] = useState<File[] | null>(null);
+  const [financialSupportDocs, setFinancialSupportDocs] = useState<File[] | null>(null);
+  const [icaPhoto, setIcaPhoto] = useState<File[] | null>(null);
+  const [vaccinationInformation, setVaccinationInformation] = useState<File[] | null>(null);
+
+  const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+  const passType = usePassTypeStore((state) => state.passType);
+  const birthDate = formState.studentInfo?.studentDetails.birthDay;
+  const studentAge = birthDate ? differenceInYears(new Date(), new Date(birthDate)) : undefined;
+  const showVaccinationInformation =
+    studentAge !== undefined && studentAge <= 12 && applicationTypes.includes(stpApplicationType);
+
+  const isStpApplication = stpApplicationType === "New Student Pass Application";
 
   const form = useForm<StudentUploadRequirementsSchema>({
     resolver: zodResolver(studentUploadRequirementsSchema),
@@ -74,6 +89,23 @@ function StudentUpload() {
   });
 
   function onSubmit(values: StudentUploadRequirementsSchema) {
+    const isPassTypeInCorrect = !isStpApplication && values.passType !== passType;
+
+    if (isPassTypeInCorrect) {
+      form.setError("pass", {
+        type: "manual",
+        message: "",
+      });
+      form.setError("passType", {
+        type: "manual",
+        message: "Selected pass type does not match the student’s current pass.",
+      });
+      toast.error("Pass type mismatch!", {
+        description: "The selected pass type does not match what the student currently holds.",
+      });
+      return;
+    }
+
     const isPassExpiryNull = values.passExpiry?.getFullYear() === 1970 && values.passExpiry?.getTime() === 0;
 
     const isPassportExpiryNull =
@@ -316,6 +348,52 @@ function StudentUpload() {
             onValueChange={setPass}
           />
         </div>
+
+        {applicationTypes.includes(stpApplicationType) && (
+          <>
+            <br />
+            <br />
+            <Separator />
+            <br />
+            <br />
+            <h3 className="text-2xl font-black tracking-tight text-primary text-center">
+              Documents for {stpApplicationType}{" "}
+            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+              <StudentFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="Photo for ICA Student's Pass"
+                form={form}
+                name="icaPhoto"
+                value={icaPhoto}
+                onValueChange={setIcaPhoto}
+              />
+
+              <StudentFileUploaderDialog
+                formState={formState}
+                setFormState={setFormState}
+                label="Financial Support Documents"
+                form={form}
+                name="financialSupportDocs"
+                value={financialSupportDocs}
+                onValueChange={setFinancialSupportDocs}
+              />
+
+              {showVaccinationInformation && (
+                <StudentFileUploaderDialog
+                  formState={formState}
+                  setFormState={setFormState}
+                  label="Vaccination Information"
+                  form={form}
+                  name="vaccinationInformation"
+                  value={vaccinationInformation}
+                  onValueChange={setVaccinationInformation}
+                />
+              )}
+            </div>
+          </>
+        )}
 
         <br />
         <br />

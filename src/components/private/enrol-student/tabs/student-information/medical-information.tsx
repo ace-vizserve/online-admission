@@ -44,10 +44,11 @@ export default function MedicalInformationSection() {
   }, [debouncedValues]);
 
   const watchChecklist = form.watch("medicalChecklist");
-  const isChecked = (id: ConditionId) => !!watchChecklist?.[id as keyof typeof watchChecklist];
   const hasCondition = (conditionId: ConditionId) => form.watch(`medicalChecklist.${conditionId}` as any) === true;
 
   const handleConditionChange = (id: ConditionId, checked: boolean) => {
+    const wasChecked = hasCondition(id);
+
     if (id === "none") {
       if (checked) {
         form.setValue("medicalChecklist", {
@@ -58,24 +59,36 @@ export default function MedicalInformationSection() {
           diabetes: false,
           eczema: false,
           foodAllergies: false,
+          foodAllergyDetails: "",
           other: false,
           none: true,
           allergyDetails: "",
-          otherDetails: "",
+          otherMedicalConditions: "",
         });
       } else {
         form.setValue("medicalChecklist.none", false);
       }
       return;
     }
-    if (watchChecklist?.none) form.setValue("medicalChecklist.none", false);
+
+    if (watchChecklist?.none) {
+      form.setValue("medicalChecklist.none", false);
+    }
+
     form.setValue(`medicalChecklist.${id}` as any, checked);
 
-    if (!checked) {
-      if ((id === "allergies" || id === "foodAllergies") && !isChecked("allergies") && !isChecked("foodAllergies")) {
-        form.setValue("medicalChecklist.allergyDetails", "");
+    if (wasChecked && !checked) {
+      switch (id) {
+        case "allergies":
+          form.setValue("medicalChecklist.allergyDetails", "");
+          break;
+        case "foodAllergies":
+          form.setValue("medicalChecklist.foodAllergyDetails", "");
+          break;
+        case "other":
+          form.setValue("medicalChecklist.otherMedicalConditions", "");
+          break;
       }
-      if (id === "other") form.setValue("medicalChecklist.otherDetails", "");
     }
   };
 
@@ -174,7 +187,11 @@ export default function MedicalInformationSection() {
                       <FormField
                         control={form.control}
                         name={
-                          condition.id === "other" ? "medicalChecklist.otherDetails" : "medicalChecklist.allergyDetails"
+                          condition.id === "other"
+                            ? "medicalChecklist.otherMedicalConditions"
+                            : condition.id === "foodAllergies"
+                              ? "medicalChecklist.foodAllergyDetails"
+                              : "medicalChecklist.allergyDetails"
                         }
                         render={({ field }) => (
                           <FormItem>
@@ -186,7 +203,7 @@ export default function MedicalInformationSection() {
                                 className="min-h-[100px] border-slate-200 focus:ring-primary/10 focus:border-primary text-sm bg-white/50"
                               />
                             </FormControl>
-                            <FormMessage className="text-[10px] font-bold uppercase" />
+                            <FormMessage />
                           </FormItem>
                         )}
                       />

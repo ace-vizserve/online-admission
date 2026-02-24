@@ -184,6 +184,8 @@ export function extractStudentInfo(studentInformation: Student[]) {
     religion: info.religion,
     religionOther: info.religionOther ?? null,
     enroleePhoto: info.enroleePhoto,
+    residenceHistory: info.residenceHistory,
+    stpApplicationType: info.stpApplicationType,
   };
 
   return studentInfo;

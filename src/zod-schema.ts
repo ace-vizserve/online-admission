@@ -234,6 +234,7 @@ export const studentAddressContactSchema = z
     residenceHistory: z
       .array(
         z.object({
+          purposeOfStay: z.string().min(3, { message: "Purpose of stay is required" }),
           country: z.string().min(1, { message: "Country is required" }).transform(capitalizeWords),
           cityOrTown: z.string().min(1, { message: "City or town is required" }).transform(capitalizeWords),
           fromYear: z.coerce
@@ -283,7 +284,7 @@ export const medicalChecklistSchema = z
       none: z.boolean().default(false).optional(),
       allergyDetails: z.string().optional(),
       foodAllergyDetails: z.string().optional(),
-      otherDetails: z.string().optional(),
+      otherMedicalConditions: z.string().optional(),
     }),
     paracetamolConsent: z.boolean(),
   })
@@ -306,16 +307,16 @@ export const medicalChecklistSchema = z
       });
     }
 
-    if (c.other && !c.otherDetails?.trim()) {
+    if (c.other && !c.otherMedicalConditions?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["medicalChecklist", "otherDetails"],
+        path: ["medicalChecklist", "otherMedicalConditions"],
         message: "Please describe the medical condition",
       });
     }
 
     const anySelected = Object.entries(c)
-      .filter(([key]) => !["allergyDetails", "otherDetails"].includes(key))
+      .filter(([key]) => !["allergyDetails", "otherMedicalConditions"].includes(key))
       .some(([, val]) => val === true);
 
     if (!anySelected) {

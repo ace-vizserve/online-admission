@@ -27,7 +27,7 @@ type Feedback = {
   feedbackConsent: boolean;
 };
 
-const ParentFeedbackSurvey = () => {
+const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -53,7 +53,12 @@ const ParentFeedbackSurvey = () => {
     },
     onSuccess() {
       setOpen(false);
-      navigate("/admission/dashboard");
+
+      if (redirectTo) {
+        navigate("/login");
+      } else {
+        navigate("/admission/dashboard");
+      }
     },
   });
 

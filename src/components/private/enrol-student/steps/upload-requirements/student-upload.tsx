@@ -161,10 +161,6 @@ function StudentUpload() {
     if (formState.uploadRequirements?.parentGuardianUploadRequirements.isValid) {
       setCompletedTabs("/enrol-student/new/upload-requirements");
     }
-
-    toast.success("Student documents saved!", {
-      description: "You're now ready to upload the Parent/Guardian documents",
-    });
   }
 
   return (

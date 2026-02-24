@@ -39,6 +39,14 @@ export type EnrolledStudent = {
   pass?: string;
 };
 
+type ResidenceHistory = {
+  purposeOfStay: string;
+  country: string;
+  cityOrTown: string;
+  fromYear: number;
+  toYear: number | "Present";
+};
+
 export type Student = {
   id: number;
   created_at: string;
@@ -63,6 +71,8 @@ export type Student = {
   religion: string;
   religionOther?: string;
   enroleePhoto: string;
+  stpApplicationType?: string;
+  residenceHistory?: ResidenceHistory[];
 };
 
 export type Mother = {
@@ -232,6 +242,22 @@ export type StudentDetails = {
 };
 
 export type StudentDocument = {
+  studentPassApplicationDocuments:
+    | [
+        {
+          icaPhoto: string | null;
+          icaPhotoStatus: string | null;
+        },
+        {
+          vaccinationInformation: string | null;
+          vaccinationInformationStatus: string | null;
+        },
+        {
+          financialSupportDocs: string | null;
+          financialSupportDocsStatus: string | null;
+        },
+      ]
+    | null;
   documentsThatExpire: [
     {
       passport: string | null;
@@ -568,4 +594,10 @@ export type ParentGuardianReuploadProps = {
   academicYear: string;
   documentType: string;
   payload: Record<string, unknown>;
+};
+
+export type PreCourseDetails = {
+  preCourseAnswer: string;
+  preCourseDate?: Date;
+  preCourseAcknowledgedAt: Date;
 };

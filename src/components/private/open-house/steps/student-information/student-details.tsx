@@ -86,11 +86,7 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
       description: "You're now ready to fill out the Address & Contact tab.",
     });
 
-    const isValid = Boolean(formState.studentInfo?.addressContact?.isValid);
-
-    if (!isValid) {
-      setTabOpened("address-contact");
-    }
+    setTabOpened("address-contact");
   }
 
   return (

@@ -42,6 +42,7 @@ import OpenHouseFamilyInformation from "@/pages/private/open-house/application-f
 import OpenHouseStudentInformation from "@/pages/private/open-house/application-form/open-house-student-information";
 import OpenHouseUploadRequirements from "@/pages/private/open-house/application-form/open-house-upload-requirements";
 import OpenHouseLanding from "@/pages/private/open-house/open-house-landing";
+import RegistrationSubmitted from "@/pages/private/open-house/registration-submitted";
 import PendingTasks from "@/pages/private/pending-tasks";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentPhoto from "@/pages/private/student-photo";
@@ -111,6 +112,28 @@ function AppRoutes() {
             <UnauthenticatedGuard>
               <ErrorBoundary fallback={<ErrorPage />}>
                 <OpenHouseLanding />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
+          }
+        />
+
+        <Route
+          path="/open-house/residency-status"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <ResidencyStatus />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
+          }
+        />
+
+        <Route
+          path="/open-house/stp-guidelines"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <STPGuidelines />
               </ErrorBoundary>
             </UnauthenticatedGuard>
           }
@@ -441,6 +464,17 @@ function AppRoutes() {
                 <ApplicationSubmitted />
               </ErrorBoundary>
             </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/open-house-registration-submitted"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <RegistrationSubmitted />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
           }
         />
         <Route path="*" element={<NotFound />} />

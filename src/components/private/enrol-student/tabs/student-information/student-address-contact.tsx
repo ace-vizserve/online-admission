@@ -407,6 +407,21 @@ function StudentAddressContact() {
                           </FormItem>
                         )}
                       />
+
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${index}.purposeOfStay`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-1 md:col-span-2">
+                            <FormLabel>Purpose of Stay</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Study, Work, Family, Tourism" {...field} />
+                            </FormControl>
+                            <FormDescription>Briefly describe the reason for staying in this location.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -418,6 +433,7 @@ function StudentAddressContact() {
                   className="group !h-14 !px-8 rounded-xl"
                   onClick={() =>
                     append({
+                      purposeOfStay: "",
                       country: "",
                       cityOrTown: "",
                       fromYear: undefined as unknown as number,

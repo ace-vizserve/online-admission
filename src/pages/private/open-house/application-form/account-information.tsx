@@ -1,7 +1,7 @@
 import PageMetaData from "@/components/page-metadata";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -101,10 +101,15 @@ function AccountInformation() {
       <PageMetaData title={title} description={description} />
       <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card className="w-full mx-auto border-none shadow-none">
-          <CardHeader>
-            <CardTitle className="text-2xl font-black tracking-tight text-primary text-center">
-              Input the necessary account information
-            </CardTitle>
+          <CardHeader className="flex flex-col items-center text-center space-y-4">
+            <div className="space-y-2">
+              <CardTitle className="text-3xl md:text-4xl font-black tracking-tight text-primary leading-tight">
+                Parent Account Setup
+              </CardTitle>
+              <CardDescription className="font-semibold text-slate-500 max-w-sm mx-auto leading-relaxed">
+                Provide your contact details to secure your registration and access the parent portal
+              </CardDescription>
+            </div>
           </CardHeader>
           <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
             <Info className="h-4 w-4 !text-blue-500" />

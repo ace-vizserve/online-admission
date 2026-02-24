@@ -89,7 +89,7 @@ export default function StudentResidencyPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const { enroleeType, enroleeNumber, currentPass } = state;
+  const { enroleeType, enroleeNumber, currentPass, isOpenHouseRegistration } = state;
 
   const isNonSTP = ["Long Term Visit Pass", "Dependent Pass"].includes(currentPass);
   const isSTP = currentPass === "Student Pass";
@@ -195,6 +195,16 @@ export default function StudentResidencyPage() {
   }, [selected, setPassType, setStpApplicationType, applicationTypes, passType]);
 
   function redirect() {
+    if (isOpenHouseRegistration) {
+      navigate("/open-house/stp-guidelines", {
+        state: {
+          enroleeType,
+          isOpenHouseRegistration,
+        },
+      });
+      return;
+    }
+
     if ((isNonSTP || isLocal) && passType && passType !== currentPass) {
       toast.error("Selected Pass Type Does Not Match!", {
         description: "The selected pass type does not match what the student currently holds.",

@@ -30,7 +30,13 @@ import {
 import OpenHouseContextProvider, { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
 import useSession from "@/hooks/use-session";
 import { OpenHouseFormState } from "@/types";
-import { useEnrolNewStudentTabStateStore, useSelectAcademicYear, useSelectOpenHouseInstitution } from "@/zustand-store";
+import {
+  useEnrolNewStudentTabStateStore,
+  usePassTypeStore,
+  usePreCourseAcknowledgementStore,
+  useSelectAcademicYear,
+  useSelectOpenHouseInstitution,
+} from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
@@ -104,7 +110,8 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
   const queryClient = useQueryClient();
   const { session } = useSession();
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
-
+  const preCourseAnswer = usePreCourseAcknowledgementStore((state) => state.preCourseAnswer) as string;
+  const preCourseDate = usePreCourseAcknowledgementStore((state) => state.preCourseDate) as Date;
   const { formState } = useOpenHouseContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async (enrollmentDetails: OpenHouseFormState) => {
@@ -113,10 +120,14 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
       try {
         await userRegister({ firstName, lastName, email, password, relationship, confirmPassword });
 
-        if (institution === "hfse") {
+        if (institution === "vizschool") {
           return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, "", "VizSchool New");
         } else {
-          return await submitEnrollment(enrollmentDetails, academicYear);
+          return await submitEnrollment(enrollmentDetails, academicYear, {
+            preCourseAnswer,
+            preCourseDate,
+            preCourseAcknowledgedAt: new Date(),
+          });
         }
       } catch (error) {
         const err = error as Error;
@@ -124,10 +135,12 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
       }
     },
     onSuccess(data) {
-      navigate("/application-submitted", {
+      if (!data?.generatedEnroleeNumber) return;
+
+      navigate("/open-house-registration-submitted", {
         state: {
           academicYear,
-          enroleeNumber: data?.generatedEnroleeNumber,
+          enroleeNumber: data.generatedEnroleeNumber,
         },
       });
       queryClient.invalidateQueries({
@@ -237,6 +250,8 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
 function ExitApplicationDialog() {
   const { clearState } = useOpenHouseContext();
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+  const clearPassType = usePassTypeStore((state) => state.clearState);
+  const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const clearInstitution = useSelectOpenHouseInstitution((state) => state.clearState);
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
 
@@ -245,10 +260,12 @@ function ExitApplicationDialog() {
   });
 
   function exitApplication() {
-    clearInstitution();
     clearState();
     clearAcademicYearState();
     clearEnrolNewStudentTabState();
+    clearPassType();
+    clearPreCourse();
+    clearInstitution();
     sessionStorage.clear();
   }
 

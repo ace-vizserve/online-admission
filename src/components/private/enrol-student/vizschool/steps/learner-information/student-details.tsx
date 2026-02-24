@@ -87,13 +87,8 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
         toast.success("Student details saved!", {
           description: "You're now ready to fill out the Address & Contact tab.",
         });
-
-        const isValid = Boolean(formState.studentInfo?.addressContact.isValid);
-
-        if (!isValid) {
-          setTabOpened("address-contact");
-        }
       })();
+      setTabOpened("address-contact");
     }
   }, [form.formState.isSubmitSuccessful]);
 

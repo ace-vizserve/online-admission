@@ -19,7 +19,12 @@ export default function OpenHouseLanding() {
   const navigate = useNavigate();
 
   const handleProceed = () => {
-    navigate("/open-house/account-info");
+    navigate("/open-house/residency-status", {
+      state: {
+        enroleeType: "New",
+        isOpenHouseRegistration: true,
+      },
+    });
   };
 
   const institutionConfig = {
@@ -86,7 +91,7 @@ export default function OpenHouseLanding() {
         }}
       />
 
-      <div className="animate-in fade-in slide-in-from-top-2 duration-500 min-h-screen flex justify-center items-center bg-[#F2F2F7] text-primary selection:bg-primary/10 py-12 md:py-20">
+      <div className="animate-in fade-in slide-in-from-top-2 duration-500 min-h-screen flex justify-center items-center bg-slate-50 text-primary selection:bg-primary/10 py-12 md:py-20">
         <section className="w-full px-6 overflow-hidden">
           {/* Decorative Background Element */}
           <div className="absolute top-0 right-0 -translate-y-1/2 size-[500px] bg-gradient-to-br from-[#F59E0B]/10 to-[#D97706]/10 rounded-full blur-3xl pointer-events-none" />
@@ -134,7 +139,7 @@ export default function OpenHouseLanding() {
                         <button
                           key={year}
                           type="button"
-                          onClick={() => setAcademicYear(year)}
+                          onClick={() => setAcademicYear(year.padStart(6, "ay"))}
                           className={cn(
                             "relative cursor-pointer h-14 rounded-lg transition-all duration-300 group overflow-hidden",
                             isSelected
