@@ -30,7 +30,7 @@ export default function OpenHouseLanding() {
   const institutionConfig = {
     youngstarters: {
       name: "Youngstarters Open House",
-      subtitle: "Nursery & Kindergarten (18 months - 6 years)",
+      subtitle: "Nursery & Kindergarten (4 - 6 years)",
       icon: GraduationCap,
     },
     hfse: {
