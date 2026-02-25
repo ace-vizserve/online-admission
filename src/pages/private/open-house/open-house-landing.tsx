@@ -132,14 +132,14 @@ export default function OpenHouseLanding() {
                   </label>
 
                   <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 rounded-xl border border-slate-200">
-                    {["2026", "2027"].map((year) => {
+                    {["ay2026", "ay2027"].map((year) => {
                       const isSelected = academicYear === year;
 
                       return (
                         <button
                           key={year}
                           type="button"
-                          onClick={() => setAcademicYear(year.padStart(6, "ay"))}
+                          onClick={() => setAcademicYear(year)}
                           className={cn(
                             "relative cursor-pointer h-14 rounded-lg transition-all duration-300 group overflow-hidden",
                             isSelected
@@ -152,9 +152,9 @@ export default function OpenHouseLanding() {
                                 "text-[10px] uppercase tracking-tighter font-black opacity-60 transition-colors",
                                 isSelected ? "text-primary" : "text-slate-400",
                               )}>
-                              {year === "2026" ? "Current Year" : "Upcoming Year"}
+                              {year === "ay2026" ? "Current Year" : "Upcoming Year"}
                             </span>
-                            <span className="text-base font-black tracking-tight">AY {year}</span>
+                            <span className="text-base font-black tracking-tight">AY {year.replace("ay", "")}</span>
                           </div>
 
                           {/* Active Indicator Pin */}
