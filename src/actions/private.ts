@@ -192,8 +192,13 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    const match = enroleeNumber.match(/E(\d{2})/);
+    if (!match) throw new Error("Invalid enrolee number format");
+
+    const academicYear = `ay20${match[1]}`;
+
     const { data, error: studentEnrollmentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
+      .from(`${academicYear}_enrolment_applications`)
       .select("levelApplied, fatherEmail, guardianEmail")
       .eq("enroleeNumber", enroleeNumber)
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
@@ -210,170 +215,90 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
   }
 }
 
-export async function getStudentDocumentsList(enroleeNumber: string) {
-  if (!enroleeNumber) return [];
-  try {
-    const { data } = await supabase
-      .from("ay2025_enrolment_documents")
-      .select(
-        "medical, medicalStatus, passport, passportStatus, passportExpiry, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus",
-      )
-      .eq("enroleeNumber", enroleeNumber);
-
-    return data ?? [];
-  } catch {
-    return [];
-  }
-}
-
 export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: string }) {
   try {
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const prevYear = new Date().getFullYear() - 1;
-    const currentYear = new Date().getFullYear();
+    const match = enroleeNumber.match(/E(\d{2})/);
+    if (!match) throw new Error("Invalid enrolee number format");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let studentInformation: any[] | null = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let documents: any[] | null = null;
+    const academicYear = `ay20${match[1]}`;
 
-    const { data, error } = await supabase
-      .from(`ay${prevYear}_enrolment_applications`)
+    const APPLICATIONS_TABLE = `${academicYear}_enrolment_applications`;
+    const DOCUMENTS_TABLE = `${academicYear}_enrolment_documents`;
+
+    const { data: studentInformation, error } = await supabase
+      .from(APPLICATIONS_TABLE)
       .select("*")
       .eq("enroleeNumber", enroleeNumber)
       .or(`fatherEmail.eq.${session?.user.email},motherEmail.eq.${session?.user.email}`);
 
     if (error) throw new Error(error.message);
+    if (!studentInformation || studentInformation.length === 0) return null;
 
-    if (data && data.length > 0) {
-      studentInformation = data;
+    // eslint-disable-next-line prefer-const
+    let { data: documents, error: docError } = await supabase
+      .from(DOCUMENTS_TABLE)
+      .select("*")
+      .eq("enroleeNumber", enroleeNumber);
 
-      const docRes = await supabase.from("ay2025_enrolment_documents").select("*").eq("enroleeNumber", enroleeNumber);
-
-      if (docRes.error) throw new Error(docRes.error.message);
-
-      documents = docRes.data;
-    }
-
-    if (documents && documents.length > 0) {
-      const doc = documents[0];
-      const updates: Record<string, unknown> = {};
-      const now = new Date();
-
-      const expiryFields = [
-        { field: "passExpiry", statusField: "passStatus" },
-        { field: "passportExpiry", statusField: "passportStatus" },
-        { field: "motherPassportExpiry", statusField: "motherPassportStatus" },
-        { field: "motherPassExpiry", statusField: "motherPassStatus" },
-        { field: "fatherPassportExpiry", statusField: "fatherPassportStatus" },
-        { field: "fatherPassExpiry", statusField: "fatherPassStatus" },
-        { field: "guardianPassportExpiry", statusField: "guardianPassportStatus" },
-        { field: "guardianPassExpiry", statusField: "guardianPassStatus" },
-      ];
-
-      expiryFields.forEach(({ field, statusField }) => {
-        const expiryDate = doc[field];
-        const isRejected = doc[statusField] === "Rejected";
-        const isToFollow = doc[statusField] === "To follow";
-        const isNull = doc[statusField] == null;
-
-        if (isRejected || isToFollow || isNull) return;
-
-        if (!expiryDate) return;
-
-        const isExpired = isBefore(new Date(expiryDate), now);
-        updates[statusField] = isExpired ? "Expired" : "Valid";
-      });
-
-      if (Object.keys(updates).length > 0) {
-        const { error: updateError } = await supabase
-          .from(`ay${prevYear}_enrolment_documents`)
-          .update(updates)
-          .eq("enroleeNumber", enroleeNumber);
-
-        if (updateError) throw new Error(updateError.message);
-      }
-    }
-
-    if (!studentInformation || studentInformation.length === 0) {
-      const res2026 = await supabase
-        .from(`ay${currentYear}_enrolment_applications`)
-        .select("*")
-        .eq("enroleeNumber", enroleeNumber)
-        .or(`fatherEmail.eq.${session?.user.email},motherEmail.eq.${session?.user.email}`);
-
-      if (res2026.error) throw new Error(res2026.error.message);
-
-      if (!res2026.data || res2026.data.length === 0) return null;
-      studentInformation = res2026.data;
-
-      const docRes2026 = await supabase
-        .from(`ay${currentYear}_enrolment_documents`)
-        .select("*")
-        .eq("enroleeNumber", enroleeNumber);
-
-      if (docRes2026.error) throw new Error(docRes2026.error.message);
-      documents = docRes2026.data;
-    }
+    if (docError) throw new Error(docError.message);
 
     if (!documents || documents.length === 0) {
       documents = [
         {
           idPicture: null,
+          idPictureStatus: null,
           medical: null,
           medicalStatus: null,
           passport: null,
           passportStatus: null,
+          passportExpiry: null,
           birthCert: null,
           birthCertStatus: null,
           pass: null,
           passStatus: null,
+          passExpiry: null,
           educCert: null,
           educCertStatus: null,
         },
       ];
     }
 
-    if (documents && documents.length > 0) {
-      const doc = documents[0];
-      const updates: Record<string, unknown> = {};
-      const now = new Date();
+    const doc = documents[0];
+    const updates: Record<string, unknown> = {};
+    const now = new Date();
 
-      const expiryFields = [
-        { field: "passExpiry", statusField: "passStatus" },
-        { field: "passportExpiry", statusField: "passportStatus" },
-        { field: "motherPassportExpiry", statusField: "motherPassportStatus" },
-        { field: "motherPassExpiry", statusField: "motherPassStatus" },
-        { field: "fatherPassportExpiry", statusField: "fatherPassportStatus" },
-        { field: "fatherPassExpiry", statusField: "fatherPassStatus" },
-        { field: "guardianPassportExpiry", statusField: "guardianPassportStatus" },
-        { field: "guardianPassExpiry", statusField: "guardianPassStatus" },
-      ];
+    const expiryFields = [
+      { field: "passExpiry", statusField: "passStatus" },
+      { field: "passportExpiry", statusField: "passportStatus" },
+      { field: "motherPassportExpiry", statusField: "motherPassportStatus" },
+      { field: "motherPassExpiry", statusField: "motherPassStatus" },
+      { field: "fatherPassportExpiry", statusField: "fatherPassportStatus" },
+      { field: "fatherPassExpiry", statusField: "fatherPassStatus" },
+      { field: "guardianPassportExpiry", statusField: "guardianPassportStatus" },
+      { field: "guardianPassExpiry", statusField: "guardianPassStatus" },
+    ];
 
-      expiryFields.forEach(({ field, statusField }) => {
-        const expiryDate = doc[field];
-        const isRejected = doc[statusField] === "Rejected";
-        const isToFollow = doc[statusField] === "To follow";
-        const isNull = doc[statusField] == null;
+    expiryFields.forEach(({ field, statusField }) => {
+      const expiryDate = doc[field];
+      const status = doc[statusField];
 
-        if (isRejected || isToFollow || isNull) return;
+      if (!expiryDate) return;
+      if (status === "Rejected" || status === "To follow" || status == null) return;
 
-        if (!expiryDate) return;
-        const isExpired = isBefore(new Date(expiryDate), now);
-        updates[statusField] = isExpired ? "Expired" : "Valid";
-      });
+      updates[statusField] = isBefore(new Date(expiryDate), now) ? "Expired" : "Valid";
+    });
 
-      if (Object.keys(updates).length > 0) {
-        const { error: updateError } = await supabase
-          .from(`ay${currentYear}_enrolment_documents`)
-          .update(updates)
-          .eq("enroleeNumber", enroleeNumber);
+    if (Object.keys(updates).length > 0) {
+      const { error: updateError } = await supabase
+        .from(DOCUMENTS_TABLE)
+        .update(updates)
+        .eq("enroleeNumber", enroleeNumber);
 
-        if (updateError) throw new Error(updateError.message);
-      }
+      if (updateError) throw new Error(updateError.message);
     }
 
     const { passportNumber, pass: passType } = studentInformation[0];
@@ -389,12 +314,12 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       medicalStatus,
       passport,
       passportExpiry,
-      passExpiry,
       passportStatus,
       birthCert,
       birthCertStatus,
       pass,
       passStatus,
+      passExpiry,
       educCert,
       educCertStatus,
       motherPassportStatus,
@@ -424,18 +349,9 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       studentDocuments: {
         studentPassApplicationDocuments: applicationTypes.includes(studentInfo.stpApplicationType ?? "")
           ? [
-              {
-                icaPhoto,
-                icaPhotoStatus,
-              },
-              {
-                vaccinationInformation,
-                vaccinationInformationStatus,
-              },
-              {
-                financialSupportDocs,
-                financialSupportDocsStatus,
-              },
+              { icaPhoto, icaPhotoStatus },
+              { vaccinationInformation, vaccinationInformationStatus },
+              { financialSupportDocs, financialSupportDocsStatus },
             ]
           : null,
         documentsThatExpire: [
@@ -454,18 +370,9 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
         ],
         permanentDocuments: [
           { idPicture, idPictureStatus },
-          {
-            medical,
-            medicalStatus,
-          },
-          {
-            birthCert,
-            birthCertStatus,
-          },
-          {
-            educCert,
-            educCertStatus,
-          },
+          { medical, medicalStatus },
+          { birthCert, birthCertStatus },
+          { educCert, educCertStatus },
         ],
       },
       parentGuardianDocuments: {
@@ -483,7 +390,6 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
     toast.error(err.message);
   }
 }
-
 export async function getNewStudentDiscounts(forVizSchool: boolean) {
   try {
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
@@ -556,8 +462,13 @@ export async function getStudentInformation(enroleeNumber: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    const match = enroleeNumber.match(/E(\d{2})/);
+    if (!match) throw new Error("Invalid enrolee number format");
+
+    const academicYear = `ay20${match[1]}`;
+
     const { data: studentInformation, error: studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
+      .from(`${academicYear}_enrolment_applications`)
       .select("*")
       .eq("enroleeNumber", enroleeNumber)
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
@@ -604,111 +515,75 @@ export async function getFamilyInformation(enroleeNumber?: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    if (!session?.user?.email) return;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let familyInformation: any;
+    let familyInformation: any = null;
 
-    let familyInformationQuery = supabase
-      .from("ay2026_enrolment_applications")
-      .select("*")
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+    const academicYears = enroleeNumber
+      ? (() => {
+          const match = enroleeNumber.match(/E(\d{2})/);
+          if (!match) throw new Error("Invalid enrolee number format");
+          return [`ay20${match[1]}`];
+        })()
+      : ["ay2026", "ay2025"]; // fallback order (latest first)
 
-    if (enroleeNumber) {
-      familyInformationQuery = familyInformationQuery.eq("enroleeNumber", enroleeNumber);
-    }
-
-    const { data: ay2026FamilyInformation, error: ay2026FamilyInformationError } = await familyInformationQuery
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (ay2026FamilyInformationError) {
-      throw new Error(ay2026FamilyInformationError.message);
-    }
-
-    if (ay2026FamilyInformation) {
-      familyInformation = ay2026FamilyInformation;
-    } else {
-      let familyInformationQuery = supabase
-        .from("ay2025_enrolment_applications")
+    for (const academicYear of academicYears) {
+      let query = supabase
+        .from(`${academicYear}_enrolment_applications`)
         .select("*")
-        .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+        .or(`fatherEmail.eq.${session.user.email}, motherEmail.eq.${session.user.email}`);
 
       if (enroleeNumber) {
-        familyInformationQuery = familyInformationQuery.eq("enroleeNumber", enroleeNumber);
+        query = query.eq("enroleeNumber", enroleeNumber);
       }
 
-      const { data: ay2025FamilyInformation, error: ay2025FamilyInformationError } = await familyInformationQuery
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await query.order("created_at", { ascending: false }).limit(1).maybeSingle();
 
-      familyInformation = ay2025FamilyInformation;
+      if (error) throw new Error(error.message);
 
-      if (ay2025FamilyInformationError) {
-        throw new Error(ay2025FamilyInformationError.message);
+      if (data) {
+        familyInformation = data;
+        break;
       }
     }
+
+    if (!familyInformation) return;
 
     const motherInfo: Record<string, unknown> = {};
     const fatherInfo: Record<string, unknown> = {};
     const guardianInfo: Record<string, unknown> = {};
     const siblings = extractSiblings(familyInformation);
 
-    const motherInfoKeys = Object.keys(familyInformation ?? {}).filter((key) => key.includes("mother"));
-    const fatherInfoKeys = Object.keys(familyInformation ?? {}).filter((key) => key.includes("father"));
-    const guardianInfoKeys = Object.keys(familyInformation ?? {}).filter((key) => key.includes("guardian"));
+    const motherKeys = Object.keys(familyInformation).filter((k) => k.includes("mother"));
+    const fatherKeys = Object.keys(familyInformation).filter((k) => k.includes("father"));
+    const guardianKeys = Object.keys(familyInformation).filter((k) => k.includes("guardian"));
 
-    if (motherInfoKeys.length > 1) {
-      motherInfoKeys.map((key) => {
-        if (familyInformation[key] != null && familyInformation[key] != "") {
-          motherInfo[key] = String(familyInformation[key]);
-        }
-      });
-    }
+    motherKeys.forEach((key) => {
+      if (familyInformation[key] != null && familyInformation[key] !== "") {
+        motherInfo[key] = String(familyInformation[key]);
+      }
+    });
 
-    if (fatherInfoKeys.length > 1) {
-      fatherInfoKeys.map((key) => {
-        if (familyInformation[key] != null && familyInformation[key] != "") {
-          fatherInfo[key] = String(familyInformation[key]);
-        }
-      });
-    }
+    fatherKeys.forEach((key) => {
+      if (familyInformation[key] != null && familyInformation[key] !== "") {
+        fatherInfo[key] = String(familyInformation[key]);
+      }
+    });
 
-    if (guardianInfoKeys.length > 1) {
-      guardianInfoKeys.map((key) => {
-        if (familyInformation[key] != null && familyInformation[key] != "") {
-          guardianInfo[key] = String(familyInformation[key]);
-        }
-      });
-    }
-
-    if (!motherInfoKeys.length) {
-      return { fatherInfo, guardianInfo, siblingsInfo: { siblings } };
-    }
-
-    if (!fatherInfoKeys.length) {
-      return { motherInfo, guardianInfo, siblingsInfo: { siblings } };
-    }
-
-    if (!guardianInfoKeys.length) {
-      return { motherInfo, fatherInfo, siblingsInfo: { siblings } };
-    }
+    guardianKeys.forEach((key) => {
+      if (familyInformation[key] != null && familyInformation[key] !== "") {
+        guardianInfo[key] = String(familyInformation[key]);
+      }
+    });
 
     const result: Record<string, unknown> = {
       siblingsInfo: { siblings },
     };
 
-    if (Object.keys(motherInfo).length) {
-      result.motherInfo = motherInfo;
-    }
-
-    if (Object.keys(fatherInfo).length) {
-      result.fatherInfo = fatherInfo;
-    }
-
-    if (Object.keys(guardianInfo).length) {
-      result.guardianInfo = guardianInfo;
-    }
+    if (Object.keys(motherInfo).length) result.motherInfo = motherInfo;
+    if (Object.keys(fatherInfo).length) result.fatherInfo = fatherInfo;
+    if (Object.keys(guardianInfo).length) result.guardianInfo = guardianInfo;
 
     return removeEmptyKeys(result);
   } catch (error) {
@@ -723,8 +598,13 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    const match = enroleeNumber.match(/E(\d{2})/);
+    if (!match) throw new Error("Invalid enrolee number format");
+
+    const academicYear = `ay20${match[1]}`;
+
     const { data: studentInformation, error: studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
+      .from(`${academicYear}_enrolment_applications`)
       .select("pass, passportExpiry, passExpiry, passportNumber")
       .eq("enroleeNumber", enroleeNumber)
       .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
@@ -733,7 +613,7 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
       throw new Error(studentInformationError.message);
     }
     const { data: documents, error: studentDocumentsError } = await supabase
-      .from("ay2025_enrolment_documents")
+      .from(`${academicYear}_enrolment_documents`)
       .select("medical, passport, birthCert, pass, educCert")
       .eq("enroleeNumber", enroleeNumber);
 
@@ -770,8 +650,17 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
       data: { session },
     } = await supabase.auth.getSession();
 
+    let academicYear = "ay2025";
+
+    if (enroleeNumber) {
+      const match = enroleeNumber.match(/E(\d{2})/);
+      if (match) {
+        academicYear = `ay20${match[1]}`;
+      }
+    }
+
     const { data: parentGuardianDocumentsInformation, error: parentGuardianDocumentsInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
+      .from(`${academicYear}_enrolment_applications`)
       .select(
         "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
       )
@@ -781,8 +670,9 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     if (parentGuardianDocumentsInformationError) {
       throw new Error(parentGuardianDocumentsInformationError.message);
     }
+
     const { data: parentGuardianDocuments, error: parentGuardianDocumentsError } = await supabase
-      .from("ay2025_enrolment_documents")
+      .from(`${academicYear}_enrolment_documents`)
       .select("motherPassport, motherPass, fatherPass, fatherPassport, guardianPass, guardianPassport")
       .eq("enroleeNumber", enroleeNumber);
 
@@ -799,7 +689,6 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     const { motherPass, motherPassport } = parentGuardianDocuments[0] ?? {};
 
     const motherPassDocument = { motherPass, motherPassType, motherPassExpiry };
-
     const motherPassportDocument = { motherPassport, motherPassportNumber, motherPassportExpiry };
 
     const {
@@ -811,7 +700,6 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     const { fatherPass, fatherPassport } = parentGuardianDocuments[0] ?? {};
 
     const fatherPassDocument = { fatherPass, fatherPassType, fatherPassExpiry };
-
     const fatherPassportDocument = { fatherPassport, fatherPassportNumber, fatherPassportExpiry };
 
     const {
@@ -823,17 +711,10 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     const { guardianPass, guardianPassport } = parentGuardianDocuments[0] ?? {};
 
     const guardianPassDocument = { guardianPass, guardianPassType, guardianPassExpiry };
-
-    const guardianPassportDocument = {
-      guardianPassport,
-      guardianPassportNumber,
-      guardianPassportExpiry,
-    };
+    const guardianPassportDocument = { guardianPassport, guardianPassportNumber, guardianPassportExpiry };
 
     const motherDocuments = { ...removeEmptyKeys(motherPassDocument), ...removeEmptyKeys(motherPassportDocument) };
-
     const fatherDocuments = { ...removeEmptyKeys(fatherPassDocument), ...removeEmptyKeys(fatherPassportDocument) };
-
     const guardianDocuments = {
       ...removeEmptyKeys(guardianPassDocument),
       ...removeEmptyKeys(guardianPassportDocument),
@@ -1838,10 +1719,13 @@ export async function submitExistingEnrollment(
   preCourseDetails: PreCourseDetails,
 ) {
   try {
-    const prevYear = academicYear === "ay2026" ? "ay2025" : "ay2026";
+    const match = enroleeNumber.match(/E(\d{2})/);
+    if (!match) throw new Error("Invalid enrolee number format");
+
+    const currentAY = `ay20${match[1]}`;
 
     const { data: studentNumber } = await supabase
-      .from(`${prevYear}_enrolment_applications`)
+      .from(`${currentAY}_enrolment_applications`)
       .select("studentNumber")
       .eq("enroleeNumber", enroleeNumber)
       .single();
@@ -2332,31 +2216,29 @@ export async function submitExistingEnrollment(
 }
 
 export async function getFamilyDocuments(enroleeNumber: string) {
-  if (!enroleeNumber) return {};
+  if (!enroleeNumber) return null;
+
   try {
-    // eslint-disable-next-line prefer-const
-    let { data: documents, error } = await supabase
-      .from("ay2025_enrolment_documents")
+    const match = enroleeNumber.match(/E(\d{2})/);
+    if (!match) throw new Error("Invalid enrolee number format");
+
+    const academicYear = `ay20${match[1]}`;
+    const DOCUMENTS_TABLE = `${academicYear}_enrolment_documents`;
+
+    const { data: documents, error } = await supabase
+      .from(DOCUMENTS_TABLE)
       .select("*")
       .eq("enroleeNumber", enroleeNumber);
 
     if (error) throw new Error(error.message);
-
-    if (!documents || documents.length === 0) {
-      const fallback = await supabase.from("ay2026_enrolment_documents").select("*").eq("enroleeNumber", enroleeNumber);
-
-      if (fallback.error) throw new Error(fallback.error.message);
-      documents = fallback.data;
-    }
-
     if (!documents || documents.length === 0) return null;
 
     const doc = documents[0];
 
     return {
       motherPassport: doc?.motherPassport ?? null,
-      motherPassportExpiry: doc.motherPassportExpiry ?? null,
-      motherPassportStatus: doc.motherPassportStatus ?? null,
+      motherPassportExpiry: doc?.motherPassportExpiry ?? null,
+      motherPassportStatus: doc?.motherPassportStatus ?? null,
       motherPass: doc?.motherPass ?? null,
       motherPassExpiry: doc?.motherPassExpiry ?? null,
       motherPassStatus: doc?.motherPassStatus ?? null,

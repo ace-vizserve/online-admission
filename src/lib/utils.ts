@@ -423,7 +423,7 @@ export async function getStudentsList(parentEmail: string) {
 export async function getPreviousAYEnrolledStudents(parentEmail: string) {
   try {
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase
-      .from(`ay${new Date().getFullYear() - 1}_enrolment_applications`)
+      .from(`ay2025_enrolment_applications`)
       .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber, nric, birthDay, pass")
       .eq("applicationStatus", "Registered")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
@@ -493,88 +493,62 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
 
 export async function getStudentEnrollments(studentNumber: string, parentEmail: string) {
   try {
-    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
-      .from("ay2026_enrolment_applications")
-      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("studentNumber", studentNumber)
-      .eq("applicationStatus", "Registered");
+    const academicYears = ["ay2026", "ay2025"];
 
-    if (ay2026studentInformationError) {
-      throw new Error(ay2026studentInformationError.message);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allEnrollments: any[] = [];
+
+    for (const academicYear of academicYears) {
+      const APPLICATIONS_TABLE = `${academicYear}_enrolment_applications`;
+      const STATUS_TABLE = `${academicYear}_enrolment_status`;
+
+      const { data: studentInformation, error: studentInformationError } = await supabase
+        .from(APPLICATIONS_TABLE)
+        .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
+        .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+        .eq("studentNumber", studentNumber)
+        .eq("applicationStatus", "Registered");
+
+      if (studentInformationError) {
+        throw new Error(studentInformationError.message);
+      }
+
+      if (!studentInformation || studentInformation.length === 0) continue;
+
+      const { data: studentEnrollment, error: studentEnrollmentError } = await supabase
+        .from(STATUS_TABLE)
+        .select("applicationRemarks, enroleeNumber, applicationStatus")
+        .in(
+          "enroleeNumber",
+          studentInformation.map((v) => v.enroleeNumber),
+        );
+
+      if (studentEnrollmentError) {
+        throw new Error(studentEnrollmentError.message);
+      }
+
+      const merged = studentInformation.map((info) => {
+        const enrollmentStatus = studentEnrollment?.find((v) => v.enroleeNumber === info.enroleeNumber);
+
+        return {
+          remarks: enrollmentStatus?.applicationRemarks ?? "No remarks provided",
+          studentNumber: info.studentNumber,
+          studentName: info.enroleeFullName,
+          academicYear: academicYear.replace("ay", ""),
+          gradeLevel: info.levelApplied,
+          status: enrollmentStatus?.applicationStatus ?? info.applicationStatus,
+          enroleeNumber: info.enroleeNumber,
+        };
+      });
+
+      allEnrollments.push(...merged);
     }
 
-    const { data: ay2026studentEnrollment, error: ay2026studentEnrollmentError } = await supabase
-      .from("ay2026_enrolment_status")
-      .select("applicationRemarks, enroleeNumber, applicationStatus")
-      .in(
-        "enroleeNumber",
-        ay2026studentInformation.map((v) => v.enroleeNumber),
-      );
+    const seenGradeLevels = new Set<string>();
 
-    if (ay2026studentEnrollmentError) {
-      throw new Error(ay2026studentEnrollmentError.message);
-    }
-
-    const ay2026Enrollment = ay2026studentInformation.map((info) => {
-      const enrollmentStatus = ay2026studentEnrollment.find((v) => v.enroleeNumber == info.enroleeNumber);
-
-      return {
-        ...info,
-        ...(enrollmentStatus ?? {}),
-      };
-    });
-
-    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("studentNumber", studentNumber)
-      .eq("applicationStatus", "Registered");
-
-    if (ay2025studentInformationError) {
-      throw new Error(ay2025studentInformationError.message);
-    }
-
-    const { data: ay2025studentEnrollment, error: ay2025studentEnrollmentError } = await supabase
-      .from("ay2025_enrolment_status")
-      .select("applicationRemarks, enroleeNumber, applicationStatus")
-      .in(
-        "enroleeNumber",
-        ay2025studentInformation.map((v) => v.enroleeNumber),
-      );
-
-    if (ay2025studentEnrollmentError) {
-      throw new Error(ay2025studentEnrollmentError.message);
-    }
-
-    const ay2025Enrollment = ay2025studentInformation.map((info) => {
-      const enrollmentStatus = ay2025studentEnrollment.find((v) => v.enroleeNumber == info.enroleeNumber);
-
-      return {
-        ...info,
-        ...(enrollmentStatus ?? {}),
-      };
-    });
-
-    const mapStudents = (data: typeof ay2025Enrollment, academicYear: string) =>
-      data.map((info) => ({
-        remarks: info.applicationRemarks ?? "No remarks provided",
-        studentNumber: info.studentNumber,
-        studentName: info.enroleeFullName,
-        academicYear,
-        gradeLevel: info.levelApplied,
-        status: info.applicationStatus,
-        enroleeNumber: info.enroleeNumber,
-      }));
-
-    const studentsList = [...mapStudents(ay2026Enrollment, "2026"), ...mapStudents(ay2025Enrollment, "2025")];
-
-    const seenTotalChildren = new Set();
-
-    const enrollmentStudentList = studentsList.filter((student) => {
-      if (seenTotalChildren.has(student.gradeLevel)) return false;
-      seenTotalChildren.add(student.gradeLevel);
+    const enrollmentStudentList = allEnrollments.filter((student) => {
+      if (seenGradeLevels.has(student.gradeLevel)) return false;
+      seenGradeLevels.add(student.gradeLevel);
       return true;
     });
 

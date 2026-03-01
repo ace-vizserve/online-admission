@@ -118,7 +118,15 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
       const { email, firstName, lastName, password, relationship, confirmPassword } = enrollmentDetails.accountInfo;
 
       try {
-        await userRegister({ firstName, lastName, email, password, relationship, confirmPassword });
+        await userRegister({
+          firstName,
+          lastName,
+          email,
+          password,
+          relationship,
+          confirmPassword,
+          isOpenHouseRegistration: true,
+        });
 
         if (institution === "vizschool") {
           return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, "", "VizSchool New");
