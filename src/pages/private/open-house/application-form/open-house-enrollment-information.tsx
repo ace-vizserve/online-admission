@@ -103,7 +103,7 @@ function OpenHouseEnrollmentInformation() {
     setFormState({
       ...formState,
       enrollmentInfo: {
-        ...form.watch(),
+        ...debouncedValues,
       },
     });
   }, [debouncedValues]);

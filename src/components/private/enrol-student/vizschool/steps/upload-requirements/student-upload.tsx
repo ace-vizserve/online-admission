@@ -71,13 +71,13 @@ function LearnerUpload() {
       uploadRequirements: {
         ...formState.uploadRequirements!,
         studentUploadRequirements: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
 
     form.reset(
-      { ...form.watch() },
+      { ...debouncedValues },
       {
         keepErrors: true,
       },

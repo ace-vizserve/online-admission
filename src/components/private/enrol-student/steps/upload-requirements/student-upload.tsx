@@ -81,13 +81,13 @@ function StudentUpload() {
       uploadRequirements: {
         ...formState.uploadRequirements!,
         studentUploadRequirements: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
 
     form.reset(
-      { ...form.watch(), showVaccinationInformation, stpApplicationType },
+      { ...debouncedValues, showVaccinationInformation, stpApplicationType },
       {
         keepErrors: true,
       },

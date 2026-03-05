@@ -217,7 +217,7 @@ function FatherInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         fatherInfo: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });

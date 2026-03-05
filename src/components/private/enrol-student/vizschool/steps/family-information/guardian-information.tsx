@@ -204,7 +204,7 @@ function GuardianInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         guardianInfo: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });

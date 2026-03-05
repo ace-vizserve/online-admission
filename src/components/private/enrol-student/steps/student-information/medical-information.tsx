@@ -110,13 +110,13 @@ export default function MedicalInformationSection() {
       studentInfo: {
         ...formState.studentInfo!,
         medicalInformation: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
 
     form.reset(
-      { ...form.watch() },
+      { ...debouncedValues },
       {
         keepErrors: true,
       },

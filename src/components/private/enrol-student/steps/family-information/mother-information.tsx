@@ -118,10 +118,17 @@ function MotherInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         motherInfo: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
+      },
+    );
   }, [debouncedValues]);
 
   useEffect(() => {

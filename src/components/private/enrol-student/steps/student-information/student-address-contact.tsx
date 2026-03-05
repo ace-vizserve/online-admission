@@ -76,17 +76,10 @@ const StudentAddressContact = memo(function StudentAddressContact({
       studentInfo: {
         ...formState.studentInfo!,
         addressContact: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
-
-    form.reset(
-      { ...form.watch() },
-      {
-        keepErrors: true,
-      },
-    );
   }, [debouncedValues]);
 
   useEffect(() => {

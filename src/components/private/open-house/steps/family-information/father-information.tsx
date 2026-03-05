@@ -181,10 +181,17 @@ function FatherInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         fatherInfo: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
+      },
+    );
   }, [debouncedValues]);
 
   useBeforeUnload((e) => {

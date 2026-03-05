@@ -110,7 +110,7 @@ function SiblingInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         siblingsInfo: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });

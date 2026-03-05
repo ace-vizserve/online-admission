@@ -84,10 +84,17 @@ function SiblingInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         siblingsInfo: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
+      },
+    );
   }, [debouncedValues]);
 
   useBeforeUnload((e) => {

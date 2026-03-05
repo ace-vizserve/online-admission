@@ -65,17 +65,10 @@ const StudentAddressContact = memo(function StudentAddressContact({
       studentInfo: {
         ...formState.studentInfo!,
         addressContact: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
-
-    form.reset(
-      { ...form.watch() },
-      {
-        keepErrors: true,
-      },
-    );
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -411,7 +404,7 @@ const StudentAddressContact = memo(function StudentAddressContact({
                                   <Input
                                     disabled={field.value === "Present"}
                                     placeholder={field.value === "Present" ? "Current Residence" : "YYYY"}
-                                    value={field.value === "Present" ? "" : field.value || ""}
+                                    {...field}
                                     onChange={(e) => field.onChange(e.target.valueAsNumber || e.target.value)}
                                   />
                                 </FormControl>

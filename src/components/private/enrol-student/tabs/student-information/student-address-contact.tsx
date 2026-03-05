@@ -55,7 +55,7 @@ function StudentAddressContact() {
       studentInfo: {
         ...formState.studentInfo!,
         addressContact: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });

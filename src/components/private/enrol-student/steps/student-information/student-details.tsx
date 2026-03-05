@@ -56,13 +56,13 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
       studentInfo: {
         ...formState.studentInfo!,
         studentDetails: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
 
     form.reset(
-      { ...form.watch() },
+      { ...debouncedValues },
       {
         keepErrors: true,
       },

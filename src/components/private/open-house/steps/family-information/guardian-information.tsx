@@ -187,10 +187,17 @@ function GuardianInformation() {
       familyInfo: {
         ...formState.familyInfo!,
         guardianInfo: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
+      },
+    );
   }, [debouncedValues]);
 
   useBeforeUnload((e) => {

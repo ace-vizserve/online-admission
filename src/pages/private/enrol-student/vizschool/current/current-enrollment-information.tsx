@@ -89,7 +89,7 @@ function CurrentEnrollmentInformation() {
     setFormState({
       ...formState,
       enrollmentInfo: {
-        ...form.watch(),
+        ...debouncedValues,
       },
     });
   }, [debouncedValues]);

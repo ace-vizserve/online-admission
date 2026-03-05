@@ -42,7 +42,7 @@ function StudentDetails() {
       studentInfo: {
         ...formState.studentInfo!,
         studentDetails: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });

@@ -57,13 +57,13 @@ function StudentAddressContact() {
       studentInfo: {
         ...formState.studentInfo!,
         addressContact: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
 
     form.reset(
-      { ...form.watch() },
+      { ...debouncedValues },
       {
         keepErrors: true,
       },

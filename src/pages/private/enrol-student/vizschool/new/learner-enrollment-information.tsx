@@ -97,7 +97,7 @@ function LearnerEnrollmentInformation() {
     setFormState({
       ...formState,
       enrollmentInfo: {
-        ...form.watch(),
+        ...debouncedValues,
       },
     });
   }, [debouncedValues]);

@@ -63,13 +63,13 @@ function ParentGuardianUpload() {
       uploadRequirements: {
         ...formState.uploadRequirements!,
         parentGuardianUploadRequirements: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
 
     form.reset(
-      { ...form.watch() },
+      { ...debouncedValues },
       {
         keepErrors: true,
       },

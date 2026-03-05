@@ -37,7 +37,7 @@ export default function MedicalInformationSection() {
       studentInfo: {
         ...formState.studentInfo!,
         medicalInformation: {
-          ...form.watch(),
+          ...debouncedValues,
         },
       },
     });
