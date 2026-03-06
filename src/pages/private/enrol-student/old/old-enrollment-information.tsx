@@ -53,10 +53,21 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
   "Primary Five",
   "Primary Six",
 ];
-const WHOLE_DAY_CLASS_LEVEL = ["Secondary One", "Secondary Two", "Secondary Three", "Secondary Four"];
+
+const WHOLE_DAY_CLASS_LEVEL = [
+  "Secondary One",
+  "Secondary Two",
+  "Secondary Three",
+  "Secondary Four",
+  "Cambridge Secondary One (Year 8)",
+  "Cambridge Secondary Two (Year 9)",
+];
 
 const ALLOWED_CAMBRIDGE_CLASS_TYPES = ["Global Class (CAMBRIDGE)", "Standard Class (ENGLISH + TAGALOG)"];
 const CAMBRIDGE_CLASS_LEVELS = ["Secondary One", "Secondary Two"];
+
+const CAMBRIDGE_ONLY_CLASS_TYPES = ["Global Class (CAMBRIDGE)"];
+const CAMBRIDGE_YEAR_LEVELS = ["Cambridge Secondary One (Year 8)", "Cambridge Secondary Two (Year 9)"];
 
 const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary Three", "Secondary Four"];
 const ENRICHMENT_CLASS_LEVELS = [
@@ -154,6 +165,16 @@ function OldEnrollmentInformation() {
         message: "Please select a valid class type for this level.",
       });
 
+      return;
+    }
+
+    if (CAMBRIDGE_YEAR_LEVELS.includes(values.levelApplied) && !CAMBRIDGE_ONLY_CLASS_TYPES.includes(values.classType)) {
+      toast.warning("Class Type Mismatch!", {
+        description: "Only 'Global Class (CAMBRIDGE)' is available for this grade level.",
+      });
+      form.setError("classType", {
+        message: "Please select 'Global Class (CAMBRIDGE)' for this level.",
+      });
       return;
     }
 
@@ -318,6 +339,8 @@ function OldEnrollmentInformation() {
                           <SelectContent>
                             {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Enrichment Class"}>Enrichment Class</SelectItem>
+                            ) : CAMBRIDGE_YEAR_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>
                             ) : CAMBRIDGE_CLASS_LEVELS.includes(selectedLevel) ? (
                               <>
                                 <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>

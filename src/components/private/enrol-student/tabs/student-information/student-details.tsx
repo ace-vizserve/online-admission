@@ -306,6 +306,26 @@ function StudentDetails() {
           />
         </div>
 
+        <FormField
+          control={form.control}
+          name="dietaryRestrictions"
+          render={({ field }) => (
+            <FormItem className="relative">
+              <FormLabel>
+                Dietary Restrictions <span className="text-xs text-muted-foreground">(optional)</span>{" "}
+              </FormLabel>
+
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter any dietary preferences or restrictions based on religion or personal preference.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button
           size={"lg"}
           className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"

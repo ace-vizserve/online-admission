@@ -248,7 +248,9 @@ export const classLevels = [
   { label: "Primary Five", value: "Primary Five" },
   { label: "Primary Six", value: "Primary Six" },
   { label: "Secondary One", value: "Secondary One" },
+  { label: "Cambridge Secondary One (Year 8)", value: "Cambridge Secondary One (Year 8)" },
   { label: "Secondary Two", value: "Secondary Two" },
+  { label: "Cambridge Secondary Two (Year 9)", value: "Cambridge Secondary Two (Year 9)" },
   { label: "Secondary Three", value: "Secondary Three" },
   { label: "Secondary Four", value: "Secondary Four" },
 ] as const;

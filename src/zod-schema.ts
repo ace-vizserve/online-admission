@@ -72,7 +72,7 @@ export const studentDetailsSchema = z
     }),
     religionOther: z.string().optional().nullable(),
     nric: z.string().optional(),
-
+    dietaryRestrictions: z.string().optional(),
     stpApplicationType: z.string().optional(),
   })
   .superRefine((schema, ctx) => {

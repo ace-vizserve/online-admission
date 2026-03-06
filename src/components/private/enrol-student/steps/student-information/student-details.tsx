@@ -350,6 +350,26 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
           />
         </div>
 
+        <FormField
+          control={form.control}
+          name="dietaryRestrictions"
+          render={({ field }) => (
+            <FormItem className="relative">
+              <FormLabel>
+                Dietary Restrictions <span className="text-xs text-muted-foreground">(optional)</span>{" "}
+              </FormLabel>
+
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter any dietary preferences or restrictions based on religion or personal preference.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <br />
         <Separator />
         <br />
