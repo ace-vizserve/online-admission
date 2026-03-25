@@ -12,10 +12,15 @@ const academicYears = [
     value: "ay2026",
     name: "AY 2026",
     label: "Academic Year 2026",
-    description: "Early registration for AY 2026 starts July 2025.",
-    details: ["Secure a slot early", "Registration opens 1 July 2025", "Classes begin January 2026"],
+    description: "Enrol your child for the ongoing school year.",
+
+    details: [
+      "Classes are currently ongoing",
+      "Late enrolment still accepted",
+      "Ideal for students transferring mid-year",
+    ],
     buttonText: "Register for AY 2026",
-    isUpcoming: true,
+    isUpcoming: false,
     logo: Logo,
   },
 
@@ -30,19 +35,15 @@ const academicYears = [
     logo: VizSchoolLogo,
   },
   {
-    value: "ay2025",
-    name: "AY 2025",
-    label: "Academic Year 2025",
-    description: "Enrol your child for the ongoing school year.",
-    details: [
-      "Classes are currently ongoing",
-      "Late enrolment still accepted",
-      "Ideal for students transferring mid-year",
-    ],
-    buttonText: "Enrol for AY 2025",
+    value: "ay2027",
+    name: "AY 2027",
+    label: "Academic Year 2027",
+    description: "Early registration for AY 2027 starts July 2027.",
+    details: ["Secure a slot early", "Registration opens 1 July 2026", "Classes begin January 2027"],
+    buttonText: "Enrol for AY 2027",
     logo: Logo,
-    isUpcoming: false,
-    isClosed: true,
+    isUpcoming: true,
+    isClosed: false,
   },
 ];
 

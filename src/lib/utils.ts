@@ -72,10 +72,10 @@ export function removeEmptyKeys(obj: Record<string, unknown>) {
   return cleaned;
 }
 
-export async function canEnrollStudent(enroleeNumber: string) {
+export async function canEnrollStudent(enroleeNumber: string, academicYear: string) {
   try {
     const { data, error } = await supabase
-      .from("ay2025_enrolment_applications")
+      .from(`${academicYear}_enrolment_applications`)
       .select("levelApplied")
       .eq("enroleeNumber", enroleeNumber)
       .maybeSingle();
@@ -85,7 +85,7 @@ export async function canEnrollStudent(enroleeNumber: string) {
     }
 
     if (!data) {
-      throw new Error("No student found!");
+      return true;
     }
 
     return data.levelApplied !== "Secondary 4";
@@ -364,6 +364,16 @@ export function extractSiblings(family: FamilyInfo) {
 
 export async function getStudentsList(parentEmail: string) {
   try {
+    const { data: ay2027studentInformation, error: ay2027studentInformationError } = await supabase
+      .from("ay2027_enrolment_applications")
+      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .eq("applicationStatus", "Registered");
+
+    if (ay2027studentInformationError) {
+      throw new Error(ay2027studentInformationError.message);
+    }
+
     const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
       .from("ay2026_enrolment_applications")
       .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
@@ -396,12 +406,13 @@ export async function getStudentsList(parentEmail: string) {
         enrollmentStatus:
           academicYear === "2026" && (info.studentNumber as string).startsWith("V")
             ? "Pre-Enrolled for VizSchool"
-            : academicYear === "2026" && !(info.studentNumber as string).startsWith("V")
-              ? "Pre-Enrolled for 2026"
+            : (academicYear === "2026" || academicYear === "2027") && !(info.studentNumber as string).startsWith("V")
+              ? `Pre-Enrolled for ${academicYear}`
               : "Registered",
       }));
 
     const allStudents = [
+      ...mapStudents(ay2027studentInformation, "2027"),
       ...mapStudents(ay2026studentInformation, "2026"),
       ...mapStudents(ay2025studentInformation, "2025"),
     ];
@@ -420,10 +431,12 @@ export async function getStudentsList(parentEmail: string) {
   }
 }
 
-export async function getPreviousAYEnrolledStudents(parentEmail: string) {
+export async function getPreviousAYEnrolledStudents(parentEmail: string, academicYear: string) {
   try {
+    const prevAcademicYear = "ay" + (parseInt(academicYear.replace("ay", ""), 10) - 1);
+
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase
-      .from(`ay2025_enrolment_applications`)
+      .from(`${prevAcademicYear}_enrolment_applications`)
       .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber, nric, birthDay, pass")
       .eq("applicationStatus", "Registered")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
@@ -493,7 +506,7 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
 
 export async function getStudentEnrollments(studentNumber: string, parentEmail: string) {
   try {
-    const academicYears = ["ay2026", "ay2025"];
+    const academicYears = ["ay2027", "ay2026", "ay2025"];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allEnrollments: any[] = [];

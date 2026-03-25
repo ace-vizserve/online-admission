@@ -167,7 +167,7 @@ export async function getStudentList() {
   }
 }
 
-export async function getPreviousEnrolledStudents() {
+export async function getPreviousEnrolledStudents(academicYear: string) {
   try {
     const {
       data: { session },
@@ -177,7 +177,7 @@ export async function getPreviousEnrolledStudents() {
       throw new Error("No user session!");
     }
 
-    const previousEnrolledStudents = await getPreviousAYEnrolledStudents(session.user.email!);
+    const previousEnrolledStudents = await getPreviousAYEnrolledStudents(session.user.email!, academicYear);
 
     return { studentsList: previousEnrolledStudents?.previousEnrolled ?? [] };
   } catch (error) {
@@ -1884,7 +1884,9 @@ export async function submitExistingEnrollment(
       throw new Error(enrollmentApplicationError.message);
     }
 
-    const generatedEnroleeNumber = `E26${String(enrollmentApplication.id).padStart(4, "0")}`;
+    const prefix = academicYear.slice(-2);
+
+    const generatedEnroleeNumber = `E${prefix}${String(enrollmentApplication.id).padStart(4, "0")}`;
 
     const { data, error: updateEnrollmentApplicationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
@@ -1899,7 +1901,7 @@ export async function submitExistingEnrollment(
       throw new Error(updateEnrollmentApplicationError.message);
     }
 
-    const { error: enrolmentDocumentsError } = await supabase.from("ay2026_enrolment_documents").insert({
+    const { error: enrolmentDocumentsError } = await supabase.from(`${academicYear}_enrolment_documents`).insert({
       studentNumber: studentNumber?.studentNumber,
       enroleeNumber: data.enroleeNumber,
     });

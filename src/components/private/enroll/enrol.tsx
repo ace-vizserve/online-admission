@@ -48,24 +48,21 @@ export const columns: ColumnDef<TStudent>[] = [
     cell: ({ row }) => {
       const status = row.getValue("enrollmentStatus") as string;
 
-      const statusConfig: Record<string, { bg: string; dot: string; text: string; label: string }> = {
+      const statusConfig: Record<string, { bg: string; dot: string; text: string }> = {
         Registered: {
           bg: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
           dot: "bg-emerald-500",
           text: "text-emerald-700",
-          label: "Registered 2025",
         },
         "Pre-Enrolled for VizSchool": {
           bg: "bg-amber-500/10 text-amber-600 border-amber-200",
           dot: "bg-amber-500",
           text: "text-amber-700",
-          label: "VizSchool Prep",
         },
         default: {
           bg: "bg-blue-500/10 text-blue-600 border-blue-200",
           dot: "bg-blue-500",
           text: "text-blue-700",
-          label: "Pre-Enrolled 2026",
         },
       };
 
@@ -74,7 +71,7 @@ export const columns: ColumnDef<TStudent>[] = [
       return (
         <Badge className={cn("rounded-full border shadow-none font-bold", config.bg)}>
           <span className={cn("h-1.5 w-1.5 rounded-full mr-1.5", config.dot)} />
-          {config.label}
+          {status}
         </Badge>
       );
     },

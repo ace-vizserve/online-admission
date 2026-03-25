@@ -61,7 +61,8 @@ function SubmitApplicationDialog() {
       clearState();
       sessionStorage.clear();
     },
-    onError() {
+    onError(error) {
+      console.log(error);
       toast.error("Uh oh! Something went wrong", {
         description: "An unknown error occurred. Please try again.",
       });

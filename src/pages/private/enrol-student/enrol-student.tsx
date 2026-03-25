@@ -36,17 +36,20 @@ function EnrolStudent() {
   const { session } = useSession();
   const [showEnrollmentProcess, setShowEnrollmentProcess] = useState<boolean>(true);
   const { title, description } = ENROL_NEW_STUDENT_TITLE_DESCRIPTION;
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
   const [isCheckingEnrollment, setIsCheckingEnrollment] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { data, isPending } = useQuery({
-    queryKey: ["enrolled-students", session?.user.email],
-    queryFn: getPreviousEnrolledStudents,
-    enabled: session != null,
+  const { data, isPending, isRefetching } = useQuery({
+    queryKey: ["enrolled-students", session?.user.email, academicYear],
+    queryFn: async () => {
+      return await getPreviousEnrolledStudents(academicYear);
+    },
+    enabled: session != null && Boolean(academicYear),
   });
   const [selected, setSelected] = useState<EnrolledStudent | null>(data?.studentsList[0] ?? null);
   const schoolFee = useSelectSchoolFee((state) => state.schoolFee);
-  const academicYear = useSelectAcademicYear((state) => state.academicYear);
-  const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
+
   const clearSchoolFeeState = useSelectSchoolFee((state) => state.clearState);
   const clearState = useSelectAcademicYear((state) => state.clearState);
 
@@ -106,7 +109,7 @@ function EnrolStudent() {
         return;
       }
 
-      const isEligible = await canEnrollStudent(selected.enroleeNumber);
+      const isEligible = await canEnrollStudent(selected.enroleeNumber, academicYear);
 
       if (!isEligible) {
         toast.info("Enrolment not allowed!", {
@@ -281,7 +284,7 @@ function EnrolStudent() {
                     <CardDescription className="text-sm font-medium text-slate-500 leading-relaxed px-4">
                       All registered students for
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-primary text-xs font-black uppercase tracking-wider ml-1 mr-1">
-                        AY 2025
+                        AY {"ay" + (parseInt(academicYear.replace("ay", ""), 10) - 1)}
                       </span>
                       are listed below.
                     </CardDescription>
@@ -291,7 +294,7 @@ function EnrolStudent() {
                 <Separator />
                 <CardContent className="px-2 md:px-4">
                   <ScrollArea className="h-52 md:h-64">
-                    {isPending ? (
+                    {isRefetching || isPending ? (
                       <div className="flex h-64 w-full flex-col gap-4 items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/50 transition-all">
                         <Tailspin size="24" stroke="5" speed="0.9" color="#4F46E5" />
                         <p className="text-sm font-bold text-muted-foreground animate-pulse">Syncing Students</p>
@@ -423,11 +426,11 @@ function AcademicYearDropdown() {
         <SelectValue placeholder="Choose academic year" />
       </SelectTrigger>
       <SelectContent className="[&_div:focus]:text-primary">
-        <SelectItem className="text-sm font-bold cursor-pointer" value="ay2025">
-          2025
-        </SelectItem>
         <SelectItem className="text-sm font-bold cursor-pointer" value="ay2026">
           2026
+        </SelectItem>
+        <SelectItem className="text-sm font-bold cursor-pointer" value="ay2027">
+          2027
         </SelectItem>
       </SelectContent>
     </Select>
