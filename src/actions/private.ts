@@ -909,7 +909,7 @@ export async function submitVizSchoolEnrollment(
       throw new Error(updateEnrollmentApplicationError.message);
     }
 
-    const { error: enrolmentDocumentsError } = await supabase.from("ay2026_enrolment_documents").insert({
+    const { error: enrolmentDocumentsError } = await supabase.from(`${academicYear}_enrolment_documents`).insert({
       studentNumber: studentNumber?.studentNumber,
       enroleeNumber: data.enroleeNumber,
     });
