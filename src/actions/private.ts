@@ -976,6 +976,12 @@ export async function submitVizSchoolEnrollment(
       }
     };
 
+    const parentGuardianToFollowDocs =
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
+
+    const isParentGuardianToFollow = (docKey: string) =>
+      parentGuardianToFollowDocs.some((key) => docKey.toLowerCase().includes(key.toLowerCase()));
+
     const processParentGuardian = async (
       role: "mother" | "father" | "guardian",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -995,9 +1001,9 @@ export async function submitVizSchoolEnrollment(
         .from(`${academicYear}_enrolment_applications`)
         .update({
           [`${role}Pass`]: getFileValue(passType, passKey),
-          [`${role}PassExpiry`]: isToFollow(passKey) ? null : passExpiry,
+          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : passExpiry,
           [`${role}Passport`]: getFileValue(passportNumber, passportKey),
-          [`${role}PassportExpiry`]: isToFollow(passportKey) ? null : passportExpiry,
+          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : passportExpiry,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data?.enroleeNumber);
@@ -1008,11 +1014,11 @@ export async function submitVizSchoolEnrollment(
         .from(`${academicYear}_enrolment_documents`)
         .update({
           [`${role}Passport`]: getFileValue(documents[`${role}Passport`], passportKey),
-          [`${role}PassportExpiry`]: isToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
+          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
           [`${role}PassportStatus`]: getStatus(documents[`${role}Passport`], passportKey, "Valid"),
 
           [`${role}Pass`]: getFileValue(documents[`${role}Pass`], passKey),
-          [`${role}PassExpiry`]: isToFollow(passKey) ? null : documents[`${role}PassExpiry`],
+          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : documents[`${role}PassExpiry`],
           [`${role}PassStatus`]: getStatus(documents[`${role}Pass`], passKey, "Valid"),
         })
         .eq("studentNumber", studentNumber?.studentNumber)
@@ -1335,6 +1341,12 @@ export async function submitEnrollment(
       }
     };
 
+    const parentGuardianToFollowDocs =
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
+
+    const isParentGuardianToFollow = (docKey: string) =>
+      parentGuardianToFollowDocs.some((key) => docKey.toLowerCase().includes(key.toLowerCase()));
+
     const processParentGuardian = async (
       role: "mother" | "father" | "guardian",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1354,9 +1366,9 @@ export async function submitEnrollment(
         .from(`${academicYear}_enrolment_applications`)
         .update({
           [`${role}Pass`]: getFileValue(passType, passKey),
-          [`${role}PassExpiry`]: isToFollow(passKey) ? null : passExpiry,
+          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : passExpiry,
           [`${role}Passport`]: getFileValue(passportNumber, passportKey),
-          [`${role}PassportExpiry`]: isToFollow(passportKey) ? null : passportExpiry,
+          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : passportExpiry,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data?.enroleeNumber);
@@ -1367,11 +1379,11 @@ export async function submitEnrollment(
         .from(`${academicYear}_enrolment_documents`)
         .update({
           [`${role}Passport`]: getFileValue(documents[`${role}Passport`], passportKey),
-          [`${role}PassportExpiry`]: isToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
+          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
           [`${role}PassportStatus`]: getStatus(documents[`${role}Passport`], passportKey, "Valid"),
 
           [`${role}Pass`]: getFileValue(documents[`${role}Pass`], passKey),
-          [`${role}PassExpiry`]: isToFollow(passKey) ? null : documents[`${role}PassExpiry`],
+          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : documents[`${role}PassExpiry`],
           [`${role}PassStatus`]: getStatus(documents[`${role}Pass`], passKey, "Valid"),
         })
         .eq("studentNumber", studentNumber?.studentNumber)
@@ -1692,6 +1704,12 @@ export async function submitExistingEnrollment(
       }
     };
 
+    const parentGuardianToFollowDocs =
+      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
+
+    const isParentGuardianToFollow = (docKey: string) =>
+      parentGuardianToFollowDocs.some((key) => docKey.toLowerCase().includes(key.toLowerCase()));
+
     const processParentGuardian = async (
       role: "mother" | "father" | "guardian",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1711,9 +1729,9 @@ export async function submitExistingEnrollment(
         .from(`${academicYear}_enrolment_applications`)
         .update({
           [`${role}Pass`]: getFileValue(passType, passKey),
-          [`${role}PassExpiry`]: isToFollow(passKey) ? null : passExpiry,
+          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : passExpiry,
           [`${role}Passport`]: getFileValue(passportNumber, passportKey),
-          [`${role}PassportExpiry`]: isToFollow(passportKey) ? null : passportExpiry,
+          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : passportExpiry,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data?.enroleeNumber);
@@ -1724,11 +1742,11 @@ export async function submitExistingEnrollment(
         .from(`${academicYear}_enrolment_documents`)
         .update({
           [`${role}Passport`]: getFileValue(documents[`${role}Passport`], passportKey),
-          [`${role}PassportExpiry`]: isToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
+          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
           [`${role}PassportStatus`]: getStatus(documents[`${role}Passport`], passportKey, "Valid"),
 
           [`${role}Pass`]: getFileValue(documents[`${role}Pass`], passKey),
-          [`${role}PassExpiry`]: isToFollow(passKey) ? null : documents[`${role}PassExpiry`],
+          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : documents[`${role}PassExpiry`],
           [`${role}PassStatus`]: getStatus(documents[`${role}Pass`], passKey, "Valid"),
         })
         .eq("studentNumber", studentNumber?.studentNumber)
