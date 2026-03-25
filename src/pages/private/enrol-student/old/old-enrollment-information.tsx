@@ -32,6 +32,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn, getNextGradeLevel } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
@@ -80,6 +81,7 @@ function OldEnrollmentInformation() {
   const location = useLocation();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const { formState, setFormState } = useEnrolOldStudentContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { session } = useSession();
   const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
@@ -95,7 +97,7 @@ function OldEnrollmentInformation() {
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
     queryKey: ["current-discounts", session?.user.email],
     queryFn: async () => {
-      return await getCurrentStudentDiscounts(false);
+      return await getCurrentStudentDiscounts(false, academicYear);
     },
     enabled: session != null && isSuccess,
   });

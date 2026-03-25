@@ -106,7 +106,7 @@ function EnrollmentInformation() {
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
     queryKey: ["new-discounts", session?.user.email],
     queryFn: async () => {
-      return await getNewStudentDiscounts(false);
+      return await getNewStudentDiscounts(false, academicYear);
     },
     enabled: session != null,
   });
