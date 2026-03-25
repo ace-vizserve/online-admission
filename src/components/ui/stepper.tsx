@@ -130,23 +130,23 @@ export default function Stepper({
           <div className={`px-8 pb-8 ${footerClassName}`}>
             <div className={`mt-10 flex justify-between`}>
               {isLastStep ? (
-                <div className="w-full flex flex-col-reverse gap-6 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                <div className="w-full flex flex-col-reverse gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
                   <Button
                     variant={"ghost"}
                     onClick={handleBack}
-                    className={`duration-350 transition gap-2 font-bold ${
+                    className={`w-full sm:w-max !p-6 rounded-xl bg-slate-100 duration-350 transition gap-2 font-bold ${
                       currentStep === 1
                         ? "pointer-events-none opacity-50 text-neutral-400"
-                        : "text-neutral-700 hover:text-neutral-800"
+                        : "text-muted-foreground hover:text-neutral-800"
                     }`}
                     {...backButtonProps}>
                     <ArrowLeft />
 
                     {backButtonText}
                   </Button>
-                  <div className="flex justify-center items-center space-x-2">
+                  <div className="w-full sm:w-max p-4 rounded-xl bg-green-50 border border-green-400 flex justify-center items-center space-x-2">
                     <Checkbox
-                      className="size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      className="cursor-pointer size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       onCheckedChange={async (checked) => {
                         if (checked) {
                           await wait(250);
@@ -157,23 +157,23 @@ export default function Stepper({
                     />
                     <label
                       htmlFor="terms"
-                      className="text-xs sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      className="cursor-pointer text-xs sm:text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       I/We agree to the enrolment promo and discount terms
                     </label>
                   </div>
                 </div>
               ) : (
-                <div className="w-full flex flex-col gap-6 md:flex-row md:gap-0 justify-between items-center space-x-2">
-                  <div className="flex justify-center items-center space-x-2">
+                <div className="w-full flex flex-col gap-4 md:flex-row md:gap-0 justify-between items-center space-x-2">
+                  <div className="w-full sm:w-max p-4 rounded-xl bg-green-50 border border-green-400 flex justify-center items-center space-x-2">
                     <Checkbox
-                      className="size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      className="cursor-pointer size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       checked={isFirstPageChecked}
                       onCheckedChange={setIsFirstPageChecked}
                       id="terms"
                     />
                     <label
                       htmlFor="terms"
-                      className="text-xs sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      className="cursor-pointer text-xs sm:text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       I/We agree to the enrolment terms
                     </label>
                   </div>
@@ -181,7 +181,7 @@ export default function Stepper({
                   <Button
                     disabled={!isFirstPageChecked}
                     onClick={handleNext}
-                    className="font-bold gap-2 !p-6 !rounded-xl"
+                    className="font-bold gap-2 !p-6 !rounded-xl w-full sm:w-max"
                     {...nextButtonProps}>
                     {nextButtonText}
                     <ArrowRight />
@@ -338,50 +338,3 @@ function StepIndicator({ step, currentStep, onClickStep, disableStepIndicators =
     </motion.div>
   );
 }
-
-// interface StepConnectorProps {
-//   isComplete: boolean;
-// }
-
-// function StepConnector({ isComplete }: StepConnectorProps) {
-//   const lineVariants: Variants = {
-//     incomplete: { width: 0, backgroundColor: "transparent" },
-//     complete: { width: "100%", backgroundColor: "#5227FF" },
-//   };
-
-//   return (
-//     <div className="relative mx-2 h-0.5 flex-1 overflow-hidden rounded bg-neutral-600">
-//       <motion.div
-//         className="absolute left-0 top-0 h-full"
-//         variants={lineVariants}
-//         initial={false}
-//         animate={isComplete ? "complete" : "incomplete"}
-//         transition={{ duration: 0.4 }}
-//       />
-//     </div>
-//   );
-// }
-
-// interface CheckIconProps extends React.SVGProps<SVGSVGElement> {
-//   className: string;
-// }
-
-// function CheckIcon(props: CheckIconProps) {
-//   return (
-//     <svg {...props} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-//       <motion.path
-//         initial={{ pathLength: 0 }}
-//         animate={{ pathLength: 1 }}
-//         transition={{
-//           delay: 0.1,
-//           type: "tween",
-//           ease: "easeOut",
-//           duration: 0.3,
-//         }}
-//         strokeLinecap="round"
-//         strokeLinejoin="round"
-//         d="M5 13l4 4L19 7"
-//       />
-//     </svg>
-//   );
-// }

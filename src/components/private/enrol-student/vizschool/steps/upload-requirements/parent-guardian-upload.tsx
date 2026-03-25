@@ -4,21 +4,36 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import { cn, documentErrors } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
-import { AlertCircle, Clock, Info, Save } from "lucide-react";
+import { AlertCircle, Clock, FilePen, Info, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
 
 const MAX_SKIPS = 2;
 
 function ParentGuardianUpload() {
-  const { formState, setFormState } = useEnrolNewLearnerContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const { formState, setFormState, activeTab, completedTabs, currentTab, setCompletedTabs } =
+    useEnrolNewLearnerContext();
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "viz-school",
+  });
 
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
   const [motherPassport, setMotherPassport] = useState<File[] | null>(null);
@@ -36,12 +51,54 @@ function ParentGuardianUpload() {
     reValidateMode: "onChange",
   });
 
+  const toFollowDocs = form.watch("toFollowDocs");
+  const skippedDocsCount = toFollowDocs?.length ?? 0;
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      uploadRequirements: {
+        ...formState.uploadRequirements!,
+        parentGuardianUploadRequirements: {
+          ...debouncedValues,
+        },
+      },
+    });
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
+      },
+    );
+  }, [debouncedValues]);
+
   useEffect(() => {
     form.trigger();
   }, []);
 
-  const toFollowDocs = form.watch("toFollowDocs");
-  const skippedDocsCount = toFollowDocs?.length ?? 0;
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Parent/Guardian documents saved!", {
+          description: "You're now ready to submit the application",
+        });
+      })();
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
+
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
+  }
 
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
@@ -108,9 +165,9 @@ function ParentGuardianUpload() {
       },
     });
 
-    toast.success("Parent/Guardian documents saved!", {
-      description: "You're now ready to submit the application",
-    });
+    if (formState.uploadRequirements?.studentUploadRequirements.isValid) {
+      setCompletedTabs("/vizschool/enrol-student/new/upload-requirements");
+    }
   }
 
   return (
@@ -191,6 +248,8 @@ function ParentGuardianUpload() {
             });
           }
 
+          form.setValue("isValid", false);
+
           setFormState({
             uploadRequirements: {
               studentUploadRequirements: {
@@ -202,6 +261,10 @@ function ParentGuardianUpload() {
               },
             },
           });
+
+          (async () => {
+            await saveApplication({ willExit: false });
+          })();
         })}
         className="space-y-6 lg:space-y-8 w-full mx-auto">
         <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
@@ -222,7 +285,6 @@ function ParentGuardianUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Passport Copy"
-            description="Upload scanned passport copy"
             form={form}
             name="motherPassport"
             value={motherPassport}
@@ -233,7 +295,6 @@ function ParentGuardianUpload() {
             formState={formState}
             setFormState={setFormState}
             label="Singapore Pass"
-            description="Upload the type of Pass the mother holds."
             form={form}
             name="motherPass"
             value={motherPass}
@@ -250,7 +311,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Passport Copy"
-                description="Upload scanned passport copy"
                 form={form}
                 name="fatherPassport"
                 value={fatherPassport}
@@ -261,7 +321,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Singapore Pass"
-                description="Upload the type of Pass the father holds."
                 form={form}
                 name="fatherPass"
                 value={fatherPass}
@@ -280,7 +339,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Passport Copy"
-                description="Upload scanned passport copy"
                 form={form}
                 name="guardianPassport"
                 value={guardianPassport}
@@ -291,7 +349,6 @@ function ParentGuardianUpload() {
                 formState={formState}
                 setFormState={setFormState}
                 label="Singapore Pass"
-                description="Upload the type of Pass the guardian holds."
                 form={form}
                 name="guardianPass"
                 value={guardianPass}
@@ -301,22 +358,47 @@ function ParentGuardianUpload() {
           </>
         )}
 
-        <Button
-          variant={"secondary"}
-          size="lg"
-          className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
-          type="submit">
-          Save documents
-          <Save />
-        </Button>
+        <br />
+        <br />
+        <Separator />
 
-        <Button
-          variant={"secondary"}
-          className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-          type="submit">
-          Save documents
-          <Save />
-        </Button>
+        <div className="flex flex-col gap-4 mb-4 max-w-4xl mx-auto">
+          <Button
+            variant={"secondary"}
+            size="lg"
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="submit">
+            Save documents
+            <Save />
+          </Button>
+
+          <Button
+            variant={"secondary"}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
+            Save documents
+            <Save />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -52,7 +52,7 @@ function AdmissionGuidelines() {
   const phone = "+65 8200 0062";
 
   return (
-    <div className="relative w-full min-h-screen bg-[#FAFBFF]">
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 relative w-full min-h-screen bg-[#FAFBFF]">
       <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16">
         <div className="text-center space-y-6 mb-16">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
@@ -82,11 +82,11 @@ function AdmissionGuidelines() {
         </div>
 
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-xl mx-auto mb-12 h-16 p-2 rounded-full bg-slate-100/80 border border-slate-200/50 backdrop-blur-md shadow-inner relative">
+          <TabsList className="grid w-full grid-cols-1 lg:grid-cols-2 gap-4 max-w-xl mx-auto mb-12 h-max p-2 relative">
             <TabsTrigger
               value="general"
               onClick={() => setSelectedApplicationType("general")}
-              className="group rounded-full h-full flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.15em] transition-all duration-500
+              className="rounded-full shadow cursor-pointer py-2 group h-full flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.15em] transition-all duration-500
                data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)] 
                data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-600 focus-visible:outline-none">
               <div
@@ -100,7 +100,7 @@ function AdmissionGuidelines() {
             <TabsTrigger
               value="student-pass"
               onClick={() => setSelectedApplicationType("student-pass")}
-              className="group rounded-full h-full flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.15em] transition-all duration-500
+              className="rounded-full shadow cursor-pointer py-2 group h-full flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.15em] transition-all duration-500
                data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)] 
                data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-600 focus-visible:outline-none">
               <div
@@ -112,8 +112,8 @@ function AdmissionGuidelines() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="general">
-            <Card className="border border-gray-100 shadow-2xl mb-12">
+          <TabsContent className="animate-in fade-in slide-in-from-top-2 duration-500" value="general">
+            <Card className="shadow-none mb-12 border-none">
               <CardHeader className="space-y-4 pb-8 border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-xl">
@@ -301,7 +301,7 @@ function AdmissionGuidelines() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="student-pass">
+          <TabsContent className="animate-in fade-in slide-in-from-top-2 duration-500" value="student-pass">
             <div className="relative space-y-10 mb-20 p-8 rounded-xl bg-gradient-to-b from-white to-slate-50/50 border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.03)]">
               {/* --- Floating Status Pill --- */}
               <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-blue-100 shadow-[0_2px_10px_rgba(37,99,235,0.08)]">
@@ -353,7 +353,7 @@ function AdmissionGuidelines() {
                   <div className="p-6 rounded-xl bg-blue-600 shadow-[0_20px_40px_-10px_rgba(37,99,235,0.3)] text-white relative overflow-hidden group">
                     <div className="absolute top-0 right-0 -mr-8 -mt-8 size-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all" />
 
-                    <div className="flex items-start gap-5 relative z-10">
+                    <div className="flex flex-wrap items-start gap-5 relative z-10">
                       <div className="size-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
                         <Globe className="size-6 text-white" />
                       </div>
@@ -382,7 +382,7 @@ function AdmissionGuidelines() {
             <div className="grid md:grid-cols-2 gap-6">
               {/* --- ICA Authority Pill --- */}
               <div className="relative group p-6 rounded-xl bg-white/60 border border-slate-200/60 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_20px_40px_rgba(37,99,235,0.06)] hover:border-blue-200/60">
-                <div className="flex items-start gap-4">
+                <div className="flex flex-wrap items-start gap-4">
                   {/* Icon Glow */}
                   <div className="flex-shrink-0 size-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-[inset_0_0_10px_rgba(37,99,235,0.1)] group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
                     <ShieldAlert className="size-6" />
@@ -408,7 +408,7 @@ function AdmissionGuidelines() {
 
               {/* --- Non-Refundable Pill --- */}
               <div className="relative group p-6 rounded-xl bg-white/60 border border-slate-200/60 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_20px_40px_rgba(245,158,11,0.06)] hover:border-amber-200/60">
-                <div className="flex items-start gap-4">
+                <div className="flex flex-wrap items-start gap-4">
                   {/* Icon Glow (Amber) */}
                   <div className="flex-shrink-0 size-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-[inset_0_0_10px_rgba(245,158,11,0.1)] group-hover:bg-amber-500 group-hover:text-white transition-all duration-500">
                     <ReceiptText className="size-6" />
@@ -887,7 +887,7 @@ function AdmissionGuidelines() {
 
               {/* --- Help Footer --- */}
               <div className="flex flex-col md:flex-row items-center justify-between p-8 rounded-xl bg-slate-50 border border-slate-200 gap-6">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                   <div className="size-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
                     <HelpCircle className="size-6 text-slate-400" />
                   </div>
@@ -898,8 +898,9 @@ function AdmissionGuidelines() {
                     </p>
                   </div>
                 </div>
+
                 <a href={`tel:${phone}`}>
-                  <Button className="!px-8 !py-8 rounded-full bg-blue-600 text-white text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
+                  <Button className="!px-8 !py-8 rounded-2xl bg-blue-600 text-white text-xs md:text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 gap-4">
                     <PhoneCall /> Contact Admissions
                   </Button>
                 </a>
@@ -925,7 +926,7 @@ function AdmissionGuidelines() {
                 {/* --- Mandatory Section --- */}
                 <div className="lg:col-span-2 space-y-6">
                   <div className="relative p-8 rounded-xl bg-white border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="absolute top-6 right-6">
+                    <div className="hidden md:block absolute top-9 right-6">
                       <span className="bg-rose-600 text-white px-3 py-1 rounded-full font-bold text-sm uppercase tracking-tighter">
                         Required by MOH
                       </span>
@@ -1072,37 +1073,20 @@ function AdmissionGuidelines() {
               </div>
 
               <Tabs defaultValue="new" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 max-w-3xl mx-auto mb-16 h-20 p-2 rounded-full bg-slate-100/80 border border-slate-200/50 backdrop-blur-md shadow-inner relative gap-1">
+                <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-16 h-16 p-2 rounded-full bg-slate-100/80 border border-slate-200/50 backdrop-blur-md shadow-inner relative">
                   {[
-                    { id: "new", label: "New", icon: Sparkles, time: "4–6 Weeks", color: "text-blue-600" },
-                    { id: "renewal", label: "Renewal", icon: RotateCcw, time: "1–2 Weeks", color: "text-emerald-600" },
-                    {
-                      id: "transfer",
-                      label: "Transfer",
-                      icon: ArrowLeftRight,
-                      time: "3–6 Weeks",
-                      color: "text-amber-600",
-                    },
+                    { id: "new", label: "New", icon: Sparkles },
+                    { id: "renewal", label: "Renewal", icon: RotateCcw },
+                    { id: "transfer", label: "Transfer", icon: ArrowLeftRight },
                   ].map((tab) => (
                     <TabsTrigger
                       key={tab.id}
                       value={tab.id}
-                      className="group rounded-full h-full flex flex-col items-center justify-center transition-all duration-500
-      data-[state=active]:bg-white data-[state=active]:shadow-[0_10_30px_-10px_rgba(0,0,0,0.1)] 
-      data-[state=inactive]:text-slate-400 focus-visible:outline-none">
-                      <div className="flex items-center gap-3">
-                        <tab.icon className="size-4 transition-transform group-data-[state=active]:scale-110 group-data-[state=active]:text-primary" />
-                        <span className="text-sm font-black uppercase tracking-[0.15em] group-data-[state=active]:text-primary">
-                          {tab.label}
-                        </span>
-                      </div>
-
-                      {/* Revealable Time - This prevents the 'Tight' look by hiding it when inactive */}
-                      <div className="overflow-hidden h-0 group-data-[state=active]:h-4 group-data-[state=active]:mt-1 transition-all duration-500">
-                        <div className="flex items-center gap-2 opacity-0 group-data-[state=active]:opacity-100 transition-opacity">
-                          <span className={`text-xs font-bold tracking-wider text-primary`}>{tab.time}</span>
-                        </div>
-                      </div>
+                      className="group rounded-full h-full flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.1em] transition-all duration-500
+          data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-lg 
+          data-[state=inactive]:text-slate-400 focus-visible:outline-none">
+                      <tab.icon className="size-4 transition-transform group-data-[state=active]:scale-110" />
+                      <span className="hidden md:inline">{tab.label}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -1470,7 +1454,7 @@ function AdmissionGuidelines() {
                         submits your application. You will receive instructions for any in‑principle approval (IPA) or
                         issuance appointment directly after ICA has made a decision.
                       </p>
-                      <div className="p-4 bg-amber-500 w-max rounded-lg flex items-center gap-2 text-white text-sm font-bold uppercase">
+                      <div className="w-full md:w-max p-4 bg-amber-500 rounded-lg flex items-center gap-2 text-white text-sm font-bold uppercase">
                         <AlertTriangle className="size-3" /> School cannot influence or guarantee ICA processing times
                       </div>
                     </div>
@@ -1770,7 +1754,7 @@ function AdmissionGuidelines() {
           </TabsContent>
         </Tabs>
 
-        <Card className="border border-gray-100 shadow-2xl overflow-hidden py-0 mt-12">
+        <Card className="border-none shadow-none overflow-hidden py-0 mt-12">
           <CardHeader className="space-y-4 pt-6 pb-6 bg-gradient-to-r from-blue-50 to-amber-50">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white rounded-xl shadow-sm">
@@ -1846,7 +1830,7 @@ function EducationLevelTable() {
         <p className="text-gray-600">Admission requirements based on student's age and academic completion</p>
       </div>
 
-      <div className="border-2 border-gray-100 rounded-xl overflow-hidden shadow-lg bg-white">
+      <div className="rounded-xl overflow-hidden bg-white">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

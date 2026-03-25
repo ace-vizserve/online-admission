@@ -9,20 +9,21 @@ import { memo } from "react";
 
 const academicYears = [
   {
-    value: "ay2025",
-    name: "AY 2025",
-    label: "Academic Year 2025",
+    value: "ay2026",
+    name: "AY 2026",
+    label: "Academic Year 2026",
     description: "Enrol your child for the ongoing school year.",
+
     details: [
       "Classes are currently ongoing",
       "Late enrolment still accepted",
       "Ideal for students transferring mid-year",
     ],
-    buttonText: "Enrol for AY 2025",
-    logo: Logo,
+    buttonText: "Register for AY 2026",
     isUpcoming: false,
-    isClosed: true,
+    logo: Logo,
   },
+
   {
     value: "vizschool-ay2026",
     name: "Vizschool AY2026",
@@ -34,14 +35,15 @@ const academicYears = [
     logo: VizSchoolLogo,
   },
   {
-    value: "ay2026",
-    name: "AY 2026",
-    label: "Academic Year 2026",
-    description: "Early registration for AY 2026 starts July 2025.",
-    details: ["Secure a slot early", "Registration opens 1 July 2025", "Classes begin January 2026"],
-    buttonText: "Register for AY 2026",
-    isUpcoming: true,
+    value: "ay2027",
+    name: "AY 2027",
+    label: "Academic Year 2027",
+    description: "Early registration for AY 2027 starts July 2027.",
+    details: ["Secure a slot early", "Registration opens 1 July 2026", "Classes begin January 2027"],
+    buttonText: "Enrol for AY 2027",
     logo: Logo,
+    isUpcoming: true,
+    isClosed: false,
   },
 ];
 
@@ -51,7 +53,7 @@ type Props = {
 
 const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
   return (
-    <div className="relative min-h-screen flex items-center justify-center flex-col px-4 py-12 md:py-16 lg:py-0">
+    <div className="animate-in fade-in duration-500 relative min-h-screen flex items-center justify-center flex-col px-4 py-12 md:py-16 lg:py-0">
       <div className="text-center space-y-6 max-w-3xl">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">Choose Academic Year</h1>
         <p className="text-lg md:text-xl text-muted-foreground text-pretty">

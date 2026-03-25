@@ -1,4 +1,5 @@
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -8,14 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, maritalStatuses } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
-import { studentAddressContactSchema, StudentAddressContactSchema, StudentDetailsSchema } from "@/zod-schema";
+import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/DotPulse.css";
 import { Check, Globe, Info, PlusCircle, Save, Trash2 } from "lucide-react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -45,29 +46,30 @@ function StudentAddressContact() {
     },
   });
 
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      studentInfo: {
+        ...formState.studentInfo!,
+        addressContact: {
+          ...debouncedValues,
+        },
+      },
+    });
+  }, [debouncedValues]);
+
   const { append, fields, remove } = useFieldArray({
     control: form.control,
     name: "residenceHistory",
   });
 
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      studentInfo: {
-        studentDetails: { ...formState.studentInfo?.studentDetails },
-        addressContact: { ...debouncedAutoSaveValue },
-      },
-    },
-    0,
-  );
-
   function onSubmit(values: StudentAddressContactSchema) {
     setFormState({
       studentInfo: {
-        studentDetails: { ...(formState.studentInfo?.studentDetails ?? ({} as unknown as StudentDetailsSchema)) },
+        ...formState.studentInfo!,
         addressContact: {
           ...values,
           isValid: true,
@@ -244,6 +246,12 @@ function StudentAddressContact() {
                 {/* Decorative Background Icon - Gives it a modern, premium feel */}
                 <Globe className="absolute -right-6 -top-6 size-40 text-slate-200/40 rotate-12" />
 
+                {!formState.studentInfo?.addressContact.isValid && (
+                  <Badge variant={"destructive"} className="uppercase mb-6 rounded-full font-bold">
+                    Action required
+                  </Badge>
+                )}
+
                 <div className="relative z-10 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
@@ -399,6 +407,21 @@ function StudentAddressContact() {
                           </FormItem>
                         )}
                       />
+
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${index}.purposeOfStay`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-1 md:col-span-2">
+                            <FormLabel>Purpose of Stay</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Study, Work, Family, Tourism" {...field} />
+                            </FormControl>
+                            <FormDescription>Briefly describe the reason for staying in this location.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -410,6 +433,7 @@ function StudentAddressContact() {
                   className="group !h-14 !px-8 rounded-xl"
                   onClick={() =>
                     append({
+                      purposeOfStay: "",
                       country: "",
                       cityOrTown: "",
                       fromYear: undefined as unknown as number,

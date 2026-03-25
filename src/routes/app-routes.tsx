@@ -4,6 +4,7 @@ import ErrorPage from "@/components/error-page";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
+import OpenHouseLayout from "@/components/layout/open-house/open-house-layout";
 import ScrollToTop from "@/components/layout/scroll-to-top";
 import CurrentLearnerLayout from "@/components/layout/vizschool/current-learner-layout";
 import NewLearnerLayout from "@/components/layout/vizschool/new-learner-layout";
@@ -35,6 +36,13 @@ import LearnerFamilyInformation from "@/pages/private/enrol-student/vizschool/ne
 import LearnerInformation from "@/pages/private/enrol-student/vizschool/new/learner-information";
 import LearnerUploadRequirements from "@/pages/private/enrol-student/vizschool/new/learner-upload-requirements";
 import { Enrollment } from "@/pages/private/Enrollment";
+import AccountInformation from "@/pages/private/open-house/application-form/account-information";
+import OpenHouseEnrollmentInformation from "@/pages/private/open-house/application-form/open-house-enrollment-information";
+import OpenHouseFamilyInformation from "@/pages/private/open-house/application-form/open-house-family-information";
+import OpenHouseStudentInformation from "@/pages/private/open-house/application-form/open-house-student-information";
+import OpenHouseUploadRequirements from "@/pages/private/open-house/application-form/open-house-upload-requirements";
+import OpenHouseLanding from "@/pages/private/open-house/open-house-landing";
+import RegistrationSubmitted from "@/pages/private/open-house/registration-submitted";
 import PendingTasks from "@/pages/private/pending-tasks";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentPhoto from "@/pages/private/student-photo";
@@ -94,6 +102,39 @@ function AppRoutes() {
           element={
             <UnauthenticatedGuard>
               <Registration />
+            </UnauthenticatedGuard>
+          }
+        />
+
+        <Route
+          path="/open-house-registration"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <OpenHouseLanding />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
+          }
+        />
+
+        <Route
+          path="/open-house/residency-status"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <ResidencyStatus />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
+          }
+        />
+
+        <Route
+          path="/open-house/stp-guidelines"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <STPGuidelines />
+              </ErrorBoundary>
             </UnauthenticatedGuard>
           }
         />
@@ -351,12 +392,89 @@ function AppRoutes() {
           />
         </Route>
 
+        {/* OPEN HOUSE */}
+        <Route
+          path="open-house"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <OpenHouseLayout />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
+          }>
+          <Route
+            path="account-info"
+            element={
+              <UnauthenticatedGuard>
+                <AccountInformation />
+              </UnauthenticatedGuard>
+            }
+          />
+          <Route
+            path="student-info"
+            element={
+              <UnauthenticatedGuard>
+                <OpenHouseStudentInformation />
+              </UnauthenticatedGuard>
+            }
+          />
+          <Route
+            index
+            path="family-info"
+            element={
+              <UnauthenticatedGuard>
+                <OpenHouseFamilyInformation />
+              </UnauthenticatedGuard>
+            }
+          />
+          <Route
+            path="enrollment-info"
+            element={
+              <UnauthenticatedGuard>
+                <OpenHouseEnrollmentInformation />
+              </UnauthenticatedGuard>
+            }
+          />
+          <Route
+            path="upload-requirements"
+            element={
+              <UnauthenticatedGuard>
+                <OpenHouseUploadRequirements />
+              </UnauthenticatedGuard>
+            }
+          />
+        </Route>
+
+        <Route
+          path="/registration-submitted"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <ApplicationSubmitted />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
+          }
+        />
+
         <Route
           path="/application-submitted"
           element={
             <AuthGuard>
-              <ApplicationSubmitted />
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <ApplicationSubmitted />
+              </ErrorBoundary>
             </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/open-house-registration-submitted"
+          element={
+            <UnauthenticatedGuard>
+              <ErrorBoundary fallback={<ErrorPage />}>
+                <RegistrationSubmitted />
+              </ErrorBoundary>
+            </UnauthenticatedGuard>
           }
         />
         <Route path="*" element={<NotFound />} />

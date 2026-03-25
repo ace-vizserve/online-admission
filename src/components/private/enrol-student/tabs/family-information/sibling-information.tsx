@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Baby, CalendarIcon, Info, MinusCircle, PlusCircle, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -27,26 +28,25 @@ function SiblingInformation() {
     },
   });
 
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo!,
+        siblingsInfo: {
+          ...debouncedValues,
+        },
+      },
+    });
+  }, [debouncedValues]);
+
   const { append, fields, remove } = useFieldArray({
     control: form.control,
     name: "siblings" as never,
   });
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo,
-        siblingsInfo: {
-          ...debouncedAutoSaveValue,
-        },
-      },
-    },
-    0
-  );
 
   function onSubmit(values: SiblingInformationSchema) {
     setFormState({
@@ -64,7 +64,26 @@ function SiblingInformation() {
   return (
     <>
       {!fields.length ? (
-        <EmptySibling />
+        <>
+          <EmptySibling />
+          <div className="flex pt-4">
+            <Button
+              type="button"
+              className="group !h-14 !px-8 rounded-xl"
+              onClick={() =>
+                append({
+                  siblingDateOfBirth: new Date(),
+                  siblingFullName: "",
+                  siblingReligion: "",
+                  siblingSchoolLevelOrCompanyPosition: "",
+                  siblingSchoolOrCompanyName: "",
+                })
+              }>
+              <PlusCircle className="mr-2 size-5 transition-transform group-hover:rotate-90" />
+              <span className="font-black uppercase tracking-widest text-xs">Add sibling</span>
+            </Button>
+          </div>
+        </>
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto ">
@@ -119,7 +138,7 @@ function SiblingInformation() {
                                   variant={"outline"}
                                   className={cn(
                                     "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
+                                    !field.value && "text-muted-foreground",
                                   )}>
                                   {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -195,10 +214,30 @@ function SiblingInformation() {
               </Card>
             ))}
 
+            <div className="flex pt-4">
+              <Button
+                type="button"
+                className="group !h-14 !px-8 rounded-xl"
+                onClick={() =>
+                  append({
+                    siblingDateOfBirth: new Date(),
+                    siblingFullName: "",
+                    siblingReligion: "",
+                    siblingSchoolLevelOrCompanyPosition: "",
+                    siblingSchoolOrCompanyName: "",
+                  })
+                }>
+                <PlusCircle className="mr-2 size-5 transition-transform group-hover:rotate-90" />
+                <span className="font-black uppercase tracking-widest text-xs">Add sibling</span>
+              </Button>
+            </div>
+
+            <Separator />
+            <br />
+
             <div className="flex flex-col gap-4 mb-4">
               <Button
                 size={"lg"}
-                variant={"secondary"}
                 className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
                 type="submit">
                 Save details
@@ -206,7 +245,6 @@ function SiblingInformation() {
               </Button>
 
               <Button
-                variant={"secondary"}
                 className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
                 type="submit">
                 Save details
@@ -216,38 +254,6 @@ function SiblingInformation() {
           </form>
         </Form>
       )}
-
-      <Button
-        disabled={fields.length >= 5}
-        size={"lg"}
-        className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-        onClick={() =>
-          append({
-            siblingDateOfBirth: new Date(),
-            siblingFullName: "",
-            siblingReligion: "",
-            siblingSchoolLevelOrCompanyPosition: "",
-            siblingSchoolOrCompanyName: "",
-          })
-        }>
-        Add Sibling
-        <PlusCircle />
-      </Button>
-
-      <Button
-        className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-        onClick={() =>
-          append({
-            siblingDateOfBirth: new Date(),
-            siblingFullName: "",
-            siblingReligion: "",
-            siblingSchoolLevelOrCompanyPosition: "",
-            siblingSchoolOrCompanyName: "",
-          })
-        }>
-        Add Sibling
-        <PlusCircle />
-      </Button>
     </>
   );
 }

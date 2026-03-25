@@ -248,7 +248,9 @@ export const classLevels = [
   { label: "Primary Five", value: "Primary Five" },
   { label: "Primary Six", value: "Primary Six" },
   { label: "Secondary One", value: "Secondary One" },
+  { label: "Cambridge Secondary One (Year 8)", value: "Cambridge Secondary One (Year 8)" },
   { label: "Secondary Two", value: "Secondary Two" },
+  { label: "Cambridge Secondary Two (Year 9)", value: "Cambridge Secondary Two (Year 9)" },
   { label: "Secondary Three", value: "Secondary Three" },
   { label: "Secondary Four", value: "Secondary Four" },
 ] as const;
@@ -287,6 +289,18 @@ export const campusDevelopmentFee = [
   { label: "Option 2 – Partial + Monthly (S$250 + S$100/mo)", value: "Option 2" },
   { label: "Option 3 – Monthly only (S$125/mo)", value: "Option 3" },
 ] as const;
+
+export const medicalConditions = [
+  { id: "allergies", label: "Allergies", requiresDetails: true },
+  { id: "asthma", label: "Asthma" },
+  { id: "heartConditions", label: "Heart Conditions" },
+  { id: "epilepsy", label: "Epilepsy / Seizures" },
+  { id: "diabetes", label: "Diabetes" },
+  { id: "eczema", label: "Eczema / Skin Conditions" },
+  { id: "foodAllergies", label: "Food Allergies", requiresDetails: true },
+  { id: "other", label: "Other Medical Condition", requiresDetails: true },
+  { id: "none", label: "None of the above" },
+];
 
 export const languages = [
   { label: "Afar", value: "aa" },

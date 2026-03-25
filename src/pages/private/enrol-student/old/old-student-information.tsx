@@ -1,5 +1,6 @@
 import { getStudentInformation } from "@/actions/private";
 import PageMetaData from "@/components/page-metadata";
+import MedicalInformationSection from "@/components/private/enrol-student/tabs/student-information/medical-information";
 import StudentAddressContact from "@/components/private/enrol-student/tabs/student-information/student-address-contact";
 import StudentDetails from "@/components/private/enrol-student/tabs/student-information/student-details";
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +13,7 @@ import { usePassTypeStore } from "@/zustand-store";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { ChevronRight, MapPin, User } from "lucide-react";
+import { BriefcaseMedical, ChevronRight, MapPin, User } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation, useParams } from "react-router";
 
@@ -94,6 +95,14 @@ function StudentInformationTabs({
       component: StudentAddressContact,
       hasError: isAddressContactInvalid,
     },
+    {
+      name: "Medical Information",
+      value: "medical-information",
+      description: "Child safety and wellbeing information",
+      icon: BriefcaseMedical,
+      component: MedicalInformationSection,
+      hasError: false,
+    },
   ];
 
   return (
@@ -115,7 +124,7 @@ function StudentInformationTabs({
               "group relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
               "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
-              tab.hasError && "border-red-300",
+              tab.hasError && "bg-red-50",
               tab.hasError &&
                 "data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-red-200",
             )}>
@@ -124,7 +133,7 @@ function StudentInformationTabs({
                 "relative flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
                 "bg-slate-100 text-slate-800",
 
-                tab.hasError && "bg-red-50 text-red-600",
+                tab.hasError && "bg-white text-red-600",
                 tab.hasError && "group-data-[state=active]:bg-white/30 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />

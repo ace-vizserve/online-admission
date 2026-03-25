@@ -8,7 +8,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolCurrentLearnerContext } from "@/context/vizschool/enrol-current-learner-context";
 import { religions } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import {
@@ -20,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -36,21 +35,20 @@ function LearnerDetails() {
     },
   });
 
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
 
-  useAutoSave(
-    setFormState,
-    {
+  useEffect(() => {
+    setFormState({
       ...formState,
       studentInfo: {
-        addressContact: {
-          ...formState.studentInfo?.addressContact,
+        ...formState.studentInfo!,
+        studentDetails: {
+          ...form.watch(),
         },
-        studentDetails: { ...debouncedAutoSaveValue },
       },
-    },
-    0
-  );
+    });
+  }, [debouncedValues]);
 
   async function onSubmit(values: VizSchoolStudentDetailsSchema) {
     const age = differenceInYears(new Date(), values.birthDay);
@@ -171,7 +169,7 @@ function LearnerDetails() {
                         variant={"outline"}
                         className={cn(
                           "w-full lg:w-[240px] pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
+                          !field.value && "text-muted-foreground",
                         )}>
                         {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

@@ -3,11 +3,32 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import {
   EnrolNewStudentFormState,
   EnrolOldStudentFormState,
+  OpenHouseFormState,
   VizSchoolEnrolNewStudentFormState,
   VizSchoolEnrolOldStudentFormState,
 } from "./types";
 
+export type EnrolNewStudentDraftStore = {
+  lastSavedAt: Date;
+  createdAt: Date;
+  expiresAt: Date;
+  draftId: string;
+  formState: Partial<EnrolNewStudentFormState | Record<string, unknown>>;
+  setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
+  currentTab: string;
+  activeTab: string;
+  completedTabs: string[];
+  academicYear: string;
+  type: "viz-school" | "hfse-is";
+  clearState: () => void;
+};
+
 export type SecuritySettingsSheetStore = {
+  isOpen: boolean;
+  setIsOpen: (state: boolean) => void;
+};
+
+export type ApplicationDraftsDialogStore = {
   isOpen: boolean;
   setIsOpen: (state: boolean) => void;
 };
@@ -15,6 +36,12 @@ export type SecuritySettingsSheetStore = {
 export type AcademicYearStore = {
   academicYear: string;
   setAcademicYear: (academicYear: string) => void;
+  clearState: () => void;
+};
+
+export type OpenHouseInstitutionStore = {
+  institution: string;
+  setInstitution: (institution: string) => void;
   clearState: () => void;
 };
 
@@ -51,13 +78,19 @@ export type EnrolNewStudentTabStateStore = {
   completedTabs: string[];
   setActiveTab: (tab: string) => void;
   setCurrentTab: (tab: string) => void;
-  setCompletedTabs: (tab: string) => void;
+  setCompletedTabs: (tab: string | string[]) => void;
   clearState: () => void;
 };
 
 export type EnrolNewStudentStore = {
   formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
+  clearState: () => void;
+};
+
+export type OpenHouseStore = {
+  formState: Partial<OpenHouseFormState> | Record<string, null>;
+  setFormState: (data: Partial<OpenHouseFormState>) => void;
   clearState: () => void;
 };
 
@@ -82,11 +115,11 @@ export type VizSchoolEnrolOldStudentStore = {
 export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateStore>()(
   persist(
     (set, _, store) => ({
-      currentTab: "",
-      activeTab: "",
       clearState: () => {
         set(store.getInitialState());
       },
+      currentTab: "",
+      activeTab: "",
       completedTabs: [],
       setActiveTab: (tab: string) =>
         set((state) => ({
@@ -98,11 +131,15 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
           ...state,
           currentTab: tab,
         })),
-      setCompletedTabs: (tab: string) =>
-        set((state) => ({
-          ...state,
-          completedTabs: [...state.completedTabs, tab],
-        })),
+      setCompletedTabs: (tab: string | string[]) =>
+        set((state) => {
+          const nextTabs = Array.isArray(tab) ? [...state.completedTabs, ...tab] : [...state.completedTabs, tab];
+
+          return {
+            ...state,
+            completedTabs: Array.from(new Set(nextTabs)),
+          };
+        }),
     }),
     {
       name: "enrolNewStudentTabState",
@@ -112,6 +149,11 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
 );
 
 export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
+  isOpen: false,
+  setIsOpen: (state) => set(() => ({ isOpen: state })),
+}));
+
+export const useApplicationDraftsDialogStore = create<ApplicationDraftsDialogStore>()((set) => ({
   isOpen: false,
   setIsOpen: (state) => set(() => ({ isOpen: state })),
 }));
@@ -128,9 +170,32 @@ export const usePasswordResetStore = create<PasswordResetStore>()(
   ),
 );
 
+export const useOpenHouseStore = create<OpenHouseStore>()(
+  persist(
+    (set, _, store) => ({
+      formState: {},
+      clearState: () => {
+        set(store.getInitialState());
+      },
+      setFormState: (data: Partial<OpenHouseFormState>) =>
+        set((state) => ({
+          formState: {
+            ...state.formState,
+            ...data,
+          },
+        })),
+    }),
+    {
+      name: "openHouseFormState",
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
+);
+
 export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
   persist(
     (set, _, store) => ({
+      createdAt: new Date(),
       formState: {},
       clearState: () => {
         set(store.getInitialState());
@@ -175,6 +240,7 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
 export const useVizSchoolEnrolNewStudentStore = create<VizSchoolEnrolNewStudentStore>()(
   persist(
     (set, _, store) => ({
+      createdAt: new Date(),
       formState: {},
       clearState: () => {
         set(store.getInitialState());
@@ -232,6 +298,22 @@ export const useSelectAcademicYear = create<AcademicYearStore>()(
   ),
 );
 
+export const useSelectOpenHouseInstitution = create<OpenHouseInstitutionStore>()(
+  persist(
+    (set, _, store) => ({
+      institution: "",
+      clearState: () => {
+        set(store.getInitialState());
+      },
+      setInstitution: (institution: string) => set({ institution }),
+    }),
+    {
+      name: "openHouseInstitution",
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
+);
+
 export const useSelectSchoolFee = create<SchoolFeeStore>()(
   persist(
     (set, _, store) => ({
@@ -283,3 +365,34 @@ export const usePreCourseAcknowledgementStore = create<PreCourseAcknowledgementS
     },
   ),
 );
+
+export const createNewStudentDraftStore = (type: "viz-school" | "hfse-is", draftId: string) =>
+  create<EnrolNewStudentDraftStore>()(
+    persist(
+      (set, _, store) => ({
+        type,
+        academicYear: "",
+        draftId: draftId,
+        lastSavedAt: new Date(),
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        activeTab: "",
+        completedTabs: [],
+        currentTab: "",
+        formState: {},
+        clearState: () => {
+          set(store.getInitialState());
+        },
+        setFormState: (data: Partial<EnrolNewStudentFormState>) =>
+          set((state) => ({
+            formState: { ...state.formState, ...data },
+          })),
+      }),
+      {
+        name:
+          type == "hfse-is"
+            ? `enrolNewStudent:draft:${draftId}:hfse-is`
+            : `enrolNewStudent:draft:${draftId}:viz-school`,
+      },
+    ),
+  );

@@ -1,13 +1,14 @@
 import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
@@ -21,7 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
-import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
+import { Calendar as CalendarIcon, Info, MessageCircle, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -39,21 +41,20 @@ function GuardianInformation() {
     },
   });
 
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
 
-  useAutoSave(
-    setFormState,
-    {
+  useEffect(() => {
+    setFormState({
       ...formState,
       familyInfo: {
-        ...formState.familyInfo,
+        ...formState.familyInfo!,
         guardianInfo: {
-          ...debouncedAutoSaveValue,
+          ...debouncedValues,
         },
       },
-    },
-    0
-  );
+    });
+  }, [debouncedValues]);
 
   function onSubmit(values: GuardianInformationSchema) {
     const insertedValues = Object.keys(values).filter((v) => {
@@ -260,7 +261,7 @@ function GuardianInformation() {
                           variant={"outline"}
                           className={cn(
                             "w-full lg:w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}>
                           {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -394,6 +395,46 @@ function GuardianInformation() {
           />
         </div>
 
+        {!formState.familyInfo?.guardianInfo?.noGuardianInfo && (
+          <FormField
+            control={form.control}
+            name="guardianWhatsappTeamsConsent"
+            render={({ field }) => (
+              <FormItem>
+                <div
+                  className={cn(
+                    "p-6 rounded-xl border-2 transition-all duration-300 max-w-xl w-full mx-auto",
+                    field.value ? "bg-emerald-50/50 border-emerald-200 shadow-sm" : "bg-slate-50 border-slate-100",
+                  )}>
+                  <label className="flex items-start gap-4 cursor-pointer">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1 size-5 rounded-md data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                      />
+                    </FormControl>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MessageCircle className="size-4 text-emerald-600" />
+                        <span className="text-sm font-bold text-slate-800">Communication Consent</span>
+                      </div>
+                      <span className="text-sm leading-relaxed text-slate-700">
+                        Include this mobile number in the class{" "}
+                        <span className="font-bold text-emerald-700">WhatsApp/Teams</span> group chat.
+                      </span>
+                      <FormDescription className="mt-2 text-xs font-semibold text-amber-700 leading-normal">
+                        Note: Your number will only be used for official school communications.
+                      </FormDescription>
+                    </div>
+                  </label>
+                </div>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
+        )}
+
         <div className="!space-y-4">
           <FormField
             control={form.control}
@@ -422,6 +463,10 @@ function GuardianInformation() {
             )}
           />
         </div>
+
+        <br />
+        <Separator />
+        <br />
 
         <Button
           size={"lg"}

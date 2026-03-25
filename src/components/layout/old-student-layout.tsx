@@ -18,37 +18,51 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useSelectAcademicYear } from "@/zustand-store";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
 import { OctagonAlert } from "lucide-react";
-import { useCallback, useEffect, useTransition } from "react";
+import { useEffect, useState } from "react";
+import { useMediaQuery } from "react-responsive";
+
+const academicYears = ["ay2025", "ay2026", "ay2027"];
 
 function OldStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isPending, setTransition] = useTransition();
-
-  const redirectToDashboard = useCallback(() => {
-    setTransition(() => {
-      navigate("/admission/dashboard");
-    });
-  }, [navigate]);
+  const academicYearParams = searchParams.get("academicYear");
+  const [isPending, setIsPending] = useState<boolean>(false);
 
   useEffect(() => {
-    const academicYearParams = searchParams.get("academicYear");
+    if (!academicYears.includes(academicYear)) {
+      setIsPending(true);
 
-    if (!academicYearParams) {
-      redirectToDashboard();
+      const timeout = setTimeout(() => {
+        navigate("/admission/dashboard");
+      }, 1500);
+
+      return () => clearTimeout(timeout);
     }
 
-    if (academicYearParams != academicYear) {
+    if (academicYearParams !== academicYear) {
       setSearchParams({ academicYear });
     }
-  }, [academicYear, redirectToDashboard, searchParams, setSearchParams]);
+
+    setIsPending(false);
+  }, [academicYear, navigate]);
 
   return (
     <EnrolOldStudentContextProvider>
-      <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 flex items-center border-b">
+      <div className="sticky top-0 w-full z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl flex items-center justify-between px-4 md:px-6">
           <ExitApplicationDialog />
           <SubmitApplicationDialog />
@@ -90,11 +104,62 @@ function OldStudentLayout() {
 function ExitApplicationDialog() {
   const { clearState } = useEnrolOldStudentContext();
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
+  const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
+  const clearPassType = usePassTypeStore((state) => state.clearState);
+
+  const isDesktop = useMediaQuery({
+    query: "(min-width: 786px)",
+  });
 
   function exitApplication() {
+    clearPassType();
+    clearPreCourse();
     clearState();
     clearAcademicYearState();
     sessionStorage.clear();
+  }
+
+  if (!isDesktop) {
+    return (
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant="link" className="gap-2 font-bold">
+            <ArrowLeft />
+            Cancel
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader className="items-center text-center">
+            <DrawerTitle className="font-black">
+              <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                <OctagonAlert className="h-7 w-7 text-destructive" />
+              </div>
+              Exit Application?
+            </DrawerTitle>
+            <DrawerDescription className="text-xs md:text-sm text-center font-medium">
+              Are you sure you want to exit this page? Both saved and unsaved information will be removed and cannot be
+              recovered.
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <DrawerFooter className="mt-2 !flex-col sm:justify-center gap-4">
+            <DrawerClose asChild>
+              <Button className="font-bold" variant={"outline"}>
+                Cancel
+              </Button>
+            </DrawerClose>
+            <DrawerClose>
+              <Button
+                variant="destructive"
+                className="font-bold w-full sm:w-auto"
+                onClick={async () => await exitApplication()}>
+                Exit Anyway
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   return (
@@ -121,7 +186,7 @@ function ExitApplicationDialog() {
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={exitApplication}
+            onClick={async () => await exitApplication()}
             className={buttonVariants({ variant: "destructive", className: "font-bold" })}>
             Exit Anyway
           </AlertDialogAction>

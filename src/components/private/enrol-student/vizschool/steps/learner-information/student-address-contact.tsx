@@ -4,19 +4,41 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
 import { maritalStatuses } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Info, Save } from "lucide-react";
+import { ArrowRight, FilePen, Info } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 function StudentAddressContact() {
-  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewLearnerContext();
+  const {
+    formState,
+    setFormState,
+    setCompletedTabs,
+    setCurrentTab,
+    setActiveTab,
+    activeTab,
+    completedTabs,
+    currentTab,
+  } = useEnrolNewLearnerContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "viz-school",
+  });
   const navigate = useNavigate();
 
   const form = useForm<StudentAddressContactSchema>({
@@ -26,19 +48,55 @@ function StudentAddressContact() {
     },
   });
 
-  function onSubmit(values: StudentAddressContactSchema) {
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
     setFormState({
+      ...formState,
       studentInfo: {
-        studentDetails: { ...formState.studentInfo!.studentDetails },
-        addressContact: { ...values, isValid: true },
+        ...formState.studentInfo!,
+        addressContact: {
+          ...debouncedValues,
+        },
       },
     });
-    toast.success("Student Address & Contact details saved!", {
-      description: "Please double check everything before proceeding.",
-    });
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
+      },
+    );
+  }, [debouncedValues]);
+
+  useEffect(() => {
+    form.trigger();
+  }, []);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Student Address & Contact details saved!", {
+          description: "Please double check everything before proceeding.",
+        });
+
+        navigate("/vizschool/enrol-student/new/family-info");
+      })();
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
   }
 
-  function proceedToNextStep() {
+  function proceedToNextStep(values: StudentAddressContactSchema) {
     if (!Object.keys(formState).length) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
@@ -52,37 +110,32 @@ function StudentAddressContact() {
       return;
     }
 
-    if (!formState.studentInfo?.addressContact?.isValid) {
-      toast.warning("Student Address & Contact invalid!", {
-        description:
-          "Please check the student’s address and contact details and correct any missing or invalid information.",
-      });
-      return;
-    }
-
-    setCompletedTabs("/vizschool/enrol-student/new/student-info");
-    setCurrentTab("/vizschool/enrol-student/new/family-info");
-    setActiveTab("/vizschool/enrol-student/new/family-info");
-    navigate("/vizschool/enrol-student/new/family-info");
-  }
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
+    setFormState({
       ...formState,
       studentInfo: {
-        studentDetails: { ...formState.studentInfo?.studentDetails },
-        addressContact: { ...debouncedAutoSaveValue },
+        ...formState.studentInfo,
+        addressContact: { ...values, isValid: true },
       },
-    },
-    0
-  );
+    });
+
+    setCompletedTabs("/vizschool/enrol-student/new/student-info");
+
+    if (completedTabs.includes("/vizschool/enrol-student/new/family-info")) return;
+
+    setCurrentTab("/vizschool/enrol-student/new/family-info");
+    setActiveTab("/vizschool/enrol-student/new/family-info");
+  }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+      <form
+        onSubmit={form.handleSubmit(proceedToNextStep, (errors) => {
+          if (errors.nationality) {
+            toast.error("Please select a student nationality!", {
+              description: "Make sure to double check everything",
+            });
+          }
+        })}>
         <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
           <Info className="h-4 w-4 !text-blue-500" />
           <div className="space-y-1 text-pretty">
@@ -235,39 +288,45 @@ function StudentAddressContact() {
           />
         </div>
 
+        <br />
+        <Separator />
+        <br />
+
         <div className="flex flex-col gap-4">
           <Button
-            size={"lg"}
-            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-            type="submit">
-            Save details
-            <Save />
-          </Button>
-
-          <Button
-            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-            type="submit">
-            Save details
-            <Save />
-          </Button>
-
-          <Button
             variant={"secondary"}
-            onClick={proceedToNextStep}
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-            type="button">
-            Proceed to next step
+            type="submit">
+            Save & proceed to next step
             <ArrowRight />
           </Button>
 
           <Button
             variant={"secondary"}
-            onClick={proceedToNextStep}
+            className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
+            type="submit">
+            Save & proceed to next step
+            <ArrowRight />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            size={"lg"}
+            className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
+            type="button">
+            Save for later & exit
+            <FilePen />
+          </Button>
+
+          <Button
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Proceed to next step
-            <ArrowRight />
+            Save for later & exit
+            <FilePen />
           </Button>
         </div>
       </form>

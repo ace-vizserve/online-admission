@@ -1,13 +1,16 @@
 "use client";
 
 import { Label } from "@/components/ui/label";
+import { applicationTypes } from "@/data";
 import { Student } from "@/types";
 import { differenceInYears, formatDate } from "date-fns";
 import {
   BadgeInfo,
   BookOpenCheck,
   Cake,
+  Calendar,
   CalendarDays,
+  FileText,
   Globe,
   HeartHandshake,
   Languages,
@@ -43,6 +46,8 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
     religion,
     religionOther,
   } = studentInformation;
+
+  const isStpApplication = applicationTypes.includes(studentInformation.stpApplicationType || "");
 
   const age = differenceInYears(new Date(), new Date(birthDay));
   const maskedNric = nric ? nric.slice(0, 3) + "****" + nric.slice(-2) : "N/A";
@@ -99,6 +104,25 @@ function StudentInformation({ label, studentInformation }: { label: string; stud
             />
           </div>
         </section>
+
+        {isStpApplication && (
+          <section className="space-y-8">
+            <SectionHeader title="Residence History" icon={<Globe className="size-5 text-indigo-500" />} />
+            {studentInformation.residenceHistory?.map((residence, idx) => (
+              <div key={idx} className="space-y-4">
+                <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+                  <DataField label="Country" value={residence.country} icon={<Globe />} />
+                  <DataField label="City / Town" value={residence.cityOrTown} icon={<MapPin />} />
+                </div>
+                <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+                  <DataField label="From Year" value={String(residence.fromYear)} icon={<Calendar />} />
+                  <DataField label="To Year" value={String(residence.toYear)} icon={<Calendar />} />
+                </div>
+                <DataField label="Purpose of Stay" value={residence.purposeOfStay} icon={<FileText />} />
+              </div>
+            ))}
+          </section>
+        )}
       </div>
     </div>
   );

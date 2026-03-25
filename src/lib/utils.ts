@@ -1,6 +1,7 @@
 import { classLevels } from "@/data";
 import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
 import { ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
+import { EnrolNewStudentDraftStore } from "@/zustand-store";
 import { AuthError } from "@supabase/supabase-js";
 import { clsx, type ClassValue } from "clsx";
 import { differenceInYears, getHours, parseISO } from "date-fns";
@@ -71,10 +72,10 @@ export function removeEmptyKeys(obj: Record<string, unknown>) {
   return cleaned;
 }
 
-export async function canEnrollStudent(enroleeNumber: string) {
+export async function canEnrollStudent(enroleeNumber: string, academicYear: string) {
   try {
     const { data, error } = await supabase
-      .from("ay2025_enrolment_applications")
+      .from(`${academicYear}_enrolment_applications`)
       .select("levelApplied")
       .eq("enroleeNumber", enroleeNumber)
       .maybeSingle();
@@ -84,7 +85,7 @@ export async function canEnrollStudent(enroleeNumber: string) {
     }
 
     if (!data) {
-      throw new Error("No student found!");
+      return true;
     }
 
     return data.levelApplied !== "Secondary 4";
@@ -183,6 +184,8 @@ export function extractStudentInfo(studentInformation: Student[]) {
     religion: info.religion,
     religionOther: info.religionOther ?? null,
     enroleePhoto: info.enroleePhoto,
+    residenceHistory: info.residenceHistory,
+    stpApplicationType: info.stpApplicationType,
   };
 
   return studentInfo;
@@ -361,6 +364,16 @@ export function extractSiblings(family: FamilyInfo) {
 
 export async function getStudentsList(parentEmail: string) {
   try {
+    const { data: ay2027studentInformation, error: ay2027studentInformationError } = await supabase
+      .from("ay2027_enrolment_applications")
+      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
+      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+      .eq("applicationStatus", "Registered");
+
+    if (ay2027studentInformationError) {
+      throw new Error(ay2027studentInformationError.message);
+    }
+
     const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
       .from("ay2026_enrolment_applications")
       .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
@@ -393,12 +406,13 @@ export async function getStudentsList(parentEmail: string) {
         enrollmentStatus:
           academicYear === "2026" && (info.studentNumber as string).startsWith("V")
             ? "Pre-Enrolled for VizSchool"
-            : academicYear === "2026" && !(info.studentNumber as string).startsWith("V")
-              ? "Pre-Enrolled for 2026"
+            : (academicYear === "2026" || academicYear === "2027") && !(info.studentNumber as string).startsWith("V")
+              ? `Pre-Enrolled for ${academicYear}`
               : "Registered",
       }));
 
     const allStudents = [
+      ...mapStudents(ay2027studentInformation, "2027"),
       ...mapStudents(ay2026studentInformation, "2026"),
       ...mapStudents(ay2025studentInformation, "2025"),
     ];
@@ -417,10 +431,12 @@ export async function getStudentsList(parentEmail: string) {
   }
 }
 
-export async function getPreviousAYEnrolledStudents(parentEmail: string) {
+export async function getPreviousAYEnrolledStudents(parentEmail: string, academicYear: string) {
   try {
+    const prevAcademicYear = "ay" + (parseInt(academicYear.replace("ay", ""), 10) - 1);
+
     const { error: currentEnrolledError, data: currentEnrolled } = await supabase
-      .from(`ay${new Date().getFullYear() - 1}_enrolment_applications`)
+      .from(`${prevAcademicYear}_enrolment_applications`)
       .select("enroleeFullName, levelApplied, enroleeNumber, enroleePhoto, studentNumber, nric, birthDay, pass")
       .eq("applicationStatus", "Registered")
       .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
@@ -490,88 +506,62 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
 
 export async function getStudentEnrollments(studentNumber: string, parentEmail: string) {
   try {
-    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
-      .from("ay2026_enrolment_applications")
-      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("studentNumber", studentNumber)
-      .eq("applicationStatus", "Registered");
+    const academicYears = ["ay2027", "ay2026", "ay2025"];
 
-    if (ay2026studentInformationError) {
-      throw new Error(ay2026studentInformationError.message);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allEnrollments: any[] = [];
+
+    for (const academicYear of academicYears) {
+      const APPLICATIONS_TABLE = `${academicYear}_enrolment_applications`;
+      const STATUS_TABLE = `${academicYear}_enrolment_status`;
+
+      const { data: studentInformation, error: studentInformationError } = await supabase
+        .from(APPLICATIONS_TABLE)
+        .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
+        .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+        .eq("studentNumber", studentNumber)
+        .eq("applicationStatus", "Registered");
+
+      if (studentInformationError) {
+        throw new Error(studentInformationError.message);
+      }
+
+      if (!studentInformation || studentInformation.length === 0) continue;
+
+      const { data: studentEnrollment, error: studentEnrollmentError } = await supabase
+        .from(STATUS_TABLE)
+        .select("applicationRemarks, enroleeNumber, applicationStatus")
+        .in(
+          "enroleeNumber",
+          studentInformation.map((v) => v.enroleeNumber),
+        );
+
+      if (studentEnrollmentError) {
+        throw new Error(studentEnrollmentError.message);
+      }
+
+      const merged = studentInformation.map((info) => {
+        const enrollmentStatus = studentEnrollment?.find((v) => v.enroleeNumber === info.enroleeNumber);
+
+        return {
+          remarks: enrollmentStatus?.applicationRemarks ?? "No remarks provided",
+          studentNumber: info.studentNumber,
+          studentName: info.enroleeFullName,
+          academicYear: academicYear.replace("ay", ""),
+          gradeLevel: info.levelApplied,
+          status: enrollmentStatus?.applicationStatus ?? info.applicationStatus,
+          enroleeNumber: info.enroleeNumber,
+        };
+      });
+
+      allEnrollments.push(...merged);
     }
 
-    const { data: ay2026studentEnrollment, error: ay2026studentEnrollmentError } = await supabase
-      .from("ay2026_enrolment_status")
-      .select("applicationRemarks, enroleeNumber, applicationStatus")
-      .in(
-        "enroleeNumber",
-        ay2026studentInformation.map((v) => v.enroleeNumber),
-      );
+    const seenGradeLevels = new Set<string>();
 
-    if (ay2026studentEnrollmentError) {
-      throw new Error(ay2026studentEnrollmentError.message);
-    }
-
-    const ay2026Enrollment = ay2026studentInformation.map((info) => {
-      const enrollmentStatus = ay2026studentEnrollment.find((v) => v.enroleeNumber == info.enroleeNumber);
-
-      return {
-        ...info,
-        ...(enrollmentStatus ?? {}),
-      };
-    });
-
-    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, levelApplied, studentNumber, applicationStatus, enroleeNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("studentNumber", studentNumber)
-      .eq("applicationStatus", "Registered");
-
-    if (ay2025studentInformationError) {
-      throw new Error(ay2025studentInformationError.message);
-    }
-
-    const { data: ay2025studentEnrollment, error: ay2025studentEnrollmentError } = await supabase
-      .from("ay2025_enrolment_status")
-      .select("applicationRemarks, enroleeNumber, applicationStatus")
-      .in(
-        "enroleeNumber",
-        ay2025studentInformation.map((v) => v.enroleeNumber),
-      );
-
-    if (ay2025studentEnrollmentError) {
-      throw new Error(ay2025studentEnrollmentError.message);
-    }
-
-    const ay2025Enrollment = ay2025studentInformation.map((info) => {
-      const enrollmentStatus = ay2025studentEnrollment.find((v) => v.enroleeNumber == info.enroleeNumber);
-
-      return {
-        ...info,
-        ...(enrollmentStatus ?? {}),
-      };
-    });
-
-    const mapStudents = (data: typeof ay2025Enrollment, academicYear: string) =>
-      data.map((info) => ({
-        remarks: info.applicationRemarks ?? "No remarks provided",
-        studentNumber: info.studentNumber,
-        studentName: info.enroleeFullName,
-        academicYear,
-        gradeLevel: info.levelApplied,
-        status: info.applicationStatus,
-        enroleeNumber: info.enroleeNumber,
-      }));
-
-    const studentsList = [...mapStudents(ay2026Enrollment, "2026"), ...mapStudents(ay2025Enrollment, "2025")];
-
-    const seenTotalChildren = new Set();
-
-    const enrollmentStudentList = studentsList.filter((student) => {
-      if (seenTotalChildren.has(student.gradeLevel)) return false;
-      seenTotalChildren.add(student.gradeLevel);
+    const enrollmentStudentList = allEnrollments.filter((student) => {
+      if (seenGradeLevels.has(student.gradeLevel)) return false;
+      seenGradeLevels.add(student.gradeLevel);
       return true;
     });
 
@@ -579,5 +569,106 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
+  }
+}
+
+const NEW_STUDENT_DRAFT_PREFIX = "enrolNewStudent:draft:";
+
+export const DRAFT_EXPIRY_DAYS = 30;
+export const now = new Date();
+
+type DraftMeta = {
+  createdAt: string;
+  lastSavedAt: string;
+  expiresAt: string;
+};
+
+export function isExpired(expiresAt?: string | Date) {
+  if (!expiresAt) return false;
+
+  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+
+  if (Number.isNaN(expiry.getTime())) return false;
+
+  return expiry < new Date();
+}
+
+export function isExpiringSoon(expiresAt?: string | Date, days = 5) {
+  if (!expiresAt) return false;
+
+  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+
+  if (Number.isNaN(expiry.getTime())) return false;
+
+  const now = new Date();
+  const soon = new Date();
+  soon.setDate(now.getDate() + days);
+
+  return expiry > now && expiry <= soon;
+}
+
+export function createNewStudentDraft() {
+  const now = new Date();
+
+  const draftKeys = Object.keys(localStorage).filter((k) => k.startsWith(NEW_STUDENT_DRAFT_PREFIX));
+
+  for (const key of draftKeys) {
+    const raw = localStorage.getItem(key);
+    if (!raw) continue;
+
+    const meta: DraftMeta = JSON.parse(raw);
+
+    if (new Date(meta.expiresAt) < now) {
+      localStorage.removeItem(key);
+    }
+  }
+
+  const draftId = crypto.randomUUID();
+
+  return draftId;
+}
+
+export function listNewStudentDrafts(type: "viz-school" | "hfse-is") {
+  return Object.keys(localStorage)
+    .filter((k) => k.startsWith(`enrolNewStudent:draft:`) && k.endsWith(`:${type}`))
+    .map((key) => {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    })
+    .filter(Boolean);
+}
+
+export type DraftSort = "lastUpdated" | "expiringSoon" | "expired" | "oldest";
+
+export function sortDrafts(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  drafts: any[],
+  sortBy: DraftSort,
+) {
+  const now = new Date();
+
+  const draftsWithState = drafts as { state: EnrolNewStudentDraftStore }[];
+
+  switch (sortBy) {
+    case "lastUpdated":
+      return [...draftsWithState].sort(
+        (a, b) => new Date(b.state.lastSavedAt).getTime() - new Date(a.state.lastSavedAt).getTime(),
+      );
+
+    case "oldest":
+      return [...draftsWithState].sort(
+        (a, b) => new Date(a.state.createdAt).getTime() - new Date(b.state.createdAt).getTime(),
+      );
+
+    case "expiringSoon":
+      return [...draftsWithState].sort(
+        (a, b) => new Date(a.state.expiresAt ?? 0).getTime() - new Date(b.state.expiresAt ?? 0).getTime(),
+      );
+
+    case "expired":
+      return draftsWithState.filter((draft) => draft.state.expiresAt && new Date(draft.state.expiresAt) < now);
+
+    default:
+      return draftsWithState;
   }
 }

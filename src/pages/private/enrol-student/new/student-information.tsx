@@ -1,13 +1,15 @@
 "use client";
 
 import PageMetaData from "@/components/page-metadata";
+import MedicalInformationSection from "@/components/private/enrol-student/steps/student-information/medical-information";
 import StudentAddressContact from "@/components/private/enrol-student/steps/student-information/student-address-contact";
 import StudentDetails from "@/components/private/enrol-student/steps/student-information/student-details";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
-import { ChevronRight, MapPin, User } from "lucide-react";
+import { BriefcaseMedical, ChevronRight, MapPin, User } from "lucide-react";
+import { useCallback, useState } from "react";
 
 const tabs = [
   {
@@ -23,6 +25,13 @@ const tabs = [
     description: "Emergency and residence info",
     icon: MapPin,
     component: StudentAddressContact,
+  },
+  {
+    name: "Medical Information",
+    value: "medical-information",
+    description: "Child safety and wellbeing information",
+    icon: BriefcaseMedical,
+    component: MedicalInformationSection,
   },
 ];
 
@@ -40,10 +49,20 @@ function StudentInformation() {
 }
 
 function StudentInformationTabs() {
+  const [tabOpened, setTabOpened] = useState<string>(tabs[0].value);
+
+  const memoizedCb = useCallback(
+    (tab: string) => {
+      setTabOpened(tab);
+    },
+    [tabOpened],
+  );
+
   return (
     <Tabs
       orientation="vertical"
-      defaultValue={tabs[0].value}
+      value={tabOpened}
+      defaultValue={tabOpened}
       className="w-full h-full flex flex-col lg:flex-row items-start gap-8 xl:gap-12">
       {/* Sidebar-style Tabs List */}
       <TabsList className="grid grid-cols-1 h-auto w-full lg:w-[320px] gap-3 bg-transparent p-0">
@@ -53,17 +72,18 @@ function StudentInformationTabs() {
 
         {tabs.map((tab) => (
           <TabsTrigger
+            onClick={() => memoizedCb(tab.value)}
             key={tab.value}
             value={tab.value}
             className={cn(
               "relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
-              "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200"
+              "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
             )}>
             <div
               className={cn(
                 "flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
-                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white"
+                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />
             </div>
@@ -82,7 +102,6 @@ function StudentInformationTabs() {
         <Separator orientation="vertical" className="h-[500px] bg-slate-100" />
       </div>
 
-      {/* Main Form Content Area */}
       <div className="flex-1 w-full bg-white rounded-3xl border border-slate-100 p-6 md:p-10 shadow-sm">
         {tabs.map((tab) => (
           <TabsContent className="mt-0 focus-visible:ring-0" key={tab.value} value={tab.value}>
@@ -92,7 +111,7 @@ function StudentInformationTabs() {
                 Please ensure all required fields are filled correctly.
               </p>
             </div>
-            <tab.component />
+            <tab.component setTabOpened={memoizedCb} />
           </TabsContent>
         ))}
       </div>

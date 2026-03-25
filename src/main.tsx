@@ -26,5 +26,5 @@ createRoot(document.getElementById("root")!).render(
       </UserSessionContextProvider>
     </HelmetProvider>
     <Toaster closeButton theme="light" richColors position="top-center" expand visibleToasts={4} />
-  </StrictMode>
+  </StrictMode>,
 );

@@ -1,4 +1,5 @@
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -8,19 +9,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { applicationTypes, maritalStatuses } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useSaveApplication } from "@/hooks/use-save-application";
 import { cn } from "@/lib/utils";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
-import { usePassTypeStore } from "@/zustand-store";
+import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Check, Globe, Info, PlusCircle, Save, Trash2 } from "lucide-react";
+import { Check, FilePen, Globe, Info, PlusCircle, Save, Trash2 } from "lucide-react";
+import { memo, useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 
-function StudentAddressContact() {
-  const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useEnrolNewStudentContext();
+const StudentAddressContact = memo(function StudentAddressContact({
+  setTabOpened,
+}: {
+  setTabOpened: (tab: string) => void;
+}) {
+  const { formState, setFormState, activeTab, completedTabs, currentTab } = useEnrolNewStudentContext();
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const { isLoading, saveApplication } = useSaveApplication({
+    academicYear,
+    activeTab,
+    completedTabs,
+    currentTab,
+    formState,
+    setFormState,
+    type: "hfse-is",
+  });
 
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const shouldShowResidenceHistory = applicationTypes.includes(stpApplicationType);
@@ -51,21 +67,47 @@ function StudentAddressContact() {
     name: "residenceHistory",
   });
 
-  const navigate = useNavigate();
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
 
-  function onSubmit(values: StudentAddressContactSchema) {
+  useEffect(() => {
     setFormState({
+      ...formState,
       studentInfo: {
-        studentDetails: { ...formState.studentInfo!.studentDetails },
-        addressContact: { ...values, isValid: true },
+        ...formState.studentInfo!,
+        addressContact: {
+          ...debouncedValues,
+        },
       },
     });
-    toast.success("Student Address & Contact details saved!", {
-      description: "Please double check everything before proceeding.",
-    });
+  }, [debouncedValues]);
+
+  useEffect(() => {
+    form.trigger();
+  }, []);
+
+  useBeforeUnload((e) => {
+    e.preventDefault();
+  });
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      (async () => {
+        await saveApplication({ willExit: false });
+
+        toast.success("Student Address & Contact details saved!", {
+          description: "Please double check everything before proceeding.",
+        });
+      })();
+      setTabOpened("medical-information");
+    }
+  }, [form.formState.isSubmitSuccessful]);
+
+  async function saveForLater() {
+    await saveApplication({ willExit: true });
   }
 
-  function proceedToNextStep() {
+  function proceedToNextStep(values: StudentAddressContactSchema) {
     if (!Object.keys(formState).length) {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
@@ -79,37 +121,26 @@ function StudentAddressContact() {
       return;
     }
 
-    if (!formState.studentInfo?.addressContact?.isValid) {
-      toast.warning("Student Address & Contact invalid!", {
-        description:
-          "Please check the student’s address and contact details and correct any missing or invalid information.",
-      });
-      return;
-    }
-
-    setCompletedTabs("/enrol-student/new/student-info");
-    setCurrentTab("/enrol-student/new/family-info");
-    setActiveTab("/enrol-student/new/family-info");
-    navigate("/enrol-student/new/family-info");
-  }
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
+    setFormState({
       ...formState,
       studentInfo: {
-        studentDetails: { ...formState.studentInfo?.studentDetails },
-        addressContact: { ...debouncedAutoSaveValue },
+        ...formState.studentInfo,
+        addressContact: { ...values, isValid: true },
       },
-    },
-    0,
-  );
+    });
+  }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+      <form
+        onSubmit={form.handleSubmit(proceedToNextStep, (errors) => {
+          if (errors.nationality) {
+            toast.error("Please select a student nationality!", {
+              description: "Make sure to double check everything",
+            });
+          }
+        })}
+        className="space-y-8 max-w-5xl mx-auto">
         <Alert className="bg-blue-500/10 border-none w-full md:w-max md:max-w-[400px] mx-auto">
           <Info className="h-4 w-4 !text-blue-500" />
           <div className="space-y-1 text-pretty">
@@ -272,6 +303,12 @@ function StudentAddressContact() {
                 {/* Decorative Background Icon - Gives it a modern, premium feel */}
                 <Globe className="absolute -right-6 -top-6 size-40 text-slate-200/40 rotate-12" />
 
+                {!formState.studentInfo?.addressContact?.isValid && (
+                  <Badge variant={"destructive"} className="uppercase mb-6 rounded-full font-bold">
+                    Action required
+                  </Badge>
+                )}
+
                 <div className="relative z-10 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
@@ -427,6 +464,21 @@ function StudentAddressContact() {
                           </FormItem>
                         )}
                       />
+
+                      <FormField
+                        control={form.control}
+                        name={`residenceHistory.${index}.purposeOfStay`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-1 md:col-span-2">
+                            <FormLabel>Purpose of Stay</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Study, Work, Family, Tourism" {...field} />
+                            </FormControl>
+                            <FormDescription>Briefly describe the reason for staying in this location.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -438,6 +490,7 @@ function StudentAddressContact() {
                   className="group !h-14 !px-8 rounded-xl"
                   onClick={() =>
                     append({
+                      purposeOfStay: "",
                       country: "",
                       cityOrTown: "",
                       fromYear: undefined as unknown as number,
@@ -449,14 +502,15 @@ function StudentAddressContact() {
                 </Button>
               </div>
             </div>
-            <Separator />
-            <br />
           </>
         )}
 
+        <br />
+        <Separator />
+        <br />
+
         <div className="flex flex-col gap-4">
           <Button
-            variant={"secondary"}
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="submit">
@@ -465,7 +519,6 @@ function StudentAddressContact() {
           </Button>
 
           <Button
-            variant={"secondary"}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="submit">
             Save details
@@ -473,25 +526,29 @@ function StudentAddressContact() {
           </Button>
 
           <Button
-            onClick={proceedToNextStep}
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="button">
-            Proceed to next step
-            <ArrowRight />
+            Save for later & exit
+            <FilePen />
           </Button>
 
           <Button
-            onClick={proceedToNextStep}
+            onClick={async () => await saveForLater()}
+            disabled={isLoading}
+            variant={"secondary"}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Proceed to next step
-            <ArrowRight />
+            Save for later & exit
+            <FilePen />
           </Button>
         </div>
       </form>
     </Form>
   );
-}
+});
 
 export default StudentAddressContact;

@@ -8,16 +8,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, religions } from "@/data";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
-import { StudentAddressContactSchema, studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
+import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -34,21 +33,20 @@ function StudentDetails() {
     },
   });
 
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
 
-  useAutoSave(
-    setFormState,
-    {
+  useEffect(() => {
+    setFormState({
       ...formState,
       studentInfo: {
-        addressContact: {
-          ...formState.studentInfo?.addressContact,
+        ...formState.studentInfo!,
+        studentDetails: {
+          ...debouncedValues,
         },
-        studentDetails: { ...debouncedAutoSaveValue },
       },
-    },
-    0,
-  );
+    });
+  }, [debouncedValues]);
 
   async function onSubmit(values: StudentDetailsSchema) {
     const age = differenceInYears(new Date(), values.birthDay);
@@ -64,9 +62,7 @@ function StudentDetails() {
 
     setFormState({
       studentInfo: {
-        addressContact: {
-          ...(formState.studentInfo?.addressContact ?? ({} as unknown as StudentAddressContactSchema)),
-        },
+        ...formState.studentInfo!,
         studentDetails: { ...values, isValid: true },
       },
     });
@@ -309,6 +305,26 @@ function StudentDetails() {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="dietaryRestrictions"
+          render={({ field }) => (
+            <FormItem className="relative">
+              <FormLabel>
+                Dietary Restrictions <span className="text-xs text-muted-foreground">(optional)</span>{" "}
+              </FormLabel>
+
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter any dietary preferences or restrictions based on religion or personal preference.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Button
           size={"lg"}

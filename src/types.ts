@@ -3,8 +3,10 @@ import {
   EnrollmentInformationSchema,
   FatherInformationSchema,
   GuardianInformationSchema,
+  MedicalChecklistFormValues,
   MotherInformationSchema,
   ParentGuardianUploadRequirementsSchema,
+  RegistrationSchema,
   SiblingInformationSchema,
   StudentAddressContactSchema,
   StudentDetailsSchema,
@@ -37,6 +39,14 @@ export type EnrolledStudent = {
   pass?: string;
 };
 
+type ResidenceHistory = {
+  purposeOfStay: string;
+  country: string;
+  cityOrTown: string;
+  fromYear: number;
+  toYear: number | "Present";
+};
+
 export type Student = {
   id: number;
   created_at: string;
@@ -61,6 +71,8 @@ export type Student = {
   religion: string;
   religionOther?: string;
   enroleePhoto: string;
+  stpApplicationType?: string;
+  residenceHistory?: ResidenceHistory[];
 };
 
 export type Mother = {
@@ -230,6 +242,22 @@ export type StudentDetails = {
 };
 
 export type StudentDocument = {
+  studentPassApplicationDocuments:
+    | [
+        {
+          icaPhoto: string | null;
+          icaPhotoStatus: string | null;
+        },
+        {
+          vaccinationInformation: string | null;
+          vaccinationInformationStatus: string | null;
+        },
+        {
+          financialSupportDocs: string | null;
+          financialSupportDocsStatus: string | null;
+        },
+      ]
+    | null;
   documentsThatExpire: [
     {
       passport: string | null;
@@ -306,9 +334,33 @@ export type SingleStudent = {
 };
 
 export type EnrolNewStudentFormState = {
+  draftId?: string;
+  createdAt?: Date;
+  stpApplicationType?: string;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
+    medicalInformation: MedicalChecklistFormValues;
+  };
+  familyInfo: {
+    motherInfo: MotherInformationSchema;
+    fatherInfo: FatherInformationSchema;
+    guardianInfo: GuardianInformationSchema;
+    siblingsInfo: SiblingInformationSchema;
+  };
+  enrollmentInfo: EnrollmentInformationSchema;
+  uploadRequirements: {
+    studentUploadRequirements: StudentUploadRequirementsSchema;
+    parentGuardianUploadRequirements: ParentGuardianUploadRequirementsSchema;
+  };
+};
+
+export type OpenHouseFormState = {
+  accountInfo: RegistrationSchema;
+  studentInfo: {
+    studentDetails: StudentDetailsSchema;
+    addressContact: StudentAddressContactSchema;
+    medicalInformation: MedicalChecklistFormValues;
   };
   familyInfo: {
     motherInfo: MotherInformationSchema;
@@ -324,9 +376,11 @@ export type EnrolNewStudentFormState = {
 };
 
 export type EnrolOldStudentFormState = {
+  stpApplicationType?: string;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
+    medicalInformation: MedicalChecklistFormValues;
   };
   familyInfo: {
     motherInfo: MotherInformationSchema;
@@ -342,6 +396,8 @@ export type EnrolOldStudentFormState = {
 };
 
 export type VizSchoolEnrolNewStudentFormState = {
+  draftId?: string;
+  createdAt?: Date;
   studentInfo: {
     studentDetails: VizSchoolStudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
@@ -390,7 +446,7 @@ export type StudentFileUploaderDialogProps = {
 
 export type ParentGuardianFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<ParentGuardianUploadRequirementsSchema>;
   name: keyof ParentGuardianUploadRequirementsSchema;
   value: File[] | null;
@@ -401,7 +457,7 @@ export type ParentGuardianFileUploaderDialogProps = {
 
 export type VizSchoolStudentFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<StudentUploadRequirementsSchema>;
   name: keyof StudentUploadRequirementsSchema;
   value: File[] | null;
@@ -412,7 +468,7 @@ export type VizSchoolStudentFileUploaderDialogProps = {
 
 export type VizSchoolParentGuardianFileUploaderDialogProps = {
   label: string;
-  description: string;
+  description?: string;
   form: UseFormReturn<ParentGuardianUploadRequirementsSchema>;
   name: keyof ParentGuardianUploadRequirementsSchema;
   value: File[] | null;
@@ -538,4 +594,10 @@ export type ParentGuardianReuploadProps = {
   academicYear: string;
   documentType: string;
   payload: Record<string, unknown>;
+};
+
+export type PreCourseDetails = {
+  preCourseAnswer: string;
+  preCourseDate?: Date;
+  preCourseAcknowledgedAt: Date;
 };

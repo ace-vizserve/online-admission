@@ -89,7 +89,11 @@ export default function StudentResidencyPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const { enroleeType, enroleeNumber, currentPass } = state;
+  const { enroleeType, enroleeNumber, currentPass, isOpenHouseRegistration } = state;
+
+  const isNonSTP = ["Long Term Visit Pass", "Dependent Pass"].includes(currentPass);
+  const isSTP = currentPass === "Student Pass";
+  const isLocal = ["Singapore PR", "Singaporean"].includes(currentPass);
 
   const residencyOptions = [
     {
@@ -121,7 +125,7 @@ export default function StudentResidencyPage() {
     },
     {
       id: "stp",
-      value: "New STP Application (Current HFSE Student)",
+      value: "Student Pass",
       title: "Valid Student's Pass (Current HFSE Student)",
       badge: "Skip New Application",
       desc: "Current HFSE student with a valid Student's Pass covering this enrolment period. No new ICA application is required.",
@@ -171,10 +175,6 @@ export default function StudentResidencyPage() {
 
   const [isLoading, setTransition] = useTransition();
 
-  const isNonSTP = ["Long Term Visit Pass", "Dependent Pass"].includes(currentPass);
-  const isSTP = currentPass === "Student Pass";
-  const isLocal = ["Singapore PR", "Singaporean"].includes(currentPass);
-
   function goBack() {
     setTransition(() => {
       clearState();
@@ -185,7 +185,6 @@ export default function StudentResidencyPage() {
 
   useEffect(() => {
     if (!selected) return;
-
     if (applicationTypes.includes(selected.value || "")) {
       setPassType("");
       setStpApplicationType(selected.value!);
@@ -196,7 +195,17 @@ export default function StudentResidencyPage() {
   }, [selected, setPassType, setStpApplicationType, applicationTypes, passType]);
 
   function redirect() {
-    if (isNonSTP && passType && passType !== currentPass) {
+    if (isOpenHouseRegistration) {
+      navigate("/open-house/stp-guidelines", {
+        state: {
+          enroleeType,
+          isOpenHouseRegistration,
+        },
+      });
+      return;
+    }
+
+    if ((isNonSTP || isLocal) && passType && passType !== currentPass) {
       toast.error("Selected Pass Type Does Not Match!", {
         description: "The selected pass type does not match what the student currently holds.",
       });
@@ -236,7 +245,7 @@ export default function StudentResidencyPage() {
 
   return (
     <>
-      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-16 md:h-20 flex items-center border-b">
+      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link
             onClick={goBack}
@@ -250,9 +259,8 @@ export default function StudentResidencyPage() {
         </MaxWidthWrapper>
       </div>
 
-      <div className="flex flex-col min-h-screen bg-slate-50">
-        {/* HEADER SECTION */}
-        <header className="mt-12 text-center space-y-6">
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col min-h-screen bg-slate-50">
+        <header className="px-6 mt-12 text-center space-y-6">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">Student Residency Status</h1>
           <p className="text-lg md:text-xl text-muted-foreground text-pretty">
             Select the appropriate residency or pass status so we can apply the correct ICA process.
@@ -269,21 +277,14 @@ export default function StudentResidencyPage() {
 
               let disabled = false;
               if (isNonSTP) {
-                // DP/LTVP: cannot be local or STP-only paths
                 if (option.id === "stp" || option.id === "citizen") disabled = true;
               }
               if (isLocal) {
-                // Citizen/PR: cannot choose Student’s Pass paths
-                if (option.id === "new" || option.id === "existing" || option.id === "non-stp") disabled = true;
+                if (option.id === "non-stp" || option.id === "new" || option.id === "existing" || option.id === "stp")
+                  disabled = true;
               }
               if (isSTP && enroleeType === "Current") {
-                // Current HFSE with STP: should use stp option
-                if (
-                  option.id === "new" ||
-                  option.id === "existing" ||
-                  option.id === "non-stp" ||
-                  option.id === "citizen"
-                ) {
+                if (option.id === "existing" || option.id === "non-stp" || option.id === "citizen") {
                   disabled = true;
                 }
               }
@@ -294,13 +295,13 @@ export default function StudentResidencyPage() {
                     disabled={disabled}
                     value={option}
                     className={cn(
-                      "h-full group relative flex flex-col w-full cursor-pointer rounded-3xl border-2 p-6 transition-all duration-300 shadow-sm",
+                      "h-full group relative flex flex-col w-full cursor-pointer rounded-2xl border-2 p-6 transition-all duration-300 shadow-sm",
                       "border-white bg-white hover:border-blue-200 hover:shadow-md",
                       "data-[checked]:border-blue-600 data-[checked]:bg-blue-50/50 data-[checked]:shadow-blue-100",
                       disabled && "opacity-50 cursor-not-allowed hover:border-white hover:shadow-sm",
                     )}>
                     <div className="flex items-start gap-5 mb-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition-colors group-data-[checked]:bg-blue-600 group-data-[checked]:text-white">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-data-[checked]:bg-blue-600 group-data-[checked]:text-white">
                         <Icon size={28} />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -344,7 +345,7 @@ export default function StudentResidencyPage() {
           </RadioGroup>
         </main>
 
-        <footer className="sticky bottom-0 bg-white border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <footer className="px-6 sticky bottom-0 bg-white border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
           <div className="max-w-5xl mx-auto flex flex-col gap-4">
             <button
               type="button"

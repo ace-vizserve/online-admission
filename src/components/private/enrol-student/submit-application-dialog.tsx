@@ -15,7 +15,7 @@ import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes } from "@/data";
 import useSession from "@/hooks/use-session";
 import { EnrolOldStudentFormState } from "@/types";
-import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
+import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
@@ -30,13 +30,25 @@ function SubmitApplicationDialog() {
   const { session } = useSession();
   const queryClient = useQueryClient();
   const { formState, clearState } = useEnrolOldStudentContext();
+  const preCourseAnswer = usePreCourseAcknowledgementStore((state) => state.preCourseAnswer) as string;
+  const preCourseDate = usePreCourseAcknowledgementStore((state) => state.preCourseDate) as Date;
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      return await submitExistingEnrollment(formState as EnrolOldStudentFormState, params.id!);
+      return await submitExistingEnrollment(
+        { ...(formState as EnrolOldStudentFormState), stpApplicationType },
+        params.id!,
+        academicYear,
+        { preCourseAnswer, preCourseDate, preCourseAcknowledgedAt: new Date() },
+      );
     },
     onSuccess() {
-      window.location.href = "/application-submitted";
+      navigate("/application-submitted", {
+        state: {
+          academicYear,
+          enroleeNumber: params.id,
+        },
+      });
       queryClient.invalidateQueries({
         queryKey: ["section-cards", session?.user.email],
       });
@@ -49,7 +61,8 @@ function SubmitApplicationDialog() {
       clearState();
       sessionStorage.clear();
     },
-    onError() {
+    onError(error) {
+      console.log(error);
       toast.error("Uh oh! Something went wrong", {
         description: "An unknown error occurred. Please try again.",
       });
@@ -286,6 +299,18 @@ function SubmitApplicationDialog() {
           });
           return;
         }
+      }
+
+      //       if (formState.createdAt) {
+      //   delete formState.createdAt;
+      // }
+
+      // if (formState.draftId) {
+      //   delete formState.draftId;
+      // }
+
+      if (formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation) {
+        delete formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation;
       }
 
       mutate();

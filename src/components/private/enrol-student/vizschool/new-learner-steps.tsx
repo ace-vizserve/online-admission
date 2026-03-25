@@ -40,7 +40,8 @@ function NewLearnerSteps() {
     <nav className="w-full bg-white mb-12 md:mb-0">
       <ol className="flex flex-col lg:flex-row max-w-screen mx-auto">
         {STEPS.map((step, index) => {
-          const isCurrent = currentTab === step.url;
+          const isActive = activeTab === step.url && completedTabs.length > 0;
+          const isCurrent = currentTab === step.url && !completedTabs.includes(step.url);
           const isCompleted = completedTabs.includes(step.url);
           const isLocked = !isCurrent && !isCompleted;
 
@@ -54,18 +55,24 @@ function NewLearnerSteps() {
               }}
               className={cn(
                 "relative flex-1 group transition-all duration-300",
-                isLocked ? "cursor-not-allowed" : "cursor-pointer"
+                isLocked ? "cursor-not-allowed" : "cursor-pointer",
               )}>
+              {isActive && (
+                <div className="absolute top-3 right-4 flex flex-col items-end gap-1 animate-in fade-in slide-in-from-right-2 duration-500">
+                  <span className="bg-amber-100/80 backdrop-blur-sm border border-amber-200 px-2 py-0.5 rounded-md text-[9.5px] font-black text-amber-700 uppercase tracking-tighter shadow-sm">
+                    Active Tab
+                  </span>
+                </div>
+              )}
               <div className="flex items-center lg:flex-col lg:text-center px-6 py-5 gap-4 lg:gap-2">
-                {/* Step Number / Icon */}
                 <div
                   className={cn(
                     "size-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-black transition-all",
                     isCurrent
                       ? "bg-secondary text-white ring-4 ring-slate-100"
                       : isCompleted
-                      ? "bg-green-600 text-white"
-                      : "bg-slate-100 text-slate-400"
+                        ? "bg-green-600 text-white"
+                        : "bg-slate-100 text-slate-400",
                   )}>
                   {isCompleted ? <Check size={14} strokeWidth={3} /> : index + 1}
                 </div>
@@ -75,7 +82,7 @@ function NewLearnerSteps() {
                   <p
                     className={cn(
                       "text-xs font-black uppercase tracking-tight transition-colors",
-                      isCurrent ? "text-secondary" : isCompleted ? "text-green-700" : "text-slate-400"
+                      isCurrent ? "text-secondary" : isCompleted ? "text-green-700" : "text-slate-400",
                     )}>
                     {step.name}
                   </p>
@@ -88,7 +95,7 @@ function NewLearnerSteps() {
                 <div
                   className={cn(
                     "h-full w-full rounded-t-full transition-all duration-500",
-                    isCurrent ? "bg-secondary" : isCompleted ? "bg-green-600/40" : "bg-slate-100"
+                    isCurrent ? "bg-secondary" : isCompleted ? "bg-green-600/40" : "bg-slate-100",
                   )}
                 />
               </div>

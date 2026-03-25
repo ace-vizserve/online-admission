@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEnrolCurrentLearnerContext } from "@/context/vizschool/enrol-current-learner-context";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
@@ -38,6 +37,21 @@ function MotherInformation() {
     form.reset(formState.familyInfo.motherInfo);
   }, [form, formState.familyInfo?.motherInfo]);
 
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    setFormState({
+      ...formState,
+      familyInfo: {
+        ...formState.familyInfo!,
+        motherInfo: {
+          ...form.watch(),
+        },
+      },
+    });
+  }, [debouncedValues]);
+
   function onSubmit(values: VizSchoolMotherInformationSchema) {
     if (isMotherAccount) {
       const accountEmail = session.user.email;
@@ -64,22 +78,6 @@ function MotherInformation() {
       description: "Make sure to double check everything",
     });
   }
-
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
-
-  useAutoSave(
-    setFormState,
-    {
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo,
-        motherInfo: {
-          ...debouncedAutoSaveValue,
-        },
-      },
-    },
-    0
-  );
 
   return (
     <Form {...form}>
@@ -174,7 +172,7 @@ function MotherInformation() {
                           variant={"outline"}
                           className={cn(
                             "w-full lg:w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}>
                           {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

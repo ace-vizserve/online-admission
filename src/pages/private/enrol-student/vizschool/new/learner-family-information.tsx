@@ -18,41 +18,6 @@ import { Baby, ChevronRight, ShieldUser, User, Users } from "lucide-react";
 import { useEffect } from "react";
 import { Navigate } from "react-router";
 
-const tabs = [
-  {
-    name: "Mother Information",
-    description: "Required maternal legal and contact details",
-    skippable: false,
-    value: "mother-information",
-    icon: User,
-    component: MotherInformation,
-  },
-  {
-    name: "Father Information",
-    description: "Required paternal legal and contact details",
-    skippable: false,
-    value: "father-information",
-    icon: Users,
-    component: FatherInformation,
-  },
-  {
-    name: "Guardian Information",
-    description: "Optional info for alternative legal guardians",
-    skippable: true,
-    value: "guardian-information",
-    icon: ShieldUser,
-    component: GuardianInformation,
-  },
-  {
-    name: "Sibling Information",
-    description: "Optional info for brothers or sisters",
-    skippable: true,
-    value: "sibling-information",
-    icon: Baby,
-    component: SiblingInformation,
-  },
-];
-
 function LearnerFamilyInformation() {
   const { title, description } = ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION;
 
@@ -99,6 +64,46 @@ function FamilyInformationTabs() {
     return <Loader />;
   }
 
+  const motherInfoInvalid = formState.familyInfo.motherInfo.isValid !== true;
+  const fatherInfoInvalid = formState.familyInfo.fatherInfo.isValid !== true;
+
+  const tabs = [
+    {
+      name: "Mother Information",
+      description: "Required maternal legal and contact details",
+      skippable: false,
+      value: "mother-information",
+      icon: User,
+      component: MotherInformation,
+      hasError: motherInfoInvalid,
+    },
+    {
+      name: "Father Information",
+      description: "Required paternal legal and contact details",
+      skippable: false,
+      value: "father-information",
+      icon: Users,
+      component: FatherInformation,
+      hasError: fatherInfoInvalid,
+    },
+    {
+      name: "Guardian Information",
+      description: "Optional info for alternative legal guardians",
+      skippable: true,
+      value: "guardian-information",
+      icon: ShieldUser,
+      component: GuardianInformation,
+    },
+    {
+      name: "Sibling Information",
+      description: "Optional info for brothers or sisters",
+      skippable: true,
+      value: "sibling-information",
+      icon: Baby,
+      component: SiblingInformation,
+    },
+  ];
+
   return (
     <Tabs
       orientation="vertical"
@@ -115,21 +120,41 @@ function FamilyInformationTabs() {
             key={tab.value}
             value={tab.value}
             className={cn(
-              "relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
+              "group relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
-              "data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200"
+              "data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
+              tab.hasError && "bg-amber-50",
+              tab.hasError &&
+                "data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-amber-200",
             )}>
             <div
               className={cn(
-                "flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
-                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white"
+                "relative flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
+                "bg-slate-100 text-slate-800",
+
+                tab.hasError && "bg-white text-amber-600",
+                tab.hasError && "group-data-[state=active]:bg-white/30 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />
+
+              {tab.hasError && (
+                <span
+                  className={cn(
+                    "absolute right-0 top-0 inline-flex size-2 items-center rounded-full bg-amber-600 shadow-sm",
+                    "group-data-[state=active]:bg-amber-400 group-data-[state=active]:border-2 group-data-[state=active]:border-white group-data-[state=active]:shadow-sm",
+                  )}></span>
+              )}
             </div>
 
-            <div className="flex flex-col items-start text-left">
-              <span className="font-bold text-sm tracking-tight">{tab.name}</span>
-              <span className="text-[11px] font-medium leading-none mt-1">{tab.description}</span>
+            <div className=" flex flex-col items-start text-left">
+              <span className="font-bold text-sm tracking-tight flex items-center gap-1.5">{tab.name}</span>
+              {tab.hasError ? (
+                <span className="group-data-[state=active]:text-white text-amber-600 text-[11px] font-medium leading-none mt-1">
+                  Confirmation Required
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium leading-none mt-1">{tab.description}</span>
+              )}
             </div>
 
             <ChevronRight className="ml-auto size-4 opacity-0 data-[state=active]:opacity-100 transition-opacity" />

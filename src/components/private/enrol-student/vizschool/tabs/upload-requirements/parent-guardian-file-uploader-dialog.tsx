@@ -33,16 +33,17 @@ import { VizSchoolParentGuardianFileUploaderDialogProps } from "@/types";
 import { ParentGuardianUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isAfter } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import {
   CalendarIcon,
-  CheckCircle2,
-  CircleAlert,
-  Clock,
   CloudUpload,
   ExternalLink,
+  EyeClosed,
+  FileClock,
+  FileText,
+  FileX,
   InfoIcon,
   Loader2,
   Paperclip,
@@ -78,6 +79,14 @@ const TO_FOLLOW_DOCS = [
   "guardianPass",
   "guardianPassport",
 ];
+
+const EXPIRING_DOCS = [...TO_FOLLOW_DOCS];
+
+type DocDescription = {
+  description: string;
+  status: string;
+  expirationDate?: string;
+};
 
 const ParentGuardianFileUploaderDialog = memo(function ({
   form,
@@ -212,52 +221,130 @@ const ParentGuardianFileUploaderDialog = memo(function ({
     }
   }
 
+  const hasError = errors[name] != null;
+  const isToFollow = formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name);
+  const isUploaded = String(formState.uploadRequirements?.parentGuardianUploadRequirements[name]).startsWith("http");
+  const isExpiringDocs = EXPIRING_DOCS.includes(name);
+
+  const expirationDate: string | null = isExpiringDocs
+    ? (formState.uploadRequirements?.parentGuardianUploadRequirements[
+        `${name}Expiry` as keyof typeof formState.uploadRequirements.parentGuardianUploadRequirements
+      ] as string | null)
+    : null;
+
+  const isExpired = !!expirationDate && !isAfter(new Date(expirationDate), new Date());
+  const isValid = isUploaded && !isExpired;
+
+  let docDescription: DocDescription = {
+    description: "",
+    status: "",
+  };
+
+  if (hasError && !isUploaded) {
+    docDescription = {
+      description: "Action Required",
+      status: "Missing",
+    };
+  } else if (isToFollow) {
+    docDescription = {
+      description: "Marked to follow",
+      status: "",
+    };
+  } else if (isExpiringDocs) {
+    if (isUploaded && isValid) {
+      docDescription = {
+        description: "",
+        status: "Valid",
+        expirationDate: expirationDate || "",
+      };
+    } else if (isUploaded && isExpired) {
+      docDescription = {
+        description: "",
+        status: "Expired",
+        expirationDate: expirationDate || "",
+      };
+    } else {
+      docDescription = {
+        description: "",
+        status: "Missing",
+        expirationDate: expirationDate || "",
+      };
+    }
+  }
+
   if (isDesktop) {
     return (
-      <div
-        className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
-          "border-red-300 bg-red-50": errors[name] != null,
-          "border-green-300 bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements?.[name],
-          "border-amber-300 bg-amber-50":
-            formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name),
-        })}>
+      <div className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {})}>
         <div className="flex items-center gap-4">
-          {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
-            <CheckCircle2 className="stroke-white fill-green-600 size-6" />
-          ) : errors[name] != null ? (
-            <CircleAlert className="size-6 text-destructive" />
-          ) : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name) ? (
-            <Clock className="size-6 text-amber-600" />
-          ) : (
-            <Upload className="size-6 text-sky-600" />
-          )}
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-semibold">{label}</span>
-            <span className="text-muted-foreground font-medium text-xs">{description}</span>
+          <div
+            className={cn(
+              "bg-slate-100 text-slate-400 size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+              {
+                "bg-primary text-primary-foreground shadow-sm": isUploaded,
+                "bg-destructive text-white": hasError && isUploaded,
+                "bg-amber-600 text-white": isToFollow,
+              },
+            )}>
+            {isUploaded ? (
+              <FileText className="stroke-white size-6" />
+            ) : hasError && isUploaded ? (
+              <FileX className="size-6" />
+            ) : isToFollow ? (
+              <FileClock className="size-6 " />
+            ) : (
+              <EyeClosed className="size-6 " />
+            )}
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-sm font-bold uppercase">{label}</span>
+              <span
+                className={cn("uppercase font-bold text-[10px]", {
+                  "text-green-600": isValid || isUploaded,
+                  "text-blue-600": isToFollow,
+                  "text-red-600": hasError,
+                })}>
+                {docDescription.status}
+              </span>
+            </div>
+            <span
+              className={cn("uppercase text-muted-foreground font-bold text-xs", {
+                "text-amber-600": isToFollow || docDescription.description === "Action Required",
+              })}>
+              {docDescription.description}
+            </span>
+            {docDescription.expirationDate && (
+              <span className="uppercase text-muted-foreground font-bold text-xs">
+                Expires: {format(new Date(docDescription.expirationDate), "d MMMM yyyy")}
+              </span>
+            )}
           </div>
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              className="font-semibold"
-              variant={
-                errors[name] != null
-                  ? "destructive"
-                  : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-                    ? "secondary"
-                    : "outline"
-              }>
-              {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
-                ? "View"
-                : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-                  ? "To follow"
-                  : "Upload"}
+            <Button className="!text-xs font-bold" variant={hasError ? "destructive" : "outline"}>
+              {isUploaded ? "View" : isToFollow ? "To follow" : "Upload"}
             </Button>
           </DialogTrigger>
 
           <DialogContent className="!max-w-3xl">
             <DialogHeader className="text-start">
-              <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+              <div className="flex items-center gap-4">
+                <DialogTitle className="font-black text-2xl">{label}</DialogTitle>
+                <Badge
+                  variant={"outline"}
+                  className={cn("uppercase font-bold text-[12px]", {
+                    "text-green-600": isValid || isUploaded,
+                    "text-amber-600": isToFollow,
+                    "text-red-600": hasError,
+                  })}>
+                  {docDescription.status
+                    ? docDescription.status
+                    : docDescription.description === "Marked to follow"
+                      ? "Marked to follow"
+                      : ""}
+                </Badge>
+              </div>
               <DialogDescription className="font-semibold">
                 Upload a clear and recent document in <strong>PDF</strong> format.
               </DialogDescription>
@@ -267,7 +354,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
             </Badge>
 
-            {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
+            {isUploaded ? (
               <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
                 <Button
                   disabled={isChangingDocument}
@@ -282,18 +369,17 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 </div>
                 <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
-                {!NOT_FILE_INPUTS.includes(name) &&
-                  formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
-                    <Link
-                      to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
-                      target="_blank"
-                      className={buttonVariants({
-                        className: "gap-2 text-xs hover:bg-white",
-                        variant: "outline",
-                      })}>
-                      View document <ExternalLink />
-                    </Link>
-                  )}
+                {!NOT_FILE_INPUTS.includes(name) && isUploaded && (
+                  <Link
+                    to={formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string}
+                    target="_blank"
+                    className={buttonVariants({
+                      className: "gap-2 text-xs hover:bg-white",
+                      variant: "outline",
+                    })}>
+                    View document <ExternalLink />
+                  </Link>
+                )}
               </div>
             ) : (
               <FormField
@@ -311,10 +397,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                           {...field}
                           id="fileInput"
                           className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
-                            "opacity-70 cursor-not-allowed pointer-events-none":
-                              formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(
-                                name,
-                              ),
+                            "opacity-70 cursor-not-allowed pointer-events-none": isToFollow,
                           })}>
                           <div className="flex items-center justify-center flex-col p-8 w-full">
                             <CloudUpload className="text-gray-500 w-10 h-10" />
@@ -325,39 +408,44 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                         </FileInput>
 
                         <FileUploaderContent>
-                          {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
-                            <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
-                              <div className="flex items-center gap-1">
-                                <Paperclip className="h-4 w-4 stroke-current" />
-                                <span className="text-sm font-medium">
-                                  {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
-                                    .split("\\")
-                                    .pop()}
-                                </span>
-                              </div>
-                              <Trash2
-                                className="h-4 w-4"
-                                onClick={() => {
-                                  form.setValue(name, "");
-                                  onValueChange(null);
-                                  setFormState({
-                                    ...formState,
-                                    uploadRequirements: {
-                                      ...formState.uploadRequirements!,
-                                      studentUploadRequirements: {
-                                        ...formState.uploadRequirements!.studentUploadRequirements,
-                                        [name]: "",
-                                      },
-                                    },
-                                  });
-                                }}
-                              />
-                            </div>
-                          )}
                           {value &&
                             value.length > 0 &&
                             value.map((file, i) => (
-                              <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                              <FileUploaderItem
+                                removeBtn={(onRemove) => (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      e.preventDefault();
+                                      onRemove();
+
+                                      form.setValue(name, "");
+                                      onValueChange(null);
+
+                                      setFormState({
+                                        ...formState,
+                                        uploadRequirements: {
+                                          ...formState.uploadRequirements!,
+                                          parentGuardianUploadRequirements: {
+                                            ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+                                            [name]: "",
+                                            isValid: false,
+                                          },
+                                        },
+                                      });
+
+                                      form.setValue("isValid", false);
+                                      form.trigger();
+                                    }}
+                                    className="cursor-pointer p-1 rounded hover:bg-destructive/10 text-destructive">
+                                    <Trash2 className="!h-5 !w-5" />
+                                  </button>
+                                )}
+                                setValue={form.setValue}
+                                inputKey={name}
+                                key={i}
+                                index={i}>
                                 <Paperclip className="h-4 w-4 stroke-current" />
                                 <span>{file.name}</span>
                               </FileUploaderItem>
@@ -385,103 +473,102 @@ const ParentGuardianFileUploaderDialog = memo(function ({
               </Button>
             )}
 
-            {!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] &&
-              TO_FOLLOW_DOCS.includes(name) && (
-                <FormField
-                  control={form.control}
-                  name="toFollowDocs"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-end gap-3 pt-2">
-                      <div className="flex items-center gap-2">
-                        <FormLabel>Document to follow</FormLabel>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <InfoIcon className="size-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent side="left" className="max-w-xs">
-                            <p className="text-sm">
-                              Enable this if you don't have the document ready now. You can submit it after enrollment
-                              is complete.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          {...field}
-                          checked={form.getValues("toFollowDocs")?.includes(name)}
-                          onCheckedChange={(checked) => {
-                            const current = form.getValues("toFollowDocs") || [];
-                            const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
+            {!isUploaded && TO_FOLLOW_DOCS.includes(name) && (
+              <FormField
+                control={form.control}
+                name="toFollowDocs"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-end gap-3 pt-2">
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Document to follow</FormLabel>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="max-w-xs">
+                          <p className="text-sm">
+                            Enable this if you don't have the document ready now. You can submit it after enrollment is
+                            complete.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        {...field}
+                        checked={form.getValues("toFollowDocs")?.includes(name)}
+                        onCheckedChange={(checked) => {
+                          const current = form.getValues("toFollowDocs") || [];
+                          const updatedDocs = checked ? [...current, name] : current.filter((item) => item !== name);
 
-                            const updatedParentGuardianReqs = {
-                              ...formState.uploadRequirements!.parentGuardianUploadRequirements,
-                              isValid: false,
-                              [name]: "",
-                              toFollowDocs: updatedDocs,
-                            };
+                          const updatedParentGuardianReqs = {
+                            ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+                            isValid: false,
+                            [name]: "",
+                            toFollowDocs: updatedDocs,
+                          };
 
-                            if (checked) {
-                              if (name === "motherPassport") {
-                                updatedParentGuardianReqs.motherPassportNumber = "";
-                                updatedParentGuardianReqs.motherPassportExpiry = null as unknown as undefined;
-                                form.setValue("motherPassportNumber", "");
-                                form.setValue("motherPassportExpiry", null as unknown as undefined);
-                              }
-                              if (name === "motherPass") {
-                                updatedParentGuardianReqs.motherPassType = "";
-                                updatedParentGuardianReqs.motherPassExpiry = null as unknown as undefined;
-                                form.setValue("motherPassType", "");
-                                form.setValue("motherPassExpiry", null as unknown as undefined);
-                              }
-
-                              if (name === "fatherPassport") {
-                                updatedParentGuardianReqs.fatherPassportNumber = "";
-                                updatedParentGuardianReqs.fatherPassportExpiry = null as unknown as undefined;
-                                form.setValue("fatherPassportNumber", "");
-                                form.setValue("fatherPassportExpiry", null as unknown as undefined);
-                              }
-                              if (name === "fatherPass") {
-                                updatedParentGuardianReqs.fatherPassType = "";
-                                updatedParentGuardianReqs.fatherPassExpiry = null as unknown as undefined;
-                                form.setValue("fatherPassType", "");
-                                form.setValue("fatherPassExpiry", null as unknown as undefined);
-                              }
-
-                              if (name === "guardianPassport") {
-                                updatedParentGuardianReqs.guardianPassportNumber = "";
-                                updatedParentGuardianReqs.guardianPassportExpiry = null as unknown as undefined;
-                                form.setValue("guardianPassportNumber", "");
-                                form.setValue("guardianPassportExpiry", null as unknown as undefined);
-                              }
-                              if (name === "guardianPass") {
-                                updatedParentGuardianReqs.guardianPassType = "";
-                                updatedParentGuardianReqs.guardianPassExpiry = null as unknown as undefined;
-                                form.setValue("guardianPassType", "");
-                                form.setValue("guardianPassExpiry", null as unknown as undefined);
-                              }
+                          if (checked) {
+                            if (name === "motherPassport") {
+                              updatedParentGuardianReqs.motherPassportNumber = "";
+                              updatedParentGuardianReqs.motherPassportExpiry = null as unknown as undefined;
+                              form.setValue("motherPassportNumber", "");
+                              form.setValue("motherPassportExpiry", null as unknown as undefined);
+                            }
+                            if (name === "motherPass") {
+                              updatedParentGuardianReqs.motherPassType = "";
+                              updatedParentGuardianReqs.motherPassExpiry = null as unknown as undefined;
+                              form.setValue("motherPassType", "");
+                              form.setValue("motherPassExpiry", null as unknown as undefined);
                             }
 
-                            form.setValue(name, "");
-                            form.setValue("toFollowDocs", updatedDocs);
-                            onValueChange(null);
+                            if (name === "fatherPassport") {
+                              updatedParentGuardianReqs.fatherPassportNumber = "";
+                              updatedParentGuardianReqs.fatherPassportExpiry = null as unknown as undefined;
+                              form.setValue("fatherPassportNumber", "");
+                              form.setValue("fatherPassportExpiry", null as unknown as undefined);
+                            }
+                            if (name === "fatherPass") {
+                              updatedParentGuardianReqs.fatherPassType = "";
+                              updatedParentGuardianReqs.fatherPassExpiry = null as unknown as undefined;
+                              form.setValue("fatherPassType", "");
+                              form.setValue("fatherPassExpiry", null as unknown as undefined);
+                            }
 
-                            setFormState({
-                              ...formState,
-                              uploadRequirements: {
-                                ...formState.uploadRequirements!,
-                                parentGuardianUploadRequirements: updatedParentGuardianReqs,
-                              },
-                            });
+                            if (name === "guardianPassport") {
+                              updatedParentGuardianReqs.guardianPassportNumber = "";
+                              updatedParentGuardianReqs.guardianPassportExpiry = null as unknown as undefined;
+                              form.setValue("guardianPassportNumber", "");
+                              form.setValue("guardianPassportExpiry", null as unknown as undefined);
+                            }
+                            if (name === "guardianPass") {
+                              updatedParentGuardianReqs.guardianPassType = "";
+                              updatedParentGuardianReqs.guardianPassExpiry = null as unknown as undefined;
+                              form.setValue("guardianPassType", "");
+                              form.setValue("guardianPassExpiry", null as unknown as undefined);
+                            }
+                          }
 
-                            form.trigger();
-                          }}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              )}
+                          form.setValue(name, "");
+                          form.setValue("toFollowDocs", updatedDocs);
+                          onValueChange(null);
+
+                          setFormState({
+                            ...formState,
+                            uploadRequirements: {
+                              ...formState.uploadRequirements!,
+                              parentGuardianUploadRequirements: updatedParentGuardianReqs,
+                            },
+                          });
+
+                          form.trigger();
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
 
             {name === "motherPass" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4 w-full">
@@ -1013,7 +1100,6 @@ const ParentGuardianFileUploaderDialog = memo(function ({
 });
 
 function ParentGuardianFileUploaderDrawer({
-  description,
   form,
   formState,
   label,
@@ -1140,51 +1226,129 @@ function ParentGuardianFileUploaderDrawer({
     }
   }
 
+  const hasError = errors[name] != null;
+  const isToFollow = formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name);
+  const isUploaded = String(formState.uploadRequirements?.parentGuardianUploadRequirements[name]).startsWith("http");
+  const isExpiringDocs = EXPIRING_DOCS.includes(name);
+
+  const expirationDate: string | null = isExpiringDocs
+    ? (formState.uploadRequirements?.parentGuardianUploadRequirements[
+        `${name}Expiry` as keyof typeof formState.uploadRequirements.parentGuardianUploadRequirements
+      ] as string | null)
+    : null;
+
+  const isExpired = !!expirationDate && !isAfter(new Date(expirationDate), new Date());
+  const isValid = isUploaded && !isExpired;
+
+  let docDescription: DocDescription = {
+    description: "",
+    status: "",
+  };
+
+  if (hasError && !isUploaded) {
+    docDescription = {
+      description: "Action Required",
+      status: "Missing",
+    };
+  } else if (isToFollow) {
+    docDescription = {
+      description: "Marked to follow",
+      status: "",
+    };
+  } else if (isExpiringDocs) {
+    if (isUploaded && isValid) {
+      docDescription = {
+        description: "",
+        status: "Valid",
+        expirationDate: expirationDate || "",
+      };
+    } else if (isUploaded && isExpired) {
+      docDescription = {
+        description: "",
+        status: "Expired",
+        expirationDate: expirationDate || "",
+      };
+    } else {
+      docDescription = {
+        description: "",
+        status: "Missing",
+        expirationDate: expirationDate || "",
+      };
+    }
+  }
+
   return (
-    <div
-      className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {
-        "border-red-300 bg-red-50": errors[name] != null,
-        "border-green-300 bg-green-50": formState.uploadRequirements?.parentGuardianUploadRequirements?.[name],
-        "border-amber-300 bg-amber-50":
-          formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name),
-      })}>
+    <div className={cn("flex items-center justify-between rounded-lg border p-4 w-full transition-colors", {})}>
       <div className="flex items-center gap-4">
-        {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
-          <CheckCircle2 className="stroke-white fill-green-600 size-6" />
-        ) : errors[name] != null ? (
-          <CircleAlert className="text-destructive size-6" />
-        ) : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name) ? (
-          <Clock className="size-6 text-amber-600" />
-        ) : (
-          <Upload className="size-6 text-sky-600" />
-        )}
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-semibold">{label}</span>
-          <span className="text-muted-foreground font-medium text-xs">{description}</span>
+        <div
+          className={cn(
+            "bg-slate-100 text-slate-400 size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+            {
+              "bg-primary text-primary-foreground shadow-sm": isUploaded,
+              "bg-destructive text-white": hasError && isUploaded,
+              "bg-amber-600 text-white": isToFollow,
+            },
+          )}>
+          {isUploaded ? (
+            <FileText className="stroke-white size-6" />
+          ) : hasError && isUploaded ? (
+            <FileX className="size-6" />
+          ) : isToFollow ? (
+            <FileClock className="size-6 " />
+          ) : (
+            <EyeClosed className="size-6 " />
+          )}
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-sm font-bold uppercase">{label}</span>
+            <span
+              className={cn("uppercase font-bold text-[10px]", {
+                "text-green-600": isValid || isUploaded,
+                "text-blue-600": isToFollow,
+                "text-red-600": hasError,
+              })}>
+              {docDescription.status}
+            </span>
+          </div>
+          <span
+            className={cn("uppercase text-muted-foreground font-bold text-xs", {
+              "text-amber-600": isToFollow || docDescription.description === "Action Required",
+            })}>
+            {docDescription.description}
+          </span>
+          {docDescription.expirationDate && (
+            <span className="uppercase text-muted-foreground font-bold text-xs">
+              Expires: {format(new Date(docDescription.expirationDate), "d MMMM yyyy")}
+            </span>
+          )}
         </div>
       </div>
       <Drawer repositionInputs={false}>
         <DrawerTrigger asChild>
-          <Button
-            className="font-semibold"
-            variant={
-              errors[name] != null
-                ? "destructive"
-                : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-                  ? "secondary"
-                  : "outline"
-            }>
-            {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name]
-              ? "View"
-              : formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name)
-                ? "To follow"
-                : "Upload"}
+          <Button className="!text-xs font-bold" variant={hasError ? "destructive" : "outline"}>
+            {isUploaded ? "View" : isToFollow ? "To follow" : "Upload"}
           </Button>
         </DrawerTrigger>
 
         <DrawerContent className="px-4 space-y-4">
           <DrawerHeader className="!text-start px-0 mb-0">
-            <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <DrawerTitle className="text-xl font-black">{label}</DrawerTitle>
+              <Badge
+                variant={"outline"}
+                className={cn("uppercase font-bold text-[12px]", {
+                  "text-green-600": isValid || isUploaded,
+                  "text-amber-600": isToFollow,
+                  "text-red-600": hasError,
+                })}>
+                {docDescription.status
+                  ? docDescription.status
+                  : docDescription.description === "Marked to follow"
+                    ? "Marked to follow"
+                    : ""}
+              </Badge>
+            </div>
             <DrawerDescription className="text-xs font-semibold">
               Upload a clear and recent document in <strong>PDF</strong> format.
             </DrawerDescription>
@@ -1194,7 +1358,7 @@ function ParentGuardianFileUploaderDrawer({
             Upload up to 4 PDF documents. Provide all necessary information, then click Upload Files and Save Changes.
           </Badge>
 
-          {formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] ? (
+          {isUploaded ? (
             <div className="relative w-full flex items-center justify-center flex-col gap-4 border-dashed bg-muted border-2 rounded-lg py-6">
               <Button
                 disabled={isChangingDocument}
@@ -1202,25 +1366,24 @@ function ParentGuardianFileUploaderDrawer({
                 size={"sm"}
                 className="text-xs absolute right-4 top-4 font-bold">
                 {isChangingDocument && <Loader2 className="size-4 animate-spin" />}
-                Change
+                Change document
               </Button>
               <div className="p-6 bg-white rounded-full">
-                <img src={fileSvg} className="size-10" />
+                <img src={fileSvg} className="size-14" />
               </div>
-              <p className="text-muted-foreground text-xs">{label} has been uploaded</p>
+              <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
-              {!NOT_FILE_INPUTS.includes(name) &&
-                formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
-                  <Link
-                    to={formState.uploadRequirements.parentGuardianUploadRequirements[name] as string}
-                    target="_blank"
-                    className={buttonVariants({
-                      className: "gap-2 text-xs hover:bg-white",
-                      variant: "outline",
-                    })}>
-                    View document <ExternalLink />
-                  </Link>
-                )}
+              {!NOT_FILE_INPUTS.includes(name) && isUploaded && (
+                <Link
+                  to={formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string}
+                  target="_blank"
+                  className={buttonVariants({
+                    className: "gap-2 text-xs hover:bg-white",
+                    variant: "outline",
+                  })}>
+                  View document <ExternalLink />
+                </Link>
+              )}
             </div>
           ) : (
             <FormField
@@ -1238,8 +1401,7 @@ function ParentGuardianFileUploaderDrawer({
                         {...field}
                         id="fileInput"
                         className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
-                          "opacity-70 cursor-not-allowed pointer-events-none":
-                            formState.uploadRequirements?.parentGuardianUploadRequirements.toFollowDocs?.includes(name),
+                          "opacity-70 cursor-not-allowed pointer-events-none": isToFollow,
                         })}>
                         <div className="flex items-center justify-center flex-col p-8 w-full">
                           <CloudUpload className="text-gray-500 w-10 h-10" />
@@ -1250,39 +1412,44 @@ function ParentGuardianFileUploaderDrawer({
                       </FileInput>
 
                       <FileUploaderContent>
-                        {value == null && formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && (
-                          <div className="my-2 flex items-center justify-between px-1 rounded-md hover:bg-muted">
-                            <div className="flex items-center gap-1">
-                              <Paperclip className="h-4 w-4 stroke-current" />
-                              <span className="text-sm font-medium">
-                                {(formState.uploadRequirements.parentGuardianUploadRequirements[name] as string)
-                                  .split("\\")
-                                  .pop()}
-                              </span>
-                            </div>
-                            <Trash2
-                              className="h-4 w-4"
-                              onClick={() => {
-                                form.setValue(name, "");
-                                onValueChange(null);
-                                setFormState({
-                                  ...formState,
-                                  uploadRequirements: {
-                                    ...formState.uploadRequirements!,
-                                    studentUploadRequirements: {
-                                      ...formState.uploadRequirements!.studentUploadRequirements,
-                                      [name]: "",
-                                    },
-                                  },
-                                });
-                              }}
-                            />
-                          </div>
-                        )}
                         {value &&
                           value.length > 0 &&
                           value.map((file, i) => (
-                            <FileUploaderItem setValue={form.setValue} inputKey={name} key={i} index={i}>
+                            <FileUploaderItem
+                              removeBtn={(onRemove) => (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    onRemove();
+
+                                    form.setValue(name, "");
+                                    onValueChange(null);
+
+                                    setFormState({
+                                      ...formState,
+                                      uploadRequirements: {
+                                        ...formState.uploadRequirements!,
+                                        parentGuardianUploadRequirements: {
+                                          ...formState.uploadRequirements!.parentGuardianUploadRequirements,
+                                          [name]: "",
+                                          isValid: false,
+                                        },
+                                      },
+                                    });
+
+                                    form.setValue("isValid", false);
+                                    form.trigger();
+                                  }}
+                                  className="cursor-pointer p-1 rounded hover:bg-destructive/10 text-destructive">
+                                  <Trash2 className="!h-5 !w-5" />
+                                </button>
+                              )}
+                              setValue={form.setValue}
+                              inputKey={name}
+                              key={i}
+                              index={i}>
                               <Paperclip className="h-4 w-4 stroke-current" />
                               <span>{file.name}</span>
                             </FileUploaderItem>
@@ -1297,7 +1464,7 @@ function ParentGuardianFileUploaderDrawer({
           )}
 
           {value != null && value.length > 0 && (
-            <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
+            <Button disabled={isPending} onClick={uploadFile} className="gap-2">
               {isPending ? (
                 <>
                   Uploading <DotPulse size="30" speed="1.3" color="white" />
@@ -1310,7 +1477,7 @@ function ParentGuardianFileUploaderDrawer({
             </Button>
           )}
 
-          {!formState.uploadRequirements?.parentGuardianUploadRequirements?.[name] && TO_FOLLOW_DOCS.includes(name) && (
+          {!isUploaded && TO_FOLLOW_DOCS.includes(name) && (
             <FormField
               control={form.control}
               name="toFollowDocs"

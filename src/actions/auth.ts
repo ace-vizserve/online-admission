@@ -41,7 +41,14 @@ export async function userLogout() {
   }
 }
 
-export async function userRegister({ firstName, lastName, relationship, email, password }: RegistrationSchema) {
+export async function userRegister({
+  firstName,
+  lastName,
+  relationship,
+  email,
+  password,
+  isOpenHouseRegistration,
+}: RegistrationSchema & { isOpenHouseRegistration?: boolean }) {
   try {
     const users = await listAllUsers();
 
@@ -68,9 +75,11 @@ export async function userRegister({ firstName, lastName, relationship, email, p
       throw new Error(error.message);
     }
 
-    toast.success("Email verification has been sent!", {
-      description: "Please check your email to confirm your account",
-    });
+    if (!isOpenHouseRegistration) {
+      toast.success("Email verification has been sent!", {
+        description: "Please check your email to confirm your account",
+      });
+    }
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message + "!");

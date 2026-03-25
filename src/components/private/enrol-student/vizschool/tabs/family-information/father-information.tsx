@@ -7,7 +7,6 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useEnrolCurrentLearnerContext } from "@/context/vizschool/enrol-current-learner-context";
-import { useAutoSave } from "@/hooks/use-autosave";
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
@@ -23,6 +22,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import "ldrs/react/DotPulse.css";
 import { Calendar as CalendarIcon, Info, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -43,21 +43,20 @@ function FatherInformation() {
     },
   });
 
-  const debouncedAutoSaveValue = useDebounce(form.watch(), 500);
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
 
-  useAutoSave(
-    setFormState,
-    {
+  useEffect(() => {
+    setFormState({
       ...formState,
       familyInfo: {
-        ...formState.familyInfo,
+        ...formState.familyInfo!,
         fatherInfo: {
-          ...debouncedAutoSaveValue,
+          ...form.watch(),
         },
       },
-    },
-    0
-  );
+    });
+  }, [debouncedValues]);
 
   function onSubmit(values: VizSchoolFatherInformationSchema) {
     const insertedValues = Object.keys(values).filter((v) => {
@@ -278,7 +277,7 @@ function FatherInformation() {
                           variant={"outline"}
                           className={cn(
                             "w-full lg:w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}>
                           {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />

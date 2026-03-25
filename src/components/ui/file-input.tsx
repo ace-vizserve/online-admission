@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Trash2 as RemoveIcon } from "lucide-react";
 import {
   Dispatch,
+  ReactNode,
   SetStateAction,
   createContext,
   forwardRef,
@@ -55,7 +56,7 @@ type FileUploaderProps = {
 export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React.HTMLAttributes<HTMLDivElement>>(
   (
     { className, dropzoneOptions, value, onValueChange, reSelect, orientation = "vertical", children, dir, ...props },
-    ref
+    ref,
   ) => {
     const [isFileTooBig, setIsFileTooBig] = useState(false);
     const [isLOF, setIsLOF] = useState(false);
@@ -78,7 +79,7 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
         const newFiles = value.filter((_, index) => index !== i);
         onValueChange(newFiles);
       },
-      [value, onValueChange]
+      [value, onValueChange],
     );
 
     const handleKeyDown = useCallback(
@@ -124,7 +125,7 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
         }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [value, activeIndex, removeFileFromSet]
+      [value, activeIndex, removeFileFromSet],
     );
 
     const onDrop = useCallback(
@@ -164,7 +165,7 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
         }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [reSelectAll, value]
+      [reSelectAll, value],
     );
 
     useEffect(() => {
@@ -210,7 +211,7 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
         </div>
       </FileUploaderContext.Provider>
     );
-  }
+  },
 );
 
 FileUploader.displayName = "FileUploader";
@@ -228,13 +229,13 @@ export const FileUploaderContent = forwardRef<HTMLDivElement, React.HTMLAttribut
           className={cn(
             "flex rounded-xl gap-1",
             orientation === "horizontal" ? "flex-raw flex-wrap" : "flex-col",
-            className
+            className,
           )}>
           {children}
         </div>
       </div>
     );
-  }
+  },
 );
 
 FileUploaderContent.displayName = "FileUploaderContent";
@@ -242,10 +243,23 @@ FileUploaderContent.displayName = "FileUploaderContent";
 export const FileUploaderItem = forwardRef<
   HTMLDivElement,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  { index: number; setValue?: UseFormSetValue<any>; inputKey?: string } & React.HTMLAttributes<HTMLDivElement>
->(({ className, index, children, setValue, inputKey, ...props }, ref) => {
+  {
+    index: number;
+    setValue?: UseFormSetValue<any>;
+    inputKey?: string;
+    removeBtn?: (onRemove: () => void) => ReactNode;
+  } & React.HTMLAttributes<HTMLDivElement>
+>(({ className, index, children, setValue, inputKey, removeBtn, ...props }, ref) => {
   const { removeFileFromSet, activeIndex, direction } = useFileUpload();
   const isSelected = index === activeIndex;
+
+  const handleRemove = () => {
+    if (setValue && inputKey) {
+      setValue(inputKey, "");
+    }
+    removeFileFromSet(index);
+  };
+
   return (
     <div
       ref={ref}
@@ -253,22 +267,24 @@ export const FileUploaderItem = forwardRef<
         buttonVariants({ variant: "ghost" }),
         "h-6 p-1 justify-between cursor-pointer relative",
         className,
-        isSelected ? "bg-muted" : ""
+        isSelected ? "bg-muted" : "",
       )}
       {...props}>
       <div className="font-medium leading-none tracking-tight flex items-center gap-1.5 h-full w-full">{children}</div>
-      <button
-        type="button"
-        className={cn("absolute", direction === "rtl" ? "top-1 left-1" : "top-1 right-1")}
-        onClick={() => {
-          if (setValue && inputKey) {
-            setValue(inputKey, "");
-          }
-          removeFileFromSet(index);
-        }}>
-        <span className="sr-only">remove item {index}</span>
-        <RemoveIcon className="w-4 h-4 hover:stroke-destructive duration-200 ease-in-out" />
-      </button>
+
+      {removeBtn != null ? (
+        removeBtn(handleRemove)
+      ) : (
+        <button
+          type="button"
+          className={cn("absolute", direction === "rtl" ? "top-1 left-1" : "top-1 right-1")}
+          onClick={() => {
+            handleRemove();
+          }}>
+          <span className="sr-only">remove item {index}</span>
+          <RemoveIcon className="w-4 h-4 hover:stroke-destructive duration-200 ease-in-out" />
+        </button>
+      )}
     </div>
   );
 });
@@ -291,10 +307,10 @@ export const FileInput = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
            dropzoneState.isDragAccept
              ? "border-green-500"
              : dropzoneState.isDragReject || isFileTooBig
-             ? "border-red-500"
-             : "border-gray-300"
+               ? "border-red-500"
+               : "border-gray-300"
          }`,
-            className
+            className,
           )}
           {...rootProps}>
           {children}
@@ -307,7 +323,7 @@ export const FileInput = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
         />
       </div>
     );
-  }
+  },
 );
 
 FileInput.displayName = "FileInput";

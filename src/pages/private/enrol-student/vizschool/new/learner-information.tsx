@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
 import { ChevronRight, MapPin, User } from "lucide-react";
+import { useCallback, useState } from "react";
 
 const tabs = [
   {
@@ -37,10 +38,20 @@ function LearnerInformation() {
 }
 
 function LearnerInformationTabs() {
+  const [tabOpened, setTabOpened] = useState<string>(tabs[0].value);
+
+  const memoizedCb = useCallback(
+    (tab: string) => {
+      setTabOpened(tab);
+    },
+    [tabOpened],
+  );
+
   return (
     <Tabs
       orientation="vertical"
-      defaultValue={tabs[0].value}
+      defaultValue={tabOpened}
+      value={tabOpened}
       className="w-full h-full flex flex-col lg:flex-row items-start gap-8 xl:gap-12">
       {/* Sidebar-style Tabs List */}
       <TabsList className="grid grid-cols-1 h-auto w-full lg:w-[320px] gap-3 bg-transparent p-0">
@@ -50,17 +61,18 @@ function LearnerInformationTabs() {
 
         {tabs.map((tab) => (
           <TabsTrigger
+            onClick={() => memoizedCb(tab.value)}
             key={tab.value}
             value={tab.value}
             className={cn(
               "relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
-              "data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200"
+              "data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
             )}>
             <div
               className={cn(
                 "flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
-                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white"
+                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />
             </div>
@@ -89,7 +101,7 @@ function LearnerInformationTabs() {
                 Please ensure all required fields are filled correctly.
               </p>
             </div>
-            <tab.component />
+            <tab.component setTabOpened={memoizedCb} />
           </TabsContent>
         ))}
       </div>
