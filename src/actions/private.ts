@@ -920,54 +920,39 @@ export async function submitVizSchoolEnrollment(
 
     const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
 
+    const isToFollow = (docKey: string) => studentToFollowDocs.includes(docKey);
+
+    const getFileValue = (file: unknown, docKey: string) => (isToFollow(docKey) ? null : file || null);
+
+    const getStatus = (file: unknown, docKey: string, validLabel: "Uploaded" | "Valid" = "Uploaded") => {
+      if (isToFollow(docKey)) return "To follow";
+      if (!file) return null;
+      return validLabel;
+    };
+
     const studentDocumentUploadResults = await Promise.all([
       supabase
-        .from("ay2026_enrolment_documents")
+        .from(`${academicYear}_enrolment_documents`)
         .update({
-          medical: studentToFollowDocs.includes("medical") ? null : medical,
-          medicalStatus: !medical ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from("ay2026_enrolment_documents")
-        .update({
-          passport: studentToFollowDocs.includes("passport") ? null : passport,
-          passportExpiry: studentToFollowDocs.includes("passport") ? null : passportExpiry,
-          passportStatus: studentToFollowDocs.includes("passport") ? "To follow" : "Valid",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from("ay2026_enrolment_documents")
-        .update({
-          pass: studentToFollowDocs.includes("pass") ? null : pass,
-          passExpiry: studentToFollowDocs.includes("pass") ? null : passExpiry,
-          passStatus: studentToFollowDocs.includes("pass") ? "To follow" : "Valid",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from("ay2026_enrolment_documents")
-        .update({
-          birthCert: studentToFollowDocs.includes("birthCert") ? null : birthCert,
-          birthCertStatus: studentToFollowDocs.includes("birthCert") ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from("ay2026_enrolment_documents")
-        .update({
-          educCert: studentToFollowDocs.includes("educCert") ? null : educCert,
-          educCertStatus: !educCert ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from("ay2026_enrolment_documents")
-        .update({
-          idPicture: studentToFollowDocs.includes("idPicture") ? null : idPicture,
-          idPictureStatus: studentToFollowDocs.includes("idPicture") ? "To follow" : "Uploaded",
+          medical: getFileValue(medical, "medical"),
+          medicalStatus: getStatus(medical, "medical"),
+
+          passport: getFileValue(passport, "passport"),
+          passportExpiry: isToFollow("passport") ? null : passportExpiry,
+          passportStatus: getStatus(passport, "passport", "Valid"),
+
+          pass: getFileValue(pass, "pass"),
+          passExpiry: isToFollow("pass") ? null : passExpiry,
+          passStatus: getStatus(pass, "pass", "Valid"),
+
+          birthCert: getFileValue(birthCert, "birthCert"),
+          birthCertStatus: getStatus(birthCert, "birthCert"),
+
+          educCert: getFileValue(educCert, "educCert"),
+          educCertStatus: getStatus(educCert, "educCert"),
+
+          idPicture: getFileValue(idPicture, "idPicture"),
+          idPictureStatus: getStatus(idPicture, "idPicture"),
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1405,78 +1390,48 @@ export async function submitEnrollment(
 
     const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
 
+    const isToFollow = (docKey: string) => studentToFollowDocs.includes(docKey);
+
+    const getFileValue = (file: unknown, docKey: string) => (isToFollow(docKey) ? null : file || null);
+
+    const getStatus = (file: unknown, docKey: string, validLabel: "Uploaded" | "Valid" = "Uploaded") => {
+      if (isToFollow(docKey)) return "To follow";
+      if (!file) return null;
+      return validLabel;
+    };
+
     const studentDocumentUploadResults = await Promise.all([
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          medical: studentToFollowDocs.includes("medical") ? null : medical,
-          medicalStatus: !medical ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          passport: studentToFollowDocs.includes("passport") ? null : passport,
-          passportExpiry: studentToFollowDocs.includes("passport") ? null : passportExpiry,
-          passportStatus: studentToFollowDocs.includes("passport") ? "To follow" : "Valid",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          pass: studentToFollowDocs.includes("pass") ? null : pass,
-          passExpiry: studentToFollowDocs.includes("pass") ? null : passExpiry,
-          passStatus: studentToFollowDocs.includes("pass") ? "To follow" : "Valid",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          birthCert: studentToFollowDocs.includes("birthCert") ? null : birthCert,
-          birthCertStatus: studentToFollowDocs.includes("birthCert") ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          educCert: studentToFollowDocs.includes("educCert") ? null : educCert,
-          educCertStatus: !educCert ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          idPicture: studentToFollowDocs.includes("idPicture") ? null : idPicture,
-          idPictureStatus: studentToFollowDocs.includes("idPicture") ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          icaPhoto: icaPhoto ? icaPhoto : null,
-          icaPhotoStatus: "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          financialSupportDocs: financialSupportDocs ? financialSupportDocs : null,
-          financialSupportDocsStatus: "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          vaccinationInformation: vaccinationInformation ? vaccinationInformation : null,
-          vaccinationInformationStatus: "Uploaded",
+          medical: getFileValue(medical, "medical"),
+          medicalStatus: getStatus(medical, "medical"),
+
+          passport: getFileValue(passport, "passport"),
+          passportExpiry: isToFollow("passport") ? null : passportExpiry,
+          passportStatus: getStatus(passport, "passport", "Valid"),
+
+          pass: getFileValue(pass, "pass"),
+          passExpiry: isToFollow("pass") ? null : passExpiry,
+          passStatus: getStatus(pass, "pass", "Valid"),
+
+          birthCert: getFileValue(birthCert, "birthCert"),
+          birthCertStatus: getStatus(birthCert, "birthCert"),
+
+          educCert: getFileValue(educCert, "educCert"),
+          educCertStatus: getStatus(educCert, "educCert"),
+
+          idPicture: getFileValue(idPicture, "idPicture"),
+          idPictureStatus: getStatus(idPicture, "idPicture"),
+
+          icaPhoto: icaPhoto || null,
+          icaPhotoStatus: icaPhoto ? "Uploaded" : null,
+
+          financialSupportDocs: financialSupportDocs || null,
+          financialSupportDocsStatus: financialSupportDocs ? "Uploaded" : null,
+
+          vaccinationInformation: vaccinationInformation || null,
+          vaccinationInformationStatus: vaccinationInformation ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1912,78 +1867,48 @@ export async function submitExistingEnrollment(
 
     const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
 
+    const isToFollow = (docKey: string) => studentToFollowDocs.includes(docKey);
+
+    const getFileValue = (file: unknown, docKey: string) => (isToFollow(docKey) ? null : file || null);
+
+    const getStatus = (file: unknown, docKey: string, validLabel: "Uploaded" | "Valid" = "Uploaded") => {
+      if (isToFollow(docKey)) return "To follow";
+      if (!file) return null;
+      return validLabel;
+    };
+
     const studentDocumentUploadResults = await Promise.all([
       supabase
         .from(`${academicYear}_enrolment_documents`)
         .update({
-          medical: studentToFollowDocs.includes("medical") ? null : medical,
-          medicalStatus: !medical ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          passport: studentToFollowDocs.includes("passport") ? null : passport,
-          passportExpiry: studentToFollowDocs.includes("passport") ? null : passportExpiry,
-          passportStatus: studentToFollowDocs.includes("passport") ? "To follow" : "Valid",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          pass: studentToFollowDocs.includes("pass") ? null : pass,
-          passExpiry: studentToFollowDocs.includes("pass") ? null : passExpiry,
-          passStatus: studentToFollowDocs.includes("pass") ? "To follow" : "Valid",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          birthCert: studentToFollowDocs.includes("birthCert") ? null : birthCert,
-          birthCertStatus: studentToFollowDocs.includes("birthCert") ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          educCert: studentToFollowDocs.includes("educCert") ? null : educCert,
-          educCertStatus: !educCert ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          idPicture: studentToFollowDocs.includes("idPicture") ? null : idPicture,
-          idPictureStatus: studentToFollowDocs.includes("idPicture") ? "To follow" : "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          icaPhoto: icaPhoto ? icaPhoto : null,
-          icaPhotoStatus: "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          financialSupportDocs: financialSupportDocs ? financialSupportDocs : null,
-          financialSupportDocsStatus: "Uploaded",
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          vaccinationInformation: vaccinationInformation ? vaccinationInformation : null,
-          vaccinationInformationStatus: "Uploaded",
+          medical: getFileValue(medical, "medical"),
+          medicalStatus: getStatus(medical, "medical"),
+
+          passport: getFileValue(passport, "passport"),
+          passportExpiry: isToFollow("passport") ? null : passportExpiry,
+          passportStatus: getStatus(passport, "passport", "Valid"),
+
+          pass: getFileValue(pass, "pass"),
+          passExpiry: isToFollow("pass") ? null : passExpiry,
+          passStatus: getStatus(pass, "pass", "Valid"),
+
+          birthCert: getFileValue(birthCert, "birthCert"),
+          birthCertStatus: getStatus(birthCert, "birthCert"),
+
+          educCert: getFileValue(educCert, "educCert"),
+          educCertStatus: getStatus(educCert, "educCert"),
+
+          idPicture: getFileValue(idPicture, "idPicture"),
+          idPictureStatus: getStatus(idPicture, "idPicture"),
+
+          icaPhoto: icaPhoto || null,
+          icaPhotoStatus: icaPhoto ? "Uploaded" : null,
+
+          financialSupportDocs: financialSupportDocs || null,
+          financialSupportDocsStatus: financialSupportDocs ? "Uploaded" : null,
+
+          vaccinationInformation: vaccinationInformation || null,
+          vaccinationInformationStatus: vaccinationInformation ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
