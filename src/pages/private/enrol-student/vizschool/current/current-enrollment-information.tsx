@@ -29,6 +29,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { vizSchoolEnrollmentInformationSchema, VizSchoolEnrollmentInformationSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
@@ -44,6 +45,7 @@ const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary One", "Secondary Two", 
 function CurrentEnrollmentInformation() {
   const location = useLocation();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { formState, setFormState } = useEnrolCurrentLearnerContext();
   const { session } = useSession();
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
@@ -60,7 +62,7 @@ function CurrentEnrollmentInformation() {
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
     queryKey: ["current-discounts", session?.user.email],
     queryFn: async () => {
-      return await getCurrentStudentDiscounts(true);
+      return await getCurrentStudentDiscounts(true, academicYear);
     },
     enabled: session != null && isSuccess,
   });

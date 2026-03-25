@@ -33,6 +33,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
+import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
@@ -81,13 +82,14 @@ function OpenHouseEnrollmentInformation() {
   const { session } = useSession();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
 
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { formState, setFormState, setCompletedTabs, setCurrentTab, setActiveTab } = useOpenHouseContext();
 
   const navigate = useNavigate();
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
     queryKey: ["new-discounts", session?.user.email],
     queryFn: async () => {
-      return await getNewStudentDiscounts(false);
+      return await getNewStudentDiscounts(false, academicYear);
     },
     enabled: session != null,
   });

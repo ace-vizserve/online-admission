@@ -70,7 +70,7 @@ function LearnerEnrollmentInformation() {
   const { data: newStudentDiscounts, isPending: isPendingNewStudentDiscounts } = useQuery({
     queryKey: ["new-discounts", session?.user.email],
     queryFn: async () => {
-      return await getNewStudentDiscounts(true);
+      return await getNewStudentDiscounts(true, academicYear);
     },
     enabled: session != null,
   });
