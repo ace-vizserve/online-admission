@@ -106,7 +106,7 @@ function OldEnrollmentInformation() {
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
       ...formState.enrollmentInfo,
-      socialMediaConsent: Boolean(formState.enrollmentInfo?.socialMediaConsent) ?? false,
+      socialMediaConsent: Boolean(formState.enrollmentInfo?.socialMediaConsent),
       contractSignatory:
         data?.fatherEmail != null && !formState.familyInfo?.fatherInfo?.noFatherInfo ? "Father" : "Mother",
     },

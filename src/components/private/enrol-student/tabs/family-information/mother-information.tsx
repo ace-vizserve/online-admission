@@ -30,7 +30,7 @@ function MotherInformation() {
     resolver: zodResolver(motherInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.motherInfo,
-      motherWhatsappTeamsConsent: Boolean(formState.familyInfo?.motherInfo.motherWhatsappTeamsConsent),
+      motherWhatsappTeamsConsent: Boolean(formState.familyInfo?.motherInfo?.motherWhatsappTeamsConsent),
     },
   });
 
