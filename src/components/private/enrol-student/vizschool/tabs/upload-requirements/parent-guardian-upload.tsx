@@ -62,8 +62,6 @@ function ParentGuardianUpload() {
 
     if (isValid) return;
 
-    console.log("Triggered");
-
     setFormState({
       uploadRequirements: {
         studentUploadRequirements: {
@@ -74,10 +72,10 @@ function ParentGuardianUpload() {
           ...(data!.parentGuardianUploadRequirements as ParentGuardianUploadRequirementsSchema),
           hasFatherInfo:
             formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo ??
-            data.parentGuardianUploadRequirements.hasFatherInfo,
+            data.parentGuardianUploadRequirements?.hasFatherInfo,
           hasGuardianInfo:
             formState.uploadRequirements?.parentGuardianUploadRequirements.hasGuardianInfo ??
-            data.parentGuardianUploadRequirements.hasGuardianInfo,
+            data.parentGuardianUploadRequirements?.hasGuardianInfo,
         },
       },
     });
@@ -87,8 +85,6 @@ function ParentGuardianUpload() {
     const parentGuardianReq = formState.uploadRequirements?.parentGuardianUploadRequirements;
     if (hydratedRef.current) return;
     if (!parentGuardianReq || Object.keys(parentGuardianReq).length < 1) return;
-
-    console.log("Triggered");
 
     form.reset(parentGuardianReq, {
       keepErrors: false,
