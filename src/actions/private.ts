@@ -548,7 +548,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
       }
     }
 
-    if (!familyInformation) return;
+    if (!familyInformation) return {};
 
     const motherInfo: Record<string, unknown> = {};
     const fatherInfo: Record<string, unknown> = {};
