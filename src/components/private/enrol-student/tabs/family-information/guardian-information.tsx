@@ -38,6 +38,7 @@ function GuardianInformation() {
     defaultValues: {
       ...formState.familyInfo?.guardianInfo,
       noGuardianInfo: formState.familyInfo?.guardianInfo?.noGuardianInfo,
+      guardianWhatsappTeamsConsent: Boolean(formState.familyInfo?.guardianInfo.guardianWhatsappTeamsConsent),
     },
   });
 

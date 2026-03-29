@@ -526,7 +526,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
           if (!match) throw new Error("Invalid enrolee number format");
           return [`ay20${match[1]}`];
         })()
-      : ["ay2027", "ay2026", "ay2025"]; // fallback order (latest first)
+      : ["ay2027", "ay2026", "ay2025"];
 
     for (const academicYear of academicYears) {
       let query = supabase
@@ -650,71 +650,105 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
       data: { session },
     } = await supabase.auth.getSession();
 
-    let academicYear = "ay2025";
+    if (!session?.user?.email) return;
 
-    if (enroleeNumber) {
-      const match = enroleeNumber.match(/E(\d{2})/);
-      if (match) {
-        academicYear = `ay20${match[1]}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let applicationsData: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let documentsData: any = null;
+
+    const academicYears = enroleeNumber
+      ? (() => {
+          const match = enroleeNumber.match(/E(\d{2})/);
+          if (!match) throw new Error("Invalid enrolee number format");
+          return [`ay20${match[1]}`];
+        })()
+      : ["ay2027", "ay2026", "ay2025"];
+
+    for (const academicYear of academicYears) {
+      let appQuery = supabase
+        .from(`${academicYear}_enrolment_applications`)
+        .select(
+          "enroleeNumber, motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
+        )
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      let docQuery = supabase
+        .from(`${academicYear}_enrolment_documents`)
+        .select(
+          "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
+        );
+
+      if (enroleeNumber) {
+        appQuery = appQuery.eq("enroleeNumber", enroleeNumber);
+        docQuery = docQuery.eq("enroleeNumber", enroleeNumber);
+      } else {
+        appQuery = appQuery.or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
+      }
+
+      const { data: appData } = await appQuery.maybeSingle();
+      let docData = null;
+
+      if (appData) {
+        docData = await docQuery.eq("enroleeNumber", appData.enroleeNumber).maybeSingle();
+      }
+
+      if (appData || docData) {
+        applicationsData = appData;
+        documentsData = docData?.data;
+        break;
       }
     }
 
-    const { data: parentGuardianDocumentsInformation, error: parentGuardianDocumentsInformationError } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
-      .select(
-        "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
-      )
-      .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+    if (!applicationsData && !documentsData) return {};
 
-    if (parentGuardianDocumentsInformationError) {
-      throw new Error(parentGuardianDocumentsInformationError.message);
-    }
+    const motherPassDocument = {
+      motherPass: documentsData?.motherPass,
+      motherPassType: applicationsData?.motherPass,
+      motherPassExpiry: applicationsData?.motherPassExpiry,
+    };
 
-    const { data: parentGuardianDocuments, error: parentGuardianDocumentsError } = await supabase
-      .from(`${academicYear}_enrolment_documents`)
-      .select("motherPassport, motherPass, fatherPass, fatherPassport, guardianPass, guardianPassport")
-      .eq("enroleeNumber", enroleeNumber);
+    const motherPassportDocument = {
+      motherPassport: documentsData?.motherPassport,
+      motherPassportNumber: applicationsData?.motherPassport,
+      motherPassportExpiry: applicationsData?.motherPassportExpiry,
+    };
 
-    if (parentGuardianDocumentsError) {
-      throw new Error(parentGuardianDocumentsError.message);
-    }
+    const fatherPassDocument = {
+      fatherPass: documentsData?.fatherPass,
+      fatherPassType: applicationsData?.fatherPass,
+      fatherPassExpiry: applicationsData?.fatherPassExpiry,
+    };
 
-    const {
-      motherPass: motherPassType,
-      motherPassExpiry,
-      motherPassportExpiry,
-      motherPassport: motherPassportNumber,
-    } = parentGuardianDocumentsInformation[0] ?? {};
-    const { motherPass, motherPassport } = parentGuardianDocuments[0] ?? {};
+    const fatherPassportDocument = {
+      fatherPassport: documentsData?.fatherPassport,
+      fatherPassportNumber: applicationsData?.fatherPassport,
+      fatherPassportExpiry: applicationsData?.fatherPassportExpiry,
+    };
 
-    const motherPassDocument = { motherPass, motherPassType, motherPassExpiry };
-    const motherPassportDocument = { motherPassport, motherPassportNumber, motherPassportExpiry };
+    const guardianPassDocument = {
+      guardianPass: documentsData?.guardianPass,
+      guardianPassType: applicationsData?.guardianPass,
+      guardianPassExpiry: applicationsData?.guardianPassExpiry,
+    };
 
-    const {
-      fatherPass: fatherPassType,
-      fatherPassExpiry,
-      fatherPassportExpiry,
-      fatherPassport: fatherPassportNumber,
-    } = parentGuardianDocumentsInformation[0] ?? {};
-    const { fatherPass, fatherPassport } = parentGuardianDocuments[0] ?? {};
+    const guardianPassportDocument = {
+      guardianPassport: documentsData?.guardianPassport,
+      guardianPassportNumber: applicationsData?.guardianPassport,
+      guardianPassportExpiry: applicationsData?.guardianPassportExpiry,
+    };
 
-    const fatherPassDocument = { fatherPass, fatherPassType, fatherPassExpiry };
-    const fatherPassportDocument = { fatherPassport, fatherPassportNumber, fatherPassportExpiry };
+    const motherDocuments = {
+      ...removeEmptyKeys(motherPassDocument),
+      ...removeEmptyKeys(motherPassportDocument),
+    };
 
-    const {
-      guardianPass: guardianPassType,
-      guardianPassExpiry,
-      guardianPassportExpiry,
-      guardianPassport: guardianPassportNumber,
-    } = parentGuardianDocumentsInformation[0] ?? {};
-    const { guardianPass, guardianPassport } = parentGuardianDocuments[0] ?? {};
+    const fatherDocuments = {
+      ...removeEmptyKeys(fatherPassDocument),
+      ...removeEmptyKeys(fatherPassportDocument),
+    };
 
-    const guardianPassDocument = { guardianPass, guardianPassType, guardianPassExpiry };
-    const guardianPassportDocument = { guardianPassport, guardianPassportNumber, guardianPassportExpiry };
-
-    const motherDocuments = { ...removeEmptyKeys(motherPassDocument), ...removeEmptyKeys(motherPassportDocument) };
-    const fatherDocuments = { ...removeEmptyKeys(fatherPassDocument), ...removeEmptyKeys(fatherPassportDocument) };
     const guardianDocuments = {
       ...removeEmptyKeys(guardianPassDocument),
       ...removeEmptyKeys(guardianPassportDocument),
@@ -1801,48 +1835,48 @@ export async function submitExistingEnrollment(
 }
 
 export async function getFamilyDocuments(enroleeNumber: string) {
-  if (!enroleeNumber) return null;
-
   try {
+    if (!enroleeNumber) throw new Error("Enrolee number is required");
+
     const match = enroleeNumber.match(/E(\d{2})/);
     if (!match) throw new Error("Invalid enrolee number format");
 
     const academicYear = `ay20${match[1]}`;
-    const DOCUMENTS_TABLE = `${academicYear}_enrolment_documents`;
 
     const { data: documents, error } = await supabase
-      .from(DOCUMENTS_TABLE)
+      .from(`${academicYear}_enrolment_documents`)
       .select("*")
-      .eq("enroleeNumber", enroleeNumber);
+      .eq("enroleeNumber", enroleeNumber)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (error) throw new Error(error.message);
-    if (!documents || documents.length === 0) return null;
-
-    const doc = documents[0];
+    if (!documents) return {};
 
     return {
-      motherPassport: doc?.motherPassport ?? null,
-      motherPassportExpiry: doc?.motherPassportExpiry ?? null,
-      motherPassportStatus: doc?.motherPassportStatus ?? null,
-      motherPass: doc?.motherPass ?? null,
-      motherPassExpiry: doc?.motherPassExpiry ?? null,
-      motherPassStatus: doc?.motherPassStatus ?? null,
-      fatherPassport: doc?.fatherPassport ?? null,
-      fatherPassportExpiry: doc?.fatherPassportExpiry ?? null,
-      fatherPassportStatus: doc?.fatherPassportStatus ?? null,
-      fatherPass: doc?.fatherPass ?? null,
-      fatherPassExpiry: doc?.fatherPassExpiry ?? null,
-      fatherPassStatus: doc?.fatherPassStatus ?? null,
-      guardianPassport: doc?.guardianPassport ?? null,
-      guardianPassportExpiry: doc?.guardianPassportExpiry ?? null,
-      guardianPassportStatus: doc?.guardianPassportStatus ?? null,
-      guardianPass: doc?.guardianPass ?? null,
-      guardianPassExpiry: doc?.guardianPassExpiry ?? null,
-      guardianPassStatus: doc?.guardianPassStatus ?? null,
+      motherPassport: documents.motherPassport ?? null,
+      motherPassportExpiry: documents.motherPassportExpiry ?? null,
+      motherPassportStatus: documents.motherPassportStatus ?? null,
+      motherPass: documents.motherPass ?? null,
+      motherPassExpiry: documents.motherPassExpiry ?? null,
+      motherPassStatus: documents.motherPassStatus ?? null,
+      fatherPassport: documents.fatherPassport ?? null,
+      fatherPassportExpiry: documents.fatherPassportExpiry ?? null,
+      fatherPassportStatus: documents.fatherPassportStatus ?? null,
+      fatherPass: documents.fatherPass ?? null,
+      fatherPassExpiry: documents.fatherPassExpiry ?? null,
+      fatherPassStatus: documents.fatherPassStatus ?? null,
+      guardianPassport: documents.guardianPassport ?? null,
+      guardianPassportExpiry: documents.guardianPassportExpiry ?? null,
+      guardianPassportStatus: documents.guardianPassportStatus ?? null,
+      guardianPass: documents.guardianPass ?? null,
+      guardianPassExpiry: documents.guardianPassExpiry ?? null,
+      guardianPassStatus: documents.guardianPassStatus ?? null,
     };
   } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
+    toast.error((error as Error).message);
+    return {};
   }
 }
 

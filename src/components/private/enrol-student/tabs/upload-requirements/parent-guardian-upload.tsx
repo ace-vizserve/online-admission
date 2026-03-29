@@ -72,10 +72,10 @@ function ParentGuardianUpload() {
           ...(data!.parentGuardianUploadRequirements as ParentGuardianUploadRequirementsSchema),
           hasFatherInfo:
             formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo ??
-            data.parentGuardianUploadRequirements.hasFatherInfo,
+            data.parentGuardianUploadRequirements?.hasFatherInfo,
           hasGuardianInfo:
             formState.uploadRequirements?.parentGuardianUploadRequirements.hasGuardianInfo ??
-            data.parentGuardianUploadRequirements.hasGuardianInfo,
+            data.parentGuardianUploadRequirements?.hasGuardianInfo,
         },
       },
     });
@@ -85,8 +85,6 @@ function ParentGuardianUpload() {
     const parentGuardianReq = formState.uploadRequirements?.parentGuardianUploadRequirements;
     if (hydratedRef.current) return;
     if (!parentGuardianReq || Object.keys(parentGuardianReq).length < 1) return;
-
-    console.log("Triggered");
 
     form.reset(parentGuardianReq, {
       keepErrors: false,
@@ -395,6 +393,7 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
     </div>
   );
 }
+
 function Loader() {
   return (
     <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">

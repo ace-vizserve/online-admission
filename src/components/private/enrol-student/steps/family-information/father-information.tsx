@@ -72,6 +72,7 @@ function FatherInformation() {
     defaultValues: {
       ...formState.familyInfo?.fatherInfo,
       noFatherInfo: formState.familyInfo?.fatherInfo?.noFatherInfo ?? false,
+      fatherWhatsappTeamsConsent: Boolean(formState.familyInfo?.fatherInfo.fatherWhatsappTeamsConsent),
       isValid: formState.familyInfo?.fatherInfo?.isValid ?? false,
     },
   });

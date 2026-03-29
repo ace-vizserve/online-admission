@@ -1,15 +1,19 @@
 import { Button } from "@/components/ui/button";
 
+import { getPreviousParentGuardianDocuments } from "@/actions/private";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
+import useSession from "@/hooks/use-session";
 import { cn, documentErrors } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import { Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
 import { AlertCircle, Clock, FilePen, Info, Save } from "lucide-react";
@@ -22,6 +26,14 @@ import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-di
 const MAX_SKIPS = 2;
 
 function ParentGuardianUpload() {
+  const { session } = useSession();
+  const { data, isPending, fetchStatus, isSuccess } = useQuery({
+    queryKey: ["parent-guardian-documents", session?.user.email],
+    queryFn: async () => {
+      return await getPreviousParentGuardianDocuments();
+    },
+  });
+
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
   const [motherPassport, setMotherPassport] = useState<File[] | null>(null);
   const [guardianPassport, setGuardianPassport] = useState<File[] | null>(null);
@@ -45,6 +57,7 @@ function ParentGuardianUpload() {
   const form = useForm<ParentGuardianUploadRequirementsSchema>({
     resolver: zodResolver(parentGuardianUploadRequirementsSchema),
     defaultValues: {
+      ...data?.parentGuardianUploadRequirements,
       ...formState.uploadRequirements?.parentGuardianUploadRequirements,
     },
     mode: "onChange",
@@ -58,6 +71,8 @@ function ParentGuardianUpload() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
+    if (!isSuccess) return;
+
     setFormState({
       ...formState,
       uploadRequirements: {
@@ -74,11 +89,9 @@ function ParentGuardianUpload() {
         keepErrors: true,
       },
     );
-  }, [debouncedValues]);
 
-  useEffect(() => {
     form.trigger();
-  }, []);
+  }, [debouncedValues, isSuccess]);
 
   useEffect(() => {
     if (form.formState.isSubmitSuccessful) {
@@ -168,6 +181,14 @@ function ParentGuardianUpload() {
         parentGuardianUploadRequirements: { ...values, isValid: true },
       },
     });
+  }
+
+  if (fetchStatus === "fetching" && isPending) {
+    return <Loader />;
+  }
+
+  if (formState.uploadRequirements?.parentGuardianUploadRequirements == null) {
+    return <Loader />;
   }
 
   return (
@@ -405,6 +426,15 @@ function ParentGuardianUpload() {
         </div>
       </form>
     </Form>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
+      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching documents...</p>
+    </div>
   );
 }
 
