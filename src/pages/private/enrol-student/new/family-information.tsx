@@ -64,8 +64,8 @@ function FamilyInformationTabs() {
     return <Loader />;
   }
 
-  const motherInfoInvalid = formState.familyInfo.motherInfo.isValid !== true;
-  const fatherInfoInvalid = formState.familyInfo.fatherInfo.isValid !== true;
+  const motherInfoInvalid = Boolean(formState.familyInfo.motherInfo?.isValid) !== true;
+  const fatherInfoInvalid = Boolean(formState.familyInfo.fatherInfo?.isValid) !== true;
 
   const tabs = [
     {
