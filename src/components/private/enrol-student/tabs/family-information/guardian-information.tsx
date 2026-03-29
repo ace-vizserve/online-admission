@@ -37,8 +37,8 @@ function GuardianInformation() {
     resolver: zodResolver(guardianInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.guardianInfo,
+      guardianWhatsappTeamsConsent: Boolean(formState.familyInfo?.guardianInfo?.guardianWhatsappTeamsConsent),
       noGuardianInfo: formState.familyInfo?.guardianInfo?.noGuardianInfo,
-      guardianWhatsappTeamsConsent: Boolean(formState.familyInfo?.guardianInfo.guardianWhatsappTeamsConsent),
     },
   });
 

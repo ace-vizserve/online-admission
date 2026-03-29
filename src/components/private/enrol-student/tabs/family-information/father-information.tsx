@@ -41,8 +41,8 @@ function FatherInformation() {
     resolver: zodResolver(fatherInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.fatherInfo,
+      fatherWhatsappTeamsConsent: Boolean(formState.familyInfo?.fatherInfo?.fatherWhatsappTeamsConsent),
       noFatherInfo: formState.familyInfo?.fatherInfo?.noFatherInfo ?? false,
-      fatherWhatsappTeamsConsent: Boolean(formState.familyInfo?.fatherInfo.fatherWhatsappTeamsConsent),
     },
   });
 
