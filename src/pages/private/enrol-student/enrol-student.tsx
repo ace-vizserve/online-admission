@@ -43,7 +43,8 @@ function EnrolStudent() {
   const { data, isPending, isRefetching } = useQuery({
     queryKey: ["enrolled-students", session?.user.email, academicYear],
     queryFn: async () => {
-      return await getPreviousEnrolledStudents(academicYear);
+      const ay = academicYear.replace(/vizschool-/g, "");
+      return await getPreviousEnrolledStudents(ay);
     },
     enabled: session != null && Boolean(academicYear),
   });
