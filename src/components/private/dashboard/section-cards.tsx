@@ -171,90 +171,98 @@ function StatCard({
         {isPendingTasks && count > 0 && (
           <CardContent className="mt-6 px-0 border-t border-slate-200 pt-2">
             <div className="flex flex-col">
-              {value.slice(0, 2).map((pendingTask) => (
-                <div
-                  key={pendingTask.enroleeNumber}
-                  className="flex items-start justify-between gap-4 py-5 border-b border-slate-50 last:border-none">
-                  <div className="flex items-start gap-4">
-                    {/* PayFit Info Icon Style */}
-                    <div className="mt-0.5 shrink-0 rounded-full bg-amber-100 p-2">
-                      <Info className="size-4 text-amber-600" />
+              {value.slice(0, 2).map((pendingTask) => {
+                const match = pendingTask.enroleeNumber.match(/E(\d{2})/);
+                const academicYear = `ay20${match[1]}`;
+
+                return (
+                  <div
+                    key={pendingTask.enroleeNumber}
+                    className="flex items-start justify-between gap-4 py-5 border-b border-slate-50 last:border-none">
+                    <div className="flex items-start gap-4">
+                      {/* PayFit Info Icon Style */}
+                      <div className="mt-0.5 shrink-0 rounded-full bg-amber-100 p-2">
+                        <Info className="size-4 text-amber-600" />
+                      </div>
+
+                      <div className="flex-1">
+                        <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-3">
+                          Enrollee{" "}
+                          <Link
+                            to={`/admission/enrolments/application/${pendingTask.enroleeNumber}?academicYear=${academicYear}`}
+                            className="font-bold text-primary underline underline-offset-2">
+                            #{pendingTask.enroleeNumber}
+                          </Link>{" "}
+                          has pending actions for:
+                          {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && (
+                            <span className="ml-1">
+                              <span className="font-bold text-black italic">Student Documents</span> (
+                              {pendingTask.studentDocs.map((task, idx) => {
+                                const [name, status] = Object.entries(task)[0];
+                                return (
+                                  <span key={idx}>
+                                    <span className="text-black capitalize">
+                                      {name.replace(/([A-Z])/g, " $1").trim()}
+                                    </span>
+                                    <span
+                                      className={cn(
+                                        "ml-1 font-bold uppercase text-[10px]",
+                                        status === "To follow" ? "text-primary" : "text-destructive",
+                                      )}>
+                                      {status}
+                                    </span>
+                                    {idx < pendingTask.studentDocs!.length - 1 && ", "}
+                                  </span>
+                                );
+                              })}
+                              )
+                            </span>
+                          )}
+                          {pendingTask.parentGuardianDocs && pendingTask.parentGuardianDocs.length > 0 && (
+                            <span className="ml-1">
+                              {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && "and"}{" "}
+                              <span className="font-bold text-black italic">Parent/Guardian Documents</span> (
+                              {pendingTask.parentGuardianDocs.map((task, idx) => {
+                                const [name, status] = Object.entries(task)[0];
+                                return (
+                                  <span key={idx}>
+                                    <span className="text-black capitalize">
+                                      {name.replace(/([A-Z])/g, " $1").trim()}
+                                    </span>
+                                    <span
+                                      className={cn(
+                                        "ml-1 font-bold uppercase text-[10px]",
+                                        status === "To follow" ? "text-primary" : "text-destructive",
+                                      )}>
+                                      {status}
+                                    </span>
+                                    {idx < pendingTask.parentGuardianDocs!.length - 1 && ", "}
+                                  </span>
+                                );
+                              })}
+                              )
+                            </span>
+                          )}
+                          . Review these items to finalize enrolment.
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex-1">
-                      <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-3">
-                        Enrollee <span className="font-semibold text-primary">#{pendingTask.enroleeNumber}</span> has
-                        pending actions for:
-                        {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && (
-                          <span className="ml-1">
-                            <span className="font-bold text-black italic">Student Documents</span> (
-                            {pendingTask.studentDocs.map((task, idx) => {
-                              const [name, status] = Object.entries(task)[0];
-                              return (
-                                <span key={idx}>
-                                  <span className="text-black capitalize">
-                                    {name.replace(/([A-Z])/g, " $1").trim()}
-                                  </span>
-                                  <span
-                                    className={cn(
-                                      "ml-1 font-bold uppercase text-[10px]",
-                                      status === "To follow" ? "text-primary" : "text-destructive",
-                                    )}>
-                                    {status}
-                                  </span>
-                                  {idx < pendingTask.studentDocs!.length - 1 && ", "}
-                                </span>
-                              );
-                            })}
-                            )
-                          </span>
-                        )}
-                        {pendingTask.parentGuardianDocs && pendingTask.parentGuardianDocs.length > 0 && (
-                          <span className="ml-1">
-                            {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && "and"}{" "}
-                            <span className="font-bold text-black italic">Parent/Guardian Documents</span> (
-                            {pendingTask.parentGuardianDocs.map((task, idx) => {
-                              const [name, status] = Object.entries(task)[0];
-                              return (
-                                <span key={idx}>
-                                  <span className="text-black capitalize">
-                                    {name.replace(/([A-Z])/g, " $1").trim()}
-                                  </span>
-                                  <span
-                                    className={cn(
-                                      "ml-1 font-bold uppercase text-[10px]",
-                                      status === "To follow" ? "text-primary" : "text-destructive",
-                                    )}>
-                                    {status}
-                                  </span>
-                                  {idx < pendingTask.parentGuardianDocs!.length - 1 && ", "}
-                                </span>
-                              );
-                            })}
-                            )
-                          </span>
-                        )}
-                        . Review these items to finalize enrolment.
-                      </p>
-                    </div>
+                    <Link
+                      to={`/admission/enrolments/application/${pendingTask.enroleeNumber}?academicYear=${academicYear}`}
+                      state={{
+                        studentDocsActions: pendingTask.studentDocs && pendingTask.studentDocs.length > 0,
+                        parentGuardianDocsActions:
+                          pendingTask.parentGuardianDocs && pendingTask.parentGuardianDocs.length > 0,
+                      }}
+                      className={buttonVariants({
+                        className: "!text-[0.7rem] !font-bold",
+                      })}>
+                      Review <ArrowUpRight className="size-3" />
+                    </Link>
                   </div>
-
-                  <Link
-                    to={`/admission/enrolments/application/${pendingTask.enroleeNumber}?academicYear=${
-                      (pendingTask.enroleeNumber as string).startsWith("E26") ? "ay2026" : "ay2025"
-                    }`}
-                    state={{
-                      studentDocsActions: pendingTask.studentDocs && pendingTask.studentDocs.length > 0,
-                      parentGuardianDocsActions:
-                        pendingTask.parentGuardianDocs && pendingTask.parentGuardianDocs.length > 0,
-                    }}
-                    className={buttonVariants({
-                      className: "!text-[0.7rem] !font-bold",
-                    })}>
-                    Review <ArrowUpRight className="size-3" />
-                  </Link>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         )}
