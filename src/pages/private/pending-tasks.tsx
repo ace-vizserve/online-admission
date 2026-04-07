@@ -49,80 +49,88 @@ function PendingTasks() {
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <div className="divide-y divide-slate-100">
-            {tasks.map((task) => (
-              <div key={task.enroleeNumber} className="p-6 hover:bg-slate-50/50 transition-colors">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1 shrink-0 rounded-full bg-amber-100 p-2">
-                      <Info className="size-5 text-amber-600" />
-                    </div>
+            {tasks.map((task) => {
+              const match = task.enroleeNumber.match(/E(\d{2})/);
+              const academicYear = `ay20${match[1]}`;
 
-                    <div className="space-y-1">
-                      <p className="text-sm leading-relaxed text-slate-600">
-                        Enrollee <span className="font-bold text-primary">#{task.enroleeNumber}</span> requires
-                        attention for the following:
-                      </p>
+              return (
+                <div key={task.enroleeNumber} className="p-6 hover:bg-slate-50/50 transition-colors">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-start gap-4">
+                      <div className="mt-1 shrink-0 rounded-full bg-amber-100 p-2">
+                        <Info className="size-5 text-amber-600" />
+                      </div>
 
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {task.studentDocs &&
-                          task.studentDocs.length > 0 &&
-                          task.studentDocs.map((doc: Record<string, string>, i: number) => {
-                            const [name, status] = Object.entries(doc)[0];
-                            return (
-                              <div
-                                key={i}
-                                className="bg-white border border-slate-200 px-3 py-1 rounded-full text-xs flex items-center gap-2">
-                                <span className="font-medium capitalize">{name.replace(/([A-Z])/g, " $1")}</span>
-                                <span
-                                  className={cn(
-                                    "font-bold uppercase text-[10px]",
-                                    status === "To follow" ? "text-primary" : "text-destructive",
-                                  )}>
-                                  {status}
-                                </span>
-                              </div>
-                            );
-                          })}
+                      <div className="space-y-1">
+                        <p className="text-sm leading-relaxed text-slate-600">
+                          Enrollee{" "}
+                          <Link
+                            to={`/admission/enrolments/application/${task.enroleeNumber}?academicYear=${academicYear}`}
+                            className="font-bold text-primary underline underline-offset-2">
+                            #{task.enroleeNumber}
+                          </Link>{" "}
+                          requires attention for the following:
+                        </p>
 
-                        {task.parentGuardianDocs &&
-                          task.parentGuardianDocs.length > 0 &&
-                          task.parentGuardianDocs.map((doc: Record<string, string>, i: number) => {
-                            const [name, status] = Object.entries(doc)[0];
-                            return (
-                              <div
-                                key={i}
-                                className="bg-white border border-slate-200 px-3 py-1 rounded-full text-xs flex items-center gap-2">
-                                <span className="font-medium capitalize">{name.replace(/([A-Z])/g, " $1")}</span>
-                                <span
-                                  className={cn(
-                                    "font-bold uppercase text-[10px]",
-                                    status === "To follow" ? "text-primary" : "text-destructive",
-                                  )}>
-                                  {status}
-                                </span>
-                              </div>
-                            );
-                          })}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {task.studentDocs &&
+                            task.studentDocs.length > 0 &&
+                            task.studentDocs.map((doc: Record<string, string>, i: number) => {
+                              const [name, status] = Object.entries(doc)[0];
+                              return (
+                                <div
+                                  key={i}
+                                  className="bg-white border border-slate-200 px-3 py-1 rounded-full text-xs flex items-center gap-2">
+                                  <span className="font-medium capitalize">{name.replace(/([A-Z])/g, " $1")}</span>
+                                  <span
+                                    className={cn(
+                                      "font-bold uppercase text-[10px]",
+                                      status === "To follow" ? "text-primary" : "text-destructive",
+                                    )}>
+                                    {status}
+                                  </span>
+                                </div>
+                              );
+                            })}
+
+                          {task.parentGuardianDocs &&
+                            task.parentGuardianDocs.length > 0 &&
+                            task.parentGuardianDocs.map((doc: Record<string, string>, i: number) => {
+                              const [name, status] = Object.entries(doc)[0];
+                              return (
+                                <div
+                                  key={i}
+                                  className="bg-white border border-slate-200 px-3 py-1 rounded-full text-xs flex items-center gap-2">
+                                  <span className="font-medium capitalize">{name.replace(/([A-Z])/g, " $1")}</span>
+                                  <span
+                                    className={cn(
+                                      "font-bold uppercase text-[10px]",
+                                      status === "To follow" ? "text-primary" : "text-destructive",
+                                    )}>
+                                    {status}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <Link
-                    to={`/admission/enrolments/application/${task.enroleeNumber}?academicYear=${
-                      (task.enroleeNumber as string).startsWith("E26") ? "ay2026" : "ay2025"
-                    }`}
-                    state={{
-                      studentDocsActions: task.studentDocs && task.studentDocs.length > 0,
-                      parentGuardianDocsActions: task.parentGuardianDocs && task.parentGuardianDocs.length > 0,
-                    }}
-                    className={buttonVariants({
-                      className: "text-xs !font-bold",
-                    })}>
-                    Review <ArrowUpRight className="size-4" />
-                  </Link>
+                    <Link
+                      to={`/admission/enrolments/application/${task.enroleeNumber}?academicYear=${academicYear}`}
+                      state={{
+                        studentDocsActions: task.studentDocs && task.studentDocs.length > 0,
+                        parentGuardianDocsActions: task.parentGuardianDocs && task.parentGuardianDocs.length > 0,
+                      }}
+                      className={buttonVariants({
+                        className: "text-xs !font-bold",
+                      })}>
+                      Review <ArrowUpRight className="size-4" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
