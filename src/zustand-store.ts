@@ -23,11 +23,6 @@ export type EnrolNewStudentDraftStore = {
   clearState: () => void;
 };
 
-export type SecuritySettingsSheetStore = {
-  isOpen: boolean;
-  setIsOpen: (state: boolean) => void;
-};
-
 export type ApplicationDraftsDialogStore = {
   isOpen: boolean;
   setIsOpen: (state: boolean) => void;
@@ -147,11 +142,6 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
     },
   ),
 );
-
-export const useSecuritySettingsSheetStore = create<SecuritySettingsSheetStore>()((set) => ({
-  isOpen: false,
-  setIsOpen: (state) => set(() => ({ isOpen: state })),
-}));
 
 export const useApplicationDraftsDialogStore = create<ApplicationDraftsDialogStore>()((set) => ({
   isOpen: false,

@@ -13,6 +13,7 @@ import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
 import NotFound from "@/pages/not-found";
+import AccountSettings from "@/pages/private/account-settings";
 import AdmissionGuidelines from "@/pages/private/admission-guidelines";
 import Dashboard from "@/pages/private/dashboard";
 import ApplicationSubmitted from "@/pages/private/enrol-student/application-submitted";
@@ -156,6 +157,15 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <PendingTasks />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="account-settings"
+            element={
+              <AuthGuard>
+                <AccountSettings />
               </AuthGuard>
             }
           />

@@ -141,6 +141,37 @@ export async function authUpdatePassword({ password }: { password: string }) {
   }
 }
 
+export async function updateAccountName({
+  lastName,
+  firstName,
+  middleName,
+}: {
+  lastName: string;
+  firstName: string;
+  middleName?: string;
+}) {
+  try {
+    const fullName = middleName
+      ? `${lastName}, ${firstName}, ${middleName}`
+      : `${lastName}, ${firstName}`;
+
+    const { error } = await supabase.auth.updateUser({
+      data: { fullName },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    toast.success("Account name updated!", {
+      description: "Your name has been changed successfully.",
+    });
+  } catch (error) {
+    const err = error as AuthError;
+    toast.error(err.message + "!");
+  }
+}
+
 export async function updatePassword({ password }: { password: string }) {
   try {
     const { error } = await supabase.auth.updateUser({
