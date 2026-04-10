@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Tech Stack
 
 - **React 19** + **Vite 6** + **TypeScript 5.7** (strict mode)
-- **Supabase** — Auth, PostgreSQL database, file storage
+- **Supabase** — Auth, PostgreSQL database (RLS enabled), file storage, Edge Functions
 - **Zustand** v5 — Client state (form drafts persisted to sessionStorage)
 - **TanStack React Query** v5 — Server state (`refetchOnMount: false`, `refetchOnWindowFocus: false`)
 - **React Hook Form** v7 + **Zod** v3 — Form handling and validation
@@ -57,7 +57,17 @@ All forms follow this pattern:
 
 ### File Uploads
 
-Custom `useSupabaseUpload` hook (`src/hooks/use-supabase-upload.ts`) wraps react-dropzone + Supabase Storage. Supports MIME validation, size limits, and PDF merging via `pdf-merger-js`.
+Custom `useSupabaseUpload` hook (`src/hooks/use-supabase-upload.ts`) wraps react-dropzone + Supabase Storage. Supports MIME validation, size limits, and PDF merging via `pdf-merger-js`. Upload paths are scoped by user ID (`userId/path/timestamp-filename`).
+
+### Access Control
+
+All data-fetching and mutation functions in `src/actions/private.ts` must scope queries to the current user's email via:
+```ts
+.or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
+```
+For tables without email columns (e.g. `*_enrolment_documents`), verify ownership via the applications table first. RLS is enabled at the database level as defense-in-depth.
+
+Admin operations (e.g. checking email existence) are handled by Supabase Edge Functions in `supabase/functions/` — never expose the service-role key client-side.
 
 ## Key Files
 
@@ -69,7 +79,8 @@ Custom `useSupabaseUpload` hook (`src/hooks/use-supabase-upload.ts`) wraps react
 | `src/types.ts` | Core TypeScript interfaces (Student, Mother, Father, etc.) |
 | `src/actions/private.ts` | Main business logic — enrollment CRUD, document uploads, queries |
 | `src/actions/auth.ts` | Auth actions (login, register, password reset) |
-| `src/lib/utils.ts` | Shared helpers, formatting, data transforms |
+| `src/lib/utils.ts` | Shared helpers, formatting, data transforms, `checkEmailExists()` |
 | `src/lib/client.ts` | Supabase client instance |
 | `src/context/user-session-context.tsx` | Auth session provider |
 | `src/data.ts` | Application constants and form option data |
+| `supabase/functions/` | Supabase Edge Functions (server-side operations requiring service-role key) |

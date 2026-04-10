@@ -115,6 +115,12 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   const onUpload = useCallback(async () => {
     setLoading(true);
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const userId = session?.user?.id ?? "anonymous";
+
     const filesWithErrors = errors.map((x) => x.name);
     const filesToUpload =
       filesWithErrors.length > 0
@@ -134,7 +140,9 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
       }
 
       const timestamp = Date.now();
-      const filePath = path ? `${path}/${timestamp}-${mergedFile.name}` : `${timestamp}-${mergedFile.name}`;
+      const filePath = path
+        ? `${userId}/${path}/${timestamp}-${mergedFile.name}`
+        : `${userId}/${timestamp}-${mergedFile.name}`;
 
       const { error, data } = await supabase.storage.from(bucketName).upload(filePath, mergedFile, {
         cacheControl: cacheControl.toString(),
@@ -154,7 +162,9 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
       const parallelUploads = await Promise.all(
         filesToUpload.map(async (file) => {
           const timestamp = Date.now();
-          const filePath = path ? `${path}/${timestamp}-${file.name}` : `${timestamp}-${file.name}`;
+          const filePath = path
+            ? `${userId}/${path}/${timestamp}-${file.name}`
+            : `${userId}/${timestamp}-${file.name}`;
 
           const { error, data } = await supabase.storage.from(bucketName).upload(filePath, file, {
             cacheControl: cacheControl.toString(),

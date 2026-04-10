@@ -612,6 +612,12 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
     if (studentInformationError) {
       throw new Error(studentInformationError.message);
     }
+
+    // If the ownership-filtered applications query returned nothing, the user doesn't own this record
+    if (!studentInformation || studentInformation.length === 0) {
+      return { studentUploadRequirements: {} };
+    }
+
     const { data: documents, error: studentDocumentsError } = await supabase
       .from(`${academicYear}_enrolment_documents`)
       .select("medical, passport, birthCert, pass, educCert")
@@ -680,11 +686,11 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
           "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
         );
 
+      appQuery = appQuery.or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
+
       if (enroleeNumber) {
         appQuery = appQuery.eq("enroleeNumber", enroleeNumber);
         docQuery = docQuery.eq("enroleeNumber", enroleeNumber);
-      } else {
-        appQuery = appQuery.or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
       }
 
       const { data: appData } = await appQuery.maybeSingle();
@@ -1838,10 +1844,27 @@ export async function getFamilyDocuments(enroleeNumber: string) {
   try {
     if (!enroleeNumber) throw new Error("Enrolee number is required");
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const match = enroleeNumber.match(/E(\d{2})/);
     if (!match) throw new Error("Invalid enrolee number format");
 
     const academicYear = `ay20${match[1]}`;
+
+    // Verify ownership via the applications table before querying documents
+    const { data: ownership, error: ownershipError } = await supabase
+      .from(`${academicYear}_enrolment_applications`)
+      .select("enroleeNumber")
+      .eq("enroleeNumber", enroleeNumber)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
+      .maybeSingle();
+
+    if (ownershipError) throw new Error(ownershipError.message);
+    if (!ownership) return {};
 
     const { data: documents, error } = await supabase
       .from(`${academicYear}_enrolment_documents`)
@@ -1882,10 +1905,17 @@ export async function getFamilyDocuments(enroleeNumber: string) {
 
 export async function checkNricExists(nric: string, academicYear: string) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .select("nric")
-      .eq("nric", nric);
+      .eq("nric", nric)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
 
     if (error) throw new Error(error.message);
 
@@ -1905,10 +1935,17 @@ export async function lookupNewEnrolledStudent({
   studentNumber: string;
 }) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .select("*", { count: "exact" })
-      .eq("studentNumber", studentNumber);
+      .eq("studentNumber", studentNumber)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
 
     if (error) {
       throw new Error(error.message);
@@ -1937,6 +1974,12 @@ export async function vizSchoolLookupNewEnrolledStudent({
   fullName: string;
 }) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const namePattern = `%${fullName}%`;
 
     const { data, error } = await supabase
@@ -1944,7 +1987,8 @@ export async function vizSchoolLookupNewEnrolledStudent({
       .select("*", { count: "exact" })
       .ilike("studentNumber", "V26%")
       .ilike("enroleeFullName", namePattern)
-      .or(`nric.eq.${nric},birthDay.eq.${birthDay}`);
+      .or(`nric.eq.${nric},birthDay.eq.${birthDay}`)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
 
     if (error) {
       throw new Error(error.message);
@@ -1968,8 +2012,24 @@ export async function studentReuploadDocuments({
   payload,
 }: StudentReuploadProps) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const applicationsTable = `${academicYear}_enrolment_applications`;
     const documentsTable = `${academicYear}_enrolment_documents`;
+
+    // Verify ownership before allowing updates
+    const { data: ownership } = await supabase
+      .from(applicationsTable)
+      .select("enroleeNumber")
+      .eq("enroleeNumber", enroleeNumber)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
+      .maybeSingle();
+
+    if (!ownership) throw new Error("Unauthorized access");
 
     const appUpdates: Record<string, unknown> = {};
     const docUpdates: Record<string, unknown> = {};
@@ -2042,8 +2102,24 @@ export async function parentGuardianReuploadDocuments({
   payload,
 }: ParentGuardianReuploadProps) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const applicationsTable = `${academicYear}_enrolment_applications`;
     const documentsTable = `${academicYear}_enrolment_documents`;
+
+    // Verify ownership before allowing updates
+    const { data: ownership } = await supabase
+      .from(applicationsTable)
+      .select("enroleeNumber")
+      .eq("enroleeNumber", enroleeNumber)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
+      .maybeSingle();
+
+    if (!ownership) throw new Error("Unauthorized access");
 
     const appUpdates: Record<string, unknown> = {};
     const docUpdates: Record<string, unknown> = {};

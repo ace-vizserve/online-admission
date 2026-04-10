@@ -8,7 +8,6 @@ import { differenceInYears, getHours, parseISO } from "date-fns";
 import { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
-import { supabaseAdmin } from "./admin-client";
 import { supabase } from "./client";
 
 export type DayState = "morning" | "noon" | "afternoon" | "evening";
@@ -95,35 +94,19 @@ export async function canEnrollStudent(enroleeNumber: string, academicYear: stri
   }
 }
 
-export async function listAllUsers() {
-  try {
-    const authenticatedUsers = [];
-    let page = 1;
-    const usersPerPage = 1000;
+export async function checkEmailExists(
+  email: string,
+): Promise<{ exists: boolean; emailConfirmed: boolean }> {
+  const { data, error } = await supabase.functions.invoke("check-email-exists", {
+    body: { email },
+  });
 
-    while (true) {
-      const {
-        data: { users },
-      } = await supabaseAdmin.auth.admin.listUsers({
-        page,
-        perPage: usersPerPage,
-      });
+  if (error) throw new Error(error.message);
 
-      authenticatedUsers.push(...users);
-
-      if (users.length < usersPerPage) {
-        break;
-      }
-
-      page++;
-    }
-
-    return authenticatedUsers;
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-    return [];
-  }
+  return {
+    exists: data?.exists ?? false,
+    emailConfirmed: data?.emailConfirmed ?? false,
+  };
 }
 
 export function replaceNulls<T extends Record<string, unknown>>(obj: T): T {

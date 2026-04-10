@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/client";
-import { listAllUsers } from "@/lib/utils";
+import { checkEmailExists } from "@/lib/utils";
 import { LoginSchema, RegistrationSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -50,11 +50,9 @@ export async function userRegister({
   isOpenHouseRegistration,
 }: RegistrationSchema & { isOpenHouseRegistration?: boolean }) {
   try {
-    const users = await listAllUsers();
+    const { exists, emailConfirmed } = await checkEmailExists(email);
 
-    const emailExist = users.find((user) => user.email === email && user.email_confirmed_at != null);
-
-    if (emailExist) {
+    if (exists && emailConfirmed) {
       throw new Error("An account with this email already exists");
     }
 
@@ -88,15 +86,13 @@ export async function userRegister({
 
 export async function sendPasswordResetLink({ email }: { email: string }) {
   try {
-    const users = await listAllUsers();
+    const { exists, emailConfirmed } = await checkEmailExists(email);
 
-    const emailExist = users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
-
-    if (!emailExist) {
+    if (!exists) {
       throw new Error("An account with this email doesn't exists");
     }
 
-    if (!emailExist.email_confirmed_at) {
+    if (!emailConfirmed) {
       throw new Error("Your email is not yet verified. Please verify your email first.");
     }
 
