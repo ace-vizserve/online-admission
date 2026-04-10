@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
 import { ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
-import { listAllUsers } from "@/lib/utils";
+import { checkEmailExists } from "@/lib/utils";
 import { OpenHouseAccountInformationSchema, registrationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/Tailspin.css";
@@ -60,11 +60,9 @@ function AccountInformation() {
 
     try {
       setIsLoading(true);
-      const users = await listAllUsers();
+      const { exists, emailConfirmed } = await checkEmailExists(email);
 
-      const emailExist = users.find((user) => user.email === email && user.email_confirmed_at != null);
-
-      if (emailExist) {
+      if (exists && emailConfirmed) {
         throw new Error("An account with this email already exists");
       }
 
