@@ -12,7 +12,7 @@ import { MedicalChecklistFormValues, medicalChecklistSchema } from "@/zod-schema
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ClipboardList, Info, Pill, Save } from "lucide-react";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldPath } from "react-hook-form";
 import { toast } from "sonner";
 
 type ConditionId = (typeof medicalConditions)[number]["id"];
@@ -24,7 +24,7 @@ export default function MedicalInformationSection() {
     resolver: zodResolver(medicalChecklistSchema),
     defaultValues: {
       ...formState.studentInfo?.medicalInformation,
-      paracetamolConsent: Boolean(formState.studentInfo?.medicalInformation?.paracetamolConsent) ?? false,
+      paracetamolConsent: Boolean(formState.studentInfo?.medicalInformation?.paracetamolConsent),
     },
   });
 
@@ -44,7 +44,8 @@ export default function MedicalInformationSection() {
   }, [debouncedValues]);
 
   const watchChecklist = form.watch("medicalChecklist");
-  const hasCondition = (conditionId: ConditionId) => form.watch(`medicalChecklist.${conditionId}` as any) === true;
+  const hasCondition = (conditionId: ConditionId) =>
+    form.watch(`medicalChecklist.${conditionId}` as FieldPath<MedicalChecklistFormValues>) === true;
 
   const handleConditionChange = (id: ConditionId, checked: boolean) => {
     const wasChecked = hasCondition(id);
@@ -75,7 +76,7 @@ export default function MedicalInformationSection() {
       form.setValue("medicalChecklist.none", false);
     }
 
-    form.setValue(`medicalChecklist.${id}` as any, checked);
+    form.setValue(`medicalChecklist.${id}` as FieldPath<MedicalChecklistFormValues>, checked as never);
 
     if (wasChecked && !checked) {
       switch (id) {

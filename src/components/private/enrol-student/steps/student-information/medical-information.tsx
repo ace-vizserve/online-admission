@@ -15,7 +15,7 @@ import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, ClipboardList, FilePen, Info, Pill } from "lucide-react";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldPath } from "react-hook-form";
 import { useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -53,7 +53,8 @@ export default function MedicalInformationSection() {
   });
 
   const watchChecklist = form.watch("medicalChecklist");
-  const hasCondition = (conditionId: ConditionId) => form.watch(`medicalChecklist.${conditionId}` as any) === true;
+  const hasCondition = (conditionId: ConditionId) =>
+    form.watch(`medicalChecklist.${conditionId}` as FieldPath<MedicalChecklistFormValues>) === true;
 
   const handleConditionChange = (id: ConditionId, checked: boolean) => {
     const wasChecked = hasCondition(id);
@@ -84,7 +85,7 @@ export default function MedicalInformationSection() {
       form.setValue("medicalChecklist.none", false);
     }
 
-    form.setValue(`medicalChecklist.${id}` as any, checked);
+    form.setValue(`medicalChecklist.${id}` as FieldPath<MedicalChecklistFormValues>, checked as never);
 
     if (wasChecked && !checked) {
       switch (id) {

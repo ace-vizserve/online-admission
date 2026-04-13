@@ -47,36 +47,36 @@ import {
 import { useState } from "react";
 
 function AdmissionGuidelines() {
-  const [_, setSelectedApplicationType] = useState<"general" | "student-pass">("general");
+  const [, setSelectedApplicationType] = useState<"general" | "student-pass">("general");
 
   const phone = "+65 8200 0062";
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 relative w-full min-h-screen bg-[#FAFBFF]">
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 relative w-full min-h-screen bg-muted/30">
       <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16">
         <div className="text-center space-y-6 mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-            <span className="text-primary">Admission Requirements</span>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary">
+            Admission Requirements
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Everything you need to know about joining HFSE International School — where every child succeeds, one happy
             family at a time
           </p>
 
           {/* Key Values */}
           <div className="flex flex-wrap justify-center gap-4 pt-6">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-blue-100">
-              <Heart className="w-4 h-4 text-red-500" />
-              <span className="text-base font-medium text-gray-700">Family-Centered</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-sm border border-primary/20">
+              <Heart className="w-4 h-4 text-destructive" />
+              <span className="text-base font-medium text-foreground/90">Family-Centered</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-blue-100">
-              <Shield className="w-4 h-4 text-blue-600" />
-              <span className="text-base font-medium text-gray-700">Christian Values</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-sm border border-primary/20">
+              <Shield className="w-4 h-4 text-primary" />
+              <span className="text-base font-medium text-foreground/90">Christian Values</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-blue-100">
-              <Globe className="w-4 h-4 text-green-600" />
-              <span className="text-base font-medium text-gray-700">Global Citizens</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-sm border border-primary/20">
+              <Globe className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span className="text-base font-medium text-foreground/90">Global Citizens</span>
             </div>
           </div>
         </div>
@@ -87,11 +87,11 @@ function AdmissionGuidelines() {
               value="general"
               onClick={() => setSelectedApplicationType("general")}
               className="rounded-full shadow cursor-pointer py-2 group h-full flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.15em] transition-all duration-500
-               data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)] 
-               data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-600 focus-visible:outline-none">
+               data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)]
+               data-[state=inactive]:text-muted-foreground/70 data-[state=inactive]:hover:text-foreground focus-visible:outline-none">
               <div
                 className="size-8 rounded-full flex items-center justify-center transition-all duration-500 
-                    group-data-[state=active]:bg-blue-50 group-data-[state=active]:scale-110">
+                    group-data-[state=active]:bg-primary/10 group-data-[state=active]:scale-110">
                 <ShieldCheck className="size-4 transition-transform group-hover:rotate-3" />
               </div>
               <span>General Requirements</span>
@@ -101,11 +101,11 @@ function AdmissionGuidelines() {
               value="student-pass"
               onClick={() => setSelectedApplicationType("student-pass")}
               className="rounded-full shadow cursor-pointer py-2 group h-full flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.15em] transition-all duration-500
-               data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)] 
-               data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-600 focus-visible:outline-none">
+               data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-[0_8px_20px_-6px_rgba(37,99,235,0.2)]
+               data-[state=inactive]:text-muted-foreground/70 data-[state=inactive]:hover:text-foreground focus-visible:outline-none">
               <div
                 className="size-8 rounded-full flex items-center justify-center transition-all duration-500 
-                    group-data-[state=active]:bg-blue-50 group-data-[state=active]:scale-110">
+                    group-data-[state=active]:bg-primary/10 group-data-[state=active]:scale-110">
                 <Globe className="size-4 transition-transform group-hover:-rotate-3" />
               </div>
               <span>Student Pass</span>
@@ -114,19 +114,19 @@ function AdmissionGuidelines() {
 
           <TabsContent className="animate-in fade-in slide-in-from-top-2 duration-500" value="general">
             <Card className="shadow-none mb-12 border-none">
-              <CardHeader className="space-y-4 pb-8 border-b border-gray-100">
+              <CardHeader className="space-y-4 pb-8 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-xl">
-                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-primary/15 rounded-xl">
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
                   </div>
                   <Badge
                     variant="secondary"
-                    className="text-base font-semibold bg-blue-50 text-blue-700 border-blue-200">
+                    className="text-base font-semibold bg-primary/10 text-primary border-primary/30">
                     Important Guidelines
                   </Badge>
                 </div>
-                <CardTitle className="text-3xl font-bold text-gray-900">Admission Requirements</CardTitle>
-                <p className="text-gray-600">
+                <CardTitle className="text-3xl font-bold text-foreground">Admission Requirements</CardTitle>
+                <p className="text-muted-foreground">
                   Please review all requirements carefully before applying to join our HAPI family
                 </p>
               </CardHeader>
@@ -135,20 +135,20 @@ function AdmissionGuidelines() {
               <CardContent className="pt-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* The original requirements.map content will go here */}
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <Heart className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <Heart className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Values
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         HFSE mission, vision and virtues are based on Christian teachings and we require all students to
                         attend our Christian Living/Values Education & Language class. While all are eligible applicants
                         regardless of nationality, culture, race or religion are welcome, it is advised that applicants
@@ -156,135 +156,135 @@ function AdmissionGuidelines() {
                       </p>
                     </div>
                   </div>
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <Shield className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <Shield className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Commitment
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         Student/Parent/Guardian have read, understood, agreed to and will comply with all the
                         requirements especially in the strict discipline of the school.
                       </p>
                     </div>
                   </div>
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <AlertCircle className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <AlertCircle className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Policy
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         Any person who smokes, drinks alcoholic beverages, uses prohibited drugs or abuse illegal
                         substances will not be admitted.
                       </p>
                     </div>
                   </div>
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <CheckCircle2 className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <CheckCircle2 className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Academic
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         Anyone seeking admission must be of good conduct and have attendance of no less than 80% in the
                         previous school.
                       </p>
                     </div>
                   </div>
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <BookOpen className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <BookOpen className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Academic
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         A student who has studied in a Singapore government or government-aided school and is seeking
                         admission into a certain class level must have passed the previous level.
                       </p>
                     </div>
                   </div>
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <BookOpen className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <BookOpen className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Academic
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         A student who has not studied in a Singapore government or government-aided school previously
                         and is seeking admission must take a placement test in Mathematics and English and must pass
                         both subjects before they are qualified for admission.
                       </p>
                     </div>
                   </div>
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <AlertCircle className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <AlertCircle className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Academic
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         Students who fail in one or both subject/s and intend to downgrade to a lower level will still
                         need to sit and pass the placement test for that level.
                       </p>
                     </div>
                   </div>
-                  <div className="group flex gap-4 rounded-xl border border-slate-100 bg-white p-5 transition-all hover:border-blue-200 hover:shadow-md">
+                  <div className="group flex gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                        <Users className="w-6 h-6 text-blue-600 transition-colors group-hover:text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary">
+                        <Users className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Badge
                         variant="outline"
-                        className="uppercase text-sm font-bold tracking-wider text-blue-500 border-blue-100">
+                        className="uppercase text-sm font-bold tracking-wider text-primary/80 border-primary/20">
                         Privacy
                       </Badge>
-                      <p className="text-base text-slate-600 leading-relaxed font-medium">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
                         Student/Parent/Guardian will treat all information received in the application forms as private
                         and confidential and any dissemination, distribution or duplication of such information, unless
                         required by law or other statutory regulations is strictly prohibited and is the sole property
@@ -295,21 +295,21 @@ function AdmissionGuidelines() {
                 </div>
               </CardContent>
 
-              <CardFooter className="pt-12 pb-8 flex-col items-stretch border-t border-gray-100 bg-gradient-to-br from-blue-50/50 to-amber-50/50">
+              <CardFooter className="pt-12 pb-8 flex-col items-stretch border-t border-border bg-gradient-to-br from-primary/5 to-amber-50/50 dark:to-amber-950/20">
                 <EducationLevelTable />
               </CardFooter>
             </Card>
           </TabsContent>
 
           <TabsContent className="animate-in fade-in slide-in-from-top-2 duration-500" value="student-pass">
-            <div className="relative space-y-10 mb-20 p-8 rounded-xl bg-gradient-to-b from-white to-slate-50/50 border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.03)]">
+            <div className="relative space-y-10 mb-20 p-8 rounded-xl bg-gradient-to-b from-card to-muted/30 border border-card shadow-[0_32px_64px_-16px_rgba(0,0,0,0.03)]">
               {/* --- Floating Status Pill --- */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-blue-100 shadow-[0_2px_10px_rgba(37,99,235,0.08)]">
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-card border border-primary/20 shadow-[0_2px_10px_rgba(37,99,235,0.08)]">
                 <div className="relative flex size-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full size-2 bg-blue-600"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/80 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full size-2 bg-primary"></span>
                 </div>
-                <span className="text-sm font-bold uppercase tracking-[0.1em] text-blue-600">
+                <span className="text-sm font-bold uppercase tracking-[0.1em] text-primary">
                   ICA Student’s Pass Support
                 </span>
               </div>
@@ -318,20 +318,20 @@ function AdmissionGuidelines() {
                 {/* --- Large Pill Header --- */}
                 <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary leading-tight">
                   Student’s Pass{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70">
                     International Services
                   </span>
                 </h1>
 
                 <div className="space-y-8">
                   {/* --- Intro copy --- */}
-                  <p className="text-base md:text-lg text-slate-600 leading-relaxed">
+                  <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
                     HFSE International School supports families through every step of the ICA Student’s Pass process —
                     from first-time applications to renewals and transfers between PEIs. Our Admissions team handles the
                     technical details and compliance checks, so you can focus on preparing your child for school.
                   </p>
 
-                  <p className="text-base md:text-base text-slate-500 leading-relaxed">
+                  <p className="text-base md:text-base text-muted-foreground leading-relaxed">
                     For each Student’s Pass case, we guide parents on required documents, timelines, and obligations,
                     such as attendance requirements and key Singapore regulations that apply to international students.
                   </p>
@@ -342,7 +342,7 @@ function AdmissionGuidelines() {
                       (service) => (
                         <div
                           key={service}
-                          className="px-5 py-2.5 rounded-full bg-white border border-slate-200 text-sm font-black uppercase tracking-wider text-slate-500 shadow-sm transition-all hover:border-blue-300 hover:text-blue-600 hover:shadow-[0_0_15px_rgba(37,99,235,0.1)] cursor-default">
+                          className="px-5 py-2.5 rounded-full bg-card border border-border text-sm font-black uppercase tracking-wider text-muted-foreground shadow-sm transition-all hover:border-primary/40 hover:text-primary hover:shadow-[0_0_15px_rgba(37,99,235,0.1)] cursor-default">
                           {service}
                         </div>
                       ),
@@ -350,24 +350,24 @@ function AdmissionGuidelines() {
                   </div>
 
                   {/* --- System Highlight Card --- */}
-                  <div className="p-6 rounded-xl bg-blue-600 shadow-[0_20px_40px_-10px_rgba(37,99,235,0.3)] text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 -mr-8 -mt-8 size-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all" />
+                  <div className="p-6 rounded-xl bg-primary shadow-[0_20px_40px_-10px_rgba(37,99,235,0.3)] text-primary-foreground relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 -mr-8 -mt-8 size-32 bg-card/10 rounded-full blur-3xl group-hover:bg-card/20 transition-all" />
 
                     <div className="flex flex-wrap items-start gap-5 relative z-10">
-                      <div className="size-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
-                        <Globe className="size-6 text-white" />
+                      <div className="size-12 rounded-2xl bg-card/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
+                        <Globe className="size-6 text-primary-foreground" />
                       </div>
                       <div className="space-y-2">
                         <h4 className="text-base font-bold tracking-wide uppercase opacity-90">
                           SOLAR+ Digital Submission
                         </h4>
-                        <p className="text-base leading-relaxed text-blue-50 font-medium">
+                        <p className="text-base leading-relaxed text-primary-foreground/90 font-medium">
                           Our Admissions team prepares and submits applications through ICA’s SOLAR+ system, checking
                           residence history, vaccination information, and PEI details for accuracy before submission.
                           This helps minimise errors, avoid delays, and keep each application aligned with current ICA
                           guidelines.
                         </p>
-                        <p className="text-base leading-relaxed text-blue-100">
+                        <p className="text-base leading-relaxed text-primary-foreground/80">
                           Parents will still review and sign the required forms, while the school manages the
                           configuration of Student’s Pass application type (new, renewal, or transfer) and the
                           supporting information that ICA requires.
@@ -381,22 +381,22 @@ function AdmissionGuidelines() {
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* --- ICA Authority Pill --- */}
-              <div className="relative group p-6 rounded-xl bg-white/60 border border-slate-200/60 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_20px_40px_rgba(37,99,235,0.06)] hover:border-blue-200/60">
+              <div className="relative group p-6 rounded-xl bg-card/60 border border-border/60 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_20px_40px_rgba(37,99,235,0.06)] hover:border-primary/30">
                 <div className="flex flex-wrap items-start gap-4">
                   {/* Icon Glow */}
-                  <div className="flex-shrink-0 size-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-[inset_0_0_10px_rgba(37,99,235,0.1)] group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                  <div className="flex-shrink-0 size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-[inset_0_0_10px_rgba(37,99,235,0.1)] group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500">
                     <ShieldAlert className="size-6" />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-black uppercase tracking-[0.2em] text-blue-600/80">Regulatory</span>
-                      <div className="h-px w-8 bg-blue-100" />
+                      <span className="text-sm font-black uppercase tracking-[0.2em] text-primary/80">Regulatory</span>
+                      <div className="h-px w-8 bg-primary/15" />
                     </div>
                     <h3 className="text-lg font-bold text-primary tracking-tight">ICA Authority</h3>
-                    <p className="text-base text-slate-500 leading-relaxed font-medium">
+                    <p className="text-base text-muted-foreground leading-relaxed font-medium">
                       The issuance of a Student's Pass is determined{" "}
-                      <span className="text-primary font-bold underline decoration-blue-200 decoration-2 underline-offset-2">
+                      <span className="text-primary font-bold underline decoration-primary/30 decoration-2 underline-offset-2">
                         solely by ICA
                       </span>
                       . While we provide comprehensive support, the final decision remains an external sovereign
@@ -407,22 +407,22 @@ function AdmissionGuidelines() {
               </div>
 
               {/* --- Non-Refundable Pill --- */}
-              <div className="relative group p-6 rounded-xl bg-white/60 border border-slate-200/60 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_20px_40px_rgba(245,158,11,0.06)] hover:border-amber-200/60">
+              <div className="relative group p-6 rounded-xl bg-card/60 border border-border/60 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_20px_40px_rgba(245,158,11,0.06)] hover:border-amber-200/60 dark:hover:border-amber-900/50">
                 <div className="flex flex-wrap items-start gap-4">
                   {/* Icon Glow (Amber) */}
-                  <div className="flex-shrink-0 size-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-[inset_0_0_10px_rgba(245,158,11,0.1)] group-hover:bg-amber-500 group-hover:text-white transition-all duration-500">
+                  <div className="flex-shrink-0 size-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-[inset_0_0_10px_rgba(245,158,11,0.1)] group-hover:bg-amber-500 dark:group-hover:bg-amber-600 group-hover:text-white transition-all duration-500">
                     <ReceiptText className="size-6" />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-black uppercase tracking-[0.2em] text-amber-600/80">
+                      <span className="text-sm font-black uppercase tracking-[0.2em] text-amber-600/80 dark:text-amber-400/80">
                         Financial Policy
                       </span>
-                      <div className="h-px w-8 bg-amber-100" />
+                      <div className="h-px w-8 bg-amber-100 dark:bg-amber-900/40" />
                     </div>
                     <h3 className="text-lg font-bold text-primary tracking-tight">Non-Refundable Fees</h3>
-                    <p className="text-base text-slate-500 leading-relaxed font-medium">
+                    <p className="text-base text-muted-foreground leading-relaxed font-medium">
                       All Student's Pass application fees are{" "}
                       <span className="text-primary font-bold">strictly non-refundable</span>, regardless of the
                       application outcome or subsequent withdrawal from the process.
@@ -437,7 +437,7 @@ function AdmissionGuidelines() {
               <div className="flex flex-col items-center text-center space-y-2 mb-12">
                 <Badge
                   variant="outline"
-                  className="rounded-full px-4 py-1 text-xs uppercase font-black tracking-[0.2em] border-slate-200 text-slate-400">
+                  className="rounded-full px-4 py-1 text-xs uppercase font-black tracking-[0.2em] border-border text-muted-foreground/70">
                   Eligibility Framework
                 </Badge>
                 <h2 className="text-4xl font-black tracking-tighter text-primary">Who This Applies To</h2>
@@ -446,117 +446,117 @@ function AdmissionGuidelines() {
               {/* --- Three Application Types Grid --- */}
               <div className="grid md:grid-cols-3 gap-8">
                 {/* New Applications */}
-                <div className="group relative p-8 rounded-xl bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(37,99,235,0.12)] hover:-translate-y-2">
+                <div className="group relative p-8 rounded-xl bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(37,99,235,0.12)] hover:-translate-y-2">
                   <div className="space-y-6">
                     <div className="flex flex-col gap-4">
-                      <div className="size-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 transition-all duration-500 group-hover:bg-blue-600 group-hover:text-white group-hover:rotate-6">
+                      <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary transition-all duration-500 group-hover:bg-primary group-hover:text-primary-foreground group-hover:rotate-6">
                         <Globe2 className="size-7" />
                       </div>
                       <div className="space-y-1">
                         <h3 className="text-xl font-black text-primary leading-tight">New Student’s Pass</h3>
-                        <Badge className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-50 text-sm font-bold rounded-full">
+                        <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10 text-sm font-bold rounded-full">
                           First-time / Fresh
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-slate-50">
+                    <div className="space-y-4 pt-4 border-t border-border">
                       <div className="space-y-2">
-                        <p className="text-sm font-black uppercase tracking-widest text-slate-400">Eligibility</p>
-                        <ul className="space-y-2 text-base font-medium text-slate-500">
+                        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground/70">Eligibility</p>
+                        <ul className="space-y-2 text-base font-medium text-muted-foreground">
                           <li className="flex gap-2">
-                            <div className="size-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                            <div className="size-1.5 rounded-full bg-primary/80 mt-1.5 shrink-0" />
                             International students enrolling at HFSE for the first time
                           </li>
                           <li className="flex gap-2">
-                            <div className="size-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                            <div className="size-1.5 rounded-full bg-primary/80 mt-1.5 shrink-0" />
                             Students moving from a local / MOE school who do not currently hold a PEI Student’s Pass
                           </li>
                         </ul>
                       </div>
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:border-blue-100 transition-colors">
-                        <p className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">
+                      <div className="p-4 rounded-xl bg-muted/30 border border-border group-hover:bg-card group-hover:border-primary/20 transition-colors">
+                        <p className="text-sm font-black uppercase tracking-widest text-primary mb-2">
                           Typical ICA processing
                         </p>
-                        <p className="text-base font-bold text-slate-700">Around 4–6 weeks</p>
+                        <p className="text-base font-bold text-foreground/90">Around 4–6 weeks</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Renewal */}
-                <div className="group relative p-8 rounded-xl bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(34,197,94,0.12)] hover:-translate-y-2">
+                <div className="group relative p-8 rounded-xl bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(34,197,94,0.12)] hover:-translate-y-2">
                   <div className="space-y-6">
                     <div className="flex flex-col gap-4">
-                      <div className="size-14 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 transition-all duration-500 group-hover:bg-green-600 group-hover:text-white group-hover:rotate-6">
+                      <div className="size-14 rounded-2xl bg-green-50 dark:bg-green-950/40 flex items-center justify-center text-green-600 dark:text-green-400 transition-all duration-500 group-hover:bg-green-600 dark:group-hover:bg-green-500 group-hover:text-white group-hover:rotate-6">
                         <RefreshCcw className="size-7" />
                       </div>
                       <div className="space-y-1">
                         <h3 className="text-xl font-black text-primary leading-tight">Student’s Pass Renewal</h3>
-                        <Badge className="bg-green-50 text-green-700 border-green-100 hover:bg-green-50 text-sm font-bold rounded-full">
+                        <Badge className="bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-100 dark:border-green-900/40 hover:bg-green-50 dark:hover:bg-green-950/40 text-sm font-bold rounded-full">
                           Continuing at HFSE
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-slate-50">
+                    <div className="space-y-4 pt-4 border-t border-border">
                       <div className="space-y-2">
-                        <p className="text-sm font-black uppercase tracking-widest text-slate-400">Eligibility</p>
-                        <ul className="space-y-2 text-base font-medium text-slate-500">
+                        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground/70">Eligibility</p>
+                        <ul className="space-y-2 text-base font-medium text-muted-foreground">
                           <li className="flex gap-2">
-                            <div className="size-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" />
+                            <div className="size-1.5 rounded-full bg-green-400 dark:bg-green-500 mt-1.5 shrink-0" />
                             Existing HFSE students who are continuing their studies
                           </li>
                           <li className="flex gap-2">
-                            <div className="size-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" />
+                            <div className="size-1.5 rounded-full bg-green-400 dark:bg-green-500 mt-1.5 shrink-0" />
                             Current HFSE Student’s Pass is valid but approaching expiry
                           </li>
                         </ul>
                       </div>
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:border-green-100 transition-colors">
-                        <p className="text-sm font-black uppercase tracking-widest text-green-600 mb-2">
+                      <div className="p-4 rounded-xl bg-muted/30 border border-border group-hover:bg-card group-hover:border-green-100 dark:group-hover:border-green-900/40 transition-colors">
+                        <p className="text-sm font-black uppercase tracking-widest text-green-600 dark:text-green-400 mb-2">
                           Typical ICA processing
                         </p>
-                        <p className="text-base font-bold text-slate-700">About 1–2 weeks</p>
+                        <p className="text-base font-bold text-foreground/90">About 1–2 weeks</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Transfer */}
-                <div className="group relative p-8 rounded-xl bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(147,51,234,0.12)] hover:-translate-y-2">
+                <div className="group relative p-8 rounded-xl bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_30px_60px_-12px_rgba(147,51,234,0.12)] hover:-translate-y-2">
                   <div className="space-y-6">
                     <div className="flex flex-col gap-4">
-                      <div className="size-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 transition-all duration-500 group-hover:bg-purple-600 group-hover:text-white group-hover:rotate-6">
+                      <div className="size-14 rounded-2xl bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400 transition-all duration-500 group-hover:bg-purple-600 dark:group-hover:bg-purple-500 group-hover:text-white group-hover:rotate-6">
                         <FileCheck2 className="size-7" />
                       </div>
                       <div className="space-y-1">
                         <h3 className="text-xl font-black text-primary leading-tight">Student’s Pass Transfer</h3>
-                        <Badge className="bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-50 text-sm font-bold rounded-full">
+                        <Badge className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-900/40 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-sm font-bold rounded-full">
                           From other PEIs
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-slate-50">
+                    <div className="space-y-4 pt-4 border-t border-border">
                       <div className="space-y-2">
-                        <p className="text-sm font-black uppercase tracking-widest text-slate-400">Eligibility</p>
-                        <ul className="space-y-2 text-base font-medium text-slate-500">
+                        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground/70">Eligibility</p>
+                        <ul className="space-y-2 text-base font-medium text-muted-foreground">
                           <li className="flex gap-2">
-                            <div className="size-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0" />
+                            <div className="size-1.5 rounded-full bg-purple-400 dark:bg-purple-500 mt-1.5 shrink-0" />
                             Students currently holding a valid Student’s Pass under another PEI in Singapore
                           </li>
                           <li className="flex gap-2">
-                            <div className="size-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0" />
+                            <div className="size-1.5 rounded-full bg-purple-400 dark:bg-purple-500 mt-1.5 shrink-0" />
                             Intend to withdraw from the current PEI and continue studies under HFSE
                           </li>
                         </ul>
                       </div>
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:border-purple-100 transition-colors">
-                        <p className="text-sm font-black uppercase tracking-widest text-purple-600 mb-2">
+                      <div className="p-4 rounded-xl bg-muted/30 border border-border group-hover:bg-card group-hover:border-purple-100 dark:group-hover:border-purple-900/40 transition-colors">
+                        <p className="text-sm font-black uppercase tracking-widest text-purple-600 dark:text-purple-400 mb-2">
                           Typical ICA processing
                         </p>
-                        <p className="text-base font-bold text-slate-700">Varies by case (several weeks is common)</p>
+                        <p className="text-base font-bold text-foreground/90">Varies by case (several weeks is common)</p>
                       </div>
                     </div>
                   </div>
@@ -564,18 +564,18 @@ function AdmissionGuidelines() {
               </div>
 
               {/* --- Exemption Pill Card --- */}
-              <div className="mt-12 p-8 rounded-xl bg-amber-50/50 border border-amber-100/50 backdrop-blur-md relative overflow-hidden group transition-all hover:shadow-[0_40px_80px_-15px_rgba(245,158,11,0.15)]">
+              <div className="mt-12 p-8 rounded-xl bg-amber-50/50 dark:bg-amber-950/40 border border-amber-100/50 dark:border-amber-900/40 backdrop-blur-md relative overflow-hidden group transition-all hover:shadow-[0_40px_80px_-15px_rgba(245,158,11,0.15)]">
                 <div className="absolute top-0 right-0 -mr-20 -mt-20 size-64 bg-amber-200/20 rounded-full blur-3xl" />
                 <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-                  <div className="size-20 rounded-3xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                  <div className="size-20 rounded-3xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-inner group-hover:rotate-12 transition-transform duration-500">
                     <Ban className="size-10" />
                   </div>
                   <div className="space-y-4 flex-1">
                     <div className="space-y-1">
-                      <h3 className="text-2xl font-black text-amber-900 tracking-tight">
+                      <h3 className="text-2xl font-black text-amber-900 dark:text-amber-200 tracking-tight">
                         Exemptions (No Student’s Pass Required)
                       </h3>
-                      <p className="text-base font-medium text-amber-700/70">
+                      <p className="text-base font-medium text-amber-700/70 dark:text-amber-300/70">
                         The following residents generally do not need to apply for a separate Student’s Pass:
                       </p>
                     </div>
@@ -588,12 +588,12 @@ function AdmissionGuidelines() {
                       ].map((type) => (
                         <span
                           key={type}
-                          className="px-4 py-1.5 rounded-full bg-white border border-amber-200 text-sm font-bold uppercase tracking-tighter text-amber-800 shadow-sm">
+                          className="px-4 py-1.5 rounded-full bg-card border border-amber-200 dark:border-amber-900/50 text-sm font-bold uppercase tracking-tighter text-amber-800 dark:text-amber-200 shadow-sm">
                           {type}
                         </span>
                       ))}
                     </div>
-                    <div className="flex items-center gap-3 text-sm font-bold text-amber-900/60 bg-white/40 p-3 rounded-2xl border border-amber-200/50">
+                    <div className="flex items-center gap-3 text-sm font-bold text-amber-900/60 dark:text-amber-200/70 bg-card/40 p-3 rounded-2xl border border-amber-200/50 dark:border-amber-900/50">
                       <Info className="size-4 shrink-0" />
                       Note: DP / LTVP holders still require formal registration with the school and relevant authorities
                       before starting classes, even though a separate Student’s Pass is not needed.
@@ -606,21 +606,21 @@ function AdmissionGuidelines() {
             <section className="space-y-12 mt-20 px-4">
               {/* --- Pill Header --- */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 shadow-sm">
-                  <FileText className="size-3 text-blue-600" />
-                  <span className="text-xs font-black uppercase tracking-widest text-blue-600">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 shadow-sm">
+                  <FileText className="size-3 text-primary" />
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">
                     Documentation Portal
                   </span>
                 </div>
                 <h2 className="text-4xl font-black tracking-tighter text-primary">Required Documents</h2>
-                <p className="text-slate-500 max-w-lg text-base font-medium leading-relaxed">
+                <p className="text-muted-foreground max-w-lg text-base font-medium leading-relaxed">
                   Tailored requirements based on your specific application path.
                 </p>
               </div>
 
               <Tabs defaultValue="new" className="w-full">
                 {/* --- Glassmorphic Pill Track --- */}
-                <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-16 h-16 p-2 rounded-full bg-slate-100/80 border border-slate-200/50 backdrop-blur-md shadow-inner relative">
+                <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-16 h-16 p-2 rounded-full bg-muted/80 border border-border/50 backdrop-blur-md shadow-inner relative">
                   {[
                     { id: "new", label: "New", icon: Sparkles },
                     { id: "renewal", label: "Renewal", icon: RotateCcw },
@@ -630,8 +630,8 @@ function AdmissionGuidelines() {
                       key={tab.id}
                       value={tab.id}
                       className="group rounded-full h-full flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.1em] transition-all duration-500
-          data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-lg 
-          data-[state=inactive]:text-slate-400 focus-visible:outline-none">
+          data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg
+          data-[state=inactive]:text-muted-foreground/70 focus-visible:outline-none">
                       <tab.icon className="size-4 transition-transform group-data-[state=active]:scale-110" />
                       <span className="hidden md:inline">{tab.label}</span>
                     </TabsTrigger>
@@ -641,9 +641,9 @@ function AdmissionGuidelines() {
                 {/* --- NEW APPLICATION --- */}
                 <TabsContent value="new" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm group hover:border-blue-200 transition-all">
+                    <div className="p-8 rounded-xl bg-card border border-border shadow-sm group hover:border-primary/30 transition-all">
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="size-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                           <Compass className="size-6" />
                         </div>
                         <h4 className="text-xl font-black text-primary">Travel Documents</h4>
@@ -654,9 +654,9 @@ function AdmissionGuidelines() {
                           "Passport photo page & entry stamp",
                           "CDA Vaccination verification match",
                         ].map((item) => (
-                          <li key={item} className="flex items-start gap-3 text-base font-medium text-slate-500">
-                            <div className="size-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                              <Check className="size-3 text-emerald-600" />
+                          <li key={item} className="flex items-start gap-3 text-base font-medium text-muted-foreground">
+                            <div className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center shrink-0 mt-0.5">
+                              <Check className="size-3 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             {item}
                           </li>
@@ -664,9 +664,9 @@ function AdmissionGuidelines() {
                       </ul>
                     </div>
 
-                    <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm group hover:border-blue-200 transition-all">
+                    <div className="p-8 rounded-xl bg-card border border-border shadow-sm group hover:border-primary/30 transition-all">
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="size-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                           <GraduationCap className="size-6" />
                         </div>
                         <h4 className="text-xl font-black text-primary">School Records</h4>
@@ -677,9 +677,9 @@ function AdmissionGuidelines() {
                           "Verified previous school transcripts",
                           "Completed Entrance Test results",
                         ].map((item) => (
-                          <li key={item} className="flex items-start gap-3 text-base font-medium text-slate-500">
-                            <div className="size-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                              <Check className="size-3 text-emerald-600" />
+                          <li key={item} className="flex items-start gap-3 text-base font-medium text-muted-foreground">
+                            <div className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center shrink-0 mt-0.5">
+                              <Check className="size-3 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             {item}
                           </li>
@@ -687,15 +687,15 @@ function AdmissionGuidelines() {
                       </ul>
                     </div>
 
-                    <div className="md:col-span-2 p-8 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-xl text-white relative overflow-hidden">
-                      <div className="absolute top-0 right-0 -mr-16 -mt-16 size-64 bg-white/10 rounded-full blur-3xl" />
+                    <div className="md:col-span-2 p-8 rounded-xl bg-gradient-to-br from-primary to-primary/90 shadow-xl text-primary-foreground relative overflow-hidden">
+                      <div className="absolute top-0 right-0 -mr-16 -mt-16 size-64 bg-card/10 rounded-full blur-3xl" />
                       <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
-                        <div className="size-16 rounded-[1.5rem] bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
-                          <Syringe className="size-8 text-white" />
+                        <div className="size-16 rounded-[1.5rem] bg-card/20 backdrop-blur-md flex items-center justify-center shrink-0">
+                          <Syringe className="size-8 text-primary-foreground" />
                         </div>
                         <div className="space-y-4 flex-1">
                           <h4 className="text-2xl font-black tracking-tight">Medical & Vaccination (Age ≤ 12)</h4>
-                          <p className="text-blue-100 text-base font-medium">
+                          <p className="text-primary-foreground/80 text-base font-medium">
                             Mandatory submission to National Immunisation Registry (NIR).
                           </p>
                           <div className="grid md:grid-cols-2 gap-3">
@@ -707,8 +707,8 @@ function AdmissionGuidelines() {
                             ].map((med) => (
                               <div
                                 key={med}
-                                className="flex items-center gap-3 p-3 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-sm">
-                                <CheckCircle2 className="size-4 text-blue-200" />
+                                className="flex items-center gap-3 p-3 rounded-2xl bg-card/10 border border-card/10 backdrop-blur-sm">
+                                <CheckCircle2 className="size-4 text-primary-foreground/70" />
                                 <span className="text-sm font-bold uppercase tracking-tight">{med}</span>
                               </div>
                             ))}
@@ -722,9 +722,9 @@ function AdmissionGuidelines() {
                 {/* --- RENEWAL --- */}
                 <TabsContent value="renewal" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm group">
+                    <div className="p-8 rounded-xl bg-card border border-border shadow-sm group">
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <div className="size-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                           <CreditCard className="size-6" />
                         </div>
                         <h4 className="text-xl font-black text-primary">Current ID</h4>
@@ -735,9 +735,9 @@ function AdmissionGuidelines() {
                           "Updated Residential Address",
                           "Valid Passport (Min 6 months)",
                         ].map((item) => (
-                          <li key={item} className="flex items-start gap-3 text-base font-medium text-slate-500">
-                            <div className="size-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                              <Check className="size-3 text-emerald-600" />
+                          <li key={item} className="flex items-start gap-3 text-base font-medium text-muted-foreground">
+                            <div className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center shrink-0 mt-0.5">
+                              <Check className="size-3 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             {item}
                           </li>
@@ -745,9 +745,9 @@ function AdmissionGuidelines() {
                       </ul>
                     </div>
 
-                    <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm group">
+                    <div className="p-8 rounded-xl bg-card border border-border shadow-sm group">
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <div className="size-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                           <ClipboardCheck className="size-6" />
                         </div>
                         <h4 className="text-xl font-black text-primary">Performance</h4>
@@ -755,9 +755,9 @@ function AdmissionGuidelines() {
                       <ul className="space-y-4">
                         {["Recent Academic Transcripts", "Attendance Record (Min 90%)", "Proof of Re-enrollment"].map(
                           (item) => (
-                            <li key={item} className="flex items-start gap-3 text-base font-medium text-slate-500">
-                              <div className="size-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                                <Check className="size-3 text-emerald-600" />
+                            <li key={item} className="flex items-start gap-3 text-base font-medium text-muted-foreground">
+                              <div className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center shrink-0 mt-0.5">
+                                <Check className="size-3 text-emerald-600 dark:text-emerald-400" />
                               </div>
                               {item}
                             </li>
@@ -771,13 +771,13 @@ function AdmissionGuidelines() {
                 {/* --- TRANSFER --- */}
                 <TabsContent value="transfer" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="space-y-6">
-                    <div className="p-8 rounded-xl bg-amber-50 border border-amber-100 flex flex-col md:flex-row gap-8 items-center">
-                      <div className="size-20 rounded-3xl bg-white shadow-xl shadow-amber-200/50 flex items-center justify-center shrink-0">
-                        <LogOut className="size-10 text-amber-600" />
+                    <div className="p-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/40 flex flex-col md:flex-row gap-8 items-center">
+                      <div className="size-20 rounded-3xl bg-card shadow-xl shadow-amber-200/50 flex items-center justify-center shrink-0">
+                        <LogOut className="size-10 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div className="space-y-2">
                         <h4 className="text-2xl font-black text-primary tracking-tight">Withdrawal Clearance</h4>
-                        <p className="text-base font-medium text-slate-500 leading-relaxed">
+                        <p className="text-base font-medium text-muted-foreground leading-relaxed">
                           Before applying through HFSE, you must provide a <strong>Clearance Letter</strong> or Proof of
                           Withdrawal from your current Private Education Institution (PEI).
                         </p>
@@ -785,8 +785,8 @@ function AdmissionGuidelines() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                      <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm">
-                        <h4 className="text-base font-black text-slate-400 uppercase tracking-widest mb-6">
+                      <div className="p-8 rounded-xl bg-card border border-border shadow-sm">
+                        <h4 className="text-base font-black text-muted-foreground/70 uppercase tracking-widest mb-6">
                           Essential Proof
                         </h4>
                         <div className="space-y-4">
@@ -794,25 +794,25 @@ function AdmissionGuidelines() {
                             (item) => (
                               <div
                                 key={item}
-                                className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                                <FileBadge className="size-5 text-amber-600" />
-                                <span className="text-sm font-bold text-slate-700">{item}</span>
+                                className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-border">
+                                <FileBadge className="size-5 text-amber-600 dark:text-amber-400" />
+                                <span className="text-sm font-bold text-foreground/90">{item}</span>
                               </div>
                             ),
                           )}
                         </div>
                       </div>
 
-                      <div className="p-8 rounded-xl shadow-xl relative overflow-hidden bg-white border border-amber-100">
-                        <AlertCircle className="size-8 text-amber-600 mb-4" />
+                      <div className="p-8 rounded-xl shadow-xl relative overflow-hidden bg-card border border-amber-100 dark:border-amber-900/40">
+                        <AlertCircle className="size-8 text-amber-600 dark:text-amber-400 mb-4" />
                         <h4 className="text-lg font-black mb-2 text-primary">
                           Important notice for Student’s Pass transfers
                         </h4>
-                        <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                        <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                           Transfers are only possible if your child currently holds a valid Student’s Pass at the time
                           of the transfer application. If there is a long gap after the pass has expired (for example,
                           more than a few months), ICA may require a fresh application to be submitted as a{" "}
-                          <span className="font-semibold text-slate-800">“New Student’s Pass”</span> instead of a
+                          <span className="font-semibold text-foreground">“New Student’s Pass”</span> instead of a
                           transfer.
                         </p>
                         <p className="mt-3 text-sm font-medium leading-relaxed">
@@ -825,23 +825,23 @@ function AdmissionGuidelines() {
                 </TabsContent>
               </Tabs>
 
-              <div className="mt-12 p-8 rounded-xl bg-white border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden group">
+              <div className="mt-12 p-8 rounded-xl bg-card border border-border/60 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden group">
                 {/* Decorative subtle background icon */}
-                <Camera className="absolute -right-4 -bottom-4 size-32 text-slate-50 opacity-[0.03] -rotate-12 pointer-events-none" />
+                <Camera className="absolute -right-4 -bottom-4 size-32 text-muted opacity-[0.03] -rotate-12 pointer-events-none" />
 
                 <div className="flex flex-col lg:flex-row gap-10 relative z-10">
                   {/* Left Column: Header */}
                   <div className="lg:w-1/3 space-y-4">
-                    <div className="size-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100/50">
+                    <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20">
                       <Camera className="size-7" />
                     </div>
                     <div>
-                      <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-600 mb-1">
+                      <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary mb-1">
                         Specification
                       </h4>
-                      <h3 className="text-xl font-bold text-slate-900 tracking-tight">ICA Photo Guidelines</h3>
+                      <h3 className="text-xl font-bold text-foreground tracking-tight">ICA Photo Guidelines</h3>
                     </div>
-                    <p className="text-xs font-medium text-slate-500 leading-relaxed">
+                    <p className="text-xs font-medium text-muted-foreground leading-relaxed">
                       Submissions that fail these specs will be automatically flagged by ICA's facial recognition
                       system, causing significant delays.
                     </p>
@@ -858,13 +858,13 @@ function AdmissionGuidelines() {
                         { title: "Eyewear", desc: "Clear lenses, no glare or tint" },
                         { title: "Quality", desc: "High resolution, sharp focus" },
                       ].map((item, i) => (
-                        <div key={i} className="flex items-start gap-3 py-3 border-b border-slate-100 group/item">
-                          <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform" />
+                        <div key={i} className="flex items-start gap-3 py-3 border-b border-border group/item">
+                          <CheckCircle2 className="size-4 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform" />
                           <div className="space-y-0.5">
-                            <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
+                            <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground/70">
                               {item.title}
                             </p>
-                            <p className="text-[13px] font-semibold text-slate-700 leading-tight">{item.desc}</p>
+                            <p className="text-[13px] font-semibold text-foreground/90 leading-tight">{item.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -872,35 +872,35 @@ function AdmissionGuidelines() {
                   </div>
                 </div>
                 <div className="mt-6 w-full py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <p className="font-bold text-xs text-slate-500">
+                  <p className="font-bold text-xs text-muted-foreground">
                     For full ICA photo specifications, please refer to the official guidelines.
                   </p>
                   <a
                     href="https://www.ica.gov.sg/photo-guidelines"
                     target="_blank"
                     rel="noreferrer"
-                    className="font-bold flex gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline">
+                    className="font-bold flex gap-1 text-xs text-primary hover:text-primary/90 hover:underline">
                     View ICA Photo Guidelines <ExternalLink className="size-3.5" />
                   </a>
                 </div>
               </div>
 
               {/* --- Help Footer --- */}
-              <div className="flex flex-col md:flex-row items-center justify-between p-8 rounded-xl bg-slate-50 border border-slate-200 gap-6">
+              <div className="flex flex-col md:flex-row items-center justify-between p-8 rounded-xl bg-muted/30 border border-border gap-6">
                 <div className="flex flex-wrap items-center gap-4">
-                  <div className="size-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-                    <HelpCircle className="size-6 text-slate-400" />
+                  <div className="size-12 rounded-2xl bg-card border border-border flex items-center justify-center shadow-sm">
+                    <HelpCircle className="size-6 text-muted-foreground/70" />
                   </div>
                   <div>
                     <h4 className="text-base font-black text-primary">Unsure about a specific document?</h4>
-                    <p className="text-sm font-medium text-slate-500">
+                    <p className="text-sm font-medium text-muted-foreground">
                       Our admissions team can review your scans before submission.
                     </p>
                   </div>
                 </div>
 
                 <a href={`tel:${phone}`}>
-                  <Button className="!px-8 !py-8 rounded-2xl bg-blue-600 text-white text-xs md:text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 gap-4">
+                  <Button className="!px-8 !py-8 rounded-2xl bg-primary text-primary-foreground text-xs md:text-sm font-black uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-lg shadow-blue-200 gap-4">
                     <PhoneCall /> Contact Admissions
                   </Button>
                 </a>
@@ -910,12 +910,12 @@ function AdmissionGuidelines() {
             <section className="space-y-12 mt-20 px-4">
               {/* --- Pill Header --- */}
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 border border-rose-100">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/40">
                   <div className="size-2 rounded-full bg-rose-500 animate-pulse" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-rose-600">Health Compliance</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">Health Compliance</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">Vaccination Requirements</h2>
-                <p className="text-slate-500 max-w-lg text-base leading-relaxed">
+                <p className="text-muted-foreground max-w-lg text-base leading-relaxed">
                   For foreign-born children aged <span className="text-primary font-semibold">12 years and below</span>,
                   documentation of diphtheria and measles vaccination (or proof of immunity) is required as part of the
                   long-term pass / Student’s Pass process in Singapore.
@@ -925,15 +925,15 @@ function AdmissionGuidelines() {
               <div className="grid lg:grid-cols-3 gap-8">
                 {/* --- Mandatory Section --- */}
                 <div className="lg:col-span-2 space-y-6">
-                  <div className="relative p-8 rounded-xl bg-white border border-slate-100 shadow-sm overflow-hidden">
+                  <div className="relative p-8 rounded-xl bg-card border border-border shadow-sm overflow-hidden">
                     <div className="hidden md:block absolute top-9 right-6">
-                      <span className="bg-rose-600 text-white px-3 py-1 rounded-full font-bold text-sm uppercase tracking-tighter">
+                      <span className="bg-rose-600 dark:bg-rose-500 text-white px-3 py-1 rounded-full font-bold text-sm uppercase tracking-tighter">
                         Required by MOH
                       </span>
                     </div>
 
                     <h3 className="text-xl font-bold text-primary mb-8 flex items-center gap-3">
-                      <div className="size-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                      <div className="size-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                         <ShieldCheck className="size-6" />
                       </div>
                       Core vaccinations for Student’s Pass
@@ -941,7 +941,7 @@ function AdmissionGuidelines() {
 
                     <div className="grid md:grid-cols-2 gap-6">
                       {/* Diphtheria Card */}
-                      <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 group hover:border-rose-200 transition-colors">
+                      <div className="p-6 rounded-3xl bg-muted/30 border border-border group hover:border-rose-200 dark:hover:border-rose-900/50 transition-colors">
                         <h4 className="font-bold text-base text-primary mb-4 uppercase tracking-wide">1. Diphtheria</h4>
                         <ul className="space-y-3">
                           {[
@@ -949,15 +949,15 @@ function AdmissionGuidelines() {
                             "Full primary course should be completed according to the child’s age",
                             "Records must be documented in the vaccination card or doctor’s memo",
                           ].map((item) => (
-                            <li key={item} className="flex items-start gap-2 text-sm font-medium text-slate-600">
-                              <div className="size-1.5 rounded-full bg-rose-400 mt-1 shrink-0" /> {item}
+                            <li key={item} className="flex items-start gap-2 text-sm font-medium text-muted-foreground">
+                              <div className="size-1.5 rounded-full bg-rose-400 dark:bg-rose-500 mt-1 shrink-0" /> {item}
                             </li>
                           ))}
                         </ul>
                       </div>
 
                       {/* Measles Card */}
-                      <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 group hover:border-rose-200 transition-colors">
+                      <div className="p-6 rounded-3xl bg-muted/30 border border-border group hover:border-rose-200 dark:hover:border-rose-900/50 transition-colors">
                         <h4 className="font-bold text-base text-primary mb-4 uppercase tracking-wide">2. Measles</h4>
                         <ul className="space-y-3">
                           {[
@@ -965,8 +965,8 @@ function AdmissionGuidelines() {
                             "Two documented doses are generally required (age-appropriate)",
                             "Serology report may be accepted if vaccination records are unavailable",
                           ].map((item) => (
-                            <li key={item} className="flex items-start gap-2 text-sm font-medium text-slate-600">
-                              <div className="size-1.5 rounded-full bg-rose-400 mt-1 shrink-0" /> {item}
+                            <li key={item} className="flex items-start gap-2 text-sm font-medium text-muted-foreground">
+                              <div className="size-1.5 rounded-full bg-rose-400 dark:bg-rose-500 mt-1 shrink-0" /> {item}
                             </li>
                           ))}
                         </ul>
@@ -978,7 +978,7 @@ function AdmissionGuidelines() {
                   <div className="group relative p-1 rounded-xl shadow-2xl shadow-slate-200/50 flex flex-col md:flex-row items-center justify-between gap-4 md:pl-8 md:pr-2 overflow-hidden">
                     {/* Subtitle / Label */}
                     <div className="flex items-center gap-3 py-3 md:py-0">
-                      <div className="size-1.5 rounded-full bg-blue-500 animate-pulse" />
+                      <div className="size-1.5 rounded-full bg-primary animate-pulse" />
                       <span className="text-xs font-black uppercase tracking-[0.2em]">Verification portals</span>
                     </div>
 
@@ -988,14 +988,14 @@ function AdmissionGuidelines() {
                         href="https://www.nir.cda.gov.sg/fcine/#/navpage/home"
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-white/5 border border-white/10 text-blue-400 text-sm font-bold hover:bg-white/10 hover:text-blue-600 transition-all duration-300 group/link">
+                        className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-card/5 border border-card/10 text-primary/70 text-sm font-bold hover:bg-card/10 hover:text-primary transition-all duration-300 group/link">
                         CDA / NIR portal
                         <ExternalLink className="size-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                       </a>
 
                       <a
                         href="#"
-                        className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-white/5 border border-white/10 text-rose-200 text-sm font-bold hover:bg-white/10 hover:text-rose-600 transition-all duration-300 group/link">
+                        className="flex items-center justify-center gap-3 px-6 py-3 rounded-xl md:rounded-full bg-card/5 border border-card/10 text-rose-200 dark:text-rose-400/70 text-sm font-bold hover:bg-card/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all duration-300 group/link">
                         NCIS schedule (SG)
                         <ExternalLink className="size-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                       </a>
@@ -1007,14 +1007,14 @@ function AdmissionGuidelines() {
                 </div>
 
                 {/* --- Recommended Checklist --- */}
-                <div className="p-8 rounded-xl bg-blue-600 shadow-xl text-white relative overflow-hidden">
-                  <div className="absolute top-0 right-0 -mr-12 -mt-12 size-40 bg-white/10 rounded-full blur-3xl" />
+                <div className="p-8 rounded-xl bg-primary shadow-xl text-primary-foreground relative overflow-hidden">
+                  <div className="absolute top-0 right-0 -mr-12 -mt-12 size-40 bg-card/10 rounded-full blur-3xl" />
 
                   <div className="relative z-10">
                     <h3 className="text-lg font-bold tracking-tight mb-6">
                       National Childhood Immunisation Schedule (NCIS)
                     </h3>
-                    <p className="text-xs md:text-sm text-blue-50 mb-4">
+                    <p className="text-xs md:text-sm text-primary-foreground/90 mb-4">
                       In addition to diphtheria and measles (required for long-term passes), parents are strongly
                       encouraged to follow the full NCIS for their child&apos;s age group.
                     </p>
@@ -1030,7 +1030,7 @@ function AdmissionGuidelines() {
                       ].map((vax, i) => (
                         <div
                           key={vax}
-                          className="flex items-center gap-3 p-3 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-sm group hover:bg-white/20 transition-all">
+                          className="flex items-center gap-3 p-3 rounded-2xl bg-card/10 border border-card/10 backdrop-blur-sm group hover:bg-card/20 transition-all">
                           <span className="text-sm font-bold opacity-50">0{i + 3}</span>
                           <span className="text-sm font-semibold tracking-tight">{vax}</span>
                         </div>
@@ -1041,16 +1041,16 @@ function AdmissionGuidelines() {
               </div>
 
               {/* --- Certification Alert --- */}
-              <div className="p-8 rounded-xl bg-white border border-blue-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600" />
+              <div className="p-8 rounded-xl bg-card border border-primary/20 shadow-sm relative overflow-hidden group">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="size-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Stethoscope className="size-7" />
                   </div>
                   <div className="space-y-1 text-center md:text-left">
                     <h4 className="text-lg font-bold text-primary tracking-tight">Medical certification of records</h4>
-                    <p className="text-base text-slate-500 leading-relaxed max-w-3xl">
-                      The <span className="text-blue-600 font-bold">Immunisation Registration / Verification Form</span>{" "}
+                    <p className="text-base text-muted-foreground leading-relaxed max-w-3xl">
+                      The <span className="text-primary font-bold">Immunisation Registration / Verification Form</span>{" "}
                       should be completed and certified by a licensed medical practitioner. Please ensure the{" "}
                       <span className="font-semibold">passport number</span> used for CDA / NIR submission matches the
                       passport number used in your ICA Student’s Pass application to avoid delays.
@@ -1063,17 +1063,17 @@ function AdmissionGuidelines() {
             <section className="space-y-12 mt-24 px-4">
               {/* --- Header --- */}
               <div className="flex flex-col items-center text-center space-y-4 mb-12">
-                <div className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-sm font-bold uppercase tracking-widest text-indigo-600">
+                <div className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 text-sm font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                   Processing Guide
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">Processing Timeline</h2>
-                <p className="text-slate-500 max-w-md text-base leading-relaxed">
+                <p className="text-muted-foreground max-w-md text-base leading-relaxed">
                   A general overview of the typical steps from submission to Student’s Pass outcome.
                 </p>
               </div>
 
               <Tabs defaultValue="new" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-16 h-16 p-2 rounded-full bg-slate-100/80 border border-slate-200/50 backdrop-blur-md shadow-inner relative">
+                <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-16 h-16 p-2 rounded-full bg-muted/80 border border-border/50 backdrop-blur-md shadow-inner relative">
                   {[
                     { id: "new", label: "New", icon: Sparkles },
                     { id: "renewal", label: "Renewal", icon: RotateCcw },
@@ -1083,8 +1083,8 @@ function AdmissionGuidelines() {
                       key={tab.id}
                       value={tab.id}
                       className="group rounded-full h-full flex items-center justify-center gap-3 text-sm font-black uppercase tracking-[0.1em] transition-all duration-500
-          data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-lg 
-          data-[state=inactive]:text-slate-400 focus-visible:outline-none">
+          data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg
+          data-[state=inactive]:text-muted-foreground/70 focus-visible:outline-none">
                       <tab.icon className="size-4 transition-transform group-data-[state=active]:scale-110" />
                       <span className="hidden md:inline">{tab.label}</span>
                     </TabsTrigger>
@@ -1097,7 +1097,7 @@ function AdmissionGuidelines() {
                   className="animate-in fade-in slide-in-from-bottom-2 duration-500 outline-none">
                   <div className="grid lg:grid-cols-5 gap-12 items-start">
                     <div className="lg:col-span-3 space-y-2 relative">
-                      <div className="absolute left-7 top-4 bottom-4 w-px bg-slate-200" />
+                      <div className="absolute left-7 top-4 bottom-4 w-px bg-border" />
                       {[
                         {
                           week: "Week 1",
@@ -1122,54 +1122,54 @@ function AdmissionGuidelines() {
                       ].map((step, i) => (
                         <div key={i} className="flex gap-8 group">
                           <div className="relative flex flex-col items-center">
-                            <div className="size-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center z-10">
+                            <div className="size-14 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center z-10">
                               <div
                                 className={`size-2.5 rounded-full ${
-                                  i === 2 ? "bg-blue-500 animate-pulse" : "bg-slate-300"
+                                  i === 2 ? "bg-primary animate-pulse" : "bg-muted-foreground/40"
                                 }`}
                               />
                             </div>
                           </div>
                           <div className="pb-10">
-                            <span className="text-sm font-bold text-blue-600 uppercase tracking-widest">
+                            <span className="text-sm font-bold text-primary uppercase tracking-widest">
                               {step.week}
                             </span>
                             <h4 className="text-lg font-bold text-primary">{step.title}</h4>
-                            <p className="text-base text-slate-500 leading-relaxed max-w-sm mt-1">{step.desc}</p>
+                            <p className="text-base text-muted-foreground leading-relaxed max-w-sm mt-1">{step.desc}</p>
                           </div>
                         </div>
                       ))}
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
-                      <div className="p-8 rounded-xl bg-primary text-white shadow-xl">
+                      <div className="p-8 rounded-xl bg-primary text-primary-foreground shadow-xl">
                         <h4 className="text-sm font-bold uppercase tracking-widest mb-6">
                           Recommended submission window
                         </h4>
                         <div className="space-y-6">
                           <div className="flex gap-4 items-center">
-                            <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                            <div className="size-10 rounded-xl bg-card/10 flex items-center justify-center shrink-0">
                               <Calendar className="size-5" />
                             </div>
                             <div>
-                              <p className="text-sm text-slate-300 font-bold">Earliest submission</p>
+                              <p className="text-sm text-primary-foreground/70 font-bold">Earliest submission</p>
                               <p className="text-base font-semibold">Up to 3 months before course start date</p>
                             </div>
                           </div>
                           <div className="flex gap-4 items-center">
-                            <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                            <div className="size-10 rounded-xl bg-card/10 flex items-center justify-center shrink-0">
                               <Clock className="size-5" />
                             </div>
                             <div>
-                              <p className="text-sm text-slate-300 font-bold">Latest recommended</p>
+                              <p className="text-sm text-primary-foreground/70 font-bold">Latest recommended</p>
                               <p className="text-base font-semibold">At least 2 months before course start date</p>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="p-6 rounded-xl bg-blue-50/50 border border-blue-100 flex gap-4">
-                        <Info className="size-5 text-blue-600 shrink-0 mt-0.5" />
-                        <p className="text-sm text-blue-900/80 leading-relaxed">
+                      <div className="p-6 rounded-xl bg-primary/5 border border-primary/20 flex gap-4">
+                        <Info className="size-5 text-primary shrink-0 mt-0.5" />
+                        <p className="text-sm text-primary/90 leading-relaxed">
                           <strong>Note:</strong> Processing times are indicative and may vary. You do not need to be in
                           Singapore while ICA is processing your application, and the school cannot fast‑track ICA’s
                           decision.
@@ -1185,7 +1185,7 @@ function AdmissionGuidelines() {
                   className="animate-in fade-in slide-in-from-bottom-2 duration-500 outline-none">
                   <div className="grid lg:grid-cols-5 gap-12 items-start">
                     <div className="lg:col-span-3 space-y-2 relative">
-                      <div className="absolute left-7 top-4 bottom-4 w-px bg-slate-200" />
+                      <div className="absolute left-7 top-4 bottom-4 w-px bg-border" />
                       {[
                         {
                           week: "Days 1–2",
@@ -1205,24 +1205,24 @@ function AdmissionGuidelines() {
                       ].map((step, i) => (
                         <div key={i} className="flex gap-8 group">
                           <div className="relative flex flex-col items-center">
-                            <div className="size-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center z-10">
-                              <div className="size-2.5 rounded-full bg-emerald-500" />
+                            <div className="size-14 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center z-10">
+                              <div className="size-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                             </div>
                           </div>
                           <div className="pb-10">
-                            <span className="text-sm font-bold text-emerald-600 uppercase tracking-widest">
+                            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
                               {step.week}
                             </span>
                             <h4 className="text-lg font-bold text-primary">{step.title}</h4>
-                            <p className="text-base text-slate-500 leading-relaxed max-w-sm mt-1">{step.desc}</p>
+                            <p className="text-base text-muted-foreground leading-relaxed max-w-sm mt-1">{step.desc}</p>
                           </div>
                         </div>
                       ))}
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
-                      <div className="p-8 rounded-xl bg-primary text-white shadow-xl">
-                        <h4 className="text-sm font-bold uppercase tracking-widest mb-6 text-white0">
+                      <div className="p-8 rounded-xl bg-primary text-primary-foreground shadow-xl">
+                        <h4 className="text-sm font-bold uppercase tracking-widest mb-6 text-primary-foreground/80">
                           Renewal checklist
                         </h4>
                         <ul className="space-y-4">
@@ -1232,15 +1232,15 @@ function AdmissionGuidelines() {
                             "Updated Singapore residential address",
                             "Satisfactory attendance and academic records",
                           ].map((item) => (
-                            <li key={item} className="flex items-center gap-3 text-base text-white">
-                              <CheckCircle2 className="size-4 text-emerald-200" /> {item}
+                            <li key={item} className="flex items-center gap-3 text-base text-primary-foreground">
+                              <CheckCircle2 className="size-4 text-emerald-200 dark:text-emerald-300" /> {item}
                             </li>
                           ))}
                         </ul>
                       </div>
-                      <div className="p-6 rounded-xl bg-emerald-50/50 border border-emerald-100 flex gap-4">
-                        <RefreshCcw className="size-5 text-emerald-600 shrink-0 mt-0.5" />
-                        <p className="text-sm text-emerald-900/80 leading-relaxed">
+                      <div className="p-6 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40 flex gap-4">
+                        <RefreshCcw className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        <p className="text-sm text-emerald-900/80 dark:text-emerald-200/90 leading-relaxed">
                           Submit your renewal application at least{" "}
                           <strong>1 month before your current Student’s Pass expiry</strong> to reduce the risk of gaps
                           in your legal stay in Singapore.
@@ -1256,7 +1256,7 @@ function AdmissionGuidelines() {
                   className="animate-in fade-in slide-in-from-bottom-2 duration-500 outline-none">
                   <div className="grid lg:grid-cols-5 gap-12 items-start">
                     <div className="lg:col-span-3 space-y-2 relative">
-                      <div className="absolute left-7 top-4 bottom-4 w-px bg-slate-200" />
+                      <div className="absolute left-7 top-4 bottom-4 w-px bg-border" />
                       {[
                         {
                           week: "Week 1",
@@ -1281,40 +1281,40 @@ function AdmissionGuidelines() {
                       ].map((step, i) => (
                         <div key={i} className="flex gap-8 group">
                           <div className="relative flex flex-col items-center">
-                            <div className="size-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center z-10">
-                              <div className={`size-2.5 rounded-full ${i === 2 ? "bg-amber-500" : "bg-slate-300"}`} />
+                            <div className="size-14 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center z-10">
+                              <div className={`size-2.5 rounded-full ${i === 2 ? "bg-amber-500 dark:bg-amber-600" : "bg-muted-foreground/40"}`} />
                             </div>
                           </div>
                           <div className="pb-10">
-                            <span className="text-sm font-bold text-amber-600 uppercase tracking-widest">
+                            <span className="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
                               {step.week}
                             </span>
                             <h4 className="text-lg font-bold text-primary">{step.title}</h4>
-                            <p className="text-base text-slate-500 leading-relaxed max-w-sm mt-1">{step.desc}</p>
+                            <p className="text-base text-muted-foreground leading-relaxed max-w-sm mt-1">{step.desc}</p>
                           </div>
                         </div>
                       ))}
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
-                      <div className="p-8 rounded-xl bg-amber-600 text-white shadow-xl relative overflow-hidden">
-                        <div className="size-12 rounded-xl bg-white/20 flex items-center justify-center mb-6">
+                      <div className="p-8 rounded-xl bg-amber-600 dark:bg-amber-700 text-white shadow-xl relative overflow-hidden">
+                        <div className="size-12 rounded-xl bg-card/20 flex items-center justify-center mb-6">
                           <ShieldAlert className="size-6" />
                         </div>
                         <h4 className="text-lg font-bold mb-2">Key reminders</h4>
-                        <p className="text-base text-amber-50/90 leading-relaxed">
+                        <p className="text-base text-amber-50/90 dark:text-amber-100/90 leading-relaxed">
                           You should <strong>not start classes at HFSE</strong> until ICA has approved the new Student’s
                           Pass. Your current pass should remain valid during the transfer process. If there is a long
                           break after expiry, ICA may require a fresh application as a new Student’s Pass case.
                         </p>
                       </div>
-                      <div className="p-6 rounded-xl bg-white border border-slate-100 shadow-sm">
-                        <h4 className="text-sm font-bold uppercase tracking-widest mb-4 text-slate-400 text-center">
+                      <div className="p-6 rounded-xl bg-card border border-border shadow-sm">
+                        <h4 className="text-sm font-bold uppercase tracking-widest mb-4 text-muted-foreground/70 text-center">
                           Typical documents requested
                         </h4>
-                        <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                          <FileCheck className="size-5 text-amber-600 shrink-0" />
-                          <span className="text-sm font-semibold text-slate-700">
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border">
+                          <FileCheck className="size-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span className="text-sm font-semibold text-foreground/90">
                             Withdrawal / clearance letter from previous PEI, HFSE Letter of Offer, and current Student’s
                             Pass details.
                           </span>
@@ -1329,12 +1329,12 @@ function AdmissionGuidelines() {
             <section className="relative space-y-16 mt-24 px-6">
               {/* --- Portal Header --- */}
               <div className="flex flex-col items-center text-center space-y-4 mb-20">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100">
-                  <div className="size-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-sm font-bold uppercase tracking-widest text-blue-600">Enrolment Journey</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                  <div className="size-2 rounded-full bg-primary animate-pulse" />
+                  <span className="text-sm font-bold uppercase tracking-widest text-primary">Enrolment Journey</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">Enrolment Portal Steps</h2>
-                <p className="text-slate-500 max-w-lg text-base">
+                <p className="text-muted-foreground max-w-lg text-base">
                   The typical sequence from pre-course counselling to digital submission.
                 </p>
               </div>
@@ -1342,23 +1342,23 @@ function AdmissionGuidelines() {
               {/* --- Timeline Container --- */}
               <div className="relative space-y-12">
                 {/* Vertical Line Thread */}
-                <div className="absolute left-8 top-0 bottom-0 w-px border-l-2 border-dashed border-slate-200 hidden md:block" />
+                <div className="absolute left-8 top-0 bottom-0 w-px border-l-2 border-dashed border-border hidden md:block" />
 
                 {/* --- Step 01 --- */}
                 <div className="relative pl-0 md:pl-20 group">
-                  <div className="absolute left-4 -top-2 md:left-4 size-8 rounded-full bg-blue-600 text-white md:flex items-center justify-center text-sm font-bold ring-8 ring-white hidden z-10">
+                  <div className="absolute left-4 -top-2 md:left-4 size-8 rounded-full bg-primary text-primary-foreground md:flex items-center justify-center text-sm font-bold ring-8 ring-card hidden z-10">
                     01
                   </div>
-                  <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm transition-all group-hover:shadow-md">
+                  <div className="p-8 rounded-xl bg-card border border-border shadow-sm transition-all group-hover:shadow-md">
                     <h3 className="text-xl font-bold text-primary mb-4">Pre-Course Counselling</h3>
-                    <p className="text-base text-slate-500 leading-relaxed mb-4">
+                    <p className="text-base text-muted-foreground leading-relaxed mb-4">
                       Meet with our Admissions Officer (Course Counsellor) to receive complete information about the
                       course, school policies, fees, Student’s Pass requirements (if applicable), and support services
                       before making an enrolment decision.
                     </p>
-                    <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100/50 flex gap-3">
-                      <Info className="size-4 text-indigo-500 shrink-0 mt-0.5" />
-                      <p className="text-sm text-indigo-900/70 leading-relaxed">
+                    <div className="p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100/50 dark:border-indigo-900/40 flex gap-3">
+                      <Info className="size-4 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
+                      <p className="text-sm text-indigo-900/70 dark:text-indigo-200/80 leading-relaxed">
                         At the end of pre-course counselling, parents/guardians sign the{" "}
                         <span className="font-semibold">Pre-Course Counselling Acknowledgement Form</span> to confirm
                         that the information has been explained and understood, in line with EduTrust (GD4.0)
@@ -1370,12 +1370,12 @@ function AdmissionGuidelines() {
 
                 {/* --- Step 02 & 03 Split Row --- */}
                 <div className="relative pl-0 md:pl-20 grid md:grid-cols-2 gap-6">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 size-4 rounded-full bg-slate-200 ring-8 ring-white hidden md:block z-10" />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 size-4 rounded-full bg-border ring-8 ring-card hidden md:block z-10" />
 
-                  <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm">
-                    <div className="text-sm font-bold text-blue-600 uppercase tracking-tighter mb-2">Step 02</div>
+                  <div className="p-8 rounded-xl bg-card border border-border shadow-sm">
+                    <div className="text-sm font-bold text-primary uppercase tracking-tighter mb-2">Step 02</div>
                     <h3 className="text-lg font-bold text-primary mb-2">Select Application Type</h3>
-                    <p className="text-base text-slate-500 leading-relaxed mb-4">
+                    <p className="text-base text-muted-foreground leading-relaxed mb-4">
                       Choose the correct ICA application path based on your child’s situation. Our system and Admissions
                       team will guide you if you are unsure.
                     </p>
@@ -1383,24 +1383,24 @@ function AdmissionGuidelines() {
                       {["New Student’s Pass", "Renewal", "Transfer to HFSE"].map((type) => (
                         <div
                           key={type}
-                          className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-sm font-semibold text-slate-600">
+                          className="px-4 py-2 rounded-xl bg-muted/30 border border-border text-sm font-semibold text-muted-foreground">
                           {type}
                         </div>
                       ))}
                     </div>
-                    <div className="p-3 rounded-xl bg-indigo-50/50 border border-indigo-100/50 flex gap-3">
-                      <Info className="size-4 text-indigo-500 shrink-0 mt-0.5" />
-                      <p className="text-xs text-indigo-900/70 leading-relaxed">
+                    <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100/50 dark:border-indigo-900/40 flex gap-3">
+                      <Info className="size-4 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-indigo-900/70 dark:text-indigo-200/80 leading-relaxed">
                         <strong>Dependants Pass (DP) or LTVP holders:</strong> You usually do not need a separate
                         Student’s Pass. The school will advise on the correct registration steps with ICA/MOH.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-8 rounded-xl bg-white border border-slate-100 shadow-sm">
-                    <div className="text-sm font-bold text-blue-600 uppercase tracking-tighter mb-2">Step 03</div>
+                  <div className="p-8 rounded-xl bg-card border border-border shadow-sm">
+                    <div className="text-sm font-bold text-primary uppercase tracking-tighter mb-2">Step 03</div>
                     <h3 className="text-lg font-bold text-primary mb-2">Upload Photo & Documents</h3>
-                    <p className="text-base text-slate-500 leading-relaxed mb-3">
+                    <p className="text-base text-muted-foreground leading-relaxed mb-3">
                       Provide a recent biometric passport-style photo and the required supporting documents for your
                       application type.
                     </p>
@@ -1408,7 +1408,7 @@ function AdmissionGuidelines() {
                       {["Passport Photo", "Passport & Birth Cert", "Vaccination", "Academic / Financial"].map((doc) => (
                         <span
                           key={doc}
-                          className="px-2 py-1 rounded-md bg-slate-100 text-xs font-bold uppercase text-slate-500 tracking-wide">
+                          className="px-2 py-1 rounded-md bg-muted text-xs font-bold uppercase text-muted-foreground tracking-wide">
                           {doc}
                         </span>
                       ))}
@@ -1418,16 +1418,16 @@ function AdmissionGuidelines() {
 
                 {/* --- Step 04 --- */}
                 <div className="relative pl-0 md:pl-20 group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 size-8 rounded-full bg-primary text-white md:flex items-center justify-center text-sm font-bold ring-8 ring-white hidden z-10">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 size-8 rounded-full bg-primary text-primary-foreground md:flex items-center justify-center text-sm font-bold ring-8 ring-card hidden z-10">
                     04
                   </div>
-                  <div className="p-8 rounded-xl bg-slate-50 border border-slate-200 border-dashed">
+                  <div className="p-8 rounded-xl bg-muted/30 border border-border border-dashed">
                     <h3 className="text-xl font-bold text-primary">Accuracy & Internal Review</h3>
-                    <p className="text-base text-slate-500 mt-2 leading-relaxed">
+                    <p className="text-base text-muted-foreground mt-2 leading-relaxed">
                       Our <span className="text-primary font-semibold">Office of Admin and Operations</span> checks all
                       submitted information against your documents and the course requirements before preparing the
                       final ICA submission.
-                      <span className="text-rose-500 font-medium italic ml-1 underline underline-offset-4 decoration-rose-200">
+                      <span className="text-rose-500 dark:text-rose-400 font-medium italic ml-1 underline underline-offset-4 decoration-rose-200 dark:decoration-rose-900/50">
                         Incomplete or inconsistent information is one of the most common reasons for delays in ICA
                         processing.
                       </span>
@@ -1437,15 +1437,15 @@ function AdmissionGuidelines() {
 
                 {/* --- Step 05 --- */}
                 <div className="relative pl-0 md:pl-20 group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 size-8 rounded-full bg-blue-600 text-white md:flex items-center justify-center text-sm font-bold ring-8 ring-white hidden z-10">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 size-8 rounded-full bg-primary text-primary-foreground md:flex items-center justify-center text-sm font-bold ring-8 ring-card hidden z-10">
                     05
                   </div>
-                  <div className="p-8 md:p-10 rounded-xl bg-primary text-white overflow-hidden shadow-xl relative">
+                  <div className="p-8 md:p-10 rounded-xl bg-primary text-primary-foreground overflow-hidden shadow-xl relative">
                     <div className="absolute -right-8 -bottom-8 opacity-10">
                       <ShieldCheck className="size-40" />
                     </div>
                     <div className="relative z-10 space-y-4">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20  text-sm font-bold uppercase tracking-widest">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/20  text-sm font-bold uppercase tracking-widest">
                         Legal milestone
                       </div>
                       <h3 className="text-2xl font-bold tracking-tight">Digital Confirmation & Submission</h3>
@@ -1454,7 +1454,7 @@ function AdmissionGuidelines() {
                         submits your application. You will receive instructions for any in‑principle approval (IPA) or
                         issuance appointment directly after ICA has made a decision.
                       </p>
-                      <div className="w-full md:w-max p-4 bg-amber-500 rounded-lg flex items-center gap-2 text-white text-sm font-bold uppercase">
+                      <div className="w-full md:w-max p-4 bg-amber-500 dark:bg-amber-600 rounded-lg flex items-center gap-2 text-white text-sm font-bold uppercase">
                         <AlertTriangle className="size-3" /> School cannot influence or guarantee ICA processing times
                       </div>
                     </div>
@@ -1466,31 +1466,31 @@ function AdmissionGuidelines() {
             <section className="space-y-12 mt-24 px-4">
               {/* --- Section Header --- */}
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">
-                  <Scale className="size-3.5 text-slate-500" />
-                  <span className="text-sm font-bold uppercase tracking-widest text-slate-600">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border">
+                  <Scale className="size-3.5 text-muted-foreground" />
+                  <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
                     Legal Compliance (GD4.0)
                   </span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">Pre-Course Counselling</h2>
-                <p className="text-slate-500 max-w-xl text-base leading-relaxed">
+                <p className="text-muted-foreground max-w-xl text-base leading-relaxed">
                   A required briefing for prospective families to ensure course suitability, fee transparency, and
                   awareness of key Singapore regulations before confirming enrolment.
                 </p>
               </div>
 
               {/* --- Main Container --- */}
-              <div className="bg-white rounded-xl border border-slate-100 shadow-xl shadow-slate-200/50 p-8 md:p-12 space-y-12 relative overflow-hidden">
+              <div className="bg-card rounded-xl border border-border shadow-xl shadow-slate-200/50 p-8 md:p-12 space-y-12 relative overflow-hidden">
                 {/* Mandatory Alert */}
-                <div className="flex flex-col md:flex-row items-center gap-6 p-6 rounded-3xl bg-amber-50/50 border border-amber-100/60 relative">
-                  <div className="size-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                <div className="flex flex-col md:flex-row items-center gap-6 p-6 rounded-3xl bg-amber-50/50 dark:bg-amber-950/40 border border-amber-100/60 dark:border-amber-900/40 relative">
+                  <div className="size-14 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                     <Handshake className="size-7" />
                   </div>
                   <div className="space-y-1 text-center md:text-left">
-                    <h4 className="text-lg font-bold text-amber-900 tracking-tight">
+                    <h4 className="text-lg font-bold text-amber-900 dark:text-amber-200 tracking-tight">
                       Requirement: Acknowledgement of Pre-Course Counselling
                     </h4>
-                    <p className="text-base text-amber-800/70 leading-relaxed">
+                    <p className="text-base text-amber-800/70 dark:text-amber-200/80 leading-relaxed">
                       Pre-course counselling is conducted by our Admissions Officer (Course Counsellor).
                       Parents/guardians must acknowledge that key course and school information has been explained
                       before the school proceeds with confirming the enrolment and, where relevant, supporting Student’s
@@ -1503,8 +1503,8 @@ function AdmissionGuidelines() {
                 <div className="grid lg:grid-cols-2 gap-x-16 gap-y-10">
                   {/* Administrative Section */}
                   <div className="space-y-6">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-3">
-                      <span className="h-px w-6 bg-slate-200" /> Administrative & Regulatory
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground/70 flex items-center gap-3">
+                      <span className="h-px w-6 bg-border" /> Administrative & Regulatory
                     </h3>
                     <ul className="space-y-4">
                       {[
@@ -1514,10 +1514,10 @@ function AdmissionGuidelines() {
                         "Typical Student’s Pass processing timelines and what may cause delays",
                       ].map((item, i) => (
                         <li key={i} className="flex items-start gap-4">
-                          <div className="size-5 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 mt-0.5">
+                          <div className="size-5 rounded-full bg-primary/10 text-primary/80 flex items-center justify-center shrink-0 mt-0.5">
                             <Check className="size-3" />
                           </div>
-                          <span className="text-base text-slate-600 leading-snug">{item}</span>
+                          <span className="text-base text-muted-foreground leading-snug">{item}</span>
                         </li>
                       ))}
                     </ul>
@@ -1525,8 +1525,8 @@ function AdmissionGuidelines() {
 
                   {/* Academic Section */}
                   <div className="space-y-6">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-3">
-                      <span className="h-px w-6 bg-slate-200" /> Course, Fees & Support
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground/70 flex items-center gap-3">
+                      <span className="h-px w-6 bg-border" /> Course, Fees & Support
                     </h3>
                     <ul className="space-y-4">
                       {[
@@ -1536,10 +1536,10 @@ function AdmissionGuidelines() {
                         "Key references to Infectious Diseases Act and Immigration-related obligations affecting students",
                       ].map((item, i) => (
                         <li key={i} className="flex items-start gap-4">
-                          <div className="size-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
+                          <div className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                             <Check className="size-3" />
                           </div>
-                          <span className="text-base text-slate-600 leading-snug">{item}</span>
+                          <span className="text-base text-muted-foreground leading-snug">{item}</span>
                         </li>
                       ))}
                     </ul>
@@ -1547,9 +1547,9 @@ function AdmissionGuidelines() {
                 </div>
 
                 {/* Restriction Section */}
-                <div className="p-8 rounded-xl bg-rose-50/40 border border-rose-100/60 shadow-sm">
-                  <h4 className="text-rose-900 font-bold text-lg mb-6 flex items-center gap-2 justify-center md:justify-start">
-                    <ShieldAlert className="size-5 text-rose-500" /> Student’s Pass Restrictions (ICA)
+                <div className="p-8 rounded-xl bg-rose-50/40 dark:bg-rose-950/40 border border-rose-100/60 dark:border-rose-900/40 shadow-sm">
+                  <h4 className="text-rose-900 dark:text-rose-200 font-bold text-lg mb-6 flex items-center gap-2 justify-center md:justify-start">
+                    <ShieldAlert className="size-5 text-rose-500 dark:text-rose-400" /> Student’s Pass Restrictions (ICA)
                   </h4>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {[
@@ -1560,9 +1560,9 @@ function AdmissionGuidelines() {
                     ].map((text, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-white/80 border border-rose-100 shadow-sm">
-                        <XCircle className="size-3.5 text-rose-400 shrink-0" />
-                        <span className="text-sm font-semibold text-rose-800 leading-snug">{text}</span>
+                        className="flex items-center gap-3 p-3 rounded-xl bg-card/80 border border-rose-100 dark:border-rose-900/40 shadow-sm">
+                        <XCircle className="size-3.5 text-rose-400 dark:text-rose-500 shrink-0" />
+                        <span className="text-sm font-semibold text-rose-800 dark:text-rose-200 leading-snug">{text}</span>
                       </div>
                     ))}
                   </div>
@@ -1573,28 +1573,28 @@ function AdmissionGuidelines() {
             <section className="space-y-8 mt-16 px-4 pb-20">
               <div className="text-center space-y-2 mb-10">
                 <h2 className="text-3xl font-bold tracking-tight text-primary">Frequently Asked Questions</h2>
-                <p className="text-slate-500">
+                <p className="text-muted-foreground">
                   Key information about the Student’s Pass and related enrolment processes.
                 </p>
               </div>
 
               {/* General FAQs */}
-              <Card className="border-none shadow-sm bg-white/60 backdrop-blur-sm">
+              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-100 rounded-xl">
-                      <HelpCircle className="h-5 w-5 text-slate-600" />
+                    <div className="p-2 bg-muted rounded-xl">
+                      <HelpCircle className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <CardTitle className="text-xl text-slate-800">General Questions</CardTitle>
+                    <CardTitle className="text-xl text-foreground">General Questions</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="faq-1" className="border-slate-100">
-                      <AccordionTrigger className="hover:no-underline py-4 text-slate-700 font-medium text-left">
+                    <AccordionItem value="faq-1" className="border-border">
+                      <AccordionTrigger className="hover:no-underline py-4 text-foreground/90 font-medium text-left">
                         Can the school guarantee Student’s Pass approval?
                       </AccordionTrigger>
-                      <AccordionContent className="text-slate-600 leading-relaxed space-y-3">
+                      <AccordionContent className="text-muted-foreground leading-relaxed space-y-3">
                         <p>
                           No. The approval and issuance of a Student’s Pass are decided solely by the{" "}
                           <strong>Immigration & Checkpoints Authority (ICA)</strong>.
@@ -1607,10 +1607,10 @@ function AdmissionGuidelines() {
                     </AccordionItem>
 
                     <AccordionItem value="faq-2" className="border-none">
-                      <AccordionTrigger className="hover:no-underline py-4 text-slate-700 font-medium text-left">
+                      <AccordionTrigger className="hover:no-underline py-4 text-foreground/90 font-medium text-left">
                         Are ICA application fees refundable if my application is rejected?
                       </AccordionTrigger>
-                      <AccordionContent className="text-slate-600 leading-relaxed">
+                      <AccordionContent className="text-muted-foreground leading-relaxed">
                         <p>
                           No. ICA application and processing fees are{" "}
                           <strong>non-refundable government administrative fees</strong>. They are separate from school
@@ -1627,28 +1627,28 @@ function AdmissionGuidelines() {
               </Card>
 
               {/* NEW Application FAQs */}
-              <Card className="border-none shadow-sm bg-blue-50/30">
+              <Card className="border-none shadow-sm bg-primary/5">
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-xl">
-                      <Globe2 className="h-5 w-5 text-blue-600" />
+                    <div className="p-2 bg-primary/15 rounded-xl">
+                      <Globe2 className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-xl text-slate-800">NEW Application Questions</CardTitle>
+                    <CardTitle className="text-xl text-foreground">NEW Application Questions</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="new-faq-1" className="border-blue-100/50">
-                      <AccordionTrigger className="hover:no-underline py-4 text-slate-700 font-medium text-left">
+                    <AccordionItem value="new-faq-1" className="border-primary/20">
+                      <AccordionTrigger className="hover:no-underline py-4 text-foreground/90 font-medium text-left">
                         Can I submit the Student’s Pass application by myself?
                       </AccordionTrigger>
-                      <AccordionContent className="text-slate-600 leading-relaxed">
+                      <AccordionContent className="text-muted-foreground leading-relaxed">
                         <p className="mb-3">
                           For new international students, HFSE requires use of our{" "}
                           <strong>Student’s Pass Processing Service</strong> so that applications are accurate and
                           consistent with ICA and EduTrust requirements.
                         </p>
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-base italic text-slate-500">
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-base italic text-muted-foreground">
                           <li className="flex items-center gap-2">◦ Document verification</li>
                           <li className="flex items-center gap-2">◦ SOLAR+ data entry and submission</li>
                           <li className="flex items-center gap-2">◦ PEI / ICA guideline alignment</li>
@@ -1657,18 +1657,18 @@ function AdmissionGuidelines() {
                       </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem value="new-faq-2" className="border-blue-100/50">
-                      <AccordionTrigger className="hover:no-underline py-4 text-slate-700 font-medium text-left">
+                    <AccordionItem value="new-faq-2" className="border-primary/20">
+                      <AccordionTrigger className="hover:no-underline py-4 text-foreground/90 font-medium text-left">
                         What are the vaccination requirements for Student’s Pass?
                       </AccordionTrigger>
                       <AccordionContent className="space-y-4">
-                        <div className="p-4 bg-white rounded-xl border border-blue-100">
-                          <p className="text-base text-slate-600 mb-2">
+                        <div className="p-4 bg-card rounded-xl border border-primary/20">
+                          <p className="text-base text-muted-foreground mb-2">
                             Foreign-born children <strong>aged 12 years and below</strong> must show that they have been
                             vaccinated against <strong>diphtheria and measles</strong>, or have proof of immunity. These
                             records are typically checked via the National Immunisation Registry (NIR).
                           </p>
-                          <a href="https://www.nir.cda.gov.sg/" className="text-sm text-blue-600 underline">
+                          <a href="https://www.nir.cda.gov.sg/" className="text-sm text-primary underline">
                             Visit NIR portal
                           </a>
                         </div>
@@ -1676,10 +1676,10 @@ function AdmissionGuidelines() {
                     </AccordionItem>
 
                     <AccordionItem value="new-faq-3" className="border-none">
-                      <AccordionTrigger className="hover:no-underline py-4 text-slate-700 font-medium text-left">
+                      <AccordionTrigger className="hover:no-underline py-4 text-foreground/90 font-medium text-left">
                         Is there an entrance test?
                       </AccordionTrigger>
-                      <AccordionContent className="text-slate-600 leading-relaxed">
+                      <AccordionContent className="text-muted-foreground leading-relaxed">
                         <p>
                           Yes. Applicants will complete an <strong>English and Mathematics</strong> assessment to help
                           determine course suitability and support needs.
@@ -1696,22 +1696,22 @@ function AdmissionGuidelines() {
               </Card>
 
               {/* RENEWAL Application FAQs */}
-              <Card className="border-none shadow-sm bg-emerald-50/30">
+              <Card className="border-none shadow-sm bg-emerald-50/30 dark:bg-emerald-950/40">
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-emerald-100 rounded-xl">
-                      <RefreshCcw className="h-5 w-5 text-emerald-600" />
+                    <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl">
+                      <RefreshCcw className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <CardTitle className="text-xl text-slate-800">RENEWAL Application</CardTitle>
+                    <CardTitle className="text-xl text-foreground">RENEWAL Application</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="ren-1" className="border-emerald-100/50">
-                      <AccordionTrigger className="hover:no-underline py-4 text-slate-700 font-medium text-left">
+                    <AccordionItem value="ren-1" className="border-emerald-100/50 dark:border-emerald-900/40">
+                      <AccordionTrigger className="hover:no-underline py-4 text-foreground/90 font-medium text-left">
                         When should I apply for a Student’s Pass renewal?
                       </AccordionTrigger>
-                      <AccordionContent className="text-slate-600 leading-relaxed">
+                      <AccordionContent className="text-muted-foreground leading-relaxed">
                         <p>
                           Submit your renewal <strong>at least 1–3 months before</strong> the current pass expiry date.
                           While renewals are often processed more quickly than new applications, applying early helps
@@ -1725,24 +1725,24 @@ function AdmissionGuidelines() {
 
               {/* TRANSFER & EXEMPTION Summary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-6 bg-purple-50/50 rounded-2xl border border-purple-100">
+                <div className="p-6 bg-purple-50/50 dark:bg-purple-950/40 rounded-2xl border border-purple-100 dark:border-purple-900/40">
                   <div className="flex items-center gap-2 mb-3">
-                    <FileCheck2 className="h-5 w-5 text-purple-600" />
-                    <h3 className="font-semibold text-purple-900">Transfers between schools</h3>
+                    <FileCheck2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <h3 className="font-semibold text-purple-900 dark:text-purple-200">Transfers between schools</h3>
                   </div>
-                  <p className="text-base text-slate-600 leading-relaxed">
+                  <p className="text-base text-muted-foreground leading-relaxed">
                     If your child is moving from another PEI, ICA must approve the{" "}
                     <strong>new Student’s Pass under HFSE</strong> before classes can begin. Transfer processing is
                     usually longer than a renewal and can take several weeks, depending on the case.
                   </p>
                 </div>
 
-                <div className="p-6 bg-orange-50/50 rounded-2xl border border-orange-100">
+                <div className="p-6 bg-orange-50/50 dark:bg-orange-950/40 rounded-2xl border border-orange-100 dark:border-orange-900/40">
                   <div className="flex items-center gap-2 mb-3">
-                    <ShieldCheck className="h-5 w-5 text-orange-600" />
-                    <h3 className="font-semibold text-orange-900">DP / LTVP holders</h3>
+                    <ShieldCheck className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    <h3 className="font-semibold text-orange-900 dark:text-orange-200">DP / LTVP holders</h3>
                   </div>
-                  <p className="text-base text-slate-600 leading-relaxed">
+                  <p className="text-base text-muted-foreground leading-relaxed">
                     Children who hold a <strong>Dependent’s Pass (DP)</strong> or{" "}
                     <strong>Long-Term Visit Pass (LTVP)</strong> normally do not need a separate Student’s Pass.
                     However, HFSE is still required to register their details with the authorities before they start
@@ -1755,22 +1755,22 @@ function AdmissionGuidelines() {
         </Tabs>
 
         <Card className="border-none shadow-none overflow-hidden py-0 mt-12">
-          <CardHeader className="space-y-4 pt-6 pb-6 bg-gradient-to-r from-blue-50 to-amber-50">
+          <CardHeader className="space-y-4 pt-6 pb-6 bg-gradient-to-r from-primary/10 to-amber-50 dark:to-amber-950/20">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white rounded-xl shadow-sm">
-                <BookOpen className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-card rounded-xl shadow-sm">
+                <BookOpen className="w-5 h-5 text-primary" />
               </div>
-              <Badge variant="secondary" className="text-base font-semibold bg-white/80 text-blue-700">
+              <Badge variant="secondary" className="text-base font-semibold bg-card/80 text-primary">
                 Resources
               </Badge>
             </div>
-            <CardTitle className="text-3xl font-bold text-gray-900">Parent Portal Guide</CardTitle>
-            <p className="text-gray-600">Learn how to navigate and use the parent portal effectively</p>
+            <CardTitle className="text-3xl font-bold text-foreground">Parent Portal Guide</CardTitle>
+            <p className="text-muted-foreground">Learn how to navigate and use the parent portal effectively</p>
           </CardHeader>
 
           <CardContent className="p-6">
             <div
-              className="relative w-full rounded-xl overflow-hidden shadow-xl border-4 border-white"
+              className="relative w-full rounded-xl overflow-hidden shadow-xl border-4 border-card"
               style={{ paddingTop: "56.25%" }}>
               <iframe
                 loading="lazy"
@@ -1781,19 +1781,19 @@ function AdmissionGuidelines() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 pb-8 px-6 bg-gradient-to-br from-blue-50/50 to-amber-50/50">
+          <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 pb-8 px-6 bg-gradient-to-br from-primary/5 to-amber-50/50 dark:to-amber-950/20">
             <div className="space-y-1">
-              <p className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                <Heart className="w-4 h-4 text-red-500" />
+              <p className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Heart className="w-4 h-4 text-destructive" />
                 Created by HFSE Creatives Team
               </p>
-              <p className="text-sm text-gray-500">Last updated: 2024</p>
+              <p className="text-sm text-muted-foreground">Last updated: 2024</p>
             </div>
             <a
               href="https://www.canva.com/design/DAGsorqq-Co/lHEDFsXWfMrp4U8rsVQY-Q/view?utm_content=DAGsorqq-Co&utm_campaign=designshare&utm_medium=embeds&utm_source=link"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+              className="inline-flex items-center gap-2 px-6 py-3 text-base font-semibold text-primary-foreground bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
               View Full Guide
               <ExternalLink className="w-4 h-4" />
             </a>
@@ -1822,52 +1822,52 @@ function EducationLevelTable() {
     <div className="w-full space-y-6">
       <div className="space-y-3 text-center md:text-left">
         <div className="flex items-center justify-center md:justify-start gap-3">
-          <div className="p-2 bg-blue-600 rounded-xl">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="p-2 bg-primary rounded-xl">
+            <BookOpen className="w-5 h-5 text-primary-foreground" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">Education Level Requirements</h3>
+          <h3 className="text-2xl font-bold text-foreground">Education Level Requirements</h3>
         </div>
-        <p className="text-gray-600">Admission requirements based on student's age and academic completion</p>
+        <p className="text-muted-foreground">Admission requirements based on student's age and academic completion</p>
       </div>
 
-      <div className="rounded-xl overflow-hidden bg-white">
+      <div className="rounded-xl overflow-hidden bg-card">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-r from-blue-600 to-blue-700 border-none">
-                <th className="px-6 py-4 text-left text-base font-bold text-white">Level</th>
-                <th className="px-6 py-4 text-left text-base font-bold text-white">Academic Completion</th>
-                <th className="px-6 py-4 text-left text-base font-bold text-white">Year of Birth</th>
-                <th className="px-6 py-4 text-right text-base font-bold text-white">Age</th>
+              <tr className="bg-gradient-to-r from-primary to-primary/90 border-none">
+                <th className="px-6 py-4 text-left text-base font-bold text-primary-foreground">Level</th>
+                <th className="px-6 py-4 text-left text-base font-bold text-primary-foreground">Academic Completion</th>
+                <th className="px-6 py-4 text-left text-base font-bold text-primary-foreground">Year of Birth</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-primary-foreground">Age</th>
               </tr>
             </thead>
             <tbody>
               {data.map((row, index) => (
                 <tr
                   key={index}
-                  className={`transition-all duration-200 border-b border-gray-100 last:border-none ${
-                    index % 2 === 0 ? "bg-white hover:bg-blue-50/50" : "bg-gray-50/50 hover:bg-blue-50/50"
+                  className={`transition-all duration-200 border-b border-border last:border-none ${
+                    index % 2 === 0 ? "bg-card hover:bg-primary/5" : "bg-muted/30 hover:bg-primary/5"
                   }`}>
-                  <td className="px-6 py-4 font-semibold text-gray-900">
+                  <td className="px-6 py-4 font-semibold text-foreground">
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          row.category === "Primary" ? "bg-blue-500" : "bg-amber-500"
+                          row.category === "Primary" ? "bg-primary" : "bg-amber-500 dark:bg-amber-600"
                         }`}
                       />
                       {row.level}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{row.completion}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{row.completion}</td>
                   <td className="px-6 py-4">
                     <Badge
                       variant="secondary"
-                      className="font-mono font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                      className="font-mono font-medium bg-muted text-foreground/90 border border-border">
                       {row.birth}
                     </Badge>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <span className="inline-flex items-center justify-center min-w-[4rem] px-3 py-1.5 text-base font-bold bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-sm">
+                    <span className="inline-flex items-center justify-center min-w-[4rem] px-3 py-1.5 text-base font-bold bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-xl shadow-sm">
                       {row.age} yrs
                     </span>
                   </td>
@@ -1879,9 +1879,9 @@ function EducationLevelTable() {
       </div>
 
       {/* Info Footer */}
-      <div className="flex items-start gap-3 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-xl">
-        <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-        <p className="text-base text-gray-700">
+      <div className="flex items-start gap-3 p-4 bg-primary/10 border-l-4 border-primary rounded-xl">
+        <AlertCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+        <p className="text-base text-foreground/90">
           <span className="font-semibold">Note:</span> All applicants must meet the age requirements by the start of the
           academic year. For specific questions about admission requirements, please contact our admissions office.
         </p>
