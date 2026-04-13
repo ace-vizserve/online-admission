@@ -130,6 +130,7 @@ function StudentFiles({ label, documents }: { label: string; documents: StudentD
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function DocumentRow({ title, doc, type, id, session, year }: any) {
   const isMissing = !doc || Object.values(doc).every((v) => v == null) || doc?.[`${type}Status`] === "To follow";
   const status = doc?.[`${type}Status`] || "Missing";

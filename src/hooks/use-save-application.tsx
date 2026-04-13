@@ -6,8 +6,8 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 type Props = {
-  setFormState: (data: Record<string, any>) => void;
-  formState: Record<string, any>;
+  setFormState: (data: Record<string, unknown>) => void;
+  formState: Record<string, unknown> & { draftId?: string; createdAt?: Date };
   currentTab: string;
   completedTabs: string[];
   activeTab: string;

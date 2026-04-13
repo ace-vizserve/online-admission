@@ -5,7 +5,7 @@ interface SEOProps {
   description: string;
   canonical?: string;
   image?: string;
-  schemaMarkup?: Record<string, any>;
+  schemaMarkup?: Record<string, unknown>;
 }
 
 export const BASE_URL = import.meta.env.VITE_APP_BASE_URL || "http://localhost:5173/";

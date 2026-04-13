@@ -331,7 +331,7 @@ function NoStudentsPanel() {
 }
 
 type StudentsListTableProps = {
-  refetch: (options?: RefetchOptions | undefined) => Promise<any>;
+  refetch: (options?: RefetchOptions | undefined) => Promise<unknown>;
   isRefetching: boolean;
   studentsList: TStudent[];
 };

@@ -16,7 +16,7 @@ import {
 import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import StatusBadge from "@/components/ui/status-badge";
+import StatusBadge, { type StatusProps } from "@/components/ui/status-badge";
 import { parentGuardianPassTypes } from "@/data";
 import useSession from "@/hooks/use-session";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
@@ -70,7 +70,7 @@ function RenderFamilyDocCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
             <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{label}</h3>
-            <StatusBadge status={status ? (status as any) : "Missing"} className="text-[10px] font-bold uppercase" />
+            <StatusBadge status={status ? (status as StatusProps) : "Missing"} className="text-[10px] font-bold uppercase" />
           </div>
 
           <div className="flex flex-col gap-0.5">

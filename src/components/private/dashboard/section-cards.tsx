@@ -172,8 +172,8 @@ function StatCard({
           <CardContent className="mt-6 px-0 border-t border-slate-200 pt-2">
             <div className="flex flex-col">
               {value.slice(0, 2).map((pendingTask) => {
-                const match = pendingTask.enroleeNumber.match(/E(\d{2})/);
-                const academicYear = `ay20${match[1]}`;
+                const match = pendingTask.enroleeNumber?.match(/E(\d{2})/);
+                const academicYear = match ? `ay20${match[1]}` : "";
 
                 return (
                   <div
@@ -310,11 +310,11 @@ type DashboardCardsProps = {
 };
 
 type PendingTasks = {
-  enroleeNumber?: any;
+  enroleeNumber?: string;
   studentDocs?: {
-    [k: string]: any;
+    [k: string]: string;
   }[];
   parentGuardianDocs?: {
-    [k: string]: any;
+    [k: string]: string;
   }[];
 }[];
