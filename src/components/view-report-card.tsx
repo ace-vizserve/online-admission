@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/client";
+import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
-
 const MARKBOOK_HANDOFF_URL =
   import.meta.env.VITE_MARKBOOK_HANDOFF_URL ?? "https://hfse-markbook.vercel.app/parent/enter";
 
@@ -20,6 +19,7 @@ type Props = {
 };
 
 export function ViewReportCardButton({ studentId, className, children }: Props) {
+  const { session } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,11 +27,6 @@ export function ViewReportCardButton({ studentId, className, children }: Props) 
     setLoading(true);
     setError(null);
     try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
       if (!session) {
         setError("Your session has expired. Please sign in again.");
         setLoading(false);
