@@ -3,7 +3,7 @@ import { supabase } from "@/lib/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type FileError, type FileRejection, useDropzone } from "react-dropzone";
 
-export interface FileWithPreview extends File {
+interface FileWithPreview extends File {
   preview?: string;
   errors: readonly FileError[];
 }

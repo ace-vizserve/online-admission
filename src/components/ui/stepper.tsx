@@ -1,6 +1,6 @@
 import { cn, wait } from "@/lib/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { AnimatePresence, motion, Variants } from "framer-motion";
+import { AnimatePresence, motion, Variants } from "motion/react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import React, { Children, HTMLAttributes, ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "./button";

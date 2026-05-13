@@ -29,10 +29,6 @@ export function wait(time: number) {
   return new Promise((res) => setTimeout(res, time));
 }
 
-export function capitalizeWords(str: string) {
-  return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
-}
-
 export function documentErrors(
   role: "guardian" | "mother" | "father",
   errors: FieldErrors<ParentGuardianUploadRequirementsSchema>,
@@ -108,24 +104,6 @@ export async function checkEmailExists(
     emailConfirmed: data?.emailConfirmed ?? false,
   };
 }
-
-export function replaceNulls<T extends Record<string, unknown>>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, value == null ? "" : value])) as T;
-}
-
-export const formatBytes = (
-  bytes: number,
-  decimals = 2,
-  size?: "bytes" | "KB" | "MB" | "GB" | "TB" | "PB" | "EB" | "ZB" | "YB",
-) => {
-  const k = 1000;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-  if (bytes === 0 || bytes === undefined) return size !== undefined ? `0 ${size}` : "0 bytes";
-  const i = size !== undefined ? sizes.indexOf(size) : Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-};
 
 export function getNextGradeLevel(currentValue: string) {
   if (currentValue === "Secondary Four") return "Secondary Four";

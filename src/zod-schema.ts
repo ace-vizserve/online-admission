@@ -1,7 +1,10 @@
 import { isBefore } from "date-fns";
 import { z } from "zod";
 import { applicationTypes } from "./data";
-import { capitalizeWords } from "./lib/utils";
+
+function capitalizeWords(str: string) {
+  return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
 
 export const loginSchema = z.object({
   email: z.string().email(),

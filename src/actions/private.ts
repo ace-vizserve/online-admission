@@ -54,7 +54,7 @@ export async function getSectionCardsDetails() {
   }
 }
 
-export async function getEnrollmentPendingDocuments() {
+async function getEnrollmentPendingDocuments() {
   try {
     const {
       data: { session },
@@ -1900,30 +1900,6 @@ export async function getFamilyDocuments(enroleeNumber: string) {
   } catch (error) {
     toast.error((error as Error).message);
     return {};
-  }
-}
-
-export async function checkNricExists(nric: string, academicYear: string) {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.user?.email) throw new Error("Not authenticated");
-
-    const { data, error } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
-      .select("nric")
-      .eq("nric", nric)
-      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
-
-    if (error) throw new Error(error.message);
-
-    return Array.isArray(data) && data.length > 0;
-  } catch (error) {
-    const err = error as AuthError;
-    toast.error(err.message);
-    return null;
   }
 }
 

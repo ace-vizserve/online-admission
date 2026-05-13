@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
 import { Link } from "react-router";
 

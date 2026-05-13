@@ -15,8 +15,6 @@ import type {
 } from "canvas-confetti"
 import confetti from "canvas-confetti"
 
-import { Button } from "@/components/ui/button"
-
 type Api = {
   fire: (options?: ConfettiOptions) => void
 }
@@ -28,7 +26,7 @@ type Props = React.ComponentPropsWithRef<"canvas"> & {
   children?: ReactNode
 }
 
-export type ConfettiRef = Api | null
+type ConfettiRef = Api | null
 
 const ConfettiContext = createContext<Api>({} as Api)
 
@@ -107,40 +105,3 @@ ConfettiComponent.displayName = "Confetti"
 // Export as Confetti
 export const Confetti = ConfettiComponent
 
-interface ConfettiButtonProps extends React.ComponentProps<"button"> {
-  options?: ConfettiOptions &
-    ConfettiGlobalOptions & { canvas?: HTMLCanvasElement }
-}
-
-const ConfettiButtonComponent = ({
-  options,
-  children,
-  ...props
-}: ConfettiButtonProps) => {
-  const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    try {
-      const rect = event.currentTarget.getBoundingClientRect()
-      const x = rect.left + rect.width / 2
-      const y = rect.top + rect.height / 2
-      await confetti({
-        ...options,
-        origin: {
-          x: x / window.innerWidth,
-          y: y / window.innerHeight,
-        },
-      })
-    } catch (error) {
-      console.error("Confetti button error:", error)
-    }
-  }
-
-  return (
-    <Button onClick={handleClick} {...props}>
-      {children}
-    </Button>
-  )
-}
-
-ConfettiButtonComponent.displayName = "ConfettiButton"
-
-export const ConfettiButton = ConfettiButtonComponent

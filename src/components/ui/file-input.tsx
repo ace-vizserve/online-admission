@@ -33,7 +33,7 @@ type FileUploaderContextType = {
 
 const FileUploaderContext = createContext<FileUploaderContextType | null>(null);
 
-export const useFileUpload = () => {
+const useFileUpload = () => {
   const context = useContext(FileUploaderContext);
   if (!context) {
     throw new Error("useFileUpload must be used within a FileUploaderProvider");
