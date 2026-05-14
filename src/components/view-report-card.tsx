@@ -3,8 +3,7 @@ import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
-const MARKBOOK_HANDOFF_URL =
-  import.meta.env.VITE_MARKBOOK_HANDOFF_URL ?? "https://hfse-markbook.vercel.app/parent/enter";
+const MARKBOOK_HANDOFF_URL = import.meta.env.VITE_MARKBOOK_HANDOFF_URL ?? "https://hfse-sis.vercel.app/parent/enter";
 
 type Props = {
   /**
