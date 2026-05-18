@@ -33,7 +33,7 @@ function STPGuidelines() {
   const { academicYear } = useSelectAcademicYear();
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { enroleeType, isOpenHouseRegistration } = state;
+  const { enroleeType, isOpenHouseRegistration, isSTP = true } = state;
 
   useEffect(() => {
     if (!isOpenHouseRegistration) return;
@@ -41,8 +41,9 @@ function STPGuidelines() {
     setPreCourseDate(new Date());
   }, [isOpenHouseRegistration]);
 
-  const canContinue =
-    icaAcknowledged && feesAcknowledged && preCourseAnswer && (preCourseAnswer === "No" || !!preCourseDate);
+  const canContinue = isSTP
+    ? icaAcknowledged && feesAcknowledged && preCourseAnswer && (preCourseAnswer === "No" || !!preCourseDate)
+    : preCourseAnswer && (preCourseAnswer === "No" || !!preCourseDate);
 
   const phone = "+65 8200 0062";
 
@@ -95,38 +96,54 @@ function STPGuidelines() {
             </div>
 
             <h1 className="text-3xl md:text-4xl lg:text-6xl font-black tracking-tight">
-              <span className="text-primary">Student Pass Acknowledgement</span>
+              <span className="text-primary">
+                {isSTP ? "Student Pass Acknowledgement" : "Pre-Course Counselling Acknowledgement"}
+              </span>
             </h1>
 
             <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed px-4">
-              We're here to guide your family through Singapore's Student Pass process.
-              <span className="font-semibold text-slate-700">
-                {" "}
-                Just review and check the boxes below—simple as that!
-              </span>
+              {isSTP ? (
+                <>
+                  We're here to guide your family through Singapore's Student Pass process.
+                  <span className="font-semibold text-slate-700">
+                    {" "}
+                    Just review and check the boxes below—simple as that!
+                  </span>
+                </>
+              ) : (
+                <>
+                  Before enrolment, please confirm your Pre-Course Counselling status.
+                  <span className="font-semibold text-slate-700">
+                    {" "}
+                    Just answer the question below to continue.
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>
         {/* SECTION HEADER */}
-        <div className="mt-24 text-center space-y-4">
-          <Separator />
-          <br />
-          <br />
-          <div className="w-max mx-auto px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 border border-amber-300 shadow-md shadow-amber-100/50">
-            Action Required
+        {isSTP && (
+          <div className="mt-24 text-center space-y-4">
+            <Separator />
+            <br />
+            <br />
+            <div className="w-max mx-auto px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 border border-amber-300 shadow-md shadow-amber-100/50">
+              Action Required
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black tracking-tighter text-amber-700">
+              Please Review and Acknowledge the Information
+            </h2>
+            <p className="text-slate-600 mx-auto max-w-lg text-base leading-relaxed">
+              Kindly read each section carefully and tick the checkbox to confirm your understanding before continuing
+              with the application.
+            </p>
           </div>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tighter text-amber-700">
-            Please Review and Acknowledge the Information
-          </h2>
-          <p className="text-slate-600 mx-auto max-w-lg text-base leading-relaxed">
-            Kindly read each section carefully and tick the checkbox to confirm your understanding before continuing
-            with the application.
-          </p>
-        </div>
+        )}
 
         {/* Acknowledgement Cards */}
         <section className="mx-auto py-12">
-          <div className="grid lg:grid-cols-2 gap-8">
+          {isSTP && <div className="grid lg:grid-cols-2 gap-8">
             {/* Student's Pass Card */}
             <div className="group p-8 rounded-xl border border-slate-200 bg-white shadow-md hover:shadow-xl transition-all duration-300 space-y-6 hover:border-amber-700/30">
               <div className="flex flex-wrap items-center gap-3">
@@ -242,7 +259,7 @@ function STPGuidelines() {
                 </label>
               </div>
             </div>
-          </div>
+          </div>}
 
           {/* 2. Pre-Course Counselling Section */}
           <div className="mt-8 rounded-2xl bg-white border border-amber-200 p-8 space-y-6 shadow-sm">
