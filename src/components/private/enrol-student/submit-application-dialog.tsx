@@ -32,6 +32,7 @@ function SubmitApplicationDialog() {
   const { formState, clearState } = useEnrolOldStudentContext();
   const preCourseAnswer = usePreCourseAcknowledgementStore((state) => state.preCourseAnswer) as string;
   const preCourseDate = usePreCourseAcknowledgementStore((state) => state.preCourseDate) as Date;
+  const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
@@ -59,6 +60,7 @@ function SubmitApplicationDialog() {
         queryKey: ["student-enrollments-list", session?.user.email],
       });
       clearState();
+      clearPreCourse();
       sessionStorage.clear();
     },
     onError(error) {

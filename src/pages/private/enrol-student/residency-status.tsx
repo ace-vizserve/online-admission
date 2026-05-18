@@ -165,7 +165,6 @@ export default function StudentResidencyPage() {
 
   const [selected, setSelected] = useState<(typeof residencyOptions)[number] | null>(null);
 
-  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const passType = usePassTypeStore((state) => state.passType);
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const setStpApplicationType = usePassTypeStore((state) => state.setStpApplicationType);
@@ -212,22 +211,11 @@ export default function StudentResidencyPage() {
       return;
     }
 
-    if (applicationTypes.includes(stpApplicationType)) {
-      navigate("/enrol-student/stp-guidelines", {
-        state: { enroleeNumber, enroleeType },
-      });
-      return;
-    }
-
-    const url =
-      enroleeType === "Current"
-        ? `/enrol-student/${enroleeNumber}/student-info?academicYear=${academicYear}`
-        : `/enrol-student/new/student-info?academicYear=${academicYear}`;
-
-    navigate(url, {
+    navigate("/enrol-student/stp-guidelines", {
       state: {
-        enroleeType,
         enroleeNumber,
+        enroleeType,
+        isSTP: applicationTypes.includes(stpApplicationType),
       },
     });
   }
