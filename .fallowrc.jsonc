@@ -1,0 +1,11 @@
+{
+  // Exclude Supabase Deno edge functions (separate runtime, jsr:/https: imports)
+  // and tooling scripts (run directly via `node scripts/...`, not part of the app graph).
+  "ignorePatterns": ["supabase/functions/**", "scripts/**"],
+
+  // CLI / tooling-only deps not imported from app source:
+  //   supabase           — `npx supabase` for edge function deploys & type gen
+  //   @resvg/resvg-js    — used by scripts/fallow-report-image.mjs
+  //   satori, satori-html — used by scripts/fallow-report-image.mjs
+  "ignoreDependencies": ["supabase", "@resvg/resvg-js", "satori", "satori-html"]
+}

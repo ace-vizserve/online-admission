@@ -199,10 +199,6 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
       return;
     }
 
-    if (formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation) {
-      delete formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation;
-    }
-
     mutate({ ...(formState as OpenHouseFormState) });
   }
 

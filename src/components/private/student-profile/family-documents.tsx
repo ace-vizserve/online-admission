@@ -1,5 +1,5 @@
 import { Button, buttonVariants } from "@/components/ui/button";
-import StatusBadge from "@/components/ui/status-badge";
+import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 import { FamilyDocument } from "@/types";
 import { format } from "date-fns";
@@ -186,7 +186,7 @@ function RenderFamilyDocCard({
         <div className="flex flex-col min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
             <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{label}</h3>
-            <StatusBadge status={status ? (status as any) : "Missing"} className="text-[10px] font-bold uppercase" />
+            <StatusBadge status={status ? (status as StatusProps) : "Missing"} className="text-[10px] font-bold uppercase" />
           </div>
 
           <div className="flex flex-col gap-0.5">

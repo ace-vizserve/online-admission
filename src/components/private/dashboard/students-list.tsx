@@ -34,7 +34,7 @@ import { TStudent } from "@/types";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 
-export const columns: ColumnDef<TStudent>[] = [
+const columns: ColumnDef<TStudent>[] = [
   {
     accessorKey: "enrollmentStatus",
     header: ({ column }) => (

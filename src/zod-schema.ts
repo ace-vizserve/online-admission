@@ -1,7 +1,10 @@
 import { isBefore } from "date-fns";
 import { z } from "zod";
 import { applicationTypes } from "./data";
-import { capitalizeWords } from "./lib/utils";
+
+function capitalizeWords(str: string) {
+  return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
 
 export const loginSchema = z.object({
   email: z.string().email(),
@@ -19,7 +22,10 @@ export const updatePasswordSchema = z.object({
 export const updateAccountNameSchema = z.object({
   lastName: z.string().min(1, "Last name is required").transform(capitalizeWords),
   firstName: z.string().min(1, "First name is required").transform(capitalizeWords),
-  middleName: z.string().default("").transform((val) => (val ? capitalizeWords(val) : "")),
+  middleName: z
+    .string()
+    .default("")
+    .transform((val) => (val ? capitalizeWords(val) : "")),
 });
 
 export const registrationSchema = z
@@ -937,62 +943,10 @@ export const studentUploadRequirementsSchema = z
       })
       .optional(),
     toFollowDocs: z.array(z.string()).default([]).optional(),
-    icaPhoto: z
-      .string()
-      .optional()
-      .transform((val) => (val === "" ? undefined : val))
-      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
-        message: "Please upload the file to continue",
-      }),
-    financialSupportDocs: z
-      .string()
-      .optional()
-      .transform((val) => (val === "" ? undefined : val))
-      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
-        message: "Please upload the file to continue",
-      }),
-    vaccinationInformation: z
-      .string()
-      .optional()
-      .transform((val) => (val === "" ? undefined : val))
-      .refine((val) => !val || (val.startsWith("http") && z.string().url().safeParse(val).success), {
-        message: "Please upload the file to continue",
-      }),
-    showVaccinationInformation: z.boolean().default(false).optional(),
     stpApplicationType: z.string().optional(),
     isOpenHouseApplication: z.boolean().default(false).optional(),
   })
   .superRefine((data, ctx) => {
-    if (applicationTypes.includes(data.stpApplicationType || "")) {
-      if (data.showVaccinationInformation && !data.vaccinationInformation) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["vaccinationInformation"],
-          message: "Vaccination Information is required",
-        });
-      }
-
-      if (!data.icaPhoto || !data.icaPhoto.startsWith("http") || !z.string().url().safeParse(data.icaPhoto).success) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["icaPhoto"],
-          message: "ICA Photo is required",
-        });
-      }
-
-      if (
-        !data.financialSupportDocs ||
-        !data.financialSupportDocs.startsWith("http") ||
-        !z.string().url().safeParse(data.financialSupportDocs).success
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["financialSupportDocs"],
-          message: "Financial Support Documents is required",
-        });
-      }
-    }
-
     const now = new Date();
     const TO_FOLLOW_LIMIT = 3;
     const isStpApplication = data.stpApplicationType === "New Student Pass Application";

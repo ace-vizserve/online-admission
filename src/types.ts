@@ -18,16 +18,6 @@ import {
   VizSchoolStudentDetailsSchema,
 } from "./zod-schema";
 
-export type DiscountCode = {
-  id: number;
-  discountCode: string;
-  details: string;
-  enroleeType: "Current" | "New" | "Both";
-  startDate: string;
-  endDate: string;
-  created_at: string;
-};
-
 export type EnrolledStudent = {
   enroleeNumber: string;
   enroleeFullName: string;
@@ -154,51 +144,6 @@ export type Siblings = {
 
 export type FamilyInfo = Mother & Father & Guardian & Siblings;
 
-export type StudentDocuments = {
-  id: number;
-  created_at: string;
-  studentNumber: string | null;
-  enroleeNumber: string | null;
-  medical: string | null;
-  medicalStatus: string | null;
-  passport: string | null;
-  passportStatus: string | null;
-  passportExpiry: string | null;
-  passportNumber: string | null;
-  birthCert: string | null;
-  birthCertStatus: string | null;
-  pass: string | null;
-  passStatus: string | null;
-  passExpiry: string | null;
-  passType: string | null;
-  educCert: string | null;
-  educCertStatus: string | null;
-  motherPassport: string | null;
-  motherPassportStatus: string | null;
-  motherPassportExpiry: string | null;
-  motherPass: string | null;
-  motherPassStatus: string | null;
-  motherPassExpiry: string | null;
-  fatherPassport: string | null;
-  fatherPassportStatus: string | null;
-  fatherPassportExpiry: string | null;
-  fatherPass: string | null;
-  fatherPassStatus: string | null;
-  fatherPassExpiry: string | null;
-  guardianPassport: string | null;
-  guardianPassportStatus: string | null;
-  guardianPassportExpiry: string | null;
-  guardianPass: string | null;
-  guardianPassStatus: string | null;
-  guardianPassExpiry: string | null;
-  idPicture: string | null;
-  idPictureStatus: string | null;
-  idPictureUploadedDate: string | null;
-  documentType?: string;
-  status?: string;
-  fileUrl?: string;
-};
-
 export type FamilyDocument = {
   motherPassNumber: string | null;
   motherPassport: string | null;
@@ -293,11 +238,6 @@ export type StudentDocument = {
   ];
 };
 
-export type StudentFiles = {
-  studentDocuments: Document[];
-  familyDocuments: FamilyDocument[];
-};
-
 export type TStudent = {
   enroleeNumber: string;
   studentName: string;
@@ -308,14 +248,6 @@ export type TStudent = {
   studentNumber: string;
 };
 
-export type StudentInfo = {
-  id: string;
-  studentName: string;
-  fatherName: string;
-  motherName: string;
-  age: number;
-};
-
 export type levelYear = {
   studentNumber: string;
   enroleeNumber: string;
@@ -323,14 +255,6 @@ export type levelYear = {
   academicYear: string;
   gradeLevel: string;
   status: string;
-};
-
-export type SingleStudent = {
-  id: string;
-  academicYear: string;
-  level: string;
-  status: string;
-  studentName: string;
 };
 
 export type EnrolNewStudentFormState = {
@@ -475,105 +399,6 @@ export type VizSchoolParentGuardianFileUploaderDialogProps = {
   onValueChange: (files: File[] | null) => void;
   formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
-};
-
-export type StudentInformation = {
-  firstName: string;
-  lastName: string;
-  middleName: string;
-  preferredName: string;
-  birthDay: string;
-  gender: string;
-  religion: string;
-  nationality: string;
-  nric: string;
-  homeAddress: string;
-  postalCode: number;
-  homePhone: number;
-  country: string;
-  contactPerson: string;
-  contactPersonNumber: number;
-  parentMaritalStatus: string;
-  livingWithWhom: string;
-  enroleePhoto: string;
-};
-
-export type MotherInformation = {
-  motherFirstName: string;
-  motherLastName: string;
-  motherMiddleName: string;
-  motherPreferredName: string;
-  motherBirthDay: string;
-  motherReligion: string;
-  motherCountry: string;
-  motherNric: string;
-  motherMobile: number;
-  motherEmail: string;
-  motherCompanyName: string;
-  motherPosition: string;
-};
-
-export type FatherInformation = {
-  fatherFirstName: string;
-  fatherLastName: string;
-  fatherMiddleName: string;
-  fatherPreferredName: string;
-  fatherBirthDay: string;
-  fatherReligion: string;
-  fatherCountry: string;
-  fatherNric: string;
-  fatherMobile: number;
-  fatherEmail: string;
-  fatherCompanyName: string;
-  fatherPosition: string;
-};
-
-export type GuardianInformation = {
-  guardianFirstName: string;
-  guardianLastName: string;
-  guardianMiddleName: string;
-  guardianPreferredName: string;
-  guardianBirthDay: string;
-  guardianReligion: string;
-  guardianCountry: string;
-  guardianNric: string;
-  guardianMobile: number;
-  guardianEmail: string;
-  guardianCompanyName: string;
-  guardianPosition: string;
-};
-
-export type SiblingInformation = {
-  siblingFullName: string;
-  siblingBirthDay: string;
-  siblingReligion: string;
-  siblingEducationOccupation: string;
-  siblingSchoolCompany: string;
-};
-
-export type EnrollmentInformation = {
-  levelApplied: string;
-  classType: string;
-  preferredSchedule: string;
-  availSchoolBus: string;
-  availUniform: string;
-  availStudentCare: string;
-  additionalLearningNeeds: string;
-  campusDevelopment: string;
-  discount1: string;
-  discount2: string;
-  discount3: string;
-  referrerName: string;
-  paymentOption: string;
-};
-
-export type DocumentsInformation = {
-  idPicture: File | string;
-  birthCert: File | string;
-  transcript: File | string;
-  medical: File | string;
-  passport: File | string;
-  pass: File | string;
 };
 
 export type StudentDocumentUpdatePayload = Partial<Omit<StudentUploadRequirementsSchema, "isValid">>;

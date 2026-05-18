@@ -252,8 +252,9 @@ function SubmitApplicationDialog() {
       delete formState.draftId;
     }
 
-    if (formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation) {
-      delete formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation;
+    const uploadReqs = formState.uploadRequirements.studentUploadRequirements as Record<string, unknown>;
+    if (uploadReqs.showVaccinationInformation) {
+      delete uploadReqs.showVaccinationInformation;
     }
 
     mutate({ ...(formState as EnrolNewStudentFormState), stpApplicationType });

@@ -214,7 +214,7 @@ const ParentGuardianFileUploaderDialog = memo(function ({
       });
 
       setIsChangingDocument(false);
-    } catch (error) {
+    } catch {
       setIsChangingDocument(false);
     } finally {
       form.trigger();
@@ -1219,7 +1219,7 @@ function ParentGuardianFileUploaderDrawer({
       });
 
       setIsChangingDocument(false);
-    } catch (error) {
+    } catch {
       setIsChangingDocument(false);
     } finally {
       form.trigger();

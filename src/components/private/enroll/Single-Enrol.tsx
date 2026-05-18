@@ -33,7 +33,7 @@ import "ldrs/react/Tailspin.css";
 import { useMediaQuery } from "react-responsive";
 import { Link, useParams } from "react-router";
 
-export const columns: ColumnDef<levelYear>[] = [
+const columns: ColumnDef<levelYear>[] = [
   {
     accessorKey: "academicYear",
     header: ({ column }) => {

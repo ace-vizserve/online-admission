@@ -33,7 +33,7 @@ import * as React from "react";
 import { useState } from "react";
 import { Link } from "react-router";
 
-export const columns: ColumnDef<TStudent>[] = [
+const columns: ColumnDef<TStudent>[] = [
   {
     accessorKey: "enrollmentStatus",
     header: ({ column }) => (

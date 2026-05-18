@@ -193,7 +193,7 @@ const StudentFileUploaderDialog = memo(function ({
       });
 
       setIsChangingDocument(false);
-    } catch (error) {
+    } catch {
       setIsChangingDocument(false);
     } finally {
       form.setValue("isValid", false);
@@ -845,7 +845,7 @@ function StudentFileUploaderDrawer({
       });
 
       setIsChangingDocument(false);
-    } catch (error) {
+    } catch {
       setIsChangingDocument(false);
     } finally {
       form.setValue("isValid", false);
@@ -978,7 +978,7 @@ function StudentFileUploaderDrawer({
             <DrawerDescription className="text-xs font-semibold">
               Upload a clear and recent document in{" "}
               <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
-              {name === "icaPhoto" && (
+              {(name as string) === "icaPhoto" && (
                 <span className="mt-2 font-semibold">
                   {" "}
                   Recommended digital photo size for online submission is{" "}

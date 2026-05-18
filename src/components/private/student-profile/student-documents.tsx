@@ -1,5 +1,5 @@
 import { Button, buttonVariants } from "@/components/ui/button";
-import StatusBadge from "@/components/ui/status-badge";
+import StatusBadge, { StatusProps } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 import { StudentDocument } from "@/types";
 import { format } from "date-fns";
@@ -80,9 +80,11 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
   );
 }
 
-function DocumentRow({ title, doc, type }: any) {
+type DocRecord = Record<string, string | Date | null | undefined>;
+
+function DocumentRow({ title, doc, type }: { title: string; doc: DocRecord | null | undefined; type: string }) {
   const isMissing = !doc || Object.values(doc).every((v) => v == null) || doc?.[`${type}Status`] === "To follow";
-  const status = doc?.[`${type}Status`] || "Missing";
+  const status = (doc?.[`${type}Status`] || "Missing") as StatusProps;
 
   return (
     <div className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl gap-4 transition-all hover:border-slate-300">
@@ -106,7 +108,7 @@ function DocumentRow({ title, doc, type }: any) {
 
           {!isMissing && doc?.[`${type}Expiry`] ? (
             <p className="text-[11px] text-slate-500 font-bold tracking-tight">
-              Expires: {format(new Date(doc[`${type}Expiry`]), "dd MMM yyyy")}
+              Expires: {format(new Date(doc[`${type}Expiry`] as string), "dd MMM yyyy")}
             </p>
           ) : (
             <p
@@ -124,7 +126,7 @@ function DocumentRow({ title, doc, type }: any) {
       <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
         {!isMissing && doc?.[type] ? (
           <Link
-            to={doc[type]}
+            to={doc[type] as string}
             target="_blank"
             className={buttonVariants({
               variant: "outline",

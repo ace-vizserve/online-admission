@@ -23,30 +23,30 @@ export type EnrolNewStudentDraftStore = {
   clearState: () => void;
 };
 
-export type ApplicationDraftsDialogStore = {
+type ApplicationDraftsDialogStore = {
   isOpen: boolean;
   setIsOpen: (state: boolean) => void;
 };
 
-export type AcademicYearStore = {
+type AcademicYearStore = {
   academicYear: string;
   setAcademicYear: (academicYear: string) => void;
   clearState: () => void;
 };
 
-export type OpenHouseInstitutionStore = {
+type OpenHouseInstitutionStore = {
   institution: string;
   setInstitution: (institution: string) => void;
   clearState: () => void;
 };
 
-export type SchoolFeeStore = {
+type SchoolFeeStore = {
   schoolFee: string;
   setSchoolFee: (schoolFee: string) => void;
   clearState: () => void;
 };
 
-export type PassTypeStore = {
+type PassTypeStore = {
   passType: string;
   stpApplicationType: string;
   setStpApplicationType: (state: string) => void;
@@ -54,7 +54,7 @@ export type PassTypeStore = {
   clearState: () => void;
 };
 
-export type PreCourseAcknowledgementStore = {
+type PreCourseAcknowledgementStore = {
   preCourseAnswer: "Yes" | "No" | null;
   preCourseDate: Date | undefined;
   setPreCourseAnswer: (state: "Yes" | "No" | null) => void;
@@ -62,7 +62,7 @@ export type PreCourseAcknowledgementStore = {
   clearState: () => void;
 };
 
-export type PasswordResetStore = {
+type PasswordResetStore = {
   passwordResetState: boolean;
   setPasswordResetState: (state: boolean) => void;
 };

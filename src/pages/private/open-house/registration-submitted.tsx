@@ -2,7 +2,7 @@ import PageMetaData from "@/components/page-metadata";
 import ParentFeedbackSurvey from "@/components/private/parent-survey-feedback";
 import { Confetti } from "@/components/ui/confetti";
 import { APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION } from "@/data";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 function RegistrationSubmitted() {
   const { title, description } = APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION;
