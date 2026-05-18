@@ -149,8 +149,8 @@ function STPGuidelines() {
                 <li className="flex items-start gap-2">
                   <span className="text-amber-900 mt-0.5 font-bold">•</span>
                   <span>
-                    Submit <strong>all required documents</strong> through the online enrolment portal so the school can
-                    verify and prepare your ICA submission.
+                    Upload <strong>all required documents</strong> through the online enrolment portal so the school can
+                    verify them. You will then submit your application directly to ICA via SOLAR+.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">

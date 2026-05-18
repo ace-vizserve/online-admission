@@ -327,8 +327,9 @@ function AdmissionGuidelines() {
                   {/* --- Intro copy --- */}
                   <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
                     HFSE International School supports families through every step of the ICA Student’s Pass process —
-                    from first-time applications to renewals and transfers between PEIs. Our Admissions team handles the
-                    technical details and compliance checks, so you can focus on preparing your child for school.
+                    from first-time applications to renewals and transfers between PEIs. As your sponsoring PEI, our
+                    Admissions team guides you on requirements, timelines, and compliance checks, while you submit your
+                    application directly to ICA.
                   </p>
 
                   <p className="text-base md:text-base text-muted-foreground leading-relaxed">
@@ -359,18 +360,18 @@ function AdmissionGuidelines() {
                       </div>
                       <div className="space-y-2">
                         <h4 className="text-base font-bold tracking-wide uppercase opacity-90">
-                          SOLAR+ Digital Submission
+                          SOLAR+ Digital Submission (by Parents)
                         </h4>
                         <p className="text-base leading-relaxed text-primary-foreground/90 font-medium">
-                          Our Admissions team prepares and submits applications through ICA’s SOLAR+ system, checking
-                          residence history, vaccination information, and PEI details for accuracy before submission.
-                          This helps minimise errors, avoid delays, and keep each application aligned with current ICA
-                          guidelines.
+                          Parents submit Student’s Pass applications themselves through ICA’s SOLAR+ system. Our
+                          Admissions team guides you on what to prepare — residence history, vaccination information,
+                          and PEI details — and reviews your documents before you submit, helping minimise errors,
+                          avoid delays, and keep each application aligned with current ICA guidelines.
                         </p>
                         <p className="text-base leading-relaxed text-primary-foreground/80">
-                          Parents will still review and sign the required forms, while the school manages the
-                          configuration of Student’s Pass application type (new, renewal, or transfer) and the
-                          supporting information that ICA requires.
+                          Parents are responsible for completing and submitting the SOLAR+ e‑Form. The school advises
+                          on the correct Student’s Pass application type (new, renewal, or transfer) and the supporting
+                          information ICA requires, but does not submit on your behalf.
                         </p>
                       </div>
                     </div>
@@ -1111,8 +1112,8 @@ function AdmissionGuidelines() {
                         },
                         {
                           week: "Week 2–3",
-                          title: "SOLAR+ Submission",
-                          desc: "Student’s particulars are entered into ICA’s SOLAR+ system and the official e‑Form is generated for completion.",
+                          title: "SOLAR+ Submission by Parents",
+                          desc: "Parents enter the student’s particulars into ICA’s SOLAR+ system and complete the official e‑Form. The school provides guidance and verifies documents beforehand.",
                         },
                         {
                           week: "Week 3–6",
@@ -1200,7 +1201,7 @@ function AdmissionGuidelines() {
                         {
                           week: "Days 5–10",
                           title: "Renewal Submission & ICA Processing",
-                          desc: "Renewal is submitted through SOLAR+. ICA reviews the case and issues the outcome.",
+                          desc: "Parents submit the renewal through SOLAR+ with school guidance. ICA reviews the case and issues the outcome.",
                         },
                       ].map((step, i) => (
                         <div key={i} className="flex gap-8 group">
@@ -1271,7 +1272,7 @@ function AdmissionGuidelines() {
                         {
                           week: "Week 2–4",
                           title: "Transfer Application to ICA",
-                          desc: "HFSE submits the transfer-related Student’s Pass application. ICA reviews your case under the new school.",
+                          desc: "Parents submit the transfer-related Student’s Pass application via SOLAR+, with HFSE supporting as the new sponsoring PEI. ICA reviews your case under the new school.",
                         },
                         {
                           week: "Final Step",
@@ -1425,8 +1426,8 @@ function AdmissionGuidelines() {
                     <h3 className="text-xl font-bold text-primary">Accuracy & Internal Review</h3>
                     <p className="text-base text-muted-foreground mt-2 leading-relaxed">
                       Our <span className="text-primary font-semibold">Office of Admin and Operations</span> checks all
-                      submitted information against your documents and the course requirements before preparing the
-                      final ICA submission.
+                      submitted information against your documents and the course requirements before you make the
+                      final ICA submission yourself.
                       <span className="text-rose-500 dark:text-rose-400 font-medium italic ml-1 underline underline-offset-4 decoration-rose-200 dark:decoration-rose-900/50">
                         Incomplete or inconsistent information is one of the most common reasons for delays in ICA
                         processing.
@@ -1448,11 +1449,11 @@ function AdmissionGuidelines() {
                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/20  text-sm font-bold uppercase tracking-widest">
                         Legal milestone
                       </div>
-                      <h3 className="text-2xl font-bold tracking-tight">Digital Confirmation & Submission</h3>
+                      <h3 className="text-2xl font-bold tracking-tight">Digital Confirmation & Parent Submission</h3>
                       <p className="font-medium text-base max-w-xl leading-relaxed">
-                        Once your details are confirmed, the school completes the e‑Form in ICA’s SOLAR+ system and
-                        submits your application. You will receive instructions for any in‑principle approval (IPA) or
-                        issuance appointment directly after ICA has made a decision.
+                        Once your details are confirmed, parents complete the e‑Form in ICA’s SOLAR+ system and submit
+                        the application directly to ICA. You will receive instructions for any in‑principle approval
+                        (IPA) or issuance appointment directly from ICA after a decision has been made.
                       </p>
                       <div className="w-full md:w-max p-4 bg-amber-500 dark:bg-amber-600 rounded-lg flex items-center gap-2 text-white text-sm font-bold uppercase">
                         <AlertTriangle className="size-3" /> School cannot influence or guarantee ICA processing times
@@ -1600,8 +1601,9 @@ function AdmissionGuidelines() {
                           <strong>Immigration & Checkpoints Authority (ICA)</strong>.
                         </p>
                         <p>
-                          HFSE provides support with document checks and SOLAR+ submission, but neither HFSE nor any
-                          Private Education Institution (PEI) can influence or guarantee ICA’s decision.
+                          HFSE provides support with document checks and SOLAR+ guidance, but parents submit directly
+                          to ICA and neither HFSE nor any Private Education Institution (PEI) can influence or
+                          guarantee ICA’s decision.
                         </p>
                       </AccordionContent>
                     </AccordionItem>
@@ -1640,17 +1642,18 @@ function AdmissionGuidelines() {
                   <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="new-faq-1" className="border-primary/20">
                       <AccordionTrigger className="hover:no-underline py-4 text-foreground/90 font-medium text-left">
-                        Can I submit the Student’s Pass application by myself?
+                        Does HFSE submit the Student’s Pass application for me?
                       </AccordionTrigger>
                       <AccordionContent className="text-muted-foreground leading-relaxed">
                         <p className="mb-3">
-                          For new international students, HFSE requires use of our{" "}
-                          <strong>Student’s Pass Processing Service</strong> so that applications are accurate and
-                          consistent with ICA and EduTrust requirements.
+                          No. Parents submit Student’s Pass applications directly to ICA through SOLAR+. HFSE provides
+                          a{" "}
+                          <strong>Student’s Pass Guidance Service</strong> to help your submission stay accurate and
+                          consistent with ICA and EduTrust requirements:
                         </p>
                         <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-base italic text-muted-foreground">
                           <li className="flex items-center gap-2">◦ Document verification</li>
-                          <li className="flex items-center gap-2">◦ SOLAR+ data entry and submission</li>
+                          <li className="flex items-center gap-2">◦ SOLAR+ guidance & walkthrough</li>
                           <li className="flex items-center gap-2">◦ PEI / ICA guideline alignment</li>
                           <li className="flex items-center gap-2">◦ Reduction of avoidable errors</li>
                         </ul>

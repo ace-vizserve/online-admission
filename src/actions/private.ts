@@ -1135,9 +1135,6 @@ export async function submitEnrollment(
       passportExpiry,
       passportNumber,
       educCert,
-      icaPhoto,
-      financialSupportDocs,
-      vaccinationInformation,
     } = {
       ...enrollmentDetails.uploadRequirements.studentUploadRequirements,
     };
@@ -1256,6 +1253,7 @@ export async function submitEnrollment(
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
         stpApplicationType: stpApplicationType,
+        stpApplicationStatus: stpApplicationType ? "Pending" : null,
         enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
         category: "New",
         pass: passType,
@@ -1349,15 +1347,6 @@ export async function submitEnrollment(
 
           idPicture: getFileValue(idPicture, "idPicture"),
           idPictureStatus: getStatus(idPicture, "idPicture"),
-
-          icaPhoto: icaPhoto || null,
-          icaPhotoStatus: icaPhoto ? "Uploaded" : null,
-
-          financialSupportDocs: financialSupportDocs || null,
-          financialSupportDocsStatus: financialSupportDocs ? "Uploaded" : null,
-
-          vaccinationInformation: vaccinationInformation || null,
-          vaccinationInformationStatus: vaccinationInformation ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -1512,9 +1501,6 @@ export async function submitExistingEnrollment(
       passportExpiry,
       passportNumber,
       educCert,
-      financialSupportDocs,
-      icaPhoto,
-      vaccinationInformation,
     } = {
       ...enrollmentDetails.uploadRequirements.studentUploadRequirements,
     };
@@ -1627,6 +1613,7 @@ export async function submitExistingEnrollment(
         studentNumber: studentNumber?.studentNumber,
         ...preCourseDetails,
         stpApplicationType: stpApplicationType,
+        stpApplicationStatus: stpApplicationType ? "Pending" : null,
         ...enrollmentDetails.studentInfo.studentDetails,
         ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
         ...enrollmentDetails.studentInfo.medicalInformation.medicalChecklist,
@@ -1712,15 +1699,6 @@ export async function submitExistingEnrollment(
 
           idPicture: getFileValue(idPicture, "idPicture"),
           idPictureStatus: getStatus(idPicture, "idPicture"),
-
-          icaPhoto: icaPhoto || null,
-          icaPhotoStatus: icaPhoto ? "Uploaded" : null,
-
-          financialSupportDocs: financialSupportDocs || null,
-          financialSupportDocsStatus: financialSupportDocs ? "Uploaded" : null,
-
-          vaccinationInformation: vaccinationInformation || null,
-          vaccinationInformationStatus: vaccinationInformation ? "Uploaded" : null,
         })
         .eq("studentNumber", studentNumber?.studentNumber)
         .eq("enroleeNumber", data.enroleeNumber),
@@ -2318,6 +2296,7 @@ type Feedback = {
   feedbackRating: number;
   feedbackComments?: string;
   feedbackConsent: boolean;
+  howDidYouKnowAboutHFSEIS: string;
 };
 
 export async function submitParentFeedback({
@@ -2326,11 +2305,13 @@ export async function submitParentFeedback({
   feedbackConsent,
   feedbackRating,
   feedbackComments,
+  howDidYouKnowAboutHFSEIS,
 }: Feedback) {
   try {
     const { error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .update({
+        howDidYouKnowAboutHFSEIS,
         feedbackRating,
         feedbackComments,
         feedbackConsent,

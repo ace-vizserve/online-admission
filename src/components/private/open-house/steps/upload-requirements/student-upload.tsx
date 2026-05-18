@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
-import { applicationTypes } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import {
@@ -13,7 +12,6 @@ import {
 } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { differenceInYears } from "date-fns";
 import { AlertCircle, Clock, Info, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -32,16 +30,9 @@ function StudentUpload() {
   const [medicalExam, setMedicalExam] = useState<File[] | null>(null);
   const [passport, setPassport] = useState<File[] | null>(null);
   const [pass, setPass] = useState<File[] | null>(null);
-  const [financialSupportDocs, setFinancialSupportDocs] = useState<File[] | null>(null);
-  const [icaPhoto, setIcaPhoto] = useState<File[] | null>(null);
-  const [vaccinationInformation, setVaccinationInformation] = useState<File[] | null>(null);
 
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const passType = usePassTypeStore((state) => state.passType);
-  const birthDate = formState.studentInfo?.studentDetails.birthDay;
-  const studentAge = birthDate ? differenceInYears(new Date(), new Date(birthDate)) : undefined;
-  const showVaccinationInformation =
-    studentAge !== undefined && studentAge <= 12 && applicationTypes.includes(stpApplicationType);
 
   const isStpApplication = stpApplicationType === "New Student Pass Application";
 
@@ -152,13 +143,6 @@ function StudentUpload() {
             });
           }
 
-          const includesIcaPhotoError = Object.keys(errors).filter((key) => key.includes("icaPhoto"));
-          const inCludesFinancialSupportDocsError = Object.keys(errors).filter((key) =>
-            key.includes("financialSupportDocs"),
-          );
-          const includesVaccinationInformationError = Object.keys(errors).filter((key) =>
-            key.includes("vaccinationInformation"),
-          );
           const includesIDPictureError = Object.keys(errors).filter((key) => key.includes("idPicture"));
           const includesBirthCertError = Object.keys(errors).filter((key) => key.includes("birthCert"));
           const includesEducCertError = Object.keys(errors).filter((key) => key.includes("educCert"));
@@ -170,35 +154,6 @@ function StudentUpload() {
             (key) => key === "pass" || key === "passType" || key === "passExpiry",
           );
 
-          if (includesIcaPhotoError.length > 0) {
-            form.setError("icaPhoto", {
-              type: "manual",
-              message: "Please upload a valid file to continue",
-            });
-            toast.warning("Invalid ICA Photo document!", {
-              description: "Please upload a valid file to continue.",
-            });
-          }
-
-          if (inCludesFinancialSupportDocsError.length > 0) {
-            form.setError("financialSupportDocs", {
-              type: "manual",
-              message: "Please upload a valid file to continue",
-            });
-            toast.warning("Invalid Financial Support documents!", {
-              description: "Please upload a valid file to continue.",
-            });
-          }
-
-          if (includesVaccinationInformationError.length > 0) {
-            form.setError("vaccinationInformation", {
-              type: "manual",
-              message: "Please upload a valid file to continue",
-            });
-            toast.warning("Invalid Vaccination Information document!", {
-              description: "Please upload a valid file to continue.",
-            });
-          }
           if (includesBirthCertError.length > 0) {
             form.setError("birthCert", {
               type: "manual",
@@ -348,52 +303,6 @@ function StudentUpload() {
             onValueChange={setPass}
           />
         </div>
-
-        {applicationTypes.includes(stpApplicationType) && (
-          <>
-            <br />
-            <br />
-            <Separator />
-            <br />
-            <br />
-            <h3 className="text-2xl font-black tracking-tight text-primary text-center">
-              Documents for {stpApplicationType}{" "}
-            </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-              <StudentFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Photo for ICA Student's Pass"
-                form={form}
-                name="icaPhoto"
-                value={icaPhoto}
-                onValueChange={setIcaPhoto}
-              />
-
-              <StudentFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Financial Support Documents"
-                form={form}
-                name="financialSupportDocs"
-                value={financialSupportDocs}
-                onValueChange={setFinancialSupportDocs}
-              />
-
-              {showVaccinationInformation && (
-                <StudentFileUploaderDialog
-                  formState={formState}
-                  setFormState={setFormState}
-                  label="Vaccination Information"
-                  form={form}
-                  name="vaccinationInformation"
-                  value={vaccinationInformation}
-                  onValueChange={setVaccinationInformation}
-                />
-              )}
-            </div>
-          </>
-        )}
 
         <br />
         <br />

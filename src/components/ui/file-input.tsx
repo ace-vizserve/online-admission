@@ -15,7 +15,7 @@ import {
   useState,
 } from "react";
 import { DropzoneOptions, DropzoneState, FileRejection, useDropzone } from "react-dropzone";
-import { UseFormSetValue } from "react-hook-form";
+import { FieldValues, UseFormSetValue } from "react-hook-form";
 import { toast } from "sonner";
 
 type DirectionOptions = "rtl" | "ltr" | undefined;
@@ -245,7 +245,7 @@ export const FileUploaderItem = forwardRef<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   {
     index: number;
-    setValue?: UseFormSetValue<any>;
+    setValue?: UseFormSetValue<FieldValues>;
     inputKey?: string;
     removeBtn?: (onRemove: () => void) => ReactNode;
   } & React.HTMLAttributes<HTMLDivElement>

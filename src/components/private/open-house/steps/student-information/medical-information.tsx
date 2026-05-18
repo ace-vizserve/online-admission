@@ -32,6 +32,7 @@ export default function MedicalInformationSection() {
   });
 
   const watchChecklist = form.watch("medicalChecklist");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasCondition = (conditionId: ConditionId) => form.watch(`medicalChecklist.${conditionId}` as any) === true;
 
   const handleConditionChange = (id: ConditionId, checked: boolean) => {
@@ -63,6 +64,7 @@ export default function MedicalInformationSection() {
       form.setValue("medicalChecklist.none", false);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     form.setValue(`medicalChecklist.${id}` as any, checked);
 
     if (wasChecked && !checked) {

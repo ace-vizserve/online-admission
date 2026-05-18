@@ -309,10 +309,6 @@ function SubmitApplicationDialog() {
       //   delete formState.draftId;
       // }
 
-      if (formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation) {
-        delete formState.uploadRequirements.studentUploadRequirements.showVaccinationInformation;
-      }
-
       mutate();
     } catch (error) {
       const err = error as Error;
