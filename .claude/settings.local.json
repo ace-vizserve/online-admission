@@ -13,7 +13,9 @@
       "Bash(git pull *)",
       "Bash(git stash *)",
       "Bash(git push *)",
-      "Bash(Get-Content *)"
+      "Bash(Get-Content *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Ace\\\\OneDrive - HFSE International School\\\\Desktop\\\\hfse-vizserve projects\\\\app-online-admission\\\\src\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   },
   "enabledPlugins": {
