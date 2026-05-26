@@ -2,19 +2,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FileText } from "lucide-react";
 import { useNavigate } from "react-router";
-const MARKBOOK_HANDOFF_URL = import.meta.env.VITE_MARKBOOK_HANDOFF_URL ?? "https://hfse-sis.vercel.app/parent/enter";
-
-type Props = {
-  /**
-   * Optional deep-link. **Leave this undefined in normal usage** — the
-   * parent lands on the markbook's "My children" page, which already
-   * lists every child linked to their email plus every currently-
-   * published report card per child.
-   */
-  studentId?: string;
-  className?: string;
-  children?: React.ReactNode;
-};
 
 export function ViewReportCardButton() {
   const navigate = useNavigate();
