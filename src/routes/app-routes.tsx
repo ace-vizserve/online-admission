@@ -45,6 +45,7 @@ import OpenHouseUploadRequirements from "@/pages/private/open-house/application-
 import OpenHouseLanding from "@/pages/private/open-house/open-house-landing";
 import RegistrationSubmitted from "@/pages/private/open-house/registration-submitted";
 import PendingTasks from "@/pages/private/pending-tasks";
+import { ReportCards } from "@/pages/private/report-cards";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentPhoto from "@/pages/private/student-photo";
 import StudentProfile from "@/pages/private/student-profile";
@@ -148,6 +149,15 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <Dashboard />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="report-cards"
+            element={
+              <AuthGuard>
+                <ReportCards />
               </AuthGuard>
             }
           />
