@@ -15,7 +15,9 @@
       "Bash(git push *)",
       "Bash(Get-Content *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Ace\\\\OneDrive - HFSE International School\\\\Desktop\\\\hfse-vizserve projects\\\\app-online-admission\\\\src\" -Recurse -Directory)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-Content \"C:\\\\Users\\\\Ace\\\\OneDrive - HFSE International School\\\\Desktop\\\\hfse-vizserve projects\\\\app-online-admission\\\\.env\" | ForEach-Object { $_.Split\\('='\\)[0] })",
+      "PowerShell(Get-Content \"C:\\\\Users\\\\Ace\\\\OneDrive - HFSE International School\\\\Desktop\\\\hfse-vizserve projects\\\\app-online-admission\\\\.env\" | ForEach-Object { \"'$_'\" })"
     ]
   },
   "enabledPlugins": {

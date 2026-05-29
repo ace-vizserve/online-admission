@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/client";
 import { useEffect, useState } from "react";
 
-const SIS_BASE = import.meta.env.VITE_SIS_URL;
+const SIS_BASE = (import.meta.env.VITE_SIS_URL as string).replace(/\/$/, "") + "/";
 
 export type Cell = { quarterly: number | null; letter: string | null; is_na: boolean };
 
@@ -77,7 +77,7 @@ export function useReportCard(studentId: never, termNumber: number | null) {
 
       const params = new URLSearchParams({ studentId });
       if (termNumber !== null) params.set("termNumber", String(termNumber));
-      const res = await fetch(`${SIS_BASE}/api/parent/v2/report-card?${params}`, {
+      const res = await fetch(`${SIS_BASE}api/parent/v2/report-card?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
