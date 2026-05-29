@@ -1,3 +1,4 @@
+import PageMetaData from "@/components/page-metadata";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar as PreCourseCalendar } from "@/components/ui/calendar";
@@ -64,6 +65,7 @@ function STPGuidelines() {
 
   return (
     <>
+      <PageMetaData title="Student Pass Guidelines | HFSE International School" description="Review the Student Pass application process and guidelines before proceeding with enrollment." />
       <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link

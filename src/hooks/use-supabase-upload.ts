@@ -154,8 +154,8 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
       }
     } else {
       const parallelUploads = await Promise.all(
-        filesToUpload.map(async (file) => {
-          const timestamp = Date.now();
+        filesToUpload.map(async (file, index) => {
+          const timestamp = Date.now() + index;
           const filePath = path
             ? `${path}/${timestamp}-${file.name}`
             : `${timestamp}-${file.name}`;
@@ -188,6 +188,14 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 
     setLoading(false);
   }, [files, path, bucketName, errors, successes, mergeFiles]);
+
+  useEffect(() => {
+    return () => {
+      files.forEach((f) => {
+        if (f.preview) URL.revokeObjectURL(f.preview);
+      });
+    };
+  }, [files]);
 
   useEffect(() => {
     if (files.length === 0) {

@@ -149,7 +149,8 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
       return await updateEnrollmentApplicationDetails({ academicYear, enroleeNumber: params.id, enrollmentDetails });
     },
     onSuccess: async (_, variables) => {
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ["student-documents", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["student-profile", params.id] });
 
       initialValuesRef.current.birthDay = new Date(initialValuesRef.current.birthDay);
 

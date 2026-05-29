@@ -144,7 +144,8 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
       return await updateEnrollmentApplicationDetails({ academicYear, enroleeNumber: params.id, enrollmentDetails });
     },
     onSuccess: async (_, variables) => {
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ["family-documents", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["student-profile", params.id] });
 
       if (initialValuesRef.current.fatherBirthDay) {
         initialValuesRef.current.fatherBirthDay = new Date(initialValuesRef.current.fatherBirthDay);

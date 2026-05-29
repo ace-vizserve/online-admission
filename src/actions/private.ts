@@ -192,6 +192,8 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const match = enroleeNumber.match(/E(\d{2})/);
     if (!match) throw new Error("Invalid enrolee number format");
 
@@ -201,7 +203,7 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
       .from(`${academicYear}_enrolment_applications`)
       .select("levelApplied, fatherEmail, guardianEmail")
       .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
       .single();
 
     if (studentEnrollmentInformationError) {
@@ -462,6 +464,8 @@ export async function getStudentInformation(enroleeNumber: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const match = enroleeNumber.match(/E(\d{2})/);
     if (!match) throw new Error("Invalid enrolee number format");
 
@@ -471,7 +475,7 @@ export async function getStudentInformation(enroleeNumber: string) {
       .from(`${academicYear}_enrolment_applications`)
       .select("*")
       .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
       .single();
 
     if (studentInformationError) {
@@ -532,7 +536,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
       let query = supabase
         .from(`${academicYear}_enrolment_applications`)
         .select("*")
-        .or(`fatherEmail.eq.${session.user.email}, motherEmail.eq.${session.user.email}`);
+        .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
 
       if (enroleeNumber) {
         query = query.eq("enroleeNumber", enroleeNumber);
@@ -598,6 +602,8 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
       data: { session },
     } = await supabase.auth.getSession();
 
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const match = enroleeNumber.match(/E(\d{2})/);
     if (!match) throw new Error("Invalid enrolee number format");
 
@@ -607,7 +613,7 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
       .from(`${academicYear}_enrolment_applications`)
       .select("pass, passportExpiry, passExpiry, passportNumber")
       .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session?.user.email}, motherEmail.eq.${session?.user.email}`);
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
 
     if (studentInformationError) {
       throw new Error(studentInformationError.message);
@@ -1480,10 +1486,17 @@ export async function submitExistingEnrollment(
 
     const currentAY = `ay20${match[1]}`;
 
+    const {
+      data: { session: existingSession },
+    } = await supabase.auth.getSession();
+
+    if (!existingSession?.user?.email) throw new Error("Not authenticated");
+
     const { data: studentNumber } = await supabase
       .from(`${currentAY}_enrolment_applications`)
       .select("studentNumber")
       .eq("enroleeNumber", enroleeNumber)
+      .or(`fatherEmail.eq.${existingSession.user.email},motherEmail.eq.${existingSession.user.email}`)
       .single();
 
     const stpApplicationType = applicationTypes.includes(enrollmentDetails.stpApplicationType || "")
@@ -2151,6 +2164,12 @@ export async function mergeAndUploadPDF(files: File[]) {
 
 export async function uploadFileToBucket(isImage: boolean, files: File[], academicYear: string) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     if (isImage) {
       const file = files[0];
 
@@ -2204,6 +2223,12 @@ export async function uploadFileToBucket(isImage: boolean, files: File[], academ
 
 export async function deleteFile(file: string, academicYear: string) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
     const fileName = file.split("/").pop();
 
     const { error } = await supabase.storage.from("parent-portal").remove([`${academicYear}/documents/${fileName}`]);
@@ -2227,6 +2252,21 @@ export async function updateEnrollmentApplicationDetails({
   enrollmentDetails: Partial<StudentAddressContactAndInformationSchema & FamilyInformationSchema>;
 }) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
+    const { data: ownership } = await supabase
+      .from(`${academicYear}_enrolment_applications`)
+      .select("enroleeNumber")
+      .eq("enroleeNumber", enroleeNumber)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
+      .maybeSingle();
+
+    if (!ownership) throw new Error("Unauthorized access");
+
     const { firstName, middleName, lastName, siblings } = enrollmentDetails;
 
     delete enrollmentDetails.noFatherInfo;
@@ -2308,6 +2348,21 @@ export async function submitParentFeedback({
   howDidYouKnowAboutHFSEIS,
 }: Feedback) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.email) throw new Error("Not authenticated");
+
+    const { data: ownership } = await supabase
+      .from(`${academicYear}_enrolment_applications`)
+      .select("enroleeNumber")
+      .eq("enroleeNumber", enroleeNumber)
+      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
+      .maybeSingle();
+
+    if (!ownership) throw new Error("Unauthorized access");
+
     const { error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .update({
