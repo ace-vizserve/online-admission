@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /registration
+Allow: /welcome
+Allow: /open-house-registration
+Disallow: /admission/
+Disallow: /enrol-student/
+Disallow: /vizschool/
+Disallow: /open-house/
+
+Sitemap: https://enrol.hfse.edu.sg/sitemap.xml

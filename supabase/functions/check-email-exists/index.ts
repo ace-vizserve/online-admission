@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://enrol.hfse.edu.sg",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -28,24 +28,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: { users }, error } =
-      await supabaseAdmin.auth.admin.listUsers();
+    const { data: { user }, error } =
+      await supabaseAdmin.auth.admin.getUserByEmail(email);
 
-    if (error) {
+    if (error && error.message !== "User not found") {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const matchedUser = users.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase(),
-    );
-
     return new Response(
       JSON.stringify({
-        exists: !!matchedUser,
-        emailConfirmed: !!matchedUser?.email_confirmed_at,
+        exists: !!user,
+        emailConfirmed: !!user?.email_confirmed_at,
       }),
       {
         status: 200,

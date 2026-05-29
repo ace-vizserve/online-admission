@@ -1,3 +1,4 @@
+import PageMetaData from "@/components/page-metadata";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -233,6 +234,7 @@ export default function StudentResidencyPage() {
 
   return (
     <>
+      <PageMetaData title="Residency Status | HFSE International School" description="Select your child's residency and pass type to proceed with enrollment." />
       <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link

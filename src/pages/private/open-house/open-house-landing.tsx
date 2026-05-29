@@ -55,15 +55,14 @@ export default function OpenHouseLanding() {
         image={students}
         schemaMarkup={{
           "@context": "https://schema.org",
-          "@type": "EventPage",
+          "@type": "Event",
           name: "HFSE International School Open House Registration",
           description:
             "Register for HFSE Open House events. Explore Youngstarters (18m-6yo) and International School (Primary+) programmes. Cambridge curriculum excellence, campus tours, and educator meet-and-greets.",
           url: `${BASE_URL}/open-house-registration`,
           inLanguage: "en-GB",
           eventStatus: "https://schema.org/EventScheduled",
-          eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
-          startDate: "2026-02-01", // First event date
+          eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
           eventLocation: {
             "@type": "School",
             name: "HFSE International School",

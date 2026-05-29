@@ -4,7 +4,7 @@ import path from "path";
 import { defineConfig } from "vite";
 import ViteSitemap from "vite-plugin-sitemap";
 
-const routes = ["/admission/dashboard", "/login"];
+const routes = ["/", "/login", "/registration", "/welcome", "/open-house-registration"];
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -24,5 +24,11 @@ export default defineConfig({
   },
   server: {
     host: true,
+  },
+  build: {
+    sourcemap: false,
+  },
+  esbuild: {
+    drop: ["console", "debugger"],
   },
 });

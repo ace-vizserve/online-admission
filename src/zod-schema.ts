@@ -272,7 +272,11 @@ export const studentAddressContactSchema = z
     stpApplicationType: z.string().optional(),
   })
   .superRefine((schema, ctx) => {
-    if (schema.stpApplicationType && applicationTypes.includes(schema.stpApplicationType)) {
+    if (
+      schema.stpApplicationType &&
+      applicationTypes.includes(schema.stpApplicationType) &&
+      !schema.residenceHistory?.length
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["residenceHistory"],

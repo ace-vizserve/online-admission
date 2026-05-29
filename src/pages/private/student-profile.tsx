@@ -20,7 +20,8 @@ function StudentProfile() {
     );
   }
 
-  const academicYear = params.id.startsWith("E25") ? "ay2025" : "ay2026";
+  const ayMatch = params.id.match(/E(\d{2})/);
+  const academicYear = ayMatch ? `ay20${ayMatch[1]}` : "ay2026";
 
   return (
     <>

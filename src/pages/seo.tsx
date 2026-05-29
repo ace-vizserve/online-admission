@@ -8,7 +8,7 @@ interface SEOProps {
   schemaMarkup?: Record<string, unknown>;
 }
 
-export const BASE_URL = import.meta.env.VITE_APP_BASE_URL || "http://localhost:5173/";
+export const BASE_URL = (import.meta.env.VITE_APP_BASE_URL || "http://localhost:5173").replace(/\/$/, "");
 
 const SEO: React.FC<SEOProps> = ({ title, description, canonical, image, schemaMarkup }) => (
   <Helmet>
@@ -16,10 +16,14 @@ const SEO: React.FC<SEOProps> = ({ title, description, canonical, image, schemaM
     <meta name="description" content={description} />
     {canonical && <link rel="canonical" href={canonical} />}
     {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HFSE International School" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
     {image && <meta property="og:image" content={image} />}
     {/* Twitter Card */}
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {image && <meta name="twitter:image" content={image} />}
