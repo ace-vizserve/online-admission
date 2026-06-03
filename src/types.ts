@@ -246,6 +246,7 @@ export type TStudent = {
   fathersName: string;
   enrollmentStatus: string;
   studentNumber: string;
+  isVizSchool: boolean;
 };
 
 export type levelYear = {

@@ -18,6 +18,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { getStudentList } from "@/actions/private";
+import { StatusBadge } from "@/components/private/enroll/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -49,31 +50,18 @@ const columns: ColumnDef<TStudent>[] = [
     cell: ({ row }) => {
       const status = row.getValue("enrollmentStatus") as string;
 
-      const statusConfig: Record<string, { bg: string; dot: string; text: string }> = {
-        Registered: {
-          bg: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-          dot: "bg-emerald-500",
-          text: "text-emerald-700",
-        },
-        "Pre-Enrolled for VizSchool": {
-          bg: "bg-amber-500/10 text-amber-600 border-amber-200",
-          dot: "bg-amber-500",
-          text: "text-amber-700",
-        },
-        default: {
-          bg: "bg-blue-500/10 text-blue-600 border-blue-200",
-          dot: "bg-blue-500",
-          text: "text-blue-700",
-        },
-      };
-
-      const config = statusConfig[status] || statusConfig["default"];
-
       return (
-        <Badge className={cn("rounded-full border shadow-none font-bold", config.bg)}>
-          <span className={cn("h-1.5 w-1.5 rounded-full mr-1.5", config.dot)} />
-          {status}
-        </Badge>
+        <div className="flex flex-col items-start gap-1.5">
+          <StatusBadge status={status} />
+          <Badge
+            variant="secondary"
+            className={cn(
+              "rounded-full text-[10px] font-bold uppercase tracking-wider",
+              row.original.isVizSchool ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600",
+            )}>
+            {row.original.isVizSchool ? "VizSchool" : "HFSE-IS"}
+          </Badge>
+        </div>
       );
     },
   },

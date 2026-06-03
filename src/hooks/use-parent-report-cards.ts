@@ -1,7 +1,8 @@
 import { supabase } from "@/lib/client";
 import { useEffect, useState } from "react";
 
-const SIS_BASE = (import.meta.env.PROD ? import.meta.env.VITE_SIS_URL : "http://localhost:3000/").replace(/\/$/, "") + "/";
+const SIS_BASE =
+  (import.meta.env.PROD ? import.meta.env.VITE_SIS_URL : "http://localhost:3000/").replace(/\/$/, "") + "/";
 
 export type Publication = {
   term_id: string;
@@ -41,7 +42,7 @@ export function useParentReportCards() {
         return;
       }
 
-      const res = await fetch(`${SIS_BASE}/api/parent/v2/students`, {
+      const res = await fetch(`${SIS_BASE}api/parent/v2/students`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {

@@ -323,6 +323,32 @@ export function extractSiblings(family: FamilyInfo) {
   return siblings;
 }
 
+/**
+ * SIS statuses (from ay{YYYY}_enrolment_status.applicationStatus) that should be
+ * hidden from the regular parent-facing lists and counts. They remain visible on
+ * the per-student enrollment history page (getStudentEnrollments).
+ */
+const HIDDEN_PARENT_STATUSES = ["Cancelled", "Withdrawn"];
+
+/**
+ * Fetch the live SIS applicationStatus for a set of enrolees from the given
+ * academic year's _enrolment_status table, keyed by enroleeNumber.
+ */
+async function getStatusByEnrolee(academicYear: string, enroleeNumbers: string[]) {
+  if (!enroleeNumbers.length) return new Map<string, string>();
+
+  const { data: statuses, error } = await supabase
+    .from(`${academicYear}_enrolment_status`)
+    .select("enroleeNumber, applicationStatus")
+    .in("enroleeNumber", enroleeNumbers);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map((statuses ?? []).map((s) => [s.enroleeNumber, s.applicationStatus as string]));
+}
+
 export async function getStudentsList(parentEmail: string) {
   try {
     const { data: ay2027studentInformation, error: ay2027studentInformationError } = await supabase
@@ -356,26 +382,41 @@ export async function getStudentsList(parentEmail: string) {
       throw new Error(ay2025studentInformationError.message);
     }
 
-    const mapStudents = (data: typeof ay2025studentInformation, academicYear: string) =>
-      data.map((info) => ({
-        enroleeNumber: info.enroleeNumber,
-        studentName: info.enroleeFullName,
-        age: differenceInYears(new Date(), parseISO(info.birthDay)),
-        mothersName: info.motherFullName ?? "--",
-        fathersName: info.fatherFullName ?? "--",
-        studentNumber: info.studentNumber,
-        enrollmentStatus:
-          academicYear === "2026" && (info.studentNumber as string).startsWith("V")
-            ? "Pre-Enrolled for VizSchool"
-            : (academicYear === "2026" || academicYear === "2027") && !(info.studentNumber as string).startsWith("V")
-              ? `Pre-Enrolled for ${academicYear}`
-              : "Registered",
-      }));
+    const [status2027, status2026, status2025] = await Promise.all([
+      getStatusByEnrolee(
+        "ay2027",
+        ay2027studentInformation.map((info) => info.enroleeNumber),
+      ),
+      getStatusByEnrolee(
+        "ay2026",
+        ay2026studentInformation.map((info) => info.enroleeNumber),
+      ),
+      getStatusByEnrolee(
+        "ay2025",
+        ay2025studentInformation.map((info) => info.enroleeNumber),
+      ),
+    ]);
+
+    const mapStudents = (data: typeof ay2025studentInformation, statusByEnrolee: Map<string, string>) =>
+      data
+        .map((info) => ({
+          enroleeNumber: info.enroleeNumber,
+          studentName: info.enroleeFullName,
+          age: differenceInYears(new Date(), parseISO(info.birthDay)),
+          mothersName: info.motherFullName ?? "--",
+          fathersName: info.fatherFullName ?? "--",
+          studentNumber: info.studentNumber,
+          // Live SIS lifecycle status; fall back to "Submitted" if no status row exists yet.
+          enrollmentStatus: statusByEnrolee.get(info.enroleeNumber) ?? "Submitted",
+          isVizSchool: (info.studentNumber as string).startsWith("V"),
+        }))
+        // Drop withdrawn/cancelled before dedup so they don't shadow an active prior-AY row.
+        .filter((student) => !HIDDEN_PARENT_STATUSES.includes(student.enrollmentStatus));
 
     const allStudents = [
-      ...mapStudents(ay2027studentInformation, "2027"),
-      ...mapStudents(ay2026studentInformation, "2026"),
-      ...mapStudents(ay2025studentInformation, "2025"),
+      ...mapStudents(ay2027studentInformation, status2027),
+      ...mapStudents(ay2026studentInformation, status2026),
+      ...mapStudents(ay2025studentInformation, status2025),
     ];
 
     const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
@@ -407,21 +448,31 @@ export async function getPreviousAYEnrolledStudents(parentEmail: string, academi
       throw new Error(currentEnrolledError.message);
     }
 
+    const statusByEnrolee = await getStatusByEnrolee(
+      prevAcademicYear,
+      currentEnrolled.map((student) => student.enroleeNumber),
+    );
+
     const seenPreviousEnrolled = new Set();
 
-    const filteredPreviousEnrolled = currentEnrolled.filter((student) => {
-      const key = JSON.stringify({
-        studentNumber: student.studentNumber,
-        nric: student.nric,
-        birthDay: student.birthDay,
-        enroleeFullName: student.enroleeFullName,
-        pass: student.pass,
-      });
+    const filteredPreviousEnrolled = currentEnrolled
+      // Hide withdrawn/cancelled enrollees from the re-enroll selection.
+      .filter(
+        (student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"),
+      )
+      .filter((student) => {
+        const key = JSON.stringify({
+          studentNumber: student.studentNumber,
+          nric: student.nric,
+          birthDay: student.birthDay,
+          enroleeFullName: student.enroleeFullName,
+          pass: student.pass,
+        });
 
-      if (seenPreviousEnrolled.has(key)) return false;
-      seenPreviousEnrolled.add(key);
-      return true;
-    });
+        if (seenPreviousEnrolled.has(key)) return false;
+        seenPreviousEnrolled.add(key);
+        return true;
+      });
 
     return { previousEnrolled: filteredPreviousEnrolled };
   } catch (error) {
@@ -443,20 +494,30 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
       throw new Error(currentEnrolledError.message);
     }
 
+    const statusByEnrolee = await getStatusByEnrolee(
+      `ay${new Date().getFullYear()}`,
+      currentEnrolled.map((student) => student.enroleeNumber),
+    );
+
     const seenCurrentEnrolled = new Set();
 
-    const filteredCurrentEnrolled = currentEnrolled.filter((student) => {
-      const key = JSON.stringify({
-        studentNumber: student.studentNumber,
-        nric: student.nric,
-        birthDay: student.birthDay,
-        enroleeFullName: student.enroleeFullName,
-      });
+    const filteredCurrentEnrolled = currentEnrolled
+      // Exclude withdrawn/cancelled from the dashboard "Enrolled Students" count.
+      .filter(
+        (student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"),
+      )
+      .filter((student) => {
+        const key = JSON.stringify({
+          studentNumber: student.studentNumber,
+          nric: student.nric,
+          birthDay: student.birthDay,
+          enroleeFullName: student.enroleeFullName,
+        });
 
-      if (seenCurrentEnrolled.has(key)) return false;
-      seenCurrentEnrolled.add(key);
-      return true;
-    });
+        if (seenCurrentEnrolled.has(key)) return false;
+        seenCurrentEnrolled.add(key);
+        return true;
+      });
 
     return { currentEnrolled: filteredCurrentEnrolled };
   } catch (error) {
