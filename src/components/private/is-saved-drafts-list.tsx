@@ -84,7 +84,6 @@ export default function ISSavedDraftsDialog() {
 
   const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
-  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
   const { setFormState, setActiveTab, setCompletedTabs, setCurrentTab, formState } = useEnrolNewStudentContext();
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
@@ -375,7 +374,7 @@ export default function ISSavedDraftsDialog() {
                     disabled={isExiting}
                     onClick={() => {
                       setIsOpen(false);
-                      navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
+                      navigate("/enrol-student/residency-status", { state: { enroleeType: "New" } });
                     }}
                     className="w-full h-12 rounded-xl font-black tracking-widest uppercase text-[10px]">
                     <Plus className="mr-2 size-4" strokeWidth={3} />
@@ -643,7 +642,7 @@ export default function ISSavedDraftsDialog() {
                     disabled={isExiting}
                     onClick={() => {
                       setIsOpen(false);
-                      navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
+                      navigate("/enrol-student/residency-status", { state: { enroleeType: "New" } });
                     }}
                     className="w-full h-12 md:!h-14 rounded-xl font-black tracking-widest uppercase text-[10px] md:text-xs">
                     <Plus className="mr-2 size-4" strokeWidth={3} />

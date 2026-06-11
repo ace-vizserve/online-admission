@@ -5,7 +5,12 @@ import { Calendar as PreCourseCalendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
+import {
+  useEnrolNewStudentStore,
+  useEnrolOldStudentStore,
+  usePreCourseAcknowledgementStore,
+  useSelectAcademicYear,
+} from "@/zustand-store";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -54,10 +59,21 @@ function STPGuidelines() {
       return;
     }
 
+    // Persist the pre-course answer/date into the flow's form state so it is
+    // carried in the saved draft and restored on resume. The global session
+    // store is volatile (sessionStorage, cleared on submit/new tab) which is
+    // why resumed applications previously saved a null answer/date.
+    const preCourseDetails = {
+      preCourseAnswer: preCourseAnswer ?? undefined,
+      preCourseDate,
+    };
+
     if (enroleeType === "New") {
+      useEnrolNewStudentStore.getState().setFormState(preCourseDetails);
       navigate(`/enrol-student/new/student-info?academicYear=${academicYear}`);
       return;
     } else {
+      useEnrolOldStudentStore.getState().setFormState(preCourseDetails);
       navigate(`/enrol-student/${state.enroleeNumber}/student-info?academicYear=${academicYear}`);
       return;
     }
