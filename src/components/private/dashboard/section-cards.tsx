@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViewReportCardButton } from "@/components/view-report-card";
 import useSession from "@/hooks/use-session";
 import { cn, getCurrentDayState } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -63,8 +62,8 @@ export function SectionCards() {
             Enrol Student
             <UserPlus className="size-6 group-hover:rotate-12 transition-transform" />
           </Link>
-
-          <ViewReportCardButton />
+          {/* 
+          <ViewReportCardButton /> */}
         </div>
       </div>
       <div className="py-4">
