@@ -1,9 +1,10 @@
 "use client";
 
+import DocumentPreviewDialog from "@/components/document-preview-dialog";
 import { Button } from "@/components/ui/button";
 import { type UseSupabaseUploadReturn } from "@/hooks/use-supabase-upload";
 import { cn } from "@/lib/utils";
-import { CheckCircle, File, Loader2, Upload, X } from "lucide-react";
+import { CheckCircle, Eye, File, Loader2, Upload, X } from "lucide-react";
 import { createContext, type PropsWithChildren, useCallback, useContext } from "react";
 
 const formatBytes = (
@@ -92,15 +93,28 @@ const DropzoneContent = ({ className }: { className?: string }) => {
 
         return (
           <div key={`${file.name}-${idx}`} className="flex items-center gap-x-4 border-b py-2 first:mt-4 last:mb-4 ">
-            {file.type.startsWith("image/") ? (
-              <div className="h-10 w-10 rounded border overflow-hidden shrink-0 bg-muted flex items-center justify-center">
-                <img src={file.preview} alt={file.name} className="object-cover" />
-              </div>
-            ) : (
-              <div className="h-10 w-10 rounded border bg-muted flex items-center justify-center">
-                <File size={18} />
-              </div>
-            )}
+            <DocumentPreviewDialog
+              source={file}
+              trigger={
+                <button
+                  type="button"
+                  title="Click to preview"
+                  className="group relative shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  {file.type.startsWith("image/") ? (
+                    <div className="h-10 w-10 rounded border overflow-hidden bg-muted flex items-center justify-center">
+                      <img src={file.preview} alt={file.name} className="object-cover" />
+                    </div>
+                  ) : (
+                    <div className="h-10 w-10 rounded border bg-muted flex items-center justify-center">
+                      <File size={18} />
+                    </div>
+                  )}
+                  <span className="absolute inset-0 flex items-center justify-center rounded bg-foreground/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Eye size={14} className="text-background" />
+                  </span>
+                </button>
+              }
+            />
 
             <div className="shrink grow flex flex-col items-start truncate">
               <p title={file.name} className="text-sm truncate max-w-full">
