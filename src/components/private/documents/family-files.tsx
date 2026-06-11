@@ -1,5 +1,6 @@
 import { parentGuardianReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
+import DocumentPreviewDialog from "@/components/document-preview-dialog";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +28,7 @@ import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import { CalendarIcon, Eye, EyeClosed, FileText, Heart, RotateCcw, Save, User, Users } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 function RenderFamilyDocCard({
@@ -97,16 +98,20 @@ function RenderFamilyDocCard({
       {/* Right Side: Actions & Info Popover */}
       <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 border-t border-slate-50 pt-3 sm:pt-0 sm:border-0 sm:ml-auto">
         {fileUrl && (
-          <Link
-            to={fileUrl}
-            target="_blank"
-            className={buttonVariants({
-              variant: "outline",
-              className:
-                "flex-1 sm:flex-none h-9 gap-2 text-[11px] !font-bold border-slate-200 hover:bg-slate-50 text-slate-600",
-            })}>
-            <Eye size={14} /> <span>View</span>
-          </Link>
+          <DocumentPreviewDialog
+            source={fileUrl}
+            trigger={
+              <button
+                type="button"
+                className={buttonVariants({
+                  variant: "outline",
+                  className:
+                    "flex-1 sm:flex-none h-9 gap-2 text-[11px] !font-bold border-slate-200 hover:bg-slate-50 text-slate-600",
+                })}>
+                <Eye size={14} /> <span>View</span>
+              </button>
+            }
+          />
         )}
 
         <div className="flex-1 sm:flex-none">

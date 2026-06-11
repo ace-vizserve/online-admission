@@ -20,6 +20,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import DocumentPreviewDialog from "@/components/document-preview-dialog";
 import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { PassportInput } from "@/components/ui/passport-input";
@@ -39,7 +40,7 @@ import "ldrs/react/DotPulse.css";
 import {
   CalendarIcon,
   CloudUpload,
-  ExternalLink,
+  Eye,
   EyeClosed,
   FileClock,
   FileText,
@@ -54,7 +55,6 @@ import { memo, useState } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { useFormState } from "react-hook-form";
 import { useMediaQuery } from "react-responsive";
-import { Link } from "react-router";
 
 const NOT_FILE_INPUTS = [
   "motherPassExpiry",
@@ -370,15 +370,19 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                 <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
                 {!NOT_FILE_INPUTS.includes(name) && isUploaded && (
-                  <Link
-                    to={formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string}
-                    target="_blank"
-                    className={buttonVariants({
-                      className: "gap-2 text-xs hover:bg-white",
-                      variant: "outline",
-                    })}>
-                    View document <ExternalLink />
-                  </Link>
+                  <DocumentPreviewDialog
+                    source={formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string}
+                    trigger={
+                      <button
+                        type="button"
+                        className={buttonVariants({
+                          className: "gap-2 text-xs hover:bg-white",
+                          variant: "outline",
+                        })}>
+                        View document <Eye className="size-4" />
+                      </button>
+                    }
+                  />
                 )}
               </div>
             ) : (
@@ -446,8 +450,19 @@ const ParentGuardianFileUploaderDialog = memo(function ({
                                 inputKey={name}
                                 key={i}
                                 index={i}>
-                                <Paperclip className="h-4 w-4 stroke-current" />
-                                <span>{file.name}</span>
+                                <DocumentPreviewDialog
+                                  source={file}
+                                  trigger={
+                                    <button
+                                      type="button"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center gap-1.5 truncate text-left hover:underline">
+                                      <Paperclip className="h-4 w-4 shrink-0 stroke-current" />
+                                      <span className="truncate">{file.name}</span>
+                                      <Eye className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                    </button>
+                                  }
+                                />
                               </FileUploaderItem>
                             ))}
                         </FileUploaderContent>
@@ -1374,15 +1389,19 @@ function ParentGuardianFileUploaderDrawer({
               <p className="text-muted-foreground font-medium text-sm">{label} has been uploaded</p>
 
               {!NOT_FILE_INPUTS.includes(name) && isUploaded && (
-                <Link
-                  to={formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string}
-                  target="_blank"
-                  className={buttonVariants({
-                    className: "gap-2 text-xs hover:bg-white",
-                    variant: "outline",
-                  })}>
-                  View document <ExternalLink />
-                </Link>
+                <DocumentPreviewDialog
+                  source={formState.uploadRequirements?.parentGuardianUploadRequirements[name] as string}
+                  trigger={
+                    <button
+                      type="button"
+                      className={buttonVariants({
+                        className: "gap-2 text-xs hover:bg-white",
+                        variant: "outline",
+                      })}>
+                      View document <Eye className="size-4" />
+                    </button>
+                  }
+                />
               )}
             </div>
           ) : (
@@ -1450,8 +1469,19 @@ function ParentGuardianFileUploaderDrawer({
                               inputKey={name}
                               key={i}
                               index={i}>
-                              <Paperclip className="h-4 w-4 stroke-current" />
-                              <span>{file.name}</span>
+                              <DocumentPreviewDialog
+                                source={file}
+                                trigger={
+                                  <button
+                                    type="button"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-1.5 truncate text-left hover:underline">
+                                    <Paperclip className="h-4 w-4 shrink-0 stroke-current" />
+                                    <span className="truncate">{file.name}</span>
+                                    <Eye className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                  </button>
+                                }
+                              />
                             </FileUploaderItem>
                           ))}
                       </FileUploaderContent>

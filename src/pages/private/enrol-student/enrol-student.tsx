@@ -420,6 +420,17 @@ function AcademicYearDropdown() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
 
+  const academicYears = [
+    {
+      value: "ay2026",
+      label: "2026",
+    },
+    {
+      value: "ay2027",
+      label: "2027",
+    },
+  ];
+
   return (
     <Select value={academicYear} onValueChange={setAcademicYear}>
       <SelectTrigger className="text-primary mt-4 w-max mx-auto text-sm font-bold cursor-pointer">
@@ -427,12 +438,11 @@ function AcademicYearDropdown() {
         <SelectValue placeholder="Choose academic year" />
       </SelectTrigger>
       <SelectContent className="[&_div:focus]:text-primary">
-        <SelectItem className="text-sm font-bold cursor-pointer" value="ay2026">
-          2026
-        </SelectItem>
-        <SelectItem className="text-sm font-bold cursor-pointer" value="ay2027">
-          2027
-        </SelectItem>
+        {academicYears.map((ay) => (
+          <SelectItem key={ay.value} className="text-sm font-bold cursor-pointer" value={ay.value}>
+            {ay.label}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

@@ -62,8 +62,8 @@ export function SectionCards() {
             Enrol Student
             <UserPlus className="size-6 group-hover:rotate-12 transition-transform" />
           </Link>
-          {/* 
-          <ViewReportCardButton /> */}
+
+          {/* <ViewReportCardButton /> */}
         </div>
       </div>
       <div className="py-4">

@@ -28,3 +28,6 @@ dist-ssr
 .history/
 
 /reports/fallow/
+
+# Local Claude Code settings (machine-specific permissions)
+.claude/settings.local.json
