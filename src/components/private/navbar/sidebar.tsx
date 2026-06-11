@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenText, ClipboardList, FileText, LayoutDashboardIcon } from "lucide-react";
+import { BookOpenText, ClipboardList, LayoutDashboardIcon } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -28,11 +28,11 @@ const data = {
       url: "/admission/enrolments",
       icon: ClipboardList,
     },
-    {
-      title: "Report Cards",
-      url: "/admission/report-cards",
-      icon: FileText,
-    },
+    // {
+    //   title: "Report Cards",
+    //   url: "/admission/report-cards",
+    //   icon: FileText,
+    // },
     {
       title: "Admission Guide",
       url: "/admission/guidelines",
