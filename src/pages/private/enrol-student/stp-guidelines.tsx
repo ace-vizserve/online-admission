@@ -1,5 +1,5 @@
-import PageMetaData from "@/components/page-metadata";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
+import PageMetaData from "@/components/page-metadata";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar as PreCourseCalendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -81,7 +81,10 @@ function STPGuidelines() {
 
   return (
     <>
-      <PageMetaData title="Student Pass Guidelines | HFSE International School" description="Review the Student Pass application process and guidelines before proceeding with enrollment." />
+      <PageMetaData
+        title="Student Pass Guidelines | HFSE International School"
+        description="Review the Student Pass application process and guidelines before proceeding with enrollment."
+      />
       <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link
@@ -103,7 +106,7 @@ function STPGuidelines() {
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-400/20 to-transparent rounded-full blur-3xl"></div>
 
           {/* Content */}
-          <div className="relative z-10 space-y-6">
+          <div className="relative z-10 space-y-6 px-4 md:px-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/90 backdrop-blur-sm border-2 border-blue-200 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
               <div className="p-2 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
                 <Handshake className="size-4 text-white" />
@@ -131,10 +134,7 @@ function STPGuidelines() {
               ) : (
                 <>
                   Before enrolment, please confirm your Pre-Course Counselling status.
-                  <span className="font-semibold text-slate-700">
-                    {" "}
-                    Just answer the question below to continue.
-                  </span>
+                  <span className="font-semibold text-slate-700"> Just answer the question below to continue.</span>
                 </>
               )}
             </p>
@@ -161,123 +161,125 @@ function STPGuidelines() {
 
         {/* Acknowledgement Cards */}
         <section className="mx-auto py-12">
-          {isSTP && <div className="grid lg:grid-cols-2 gap-8">
-            {/* Student's Pass Card */}
-            <div className="group p-8 rounded-xl border border-slate-200 bg-white shadow-md hover:shadow-xl transition-all duration-300 space-y-6 hover:border-amber-700/30">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="p-3 rounded-xl bg-amber-700 text-white group-hover:scale-110 transition-transform duration-300">
-                  <ShieldCheck className="size-5" />
+          {isSTP && (
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Student's Pass Card */}
+              <div className="group p-8 rounded-xl border border-slate-200 bg-white shadow-md hover:shadow-xl transition-all duration-300 space-y-6 hover:border-amber-700/30">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="p-3 rounded-xl bg-amber-700 text-white group-hover:scale-110 transition-transform duration-300">
+                    <ShieldCheck className="size-5" />
+                  </div>
+                  <h3 className="text-xl tracking-tight font-black text-amber-700">Student's Pass Process</h3>
                 </div>
-                <h3 className="text-xl tracking-tight font-black text-amber-700">Student's Pass Process</h3>
+
+                <p className="text-base font-medium text-amber-700 leading-relaxed">
+                  HFSE supports families with the{" "}
+                  <strong className="text-amber-900 font-bold">Student's Pass application process</strong>, but{" "}
+                  <strong className="text-amber-900 font-bold">
+                    the Immigration & Checkpoints Authority (ICA) alone decides the outcome
+                  </strong>
+                  . The school cannot influence or guarantee approval.
+                </p>
+
+                <ul className="space-y-3 text-sm text-amber-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-900 mt-0.5 font-bold">•</span>
+                    <span>
+                      Upload <strong>all required documents</strong> through the online enrolment portal so the school
+                      can verify them. You will then submit your application directly to ICA via SOLAR+.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-900 mt-0.5 font-bold">•</span>
+                    <span>
+                      ICA processing time is typically <strong>around 1–2 weeks</strong>, but{" "}
+                      <strong>may be longer</strong> depending on case-by-case assessment and volume of applications.
+                    </span>
+                  </li>
+                </ul>
+
+                <div
+                  className={cn(
+                    "p-5 rounded-xl border transition-all duration-300",
+                    icaAcknowledged ? "bg-green-50 border-green-200 shadow-sm" : "bg-slate-50 border-slate-200",
+                  )}>
+                  <label className="flex items-start gap-3 cursor-pointer group/checkbox">
+                    <input
+                      type="checkbox"
+                      checked={icaAcknowledged}
+                      onChange={() => setIcaAcknowledged(!icaAcknowledged)}
+                      className="mt-1 size-5 accent-green-700 cursor-pointer"
+                    />
+                    <span
+                      className={cn(
+                        "text-sm font-semibold transition-colors",
+                        icaAcknowledged ? "text-green-800" : "text-slate-700",
+                      )}>
+                      I understand that HFSE provides assistance, but ICA alone decides the Student's Pass approval and
+                      the school cannot guarantee the outcome.
+                    </span>
+                  </label>
+                </div>
               </div>
 
-              <p className="text-base font-medium text-amber-700 leading-relaxed">
-                HFSE supports families with the{" "}
-                <strong className="text-amber-900 font-bold">Student's Pass application process</strong>, but{" "}
-                <strong className="text-amber-900 font-bold">
-                  the Immigration & Checkpoints Authority (ICA) alone decides the outcome
-                </strong>
-                . The school cannot influence or guarantee approval.
-              </p>
+              {/* Fees Card */}
+              <div className="group p-8 rounded-xl border border-slate-200 bg-white shadow-md hover:shadow-xl transition-all duration-300 space-y-6 hover:border-amber-700/30">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-amber-700 text-white group-hover:scale-110 transition-transform duration-300">
+                    <ReceiptText className="size-5" />
+                  </div>
+                  <h3 className="text-xl tracking-tight font-black text-amber-700">ICA Fees & School Refunds</h3>
+                </div>
 
-              <ul className="space-y-3 text-sm text-amber-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-900 mt-0.5 font-bold">•</span>
-                  <span>
-                    Upload <strong>all required documents</strong> through the online enrolment portal so the school can
-                    verify them. You will then submit your application directly to ICA via SOLAR+.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-900 mt-0.5 font-bold">•</span>
-                  <span>
-                    ICA processing time is typically <strong>around 1–2 weeks</strong>, but{" "}
-                    <strong>may be longer</strong> depending on case-by-case assessment and volume of applications.
-                  </span>
-                </li>
-              </ul>
+                <p className="text-base text-amber-700 leading-relaxed">
+                  <strong className="text-amber-900 font-bold">
+                    ICA Student's Pass processing and issuance fees are non-refundable
+                  </strong>{" "}
+                  regardless of the outcome of the application or any withdrawal.
+                </p>
 
-              <div
-                className={cn(
-                  "p-5 rounded-xl border transition-all duration-300",
-                  icaAcknowledged ? "bg-green-50 border-green-200 shadow-sm" : "bg-slate-50 border-slate-200",
-                )}>
-                <label className="flex items-start gap-3 cursor-pointer group/checkbox">
-                  <input
-                    type="checkbox"
-                    checked={icaAcknowledged}
-                    onChange={() => setIcaAcknowledged(!icaAcknowledged)}
-                    className="mt-1 size-5 accent-green-700 cursor-pointer"
-                  />
-                  <span
-                    className={cn(
-                      "text-sm font-semibold transition-colors",
-                      icaAcknowledged ? "text-green-800" : "text-slate-700",
-                    )}>
-                    I understand that HFSE provides assistance, but ICA alone decides the Student's Pass approval and
-                    the school cannot guarantee the outcome.
-                  </span>
-                </label>
+                <div className="space-y-3">
+                  <div className="p-4 rounded-lg bg-red-50 text-sm">
+                    <p className="font-bold text-red-600 mb-1">ICA Application Fees</p>
+                    <p className="text-slate-600">
+                      Government fees paid to ICA for <strong>Student's Pass processing and issuance</strong> are{" "}
+                      <strong>non-refundable in all cases</strong>.
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-amber-50 text-sm">
+                    <p className="font-bold text-amber-700 mb-1">School Tuition Fees</p>
+                    <p className="text-slate-600">
+                      Refunds for <strong>school tuition fees</strong> follow the{" "}
+                      <strong>Refund Policy in the Standard PEI-Student Contract</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className={cn(
+                    "p-5 rounded-xl border transition-all duration-300",
+                    feesAcknowledged ? "bg-green-50 border-green-200 shadow-sm" : "bg-slate-50 border-slate-200",
+                  )}>
+                  <label className="flex items-start gap-3 cursor-pointer group/checkbox">
+                    <input
+                      type="checkbox"
+                      checked={feesAcknowledged}
+                      onChange={() => setFeesAcknowledged(!feesAcknowledged)}
+                      className="mt-1 size-5 accent-green-700 cursor-pointer"
+                    />
+                    <span
+                      className={cn(
+                        "text-sm font-semibold transition-colors",
+                        feesAcknowledged ? "text-green-800" : "text-slate-700",
+                      )}>
+                      I understand that ICA Student's Pass fees are non-refundable and that school tuition fee refunds
+                      follow the Student Contract.
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
-
-            {/* Fees Card */}
-            <div className="group p-8 rounded-xl border border-slate-200 bg-white shadow-md hover:shadow-xl transition-all duration-300 space-y-6 hover:border-amber-700/30">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-amber-700 text-white group-hover:scale-110 transition-transform duration-300">
-                  <ReceiptText className="size-5" />
-                </div>
-                <h3 className="text-xl tracking-tight font-black text-amber-700">ICA Fees & School Refunds</h3>
-              </div>
-
-              <p className="text-base text-amber-700 leading-relaxed">
-                <strong className="text-amber-900 font-bold">
-                  ICA Student's Pass processing and issuance fees are non-refundable
-                </strong>{" "}
-                regardless of the outcome of the application or any withdrawal.
-              </p>
-
-              <div className="space-y-3">
-                <div className="p-4 rounded-lg bg-red-50 text-sm">
-                  <p className="font-bold text-red-600 mb-1">ICA Application Fees</p>
-                  <p className="text-slate-600">
-                    Government fees paid to ICA for <strong>Student's Pass processing and issuance</strong> are{" "}
-                    <strong>non-refundable in all cases</strong>.
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg bg-amber-50 text-sm">
-                  <p className="font-bold text-amber-700 mb-1">School Tuition Fees</p>
-                  <p className="text-slate-600">
-                    Refunds for <strong>school tuition fees</strong> follow the{" "}
-                    <strong>Refund Policy in the Standard PEI-Student Contract</strong>.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className={cn(
-                  "p-5 rounded-xl border transition-all duration-300",
-                  feesAcknowledged ? "bg-green-50 border-green-200 shadow-sm" : "bg-slate-50 border-slate-200",
-                )}>
-                <label className="flex items-start gap-3 cursor-pointer group/checkbox">
-                  <input
-                    type="checkbox"
-                    checked={feesAcknowledged}
-                    onChange={() => setFeesAcknowledged(!feesAcknowledged)}
-                    className="mt-1 size-5 accent-green-700 cursor-pointer"
-                  />
-                  <span
-                    className={cn(
-                      "text-sm font-semibold transition-colors",
-                      feesAcknowledged ? "text-green-800" : "text-slate-700",
-                    )}>
-                    I understand that ICA Student's Pass fees are non-refundable and that school tuition fee refunds
-                    follow the Student Contract.
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>}
+          )}
 
           {/* 2. Pre-Course Counselling Section */}
           <div className="mt-8 rounded-2xl bg-white border border-amber-200 p-8 space-y-6 shadow-sm">
