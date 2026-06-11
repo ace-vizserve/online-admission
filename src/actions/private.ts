@@ -1,3 +1,4 @@
+import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import { applicationTypes } from "@/data";
 import { supabase } from "@/lib/client";
 import {
@@ -530,7 +531,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
           if (!match) throw new Error("Invalid enrolee number format");
           return [`ay20${match[1]}`];
         })()
-      : ["ay2027", "ay2026", "ay2025"];
+      : BACKEND_ACADEMIC_YEARS;
 
     for (const academicYear of academicYears) {
       let query = supabase
@@ -675,7 +676,7 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
           if (!match) throw new Error("Invalid enrolee number format");
           return [`ay20${match[1]}`];
         })()
-      : ["ay2027", "ay2026", "ay2025"];
+      : BACKEND_ACADEMIC_YEARS;
 
     for (const academicYear of academicYears) {
       let appQuery = supabase

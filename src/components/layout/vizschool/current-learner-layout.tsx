@@ -1,3 +1,4 @@
+import { VIZSCHOOL_ACADEMIC_YEARS } from "@/config/academic-years";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import CurrentLearnerSteps from "@/components/private/enrol-student/vizschool/current-learner-steps";
 import SubmitLearnerApplicationDialog from "@/components/private/enrol-student/vizschool/submit-learner-application-dialog";
@@ -32,7 +33,7 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
 
-const academicYears = ["vizschool-ay2025", "vizschool-ay2026", "vizschool-ay2027"];
+const academicYears = VIZSCHOOL_ACADEMIC_YEARS;
 
 function CurrentLearnerLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);

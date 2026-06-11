@@ -1,4 +1,5 @@
 import Logo from "@/components/logo";
+import { PARENT_FACING_ACADEMIC_YEARS } from "@/config/academic-years";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,10 +8,15 @@ import { cn } from "@/lib/utils";
 import { ArrowUpRight, CircleCheck } from "lucide-react";
 import { memo } from "react";
 
+// Card identity (value/name) is sourced from the academic-year config so the selector
+// can never offer a year the rest of the app doesn't recognize. The marketing copy and
+// logos below stay local to this landing page.
+const [AY_2026, AY_2027] = PARENT_FACING_ACADEMIC_YEARS;
+
 const academicYears = [
   {
-    value: "ay2026",
-    name: "AY 2026",
+    value: AY_2026.value,
+    name: AY_2026.name,
     label: "Academic Year 2026",
     description: "Enrol your child for the ongoing school year.",
 
@@ -25,7 +31,7 @@ const academicYears = [
   },
 
   {
-    value: "vizschool-ay2026",
+    value: `vizschool-${AY_2026.value}`,
     name: "Vizschool AY2026",
     label: "Vizschool AY2026",
     description: "Early registration for AY 2026 starts Jan 2026.",
@@ -35,8 +41,8 @@ const academicYears = [
     logo: VizSchoolLogo,
   },
   {
-    value: "ay2027",
-    name: "AY 2027",
+    value: AY_2027.value,
+    name: AY_2027.name,
     label: "Academic Year 2027",
     description: "Early registration for AY 2027 starts July 2027.",
     details: ["Secure a slot early", "Registration opens 1 July 2026", "Classes begin January 2027"],

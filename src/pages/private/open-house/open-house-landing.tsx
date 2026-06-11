@@ -1,4 +1,5 @@
 import students from "@/assets/students.webp";
+import { PARENT_FACING_ACADEMIC_YEARS } from "@/config/academic-years";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import SEO, { BASE_URL } from "@/pages/seo";
@@ -131,14 +132,14 @@ export default function OpenHouseLanding() {
                   </label>
 
                   <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 rounded-xl border border-slate-200">
-                    {["ay2026", "ay2027"].map((year) => {
-                      const isSelected = academicYear === year;
+                    {PARENT_FACING_ACADEMIC_YEARS.map((ay) => {
+                      const isSelected = academicYear === ay.value;
 
                       return (
                         <button
-                          key={year}
+                          key={ay.value}
                           type="button"
-                          onClick={() => setAcademicYear(year)}
+                          onClick={() => setAcademicYear(ay.value)}
                           className={cn(
                             "relative cursor-pointer h-14 rounded-lg transition-all duration-300 group overflow-hidden",
                             isSelected
@@ -151,9 +152,9 @@ export default function OpenHouseLanding() {
                                 "text-[10px] uppercase tracking-tighter font-black opacity-60 transition-colors",
                                 isSelected ? "text-primary" : "text-slate-400",
                               )}>
-                              {year === "ay2026" ? "Current Year" : "Upcoming Year"}
+                              {ay.isCurrent ? "Current Year" : "Upcoming Year"}
                             </span>
-                            <span className="text-base font-black tracking-tight">AY {year.replace("ay", "")}</span>
+                            <span className="text-base font-black tracking-tight">AY {ay.label}</span>
                           </div>
 
                           {/* Active Indicator Pin */}

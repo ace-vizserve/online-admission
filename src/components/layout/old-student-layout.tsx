@@ -1,3 +1,4 @@
+import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import EnrolOldStudentContextProvider, { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { ArrowLeft } from "lucide-react";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
@@ -33,7 +34,7 @@ import { OctagonAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 
-const academicYears = ["ay2025", "ay2026", "ay2027"];
+const academicYears = BACKEND_ACADEMIC_YEARS;
 
 function OldStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);

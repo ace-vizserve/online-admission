@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import VizSchoolLogo from "@/components/vizschool-logo";
+import { PARENT_FACING_ACADEMIC_YEARS } from "@/config/academic-years";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
 import { canEnrollStudent, cn } from "@/lib/utils";
@@ -178,7 +179,7 @@ function EnrolStudent() {
         <div className="w-full min-h-screen pt-0 md:pt-20 flex items-center justify-center bg-muted">
           {showEnrollmentProcess ? (
             <EnrollmentStepper academicYear={academicYear} setShowEnrollmentProcess={setShowEnrollmentProcess} />
-          ) : academicYear === "vizschool-ay2026" && !schoolFee ? (
+          ) : academicYear.includes("vizschool-") && !schoolFee ? (
             <SchoolFees />
           ) : schoolFee ? (
             <motion.div
@@ -420,17 +421,6 @@ function AcademicYearDropdown() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
 
-  const academicYears = [
-    {
-      value: "ay2026",
-      label: "2026",
-    },
-    {
-      value: "ay2027",
-      label: "2027",
-    },
-  ];
-
   return (
     <Select value={academicYear} onValueChange={setAcademicYear}>
       <SelectTrigger className="text-primary mt-4 w-max mx-auto text-sm font-bold cursor-pointer">
@@ -438,7 +428,7 @@ function AcademicYearDropdown() {
         <SelectValue placeholder="Choose academic year" />
       </SelectTrigger>
       <SelectContent className="[&_div:focus]:text-primary">
-        {academicYears.map((ay) => (
+        {PARENT_FACING_ACADEMIC_YEARS.map((ay) => (
           <SelectItem key={ay.value} className="text-sm font-bold cursor-pointer" value={ay.value}>
             {ay.label}
           </SelectItem>

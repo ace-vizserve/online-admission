@@ -1,3 +1,4 @@
+import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import { classLevels } from "@/data";
 import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
 import { ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
@@ -351,73 +352,44 @@ async function getStatusByEnrolee(academicYear: string, enroleeNumbers: string[]
 
 export async function getStudentsList(parentEmail: string) {
   try {
-    const { data: ay2027studentInformation, error: ay2027studentInformationError } = await supabase
-      .from("ay2027_enrolment_applications")
-      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("applicationStatus", "Registered");
+    // Query each academic year's table (BACKEND_ACADEMIC_YEARS is newest-first, so a
+    // student's most recent enrolment wins during the dedup below).
+    const perYear = await Promise.all(
+      BACKEND_ACADEMIC_YEARS.map(async (academicYear) => {
+        const { data, error } = await supabase
+          .from(`${academicYear}_enrolment_applications`)
+          .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
+          .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
+          .eq("applicationStatus", "Registered")
+          .order("enroleeNumber", { ascending: false });
 
-    if (ay2027studentInformationError) {
-      throw new Error(ay2027studentInformationError.message);
-    }
+        if (error) {
+          throw new Error(error.message);
+        }
 
-    const { data: ay2026studentInformation, error: ay2026studentInformationError } = await supabase
-      .from("ay2026_enrolment_applications")
-      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("applicationStatus", "Registered");
+        const statusByEnrolee = await getStatusByEnrolee(
+          academicYear,
+          data.map((info) => info.enroleeNumber),
+        );
 
-    if (ay2026studentInformationError) {
-      throw new Error(ay2026studentInformationError.message);
-    }
+        return data
+          .map((info) => ({
+            enroleeNumber: info.enroleeNumber,
+            studentName: info.enroleeFullName,
+            age: differenceInYears(new Date(), parseISO(info.birthDay)),
+            mothersName: info.motherFullName ?? "--",
+            fathersName: info.fatherFullName ?? "--",
+            studentNumber: info.studentNumber,
+            // Live SIS lifecycle status; fall back to "Submitted" if no status row exists yet.
+            enrollmentStatus: statusByEnrolee.get(info.enroleeNumber) ?? "Submitted",
+            isVizSchool: (info.studentNumber as string).startsWith("V"),
+          }))
+          // Drop withdrawn/cancelled before dedup so they don't shadow an active prior-AY row.
+          .filter((student) => !HIDDEN_PARENT_STATUSES.includes(student.enrollmentStatus));
+      }),
+    );
 
-    const { data: ay2025studentInformation, error: ay2025studentInformationError } = await supabase
-      .from("ay2025_enrolment_applications")
-      .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
-      .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
-      .eq("applicationStatus", "Registered")
-      .order("enroleeNumber", { ascending: false });
-
-    if (ay2025studentInformationError) {
-      throw new Error(ay2025studentInformationError.message);
-    }
-
-    const [status2027, status2026, status2025] = await Promise.all([
-      getStatusByEnrolee(
-        "ay2027",
-        ay2027studentInformation.map((info) => info.enroleeNumber),
-      ),
-      getStatusByEnrolee(
-        "ay2026",
-        ay2026studentInformation.map((info) => info.enroleeNumber),
-      ),
-      getStatusByEnrolee(
-        "ay2025",
-        ay2025studentInformation.map((info) => info.enroleeNumber),
-      ),
-    ]);
-
-    const mapStudents = (data: typeof ay2025studentInformation, statusByEnrolee: Map<string, string>) =>
-      data
-        .map((info) => ({
-          enroleeNumber: info.enroleeNumber,
-          studentName: info.enroleeFullName,
-          age: differenceInYears(new Date(), parseISO(info.birthDay)),
-          mothersName: info.motherFullName ?? "--",
-          fathersName: info.fatherFullName ?? "--",
-          studentNumber: info.studentNumber,
-          // Live SIS lifecycle status; fall back to "Submitted" if no status row exists yet.
-          enrollmentStatus: statusByEnrolee.get(info.enroleeNumber) ?? "Submitted",
-          isVizSchool: (info.studentNumber as string).startsWith("V"),
-        }))
-        // Drop withdrawn/cancelled before dedup so they don't shadow an active prior-AY row.
-        .filter((student) => !HIDDEN_PARENT_STATUSES.includes(student.enrollmentStatus));
-
-    const allStudents = [
-      ...mapStudents(ay2027studentInformation, status2027),
-      ...mapStudents(ay2026studentInformation, status2026),
-      ...mapStudents(ay2025studentInformation, status2025),
-    ];
+    const allStudents = perYear.flat();
 
     const studentsList = allStudents.reduce((acc: typeof allStudents, obj) => {
       if (!acc.some((o) => o.studentNumber === obj.studentNumber)) {
@@ -528,7 +500,7 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
 
 export async function getStudentEnrollments(studentNumber: string, parentEmail: string) {
   try {
-    const academicYears = ["ay2027", "ay2026", "ay2025"];
+    const academicYears = BACKEND_ACADEMIC_YEARS;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allEnrollments: any[] = [];
