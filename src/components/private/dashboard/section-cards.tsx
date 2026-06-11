@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ViewReportCardButton } from "@/components/view-report-card";
 import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import { useDraftRows } from "@/hooks/use-draft-rows";
 import { usePendingTasks } from "@/hooks/use-pending-tasks";
@@ -60,7 +61,7 @@ export function SectionCards() {
             <UserPlus className="size-6 group-hover:rotate-12 transition-transform" />
           </Link>
 
-          {/* <ViewReportCardButton /> */}
+          <ViewReportCardButton />
         </div>
       </div>
       <div className="py-4">
