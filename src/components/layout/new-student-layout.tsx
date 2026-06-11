@@ -6,6 +6,7 @@ import NewStudentSteps from "../private/enrol-student/new-student-steps";
 import { buttonVariants } from "../ui/button";
 
 import { submitEnrollment } from "@/actions/private";
+import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +49,7 @@ import { useMediaQuery } from "react-responsive";
 import { toast } from "sonner";
 import ISSavedDraftsDialog from "../private/is-saved-drafts-list";
 
-const academicYears = ["ay2025", "ay2026", "ay2027"];
+const academicYears = BACKEND_ACADEMIC_YEARS;
 
 function NewStudentLayout() {
   const studentDrafts = listNewStudentDrafts("hfse-is") || [];

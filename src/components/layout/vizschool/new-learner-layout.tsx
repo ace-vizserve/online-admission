@@ -2,6 +2,7 @@ import { ArrowLeft, CheckCircle2, FilePen, Send } from "lucide-react";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
 
 import { submitVizSchoolEnrollment } from "@/actions/private";
+import { VIZSCHOOL_ACADEMIC_YEARS } from "@/config/academic-years";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import NewLearnerSteps from "@/components/private/enrol-student/vizschool/new-learner-steps";
 import VizSchoolSavedDraftsDialog from "@/components/private/vizschool-drafts-list";
@@ -48,7 +49,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { toast } from "sonner";
 
-const academicYears = ["vizschool-ay2025", "vizschool-ay2026", "vizschool-ay2027"];
+const academicYears = VIZSCHOOL_ACADEMIC_YEARS;
 
 function NewLearnerLayout() {
   const studentDrafts = listNewStudentDrafts("viz-school").reverse() || [];
