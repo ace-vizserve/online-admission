@@ -13,6 +13,7 @@ import { ArrowUpDown, FileText, MessageSquareQuote, MoreHorizontal, RefreshCcw, 
 import * as React from "react";
 
 import { getStudentEnrollmentsList } from "@/actions/private";
+import { StatusBadge } from "@/components/private/enroll/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -67,55 +68,11 @@ const columns: ColumnDef<levelYear>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
-      const status = (row.getValue("status") as string).toLowerCase();
-
-      const statusConfig: Record<string, { color: string; dot: string; label: string }> = {
-        submitted: {
-          color: "bg-green-100 text-green-700 border-green-200",
-          dot: "bg-green-600",
-          label: "Submitted",
-        },
-        ongoing_verification: {
-          color: "bg-blue-100 text-blue-700 border-blue-200",
-          dot: "bg-blue-600",
-          label: "Ongoing Verification",
-        },
-        processing: {
-          color: "bg-amber-100 text-amber-700 border-amber-200",
-          dot: "bg-amber-600",
-          label: "Processing",
-        },
-        enrolled: {
-          color: "bg-emerald-100 text-emerald-700 border-emerald-200",
-          dot: "bg-emerald-600",
-          label: "Enrolled",
-        },
-        cancelled: {
-          color: "bg-red-100 text-red-700 border-red-200",
-          dot: "bg-red-600",
-          label: "Cancelled",
-        },
-        withdrawn: {
-          color: "bg-slate-100 text-slate-700 border-slate-200",
-          dot: "bg-slate-600",
-          label: "Withdrawn",
-        },
-      };
-
-      const config = statusConfig[status.replace(/\s+/g, "_")] || statusConfig.submitted;
-
-      return (
-        <div className="pl-2">
-          <Badge
-            variant="outline"
-            className={cn("rounded-full font-bold capitalize tracking-wider border transition-colors", config.color)}>
-            <div className={cn("h-1.5 w-1.5 rounded-full mr-2 shrink-0", config.dot)} />
-            {config.label}
-          </Badge>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="pl-2">
+        <StatusBadge status={row.getValue("status") as string} />
+      </div>
+    ),
   },
   {
     accessorKey: "gradeLevel",

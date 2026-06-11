@@ -246,6 +246,7 @@ export type TStudent = {
   fathersName: string;
   enrollmentStatus: string;
   studentNumber: string;
+  isVizSchool: boolean;
 };
 
 export type levelYear = {
@@ -261,6 +262,8 @@ export type EnrolNewStudentFormState = {
   draftId?: string;
   createdAt?: Date;
   stpApplicationType?: string;
+  preCourseAnswer?: string;
+  preCourseDate?: Date;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
@@ -301,6 +304,8 @@ export type OpenHouseFormState = {
 
 export type EnrolOldStudentFormState = {
   stpApplicationType?: string;
+  preCourseAnswer?: string;
+  preCourseDate?: Date;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;

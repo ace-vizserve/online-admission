@@ -30,18 +30,16 @@ function SubmitApplicationDialog() {
   const { session } = useSession();
   const queryClient = useQueryClient();
   const { formState, clearState } = useEnrolOldStudentContext();
-  const preCourseAnswer = usePreCourseAcknowledgementStore((state) => state.preCourseAnswer) as string;
-  const preCourseDate = usePreCourseAcknowledgementStore((state) => state.preCourseDate) as Date;
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      return await submitExistingEnrollment(
-        { ...(formState as EnrolOldStudentFormState), stpApplicationType },
-        params.id!,
-        academicYear,
-        { preCourseAnswer, preCourseDate, preCourseAcknowledgedAt: new Date() },
-      );
+      const oldFormState = { ...(formState as EnrolOldStudentFormState), stpApplicationType };
+      return await submitExistingEnrollment(oldFormState, params.id!, academicYear, {
+        preCourseAnswer: oldFormState.preCourseAnswer as string,
+        preCourseDate: oldFormState.preCourseDate,
+        preCourseAcknowledgedAt: new Date(),
+      });
     },
     onSuccess() {
       navigate("/application-submitted", {

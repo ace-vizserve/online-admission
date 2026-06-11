@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentCard, useParentReportCards } from "@/hooks/use-parent-report-cards";
 import { cn } from "@/lib/utils";
-import { BookOpen, GraduationCap } from "lucide-react";
+import { BookOpen, Clock, GraduationCap } from "lucide-react";
 import { useState } from "react";
 
 export function ReportCards() {
@@ -61,14 +61,24 @@ export function ReportCards() {
       )}
 
       {state.status === "ok" && state.students.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 py-16 text-center space-y-3">
-          <GraduationCap className="size-10 text-muted-foreground" />
-          <div className="space-y-1">
-            <p className="font-semibold text-sm">No report cards available</p>
-            <p className="text-xs text-muted-foreground max-w-xs px-4">
-              The school publishes report cards at the end of each term. Check back later.
+        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border bg-gradient-to-b from-muted/40 to-muted/10 px-6 py-16 text-center animate-in fade-in zoom-in-95 duration-500">
+          <div className="relative mb-5">
+            <div className="absolute inset-0 scale-150 rounded-full bg-primary/15 blur-2xl" />
+            <div className="relative rounded-2xl bg-primary/10 p-4 shadow-sm ring-4 ring-background">
+              <GraduationCap className="size-9 text-primary" />
+            </div>
+          </div>
+          <div className="max-w-sm space-y-1.5">
+            <h2 className="text-lg font-bold tracking-tight text-foreground">No report cards yet</h2>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              The school publishes report cards at the end of each term. They'll appear here the moment they're
+              released.
             </p>
           </div>
+          <Badge variant="secondary" className="mt-5 gap-1.5 rounded-full px-3 py-1 text-xs font-semibold">
+            <Clock className="size-3.5" />
+            Check back at term's end
+          </Badge>
         </div>
       )}
 
