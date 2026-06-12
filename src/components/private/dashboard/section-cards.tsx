@@ -1,4 +1,5 @@
 import { getSectionCardsDetails } from "@/actions/private";
+import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -174,8 +175,7 @@ function StatCard({
           <CardContent className="mt-6 px-0 border-t border-slate-200 pt-2">
             <div className="flex flex-col">
               {value.slice(0, 2).map((pendingTask) => {
-                const match = pendingTask.enroleeNumber?.match(/E(\d{2})/);
-                const academicYear = match ? `ay20${match[1]}` : "";
+                const academicYear = tryAcademicYearFromEnroleeNumber(pendingTask.enroleeNumber) ?? "";
 
                 return (
                   <div

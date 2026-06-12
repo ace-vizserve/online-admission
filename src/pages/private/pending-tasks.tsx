@@ -1,4 +1,5 @@
 import { getSectionCardsDetails } from "@/actions/private";
+import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { buttonVariants } from "@/components/ui/button";
 import useSession from "@/hooks/use-session";
@@ -50,8 +51,7 @@ function PendingTasks() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <div className="divide-y divide-slate-100">
             {tasks.map((task) => {
-              const match = task.enroleeNumber.match(/E(\d{2})/);
-              const academicYear = `ay20${match[1]}`;
+              const academicYear = tryAcademicYearFromEnroleeNumber(task.enroleeNumber) ?? "";
 
               return (
                 <div key={task.enroleeNumber} className="p-6 hover:bg-slate-50/50 transition-colors">

@@ -7,22 +7,6 @@ import { Eye, EyeClosed, FileText } from "lucide-react";
 import { Link } from "react-router";
 
 function StudentDocuments({ label, documents }: { label: string; documents: StudentDocument }) {
-  const studentPassApplicationDocs = documents.studentPassApplicationDocuments
-    ? [
-        { title: "ICA Photo", type: "icaPhoto", data: documents.studentPassApplicationDocuments[0] },
-        {
-          title: "Vaccination Information",
-          type: "vaccinationInformation",
-          data: documents.studentPassApplicationDocuments[1],
-        },
-        {
-          title: "Financial Support Documents",
-          type: "financialSupportDocs",
-          data: documents.studentPassApplicationDocuments[2],
-        },
-      ]
-    : null;
-
   const expiringDocs = [
     { title: "Student Pass", type: "pass", data: documents.documentsThatExpire[1] },
     { title: "Passport", type: "passport", data: documents.documentsThatExpire[0] },
@@ -44,19 +28,6 @@ function StudentDocuments({ label, documents }: { label: string; documents: Stud
           This section includes details about the student's documents for this current school year.
         </p>
       </div>
-
-      {studentPassApplicationDocs != null && (
-        <div className="space-y-4">
-          <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 px-1">
-            Student Pass Application Documents
-          </h2>
-          <div className="grid gap-3">
-            {studentPassApplicationDocs.map((doc) => (
-              <DocumentRow key={doc.type} title={doc.title} doc={doc.data} type={doc.type} />
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="space-y-4">
         <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 px-1">Documents that expire</h2>
