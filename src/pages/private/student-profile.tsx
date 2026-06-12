@@ -3,7 +3,7 @@
 import PageMetaData from "@/components/page-metadata";
 import Profile from "@/components/private/student-profile/profile";
 import { buttonVariants } from "@/components/ui/button";
-import { CURRENT_ACADEMIC_YEAR } from "@/config/academic-years";
+import { CURRENT_ACADEMIC_YEAR, tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import { STUDENT_PROFILE_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, FileEdit } from "lucide-react";
@@ -21,8 +21,7 @@ function StudentProfile() {
     );
   }
 
-  const ayMatch = params.id.match(/E(\d{2})/);
-  const academicYear = ayMatch ? `ay20${ayMatch[1]}` : CURRENT_ACADEMIC_YEAR;
+  const academicYear = tryAcademicYearFromEnroleeNumber(params.id) ?? CURRENT_ACADEMIC_YEAR;
 
   return (
     <>

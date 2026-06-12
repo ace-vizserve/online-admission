@@ -1,4 +1,4 @@
-import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
+import { academicYearFromEnroleeNumber, BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import { applicationTypes } from "@/data";
 import { supabase } from "@/lib/client";
 import {
@@ -195,10 +195,7 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const match = enroleeNumber.match(/E(\d{2})/);
-    if (!match) throw new Error("Invalid enrolee number format");
-
-    const academicYear = `ay20${match[1]}`;
+    const academicYear = academicYearFromEnroleeNumber(enroleeNumber);
 
     const { data, error: studentEnrollmentInformationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
@@ -224,10 +221,7 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       data: { session },
     } = await supabase.auth.getSession();
 
-    const match = enroleeNumber.match(/E(\d{2})/);
-    if (!match) throw new Error("Invalid enrolee number format");
-
-    const academicYear = `ay20${match[1]}`;
+    const academicYear = academicYearFromEnroleeNumber(enroleeNumber);
 
     const APPLICATIONS_TABLE = `${academicYear}_enrolment_applications`;
     const DOCUMENTS_TABLE = `${academicYear}_enrolment_documents`;
@@ -331,12 +325,6 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       fatherPassStatus,
       guardianPassportStatus,
       guardianPassStatus,
-      icaPhoto,
-      icaPhotoStatus,
-      financialSupportDocs,
-      financialSupportDocsStatus,
-      vaccinationInformation,
-      vaccinationInformationStatus,
     } = documents[0];
 
     return {
@@ -350,13 +338,6 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
         ...siblings,
       },
       studentDocuments: {
-        studentPassApplicationDocuments: applicationTypes.includes(studentInfo.stpApplicationType ?? "")
-          ? [
-              { icaPhoto, icaPhotoStatus },
-              { vaccinationInformation, vaccinationInformationStatus },
-              { financialSupportDocs, financialSupportDocsStatus },
-            ]
-          : null,
         documentsThatExpire: [
           {
             passport,
@@ -467,10 +448,7 @@ export async function getStudentInformation(enroleeNumber: string) {
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const match = enroleeNumber.match(/E(\d{2})/);
-    if (!match) throw new Error("Invalid enrolee number format");
-
-    const academicYear = `ay20${match[1]}`;
+    const academicYear = academicYearFromEnroleeNumber(enroleeNumber);
 
     const { data: studentInformation, error: studentInformationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
@@ -525,13 +503,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let familyInformation: any = null;
 
-    const academicYears = enroleeNumber
-      ? (() => {
-          const match = enroleeNumber.match(/E(\d{2})/);
-          if (!match) throw new Error("Invalid enrolee number format");
-          return [`ay20${match[1]}`];
-        })()
-      : BACKEND_ACADEMIC_YEARS;
+    const academicYears = enroleeNumber ? [academicYearFromEnroleeNumber(enroleeNumber)] : BACKEND_ACADEMIC_YEARS;
 
     for (const academicYear of academicYears) {
       let query = supabase
@@ -605,10 +577,7 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const match = enroleeNumber.match(/E(\d{2})/);
-    if (!match) throw new Error("Invalid enrolee number format");
-
-    const academicYear = `ay20${match[1]}`;
+    const academicYear = academicYearFromEnroleeNumber(enroleeNumber);
 
     const { data: studentInformation, error: studentInformationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
@@ -670,13 +639,7 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let documentsData: any = null;
 
-    const academicYears = enroleeNumber
-      ? (() => {
-          const match = enroleeNumber.match(/E(\d{2})/);
-          if (!match) throw new Error("Invalid enrolee number format");
-          return [`ay20${match[1]}`];
-        })()
-      : BACKEND_ACADEMIC_YEARS;
+    const academicYears = enroleeNumber ? [academicYearFromEnroleeNumber(enroleeNumber)] : BACKEND_ACADEMIC_YEARS;
 
     for (const academicYear of academicYears) {
       let appQuery = supabase
@@ -1482,10 +1445,7 @@ export async function submitExistingEnrollment(
   preCourseDetails: PreCourseDetails,
 ) {
   try {
-    const match = enroleeNumber.match(/E(\d{2})/);
-    if (!match) throw new Error("Invalid enrolee number format");
-
-    const currentAY = `ay20${match[1]}`;
+    const currentAY = academicYearFromEnroleeNumber(enroleeNumber);
 
     const {
       data: { session: existingSession },
@@ -1842,10 +1802,7 @@ export async function getFamilyDocuments(enroleeNumber: string) {
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const match = enroleeNumber.match(/E(\d{2})/);
-    if (!match) throw new Error("Invalid enrolee number format");
-
-    const academicYear = `ay20${match[1]}`;
+    const academicYear = academicYearFromEnroleeNumber(enroleeNumber);
 
     // Verify ownership via the applications table before querying documents
     const { data: ownership, error: ownershipError } = await supabase

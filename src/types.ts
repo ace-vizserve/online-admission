@@ -187,22 +187,6 @@ export type StudentDetails = {
 };
 
 export type StudentDocument = {
-  studentPassApplicationDocuments:
-    | [
-        {
-          icaPhoto: string | null;
-          icaPhotoStatus: string | null;
-        },
-        {
-          vaccinationInformation: string | null;
-          vaccinationInformationStatus: string | null;
-        },
-        {
-          financialSupportDocs: string | null;
-          financialSupportDocsStatus: string | null;
-        },
-      ]
-    | null;
   documentsThatExpire: [
     {
       passport: string | null;

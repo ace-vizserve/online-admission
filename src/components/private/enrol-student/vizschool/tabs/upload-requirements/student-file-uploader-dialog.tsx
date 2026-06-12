@@ -68,15 +68,7 @@ const TO_FOLLOW_DOCS = ["idPicture", "passport", "pass", "birthCert"];
 
 const OPTIONAL_DOCS = ["medical", "educCert"];
 
-const NON_EXPIRING_DOCS = [
-  "medical",
-  "educCert",
-  "idPicture",
-  "birthCert",
-  "icaPhoto",
-  "vaccinationInformation",
-  "financialSupportDocs",
-];
+const NON_EXPIRING_DOCS = ["medical", "educCert", "idPicture", "birthCert"];
 
 const EXPIRING_DOCS = ["pass", "passport"];
 
@@ -978,24 +970,6 @@ function StudentFileUploaderDrawer({
             <DrawerDescription className="text-xs font-semibold">
               Upload a clear and recent document in{" "}
               <strong> {MULTIPLE_FILE_UPLOADS.includes(name) ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
-              {(name as string) === "icaPhoto" && (
-                <span className="mt-2 font-semibold">
-                  {" "}
-                  Recommended digital photo size for online submission is{" "}
-                  <strong className="text-destructive">400 × 514 pixels</strong> in JPEG or similar format that meets
-                  ICA requirements.
-                  <br />
-                  <br /> For ICA‑compliant photos, please follow the official{" "}
-                  <a
-                    href="https://www.ica.gov.sg/photo-guidelines"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline underline-offset-2">
-                    ICA Photo Guidelines
-                  </a>
-                  .
-                </span>
-              )}
             </DrawerDescription>
           </DrawerHeader>
 
