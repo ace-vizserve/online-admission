@@ -23,7 +23,7 @@ export function ReportCards() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 mt-8 space-y-6">
       <div className="space-y-1">
         <div className="flex items-center gap-2.5">
           <div className="rounded-lg bg-primary p-2 shrink-0">

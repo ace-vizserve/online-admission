@@ -189,3 +189,19 @@
 *::before {
   font-family: "Geist", sans-serif;
 }
+
+@media print {
+  /* Print only the report card: hide the whole page, then reveal just the card. */
+  body * {
+    visibility: hidden;
+  }
+  #report-card-print,
+  #report-card-print * {
+    visibility: visible;
+  }
+  #report-card-print {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+  }
+}
