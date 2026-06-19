@@ -2,89 +2,34 @@ import PageMetaData from "@/components/page-metadata";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { applicationTypes } from "@/data";
+import { applicationTypes, studentPassTypes } from "@/data";
 import { cn } from "@/lib/utils";
 import { usePassTypeStore, useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
 import { Description, Field, Label, Radio, RadioGroup } from "@headlessui/react";
 import { DotPulse } from "ldrs/react";
 import { ArrowLeft, ArrowRight, CircleCheck, FileCheck2, Globe2, Landmark } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { toast } from "sonner";
 
-function OtherPassTypes({ isSelected }: { isSelected: boolean }) {
-  const passType = usePassTypeStore((state) => state.passType);
-  const setPassType = usePassTypeStore((state) => state.setPassType);
+// Pass-type sub-choices, reused from the shared data constants.
+const NON_STP_PASSES = studentPassTypes.filter((p) => ["Long Term Visit Pass", "Dependent Pass"].includes(p.value));
+const LOCAL_PASSES = studentPassTypes.filter((p) => ["Singaporean", "Singapore PR"].includes(p.value));
 
-  return (
-    <div className="mb-5 space-y-2">
-      {" "}
-      <Label
-        className={cn("text-[11px] font-black uppercase tracking-[0.1em] text-blue-900/60", {
-          "text-destructive": isSelected && passType === "",
-        })}>
-        Specify Pass Type{" "}
-      </Label>{" "}
-      <Select onValueChange={setPassType} value={passType}>
-        {" "}
-        <SelectTrigger
-          className={cn(
-            "h-11 w-full border-blue-200 bg-white/50 transition-all focus:ring-blue-500",
-            "hover:bg-white hover:border-blue-400 group-data-[checked]:border-blue-300",
-            { "!border-destructive": isSelected && passType === "" },
-          )}>
-          <SelectValue placeholder="Select a pass type" />{" "}
-        </SelectTrigger>{" "}
-        <SelectContent className="rounded-xl border-slate-200 shadow-xl">
-          {" "}
-          <SelectItem value={"Long Term Visit Pass"} className="py-3 text-sm focus:bg-blue-50 focus:text-blue-900">
-            Long Term Visit Pass{" "}
-          </SelectItem>{" "}
-          <SelectItem value={"Dependent Pass"} className="py-3 text-sm focus:bg-blue-50 focus:text-blue-900">
-            Dependent Pass{" "}
-          </SelectItem>{" "}
-        </SelectContent>{" "}
-      </Select>{" "}
-    </div>
-  );
-}
-
-function LocalPassTypes({ isSelected }: { isSelected: boolean }) {
-  const passType = usePassTypeStore((state) => state.passType);
-  const setPassType = usePassTypeStore((state) => state.setPassType);
-
-  return (
-    <div className="mb-5 space-y-2">
-      {" "}
-      <Label
-        className={cn("text-[11px] font-black uppercase tracking-[0.1em] text-blue-900/60", {
-          "text-destructive": isSelected && passType === "",
-        })}>
-        Specify Residency{" "}
-      </Label>{" "}
-      <Select onValueChange={setPassType} value={passType}>
-        {" "}
-        <SelectTrigger
-          className={cn(
-            "h-11 w-full border-blue-200 bg-white/50 transition-all focus:ring-blue-500",
-            "hover:bg-white hover:border-blue-400 group-data-[checked]:border-blue-300",
-            { "!border-destructive": isSelected && passType === "" },
-          )}>
-          <SelectValue placeholder="Select a pass type" />{" "}
-        </SelectTrigger>{" "}
-        <SelectContent className="rounded-xl border-slate-200 shadow-xl">
-          {" "}
-          <SelectItem value={"Singaporean"} className="py-3 text-sm focus:bg-blue-50 focus:text-blue-900">
-            Singaporean{" "}
-          </SelectItem>{" "}
-          <SelectItem value={"Singapore PR"} className="py-3 text-sm focus:bg-blue-50 focus:text-blue-900">
-            Singapore PR{" "}
-          </SelectItem>{" "}
-        </SelectContent>{" "}
-      </Select>{" "}
-    </div>
-  );
-}
+type ResidencyOption = {
+  id: string;
+  title: string;
+  badge?: string;
+  desc: string;
+  icon: typeof Globe2;
+  detailsTitle: string;
+  details: string[];
+  /** Fixed store outputs written when this card is selected. */
+  store: { stpApplicationType: string; passType: string };
+  /** When present, the card needs a specific pass to be chosen (label + options). */
+  passLabel?: string;
+  passOptions?: { label: string; value: string }[];
+  willRender: (enroleeType: string) => boolean;
+};
 
 export default function StudentResidencyPage() {
   const { state } = useLocation();
@@ -96,10 +41,9 @@ export default function StudentResidencyPage() {
   const isSTP = currentPass === "Student Pass";
   const isLocal = ["Singapore PR", "Singaporean"].includes(currentPass);
 
-  const residencyOptions = [
+  const residencyOptions: ResidencyOption[] = [
     {
       id: "new",
-      value: "New Student Pass Application",
       title: "Needs NEW Student's Pass",
       badge: "School Assistance Included",
       desc: "International student with no current Student's Pass. HFSE will submit a new application to ICA on your behalf.",
@@ -111,22 +55,22 @@ export default function StudentResidencyPage() {
         "School tracks application status",
         "Typical processing: several weeks (ICA dependent)",
       ],
-      willRender: true,
+      store: { stpApplicationType: "New Student Pass Application", passType: "" },
+      willRender: () => true,
     },
     {
       id: "existing",
-      value: "Student Pass Transfer Application",
       title: "STP Transfer from Another PEI",
       badge: "Transfer Assistance",
       desc: "Currently holds a valid Student's Pass from another institution. HFSE will assist with transferring sponsorship.",
       icon: FileCheck2,
       detailsTitle: "What you need:",
       details: ["Current pass number and expiry date", "Copy of existing Student's Pass", "Previous school details"],
-      willRender: enroleeType === "New",
+      store: { stpApplicationType: "Student Pass Transfer Application", passType: "" },
+      willRender: (type) => type === "New",
     },
     {
       id: "stp",
-      value: "Student Pass",
       title: "Valid Student's Pass (Current HFSE Student)",
       badge: "Skip New Application",
       desc: "Current HFSE student with a valid Student's Pass covering this enrolment period. No new ICA application is required.",
@@ -138,7 +82,8 @@ export default function StudentResidencyPage() {
         "No additional ICA action needed",
         "Proceed to enrolment documents",
       ],
-      willRender: enroleeType === "Current",
+      store: { stpApplicationType: "", passType: "Student Pass" },
+      willRender: (type) => type === "Current",
     },
     {
       id: "non-stp",
@@ -146,10 +91,12 @@ export default function StudentResidencyPage() {
       badge: "No Student's Pass Required",
       desc: "For students enrolling using a Long Term Visit Pass or Dependant's Pass.",
       icon: Landmark,
-      detailsTitle: "Specify Pass Type:",
+      detailsTitle: "What you need:",
       details: ["Identity document", "Valid residency or pass documentation"],
-      passTypes: OtherPassTypes,
-      willRender: true,
+      store: { stpApplicationType: "", passType: "" },
+      passLabel: "Specify Pass Type",
+      passOptions: NON_STP_PASSES,
+      willRender: () => true,
     },
     {
       id: "citizen",
@@ -157,14 +104,16 @@ export default function StudentResidencyPage() {
       badge: "No Pass Required",
       desc: "No Student's Pass required. Standard school enrolment process applies.",
       icon: Landmark,
-      detailsTitle: "Specify Residency:",
+      detailsTitle: "What you need:",
       details: ["NRIC / Birth certificate", "Proof of residency"],
-      passTypes: LocalPassTypes,
-      willRender: true,
+      store: { stpApplicationType: "", passType: "" },
+      passLabel: "Specify Residency",
+      passOptions: LOCAL_PASSES,
+      willRender: () => true,
     },
   ];
 
-  const [selected, setSelected] = useState<(typeof residencyOptions)[number] | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const passType = usePassTypeStore((state) => state.passType);
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
@@ -175,6 +124,36 @@ export default function StudentResidencyPage() {
 
   const [isLoading, setTransition] = useTransition();
 
+  const selectedOption = residencyOptions.find((option) => option.id === selectedId) ?? null;
+  // A New enrolee must pick the specific pass; a Current enrolee's pass is taken from their record.
+  const needsPassChoice = Boolean(selectedOption?.passOptions) && enroleeType === "New";
+  const disableContinue = !selectedId || (needsPassChoice && !passType);
+
+  // Which cards a Current enrolee may pick, based on the pass already on file.
+  // New enrolees (no pass on record) may pick any rendered card.
+  function isEligible(id: string) {
+    if (enroleeType !== "Current") return true;
+    if (isSTP) return id === "stp" || id === "new";
+    if (isNonSTP) return id === "non-stp" || id === "new";
+    if (isLocal) return id === "citizen";
+    return true;
+  }
+
+  function handleSelect(id: string) {
+    const option = residencyOptions.find((o) => o.id === id);
+    if (!option) return;
+
+    setSelectedId(id);
+    setStpApplicationType(option.store.stpApplicationType);
+
+    if (option.passOptions) {
+      // Current: auto-apply the pass on file. New: clear until the parent chooses below.
+      setPassType(enroleeType === "Current" ? currentPass : "");
+    } else {
+      setPassType(option.store.passType);
+    }
+  }
+
   function goBack() {
     setTransition(() => {
       clearState();
@@ -183,17 +162,6 @@ export default function StudentResidencyPage() {
     });
   }
 
-  useEffect(() => {
-    if (!selected) return;
-    if (applicationTypes.includes(selected.value || "")) {
-      setPassType("");
-      setStpApplicationType(selected.value!);
-    } else {
-      setPassType(selected.value || passType);
-      setStpApplicationType("");
-    }
-  }, [selected, setPassType, setStpApplicationType, applicationTypes, passType]);
-
   function redirect() {
     if (isOpenHouseRegistration) {
       navigate("/open-house/stp-guidelines", {
@@ -201,13 +169,6 @@ export default function StudentResidencyPage() {
           enroleeType,
           isOpenHouseRegistration,
         },
-      });
-      return;
-    }
-
-    if ((isNonSTP || isLocal) && passType && passType !== currentPass) {
-      toast.error("Selected Pass Type Does Not Match!", {
-        description: "The selected pass type does not match what the student currently holds.",
       });
       return;
     }
@@ -229,13 +190,10 @@ export default function StudentResidencyPage() {
     );
   }
 
-  const mustChoosePassType = selected && (selected.id === "non-stp" || selected.id === "citizen");
-  const disableContinue = !selected || (mustChoosePassType && !passType);
-
   return (
     <>
       <PageMetaData title="Residency Status | HFSE International School" description="Select your child's residency and pass type to proceed with enrollment." />
-      <div className="w-full sticky top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
+      <div className="w-full sticky top-0 z-20 bg-background/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link
             onClick={goBack}
@@ -249,7 +207,7 @@ export default function StudentResidencyPage() {
         </MaxWidthWrapper>
       </div>
 
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col min-h-screen bg-slate-50">
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col min-h-screen bg-muted/40">
         <header className="px-6 mt-12 text-center space-y-6">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">Student Residency Status</h1>
           <p className="text-lg md:text-xl text-muted-foreground text-pretty">
@@ -258,71 +216,54 @@ export default function StudentResidencyPage() {
         </header>
 
         <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-10">
-          <RadioGroup value={selected} onChange={setSelected} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <RadioGroup value={selectedId} onChange={handleSelect} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {residencyOptions.map((option) => {
-              if (!option.willRender) return null;
+              if (!option.willRender(enroleeType)) return null;
 
               const Icon = option.icon;
-              const isChecked = selected?.id === option.id;
-
-              let disabled = false;
-              if (isNonSTP) {
-                if (option.id === "stp" || option.id === "citizen") disabled = true;
-              }
-              if (isLocal) {
-                if (option.id === "non-stp" || option.id === "new" || option.id === "existing" || option.id === "stp")
-                  disabled = true;
-              }
-              if (isSTP && enroleeType === "Current") {
-                if (option.id === "existing" || option.id === "non-stp" || option.id === "citizen") {
-                  disabled = true;
-                }
-              }
+              const eligible = isEligible(option.id);
 
               return (
                 <Field key={option.id}>
                   <Radio
-                    disabled={disabled}
-                    value={option}
+                    disabled={!eligible}
+                    value={option.id}
                     className={cn(
                       "h-full group relative flex flex-col w-full cursor-pointer rounded-2xl border-2 p-6 transition-all duration-300 shadow-sm",
-                      "border-white bg-white hover:border-blue-200 hover:shadow-md",
-                      "data-[checked]:border-blue-600 data-[checked]:bg-blue-50/50 data-[checked]:shadow-blue-100",
-                      disabled && "opacity-50 cursor-not-allowed hover:border-white hover:shadow-sm",
+                      "border-border bg-card hover:border-primary/40 hover:shadow-md",
+                      "data-[checked]:border-primary data-[checked]:bg-primary/5 data-[checked]:shadow-md",
+                      !eligible && "opacity-50 cursor-not-allowed hover:border-border hover:shadow-sm",
                     )}>
                     <div className="flex items-start gap-5 mb-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-data-[checked]:bg-blue-600 group-data-[checked]:text-white">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-data-[checked]:bg-primary group-data-[checked]:text-primary-foreground">
                         <Icon size={28} />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Label className="text-lg font-bold text-slate-900 group-data-[checked]:text-blue-900">
-                            {option.title}
-                          </Label>
-                        </div>
+                        <Label className="text-lg font-bold text-foreground group-data-[checked]:text-primary">
+                          {option.title}
+                        </Label>
                         {option.badge && (
-                          <span className="w-fit text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-700 group-data-[checked]:bg-blue-600 group-data-[checked]:text-white transition-colors">
+                          <span className="w-fit text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary group-data-[checked]:bg-primary group-data-[checked]:text-primary-foreground transition-colors">
                             {option.badge}
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <Description className="text-sm text-slate-600 leading-relaxed mb-6 group-data-[checked]:text-blue-800/80">
+                    <Description className="text-sm text-muted-foreground leading-relaxed mb-6">
                       {option.desc}
                     </Description>
 
-                    <div className="mt-auto pt-5 border-t border-slate-100 group-data-[checked]:border-blue-200">
-                      {option.passTypes && <option.passTypes isSelected={isChecked} />}
-                      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 group-data-[checked]:text-blue-900 mb-3">
+                    <div className="mt-auto pt-5 border-t border-border group-data-[checked]:border-primary/30">
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground group-data-[checked]:text-primary mb-3">
                         {option.detailsTitle}
                       </p>
                       <ul className="space-y-2">
                         {option.details.map((detail, idx) => (
                           <li
                             key={idx}
-                            className="font-medium flex items-start gap-2 text-[13px] text-slate-500 group-data-[checked]:text-blue-800/70">
-                            <div className="h-1.5 w-1.5 mt-1.5 rounded-full bg-slate-300 group-data-[checked]:bg-blue-400 shrink-0" />
+                            className="font-medium flex items-start gap-2 text-sm text-muted-foreground">
+                            <div className="h-1.5 w-1.5 mt-1.5 rounded-full bg-muted-foreground/40 group-data-[checked]:bg-primary shrink-0" />
                             {detail}
                           </li>
                         ))}
@@ -333,9 +274,42 @@ export default function StudentResidencyPage() {
               );
             })}
           </RadioGroup>
+
+          {selectedOption?.passOptions && (
+            <div className="mt-8 max-w-md mx-auto">
+              {enroleeType === "New" ? (
+                <div className="space-y-2">
+                  <p
+                    className={cn("text-xs font-black uppercase tracking-[0.1em] text-muted-foreground", {
+                      "text-destructive": needsPassChoice && !passType,
+                    })}>
+                    {selectedOption.passLabel}
+                  </p>
+                  <Select value={passType} onValueChange={setPassType}>
+                    <SelectTrigger
+                      className={cn("h-11 w-full", { "!border-destructive": needsPassChoice && !passType })}>
+                      <SelectValue placeholder="Select a pass type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedOption.passOptions.map((pass) => (
+                        <SelectItem key={pass.value} value={pass.value} className="py-3 text-sm">
+                          {pass.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm">
+                  <span className="text-muted-foreground">Using the pass on file: </span>
+                  <span className="font-semibold text-foreground">{currentPass}</span>
+                </div>
+              )}
+            </div>
+          )}
         </main>
 
-        <footer className="px-6 sticky bottom-0 bg-white border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <footer className="px-6 sticky bottom-0 bg-background border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
           <div className="max-w-5xl mx-auto flex flex-col gap-4">
             <button
               type="button"
