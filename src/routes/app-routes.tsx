@@ -1,3 +1,4 @@
+import AdminGuard from "@/components/auth/admin-guard";
 import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import ErrorPage from "@/components/error-page";
@@ -12,6 +13,7 @@ import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
+import MoveStudent from "@/pages/admin/move-student";
 import NotFound from "@/pages/not-found";
 import AccountSettings from "@/pages/private/account-settings";
 import AdmissionGuidelines from "@/pages/private/admission-guidelines";
@@ -230,6 +232,15 @@ function AppRoutes() {
               <AuthGuard>
                 <Uploaded />
               </AuthGuard>
+            }
+          />
+
+          <Route
+            path="admin/move-student"
+            element={
+              <AdminGuard>
+                <MoveStudent />
+              </AdminGuard>
             }
           />
 
