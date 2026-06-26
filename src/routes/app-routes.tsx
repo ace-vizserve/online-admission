@@ -1,7 +1,9 @@
 import AdminGuard from "@/components/auth/admin-guard";
+import AdminUnauthenticatedGuard from "@/components/auth/admin-unauthenticated-guard";
 import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import ErrorPage from "@/components/error-page";
+import AdminLayout from "@/components/layout/admin-layout";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
@@ -13,6 +15,7 @@ import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
+import AdminLogin from "@/pages/admin/login";
 import MoveStudent from "@/pages/admin/move-student";
 import NotFound from "@/pages/not-found";
 import AccountSettings from "@/pages/private/account-settings";
@@ -232,15 +235,6 @@ function AppRoutes() {
               <AuthGuard>
                 <Uploaded />
               </AuthGuard>
-            }
-          />
-
-          <Route
-            path="admin/move-student"
-            element={
-              <AdminGuard>
-                <MoveStudent />
-              </AdminGuard>
             }
           />
 
@@ -508,6 +502,26 @@ function AppRoutes() {
             </UnauthenticatedGuard>
           }
         />
+        {/* Admin */}
+        <Route
+          path="/admin/login"
+          element={
+            <AdminUnauthenticatedGuard>
+              <AdminLogin />
+            </AdminUnauthenticatedGuard>
+          }
+        />
+        <Route path="admin" element={<AdminLayout />}>
+          <Route
+            path="move-student"
+            element={
+              <AdminGuard>
+                <MoveStudent />
+              </AdminGuard>
+            }
+          />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
