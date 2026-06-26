@@ -35,7 +35,7 @@ export default function AdminLogin() {
               <Logo className="h-20 w-auto" />
               <div className="space-y-2">
                 <h1 className="text-3xl font-black tracking-tight text-primary">Admin Portal</h1>
-                <p className="font-medium text-slate-500 leading-relaxed">
+                <p className="font-medium text-muted-foreground leading-relaxed">
                   Restricted access. Sign in with your admin credentials.
                 </p>
               </div>
@@ -49,7 +49,7 @@ export default function AdminLogin() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                           Email Address
                         </FormLabel>
                         <FormControl>
@@ -66,7 +66,7 @@ export default function AdminLogin() {
                     render={({ field }) => (
                       <FormItem>
                         <div className="flex justify-between items-center">
-                          <FormLabel className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             Password
                           </FormLabel>
                           <Link
@@ -85,11 +85,10 @@ export default function AdminLogin() {
                 </div>
 
                 <Button
-                  variant="cta"
-                  size="lg"
                   disabled={isPending}
                   type="submit"
-                  className="w-full">
+                  size="lg"
+                  className="w-full font-semibold">
                   {isPending ? (
                     <div className="flex items-center gap-3">
                       <span>Authenticating</span>
@@ -105,7 +104,7 @@ export default function AdminLogin() {
         </MaxWidthWrapper>
 
         {/* Visual Section */}
-        <div className="hidden lg:flex items-center justify-center bg-slate-50 p-12">
+        <div className="hidden lg:flex items-center justify-center bg-muted p-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -120,7 +119,7 @@ export default function AdminLogin() {
                 <p className="text-xl font-black text-primary tracking-tight">
                   HFSE International School
                 </p>
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-medium text-muted-foreground">
                   Internal Administration System
                 </p>
               </div>
