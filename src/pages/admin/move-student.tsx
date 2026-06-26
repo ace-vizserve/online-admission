@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
@@ -91,23 +92,26 @@ export default function MoveStudent() {
         description="Move a student enrollment record between academic years."
       />
 
-      <div className="animate-in fade-in duration-300 grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100vh-3rem)]">
-        {/* ── Left: setup panel ───────────────────────────────────────── */}
-        <div className="flex flex-col gap-10 px-8 py-12 md:px-14 border-r border-slate-100">
+      <div className="animate-in fade-in duration-300 min-h-[calc(100vh-3rem)] flex items-start justify-center py-12 px-6">
+        <div className="w-full max-w-md space-y-8">
+
+          {/* Header */}
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2">
               Admin · Enrollment
             </p>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">Transfer record</h1>
-            <p className="mt-1 text-sm font-medium text-slate-500">
-              Move a student's enrollment — rows and files — to a different year.
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Transfer record</h1>
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
+              Move a student's enrollment to a different academic year.
             </p>
           </div>
 
-          <div className="flex flex-col gap-7">
+          {/* Fields */}
+          <div className="space-y-6">
+
             {/* From year */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 From year
               </label>
               <Select value={sourceAY} onValueChange={handleSourceAYChange}>
@@ -132,8 +136,8 @@ export default function MoveStudent() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.18 }}
-                  className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                     Student
                   </label>
                   <Popover open={comboOpen} onOpenChange={setComboOpen}>
@@ -153,12 +157,12 @@ export default function MoveStudent() {
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-40" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-xl border-slate-200 shadow-xl">
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-xl border-border shadow-xl">
                       <Command>
                         <CommandInput placeholder="Search by name or ID…" />
                         <CommandList>
                           <CommandEmpty>
-                            <span className="text-sm font-medium text-slate-500">
+                            <span className="text-sm font-medium text-muted-foreground">
                               No students in this year.
                             </span>
                           </CommandEmpty>
@@ -183,9 +187,7 @@ export default function MoveStudent() {
                                 <span className="flex-1 truncate text-sm font-medium">
                                   {studentDisplayName(s)}
                                 </span>
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] font-bold tracking-wider shrink-0">
+                                <Badge variant="outline" className="text-[10px] font-bold tracking-wider shrink-0">
                                   {s.enroleeNumber}
                                 </Badge>
                               </CommandItem>
@@ -207,8 +209,8 @@ export default function MoveStudent() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.18 }}
-                  className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                     To year
                   </label>
                   <Select value={targetAY} onValueChange={setTargetAY}>
@@ -227,114 +229,83 @@ export default function MoveStudent() {
               )}
             </AnimatePresence>
           </div>
-        </div>
 
-        {/* ── Right: dark staging panel ────────────────────────────────── */}
-        <div className="bg-slate-950 flex flex-col items-center justify-center px-8 py-12 md:px-14 min-h-[360px] lg:min-h-0">
-          <AnimatePresence mode="wait">
-            {!selectedStudent ? (
+          {/* Preview + CTA */}
+          <AnimatePresence>
+            {canMove && (
               <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col items-center gap-4 text-center">
-                <div className="flex items-center gap-4 text-slate-700">
-                  <span className="text-3xl font-black">AY ——</span>
-                  <ArrowRight className="h-5 w-5" />
-                  <span className="text-3xl font-black">AY ——</span>
-                </div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">
-                  Select a year and student to stage the transfer.
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key={selectedStudent.enroleeNumber + targetAY}
-                initial={{ opacity: 0, y: 14 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
+                exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
-                className="flex flex-col items-center gap-10 w-full max-w-xs">
+                className="rounded-xl border border-border bg-muted/40 overflow-hidden">
+
                 {/* Student identity */}
-                <div className="flex flex-col items-center gap-4">
-                  <div className="h-20 w-20 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
-                    <span className="text-2xl font-black text-primary">
+                <div className="flex items-center gap-4 px-5 py-4">
+                  <div className="h-11 w-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-black text-primary">
                       {studentInitials(selectedStudent)}
                     </span>
                   </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-black text-white tracking-tight leading-snug">
+                  <div className="min-w-0">
+                    <p className="font-black text-foreground truncate">
                       {studentDisplayName(selectedStudent)}
                     </p>
-                    <p className="mt-1 font-mono text-[11px] text-slate-500 uppercase tracking-widest">
+                    <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest mt-0.5">
                       {selectedStudent.enroleeNumber} · Level {selectedStudent.levelApplied}
                     </p>
                   </div>
                 </div>
 
-                {/* AY transfer — source strikes out as destination lights up */}
-                <div className="flex items-center gap-5 w-full">
+                <Separator />
+
+                {/* AY transfer */}
+                <div className="flex items-center gap-3 px-5 py-4">
                   <div className="flex-1 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">
                       From
                     </p>
-                    <p
-                      className={cn(
-                        "text-2xl font-black transition-all duration-300",
-                        targetAY
-                          ? "text-slate-600 line-through decoration-slate-600/60"
-                          : "text-white",
-                      )}>
+                    <p className="text-lg font-black text-muted-foreground line-through decoration-muted-foreground/40">
                       {ayLabel(sourceAY)}
                     </p>
                   </div>
-
-                  <ArrowRight
-                    className={cn(
-                      "h-5 w-5 shrink-0 transition-colors duration-300",
-                      targetAY ? "text-primary" : "text-slate-700",
-                    )}
-                  />
-
+                  <ArrowRight className="h-4 w-4 text-primary shrink-0" />
                   <div className="flex-1 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">
                       To
                     </p>
-                    <p
-                      className={cn(
-                        "text-2xl font-black transition-colors duration-300",
-                        targetAY ? "text-white" : "text-slate-700",
-                      )}>
-                      {targetAY ? ayLabel(targetAY) : "——"}
-                    </p>
+                    <p className="text-lg font-black text-foreground">{ayLabel(targetAY)}</p>
                   </div>
                 </div>
 
+                <Separator />
+
                 {/* CTA */}
-                <Button
-                  onClick={() => setConfirmOpen(true)}
-                  disabled={!canMove || isPending}
-                  className="w-full h-11 font-bold bg-gradient-to-br from-primary via-blue-600 to-blue-700 text-white rounded-xl border-b-4 border-blue-900 hover:brightness-110 hover:-translate-y-0.5 active:border-b-0 active:translate-y-0 transition-all duration-150 uppercase tracking-wider shadow-xl disabled:opacity-25 disabled:translate-y-0 disabled:border-b-4 disabled:shadow-none">
-                  {isPending ? "Transferring…" : "Transfer record"}
-                </Button>
+                <div className="px-5 py-4">
+                  <Button
+                    onClick={() => setConfirmOpen(true)}
+                    disabled={isPending}
+                    className="w-full h-11 font-bold bg-gradient-to-br from-primary via-blue-600 to-blue-700 text-white rounded-xl border-b-4 border-blue-900 hover:brightness-110 hover:-translate-y-0.5 active:border-b-0 active:translate-y-0 transition-all duration-150 uppercase tracking-wider shadow-lg">
+                    {isPending ? "Transferring…" : "Transfer record"}
+                  </Button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
+
         </div>
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-black text-slate-900">
+            <AlertDialogTitle className="font-black text-foreground">
               Transfer this record?
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-2 text-sm font-medium text-slate-500">
+              <div className="space-y-2 text-sm font-medium text-muted-foreground">
                 <p>
-                  <span className="font-bold text-slate-900">
+                  <span className="font-bold text-foreground">
                     {selectedStudent ? studentDisplayName(selectedStudent) : ""}
                   </span>{" "}
                   ({selectedStudent?.enroleeNumber}) will move from{" "}
