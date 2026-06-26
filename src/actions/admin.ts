@@ -1,4 +1,20 @@
+import { ADMIN_EMAILS } from "@/config/admin";
+import { supabase } from "@/lib/client";
+import { LoginSchema } from "@/zod-schema";
 import { Session } from "@supabase/supabase-js";
+import { toast } from "sonner";
+
+export async function adminLogin({ email, password }: LoginSchema) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    toast.error(error.message);
+    return;
+  }
+  if (!ADMIN_EMAILS.includes(data.user.email ?? "")) {
+    await supabase.auth.signOut();
+    toast.error("This account does not have admin access.");
+  }
+}
 
 const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/move-student-ay`;
 
