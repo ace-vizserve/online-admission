@@ -364,9 +364,11 @@ export default function MoveStudent() {
                 {/* CTA */}
                 <div className="px-5 py-4">
                   <Button
+                    variant="cta"
+                    size="lg"
                     onClick={() => setConfirmOpen(true)}
                     disabled={isPending}
-                    className="w-full h-11 font-bold bg-gradient-to-br from-primary via-blue-600 to-blue-700 text-white rounded-xl border-b-4 border-blue-900 hover:brightness-110 hover:-translate-y-0.5 active:border-b-0 active:translate-y-0 transition-all duration-150 uppercase tracking-wider shadow-lg">
+                    className="w-full uppercase tracking-wider">
                     {isPending
                       ? "Transferring…"
                       : `Transfer ${selected.size} record${selected.size !== 1 ? "s" : ""}`}
