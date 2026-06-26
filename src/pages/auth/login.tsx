@@ -63,7 +63,7 @@ function Login() {
                 <Logo className="h-20 w-auto" />
                 <div className="space-y-2">
                   <h1 className="text-3xl font-black tracking-tight text-primary">Parent Portal</h1>
-                  <p className="font-medium text-slate-500 leading-relaxed">
+                  <p className="font-medium text-muted-foreground leading-relaxed">
                     Access your dashboard to manage your child's admission and enrolment.
                   </p>
                 </div>
@@ -77,7 +77,7 @@ function Login() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             Email Address
                           </FormLabel>
                           <FormControl>
@@ -94,7 +94,7 @@ function Login() {
                       render={({ field }) => (
                         <FormItem>
                           <div className="flex justify-between items-center">
-                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                               Password
                             </FormLabel>
                             <Link to="/forgot-password" className="text-sm font-bold text-primary hover:underline">
@@ -113,7 +113,8 @@ function Login() {
                   <Button
                     disabled={isPending}
                     type="submit"
-                    className="w-full h-11 font-bold bg-primary transition-all rounded-xl shadow-lg shadow-slate-200">
+                    size="lg"
+                    className="w-full font-semibold">
                     {isPending ? (
                       <div className="flex items-center gap-3">
                         <span>Authenticating</span>
@@ -126,7 +127,7 @@ function Login() {
                 </form>
               </Form>
 
-              <p className="text-center text-sm text-slate-500 font-medium">
+              <p className="text-center text-sm text-muted-foreground font-medium">
                 Don&apos;t have an account?{" "}
                 <Link to="/registration" className="font-bold text-primary hover:underline">
                   Sign up
