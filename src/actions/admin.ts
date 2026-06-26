@@ -32,6 +32,20 @@ export type MoveStudentResult = {
   newStudentNumber: string;
 };
 
+export type BulkMoveRowResult = {
+  enroleeNumber: string;
+  ok: boolean;
+  newEnroleeNumber?: string;
+  newStudentNumber?: string;
+  error?: string;
+};
+
+export type BulkMoveResult = {
+  results: BulkMoveRowResult[];
+  moved: number;
+  failed: number;
+};
+
 async function callMoveStudentAY(session: Session, body: Record<string, unknown>): Promise<unknown> {
   const res = await fetch(FUNCTION_URL, {
     method: "POST",
@@ -57,4 +71,12 @@ export async function moveStudentAY(
 ): Promise<MoveStudentResult> {
   const data = await callMoveStudentAY(session, { action: "move", ...params });
   return data as MoveStudentResult;
+}
+
+export async function moveStudentsBulkAY(
+  session: Session,
+  params: { sourceAY: string; targetAY: string; enroleeNumbers: string[] },
+): Promise<BulkMoveResult> {
+  const data = await callMoveStudentAY(session, { action: "move-bulk", ...params });
+  return data as BulkMoveResult;
 }
