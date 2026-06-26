@@ -85,9 +85,11 @@ export default function AdminLogin() {
                 </div>
 
                 <Button
+                  variant="cta"
+                  size="lg"
                   disabled={isPending}
                   type="submit"
-                  className="w-full h-11 font-bold bg-primary transition-all rounded-xl shadow-lg shadow-slate-200">
+                  className="w-full">
                   {isPending ? (
                     <div className="flex items-center gap-3">
                       <span>Authenticating</span>
