@@ -405,8 +405,7 @@ export default function MoveStudent() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => doBulkMove()}
-              disabled={isPending}
-              className="font-bold bg-primary hover:bg-primary/90">
+              disabled={isPending}>
               {isPending ? "Transferring…" : `Yes, transfer ${selected.size}`}
             </AlertDialogAction>
           </AlertDialogFooter>
