@@ -11,23 +11,27 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState, useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const AY_OPTIONS = BACKEND_ACADEMIC_YEARS.filter((ay) => ay !== "ay9999").map((ay) => ({
   value: ay,
   label: `AY ${ay.slice(2)}`,
 }));
+
+type SortCol = "name" | "level" | "enroleeNumber";
 
 function studentDisplayName(s: AdminStudent) {
   return `${s.lastName}, ${s.firstName}${s.middleName ? ` ${s.middleName}` : ""}`;
@@ -37,13 +41,19 @@ function ayLabel(ay: string) {
   return AY_OPTIONS.find((o) => o.value === ay)?.label ?? ay;
 }
 
+const COL_HEADER = "text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 select-none";
+
 export default function MoveStudent() {
   const { session } = useSession();
   const [sourceAY, setSourceAY] = useState("");
   const [targetAY, setTargetAY] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [sortCol, setSortCol] = useState<SortCol>("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const { data: students = [], isLoading: studentsLoading } = useQuery({
     queryKey: ["admin-students", sourceAY],
@@ -73,6 +83,7 @@ export default function MoveStudent() {
       setSourceAY("");
       setTargetAY("");
       setLevelFilter("all");
+      setSearch("");
       setConfirmOpen(false);
     },
     onError: (err: Error) => {
@@ -81,17 +92,37 @@ export default function MoveStudent() {
     },
   });
 
-  // Sorted unique levels from the fetched student list
   const levels = useMemo(
     () => [...new Set(students.map((s) => s.levelApplied))].sort(),
     [students],
   );
 
-  // Students visible after applying the level filter
-  const filteredStudents = useMemo(
-    () => (levelFilter === "all" ? students : students.filter((s) => s.levelApplied === levelFilter)),
-    [students, levelFilter],
-  );
+  const filteredStudents = useMemo(() => {
+    let result = levelFilter === "all" ? students : students.filter((s) => s.levelApplied === levelFilter);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(
+        (s) =>
+          studentDisplayName(s).toLowerCase().includes(q) ||
+          s.enroleeNumber.toLowerCase().includes(q),
+      );
+    }
+    return [...result].sort((a, b) => {
+      const va =
+        sortCol === "level"
+          ? a.levelApplied
+          : sortCol === "enroleeNumber"
+            ? a.enroleeNumber
+            : studentDisplayName(a);
+      const vb =
+        sortCol === "level"
+          ? b.levelApplied
+          : sortCol === "enroleeNumber"
+            ? b.enroleeNumber
+            : studentDisplayName(b);
+      return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+  }, [students, levelFilter, search, sortCol, sortDir]);
 
   const filteredIds = useMemo(
     () => new Set(filteredStudents.map((s) => s.enroleeNumber)),
@@ -100,8 +131,14 @@ export default function MoveStudent() {
 
   const allFilteredSelected =
     filteredStudents.length > 0 && filteredStudents.every((s) => selected.has(s.enroleeNumber));
-
   const someFilteredSelected = filteredStudents.some((s) => selected.has(s.enroleeNumber));
+
+  const rowVirtualizer = useVirtualizer({
+    count: filteredStudents.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 44,
+    overscan: 8,
+  });
 
   function toggleStudent(enroleeNumber: string) {
     setSelected((prev) => {
@@ -114,14 +151,12 @@ export default function MoveStudent() {
 
   function toggleAll() {
     if (allFilteredSelected) {
-      // Deselect all currently filtered
       setSelected((prev) => {
         const next = new Set(prev);
         filteredIds.forEach((id) => next.delete(id));
         return next;
       });
     } else {
-      // Select all currently filtered
       setSelected((prev) => {
         const next = new Set(prev);
         filteredIds.forEach((id) => next.add(id));
@@ -130,15 +165,28 @@ export default function MoveStudent() {
     }
   }
 
-  const targetAYOptions = AY_OPTIONS.filter((o) => o.value !== sourceAY);
-  const canMove = !!sourceAY && !!targetAY && selected.size > 0;
+  function toggleSort(col: SortCol) {
+    if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortCol(col); setSortDir("asc"); }
+  }
+
+  function SortIcon({ col }: { col: SortCol }) {
+    if (sortCol !== col) return <ChevronsUpDown className="h-3 w-3 opacity-40 shrink-0" />;
+    return sortDir === "asc"
+      ? <ChevronUp className="h-3 w-3 text-primary shrink-0" />
+      : <ChevronDown className="h-3 w-3 text-primary shrink-0" />;
+  }
 
   function handleSourceAYChange(val: string) {
     setSourceAY(val);
     setSelected(new Set());
     setTargetAY("");
     setLevelFilter("all");
+    setSearch("");
   }
+
+  const targetAYOptions = AY_OPTIONS.filter((o) => o.value !== sourceAY);
+  const canMove = !!sourceAY && !!targetAY && selected.size > 0;
 
   return (
     <>
@@ -183,7 +231,7 @@ export default function MoveStudent() {
               </Select>
             </div>
 
-            {/* Student multi-select */}
+            {/* Student checklist */}
             <AnimatePresence>
               {sourceAY && (
                 <motion.div
@@ -193,38 +241,49 @@ export default function MoveStudent() {
                   transition={{ duration: 0.18 }}
                   className="space-y-3">
 
-                  {/* Level filter + selected count */}
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center justify-between">
                     <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       Students
                     </label>
-                    <div className="flex items-center gap-3">
-                      {selected.size > 0 && (
-                        <span className="text-[11px] font-bold text-primary">
-                          {selected.size} selected
-                        </span>
-                      )}
-                      <Select
-                        value={levelFilter}
-                        onValueChange={(v) => setLevelFilter(v)}
-                        disabled={studentsLoading || levels.length === 0}>
-                        <SelectTrigger className="h-8 w-36 text-xs">
-                          <SelectValue placeholder="All levels" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All levels</SelectItem>
-                          {levels.map((l) => (
-                            <SelectItem key={l} value={l}>{l}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {selected.size > 0 && (
+                      <span className="text-[11px] font-bold text-primary">
+                        {selected.size} selected
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Search + level filter */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="Search name or ID…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-8 text-sm"
+                      />
                     </div>
+                    <Select
+                      value={levelFilter}
+                      onValueChange={setLevelFilter}
+                      disabled={studentsLoading || levels.length === 0}>
+                      <SelectTrigger className="h-8 w-36 text-xs shrink-0">
+                        <SelectValue placeholder="All levels" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All levels</SelectItem>
+                        {levels.map((l) => (
+                          <SelectItem key={l} value={l}>{l}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Checklist panel */}
                   <div className="rounded-xl border border-border bg-muted/40 overflow-hidden">
+
                     {/* Select-all header */}
-                    <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/60">
+                    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-muted/60">
                       <Checkbox
                         id="select-all"
                         checked={allFilteredSelected ? true : someFilteredSelected ? "indeterminate" : false}
@@ -233,50 +292,92 @@ export default function MoveStudent() {
                       />
                       <label
                         htmlFor="select-all"
-                        className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground cursor-pointer select-none">
+                        className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground cursor-pointer select-none flex-1">
                         {allFilteredSelected
                           ? `Deselect all (${filteredStudents.length})`
                           : `Select all (${filteredStudents.length})`}
                       </label>
                     </div>
 
-                    {/* Student rows */}
-                    <div className="max-h-72 overflow-y-auto divide-y divide-border">
+                    {/* Column headers */}
+                    <div className="grid grid-cols-[40px_1fr_108px_100px] items-center px-4 py-2 border-b border-border bg-muted/30">
+                      <div />
+                      <button className={COL_HEADER} onClick={() => toggleSort("name")}>
+                        Name <SortIcon col="name" />
+                      </button>
+                      <button className={COL_HEADER} onClick={() => toggleSort("level")}>
+                        Level <SortIcon col="level" />
+                      </button>
+                      <button className={COL_HEADER} onClick={() => toggleSort("enroleeNumber")}>
+                        ID <SortIcon col="enroleeNumber" />
+                      </button>
+                    </div>
+
+                    {/* Virtualized rows */}
+                    <div ref={parentRef} className="max-h-64 overflow-y-auto">
                       {studentsLoading ? (
                         <div className="px-4 py-8 text-center">
                           <p className="text-sm font-medium text-muted-foreground">Loading…</p>
                         </div>
                       ) : filteredStudents.length === 0 ? (
                         <div className="px-4 py-8 text-center">
-                          <p className="text-sm font-medium text-muted-foreground">No students in this year.</p>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {search || levelFilter !== "all"
+                              ? "No students match your filters."
+                              : "No students in this year."}
+                          </p>
                         </div>
                       ) : (
-                        filteredStudents.map((s) => (
-                          <label
-                            key={s.enroleeNumber}
-                            htmlFor={`student-${s.enroleeNumber}`}
-                            className={cn(
-                              "flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors",
-                              selected.has(s.enroleeNumber)
-                                ? "bg-primary/5"
-                                : "hover:bg-muted/80",
-                            )}>
-                            <Checkbox
-                              id={`student-${s.enroleeNumber}`}
-                              checked={selected.has(s.enroleeNumber)}
-                              onCheckedChange={() => toggleStudent(s.enroleeNumber)}
-                            />
-                            <span className="flex-1 text-sm font-medium text-foreground truncate">
-                              {studentDisplayName(s)}
-                            </span>
-                            <span className="text-[10px] font-mono text-muted-foreground shrink-0">
-                              {s.levelApplied}
-                            </span>
-                            <Badge variant="outline" className="text-[10px] font-bold tracking-wider shrink-0">
-                              {s.enroleeNumber}
-                            </Badge>
-                          </label>
-                        ))
+                        <div
+                          style={{
+                            height: `${rowVirtualizer.getTotalSize()}px`,
+                            position: "relative",
+                          }}>
+                          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                            const s = filteredStudents[virtualRow.index];
+                            const isSelected = selected.has(s.enroleeNumber);
+                            const isLast = virtualRow.index === filteredStudents.length - 1;
+                            return (
+                              <div
+                                key={s.enroleeNumber}
+                                onClick={() => toggleStudent(s.enroleeNumber)}
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: `${virtualRow.size}px`,
+                                  transform: `translateY(${virtualRow.start}px)`,
+                                }}
+                                className={cn(
+                                  "grid grid-cols-[40px_1fr_108px_100px] items-center px-4 cursor-pointer select-none transition-colors",
+                                  !isLast && "border-b border-border/40",
+                                  isSelected ? "bg-primary/5" : "hover:bg-muted/80",
+                                )}>
+                                {/* Checkbox — stop propagation so div onClick doesn't double-fire */}
+                                <div
+                                  className="flex items-center"
+                                  onClick={(e) => e.stopPropagation()}>
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={() => toggleStudent(s.enroleeNumber)}
+                                  />
+                                </div>
+                                <span className="text-sm font-medium text-foreground truncate pr-2">
+                                  {studentDisplayName(s)}
+                                </span>
+                                <span className="text-[11px] font-mono text-muted-foreground truncate pr-2">
+                                  {s.levelApplied}
+                                </span>
+                                <div>
+                                  <Badge variant="outline" className="text-[10px] font-bold tracking-wider">
+                                    {s.enroleeNumber}
+                                  </Badge>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -323,7 +424,6 @@ export default function MoveStudent() {
                 transition={{ duration: 0.22, ease: "easeOut" }}
                 className="rounded-xl border border-border bg-muted/40 overflow-hidden">
 
-                {/* Summary */}
                 <div className="flex items-center gap-4 px-5 py-4">
                   <div className="h-11 w-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-black text-primary">{selected.size}</span>
@@ -340,28 +440,22 @@ export default function MoveStudent() {
 
                 <Separator />
 
-                {/* AY transfer */}
                 <div className="flex items-center gap-3 px-5 py-4">
                   <div className="flex-1 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                      From
-                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">From</p>
                     <p className="text-lg font-black text-muted-foreground line-through decoration-muted-foreground/40">
                       {ayLabel(sourceAY)}
                     </p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-primary shrink-0" />
                   <div className="flex-1 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                      To
-                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">To</p>
                     <p className="text-lg font-black text-foreground">{ayLabel(targetAY)}</p>
                   </div>
                 </div>
 
                 <Separator />
 
-                {/* CTA */}
                 <div className="px-5 py-4">
                   <Button
                     variant="cta"
@@ -390,12 +484,17 @@ export default function MoveStudent() {
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-sm font-medium text-muted-foreground">
                 <p>
-                  <span className="font-bold text-foreground">{selected.size} student{selected.size !== 1 ? "s" : ""}</span>
-                  {" "}will move from{" "}
+                  <span className="font-bold text-foreground">
+                    {selected.size} student{selected.size !== 1 ? "s" : ""}
+                  </span>{" "}
+                  will move from{" "}
                   <span className="font-bold text-primary">{ayLabel(sourceAY)}</span> to{" "}
                   <span className="font-bold text-primary">{ayLabel(targetAY)}</span>.
                 </p>
-                <p>All database records and uploaded files transfer with them. Students are moved one at a time — you'll see a summary of successes and failures when done.</p>
+                <p>
+                  All database records and uploaded files transfer with them. Students are moved one
+                  at a time — you'll see a summary of successes and failures when done.
+                </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -403,9 +502,7 @@ export default function MoveStudent() {
             <AlertDialogCancel disabled={isPending} className="font-bold">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => doBulkMove()}
-              disabled={isPending}>
+            <AlertDialogAction onClick={() => doBulkMove()} disabled={isPending}>
               {isPending ? "Transferring…" : `Yes, transfer ${selected.size}`}
             </AlertDialogAction>
           </AlertDialogFooter>
