@@ -21,6 +21,7 @@ import NotFound from "@/pages/not-found";
 import AccountSettings from "@/pages/private/account-settings";
 import AdmissionGuidelines from "@/pages/private/admission-guidelines";
 import Dashboard from "@/pages/private/dashboard";
+import Drafts from "@/pages/private/drafts";
 import ApplicationSubmitted from "@/pages/private/enrol-student/application-submitted";
 import EnrolStudent from "@/pages/private/enrol-student/enrol-student";
 import EnrollmentInformation from "@/pages/private/enrol-student/new/enrollment-information";
@@ -234,6 +235,15 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <Uploaded />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="drafts"
+            element={
+              <AuthGuard>
+                <Drafts />
               </AuthGuard>
             }
           />

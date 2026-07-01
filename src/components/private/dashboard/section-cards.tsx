@@ -1,14 +1,15 @@
 import { getSectionCardsDetails } from "@/actions/private";
-import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
+import { getDraftRows } from "@/components/private/drafts/draft-ticket";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ViewReportCardButton } from "@/components/view-report-card";
+import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import useSession from "@/hooks/use-session";
 import { cn, getCurrentDayState } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, CheckCircle2, FileClock, GraduationCap, Info, UserPlus, Users } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, FileClock, FilePen, GraduationCap, Info, UserPlus, Users } from "lucide-react";
 import { Link } from "react-router";
 
 export function SectionCards() {
@@ -84,9 +85,16 @@ export function SectionCards() {
 }
 
 function DashboardCards({ currentEnrolledStudents, pendingTasks, totalEnrollments }: DashboardCardsProps) {
+  const draftCount = getDraftRows().length;
+
   return (
-    <div className="flex flex-col lg:flex-row gap-4 w-full">
-      <div className="w-full max-w-full xl:max-w-[500px] flex flex-col gap-4">
+    <div className="flex flex-col gap-4 w-full">
+      <div
+        className={cn("w-full max-w-full grid lg:grid-cols-2 gap-4", {
+          "lg:grid-cols-3": draftCount > 0,
+        })}>
+        {draftCount > 0 && <DraftCountWidget count={draftCount} />}
+
         <StatCard
           icon={<GraduationCap className="stroke-white size-5" />}
           label="Enrolled Students"
@@ -110,6 +118,35 @@ function DashboardCards({ currentEnrolledStudents, pendingTasks, totalEnrollment
         value={pendingTasks}
       />
     </div>
+  );
+}
+
+function DraftCountWidget({ count }: { count: number }) {
+  return (
+    <Link to="/admission/drafts" className="block w-full">
+      <Card className="w-full shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+        <CardHeader className="flex flex-col gap-2 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-amber-600 p-2 text-white">
+                <FilePen className="stroke-white size-5" />
+              </div>
+              <CardDescription className="font-bold text-black text-sm uppercase tracking-tight">
+                Saved Drafts
+              </CardDescription>
+            </div>
+            <ArrowUpRight className="size-4 text-muted-foreground" />
+          </div>
+          <div className="mt-4 flex items-baseline gap-2">
+            <CardTitle className="text-5xl font-black tabular-nums text-black">{count}</CardTitle>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              {count === 1 ? "Application" : "Applications"}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">Continue where you left off</p>
+        </CardHeader>
+      </Card>
+    </Link>
   );
 }
 

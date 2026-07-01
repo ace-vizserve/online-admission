@@ -55,7 +55,7 @@ function AccountSettings() {
       {/* Hero Header */}
       <motion.div
         variants={fadeUp}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-blue-600 to-blue-700 p-6 md:p-8 shadow-xl border-b-4 border-blue-900">
+        className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary to-primary/80 p-6 md:p-8 shadow-lg border-b-4 border-white/20">
         {/* Decorative grid */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -73,7 +73,7 @@ function AccountSettings() {
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-white truncate capitalize">
               {displayName.toLowerCase()}
             </h1>
-            <p className="text-sm text-blue-100 font-medium truncate flex items-center gap-1.5">
+            <p className="text-sm text-primary-foreground/70 font-medium truncate flex items-center gap-1.5">
               <Mail className="size-3.5 shrink-0" />
               {email}
             </p>
@@ -117,13 +117,13 @@ function ProfileSection() {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-3 px-6 md:px-8 pt-6 md:pt-8 pb-4">
         <div className="rounded-lg bg-primary p-2 text-white">
           <User />
         </div>
         <div>
-          <h2 className="text-base font-bold text-foreground tracking-tight">Personal Information</h2>
+          <h2 className="text-base font-semibold text-foreground tracking-tight">Personal Information</h2>
           <p className="text-xs text-muted-foreground font-medium">Update how your name appears on your account.</p>
         </div>
       </div>
@@ -204,7 +204,7 @@ function ProfileSection() {
               <Button
                 disabled={isPending}
                 type="submit"
-                className="h-10 rounded-xl px-5 font-bold transition-all active:scale-[0.97] shadow-sm">
+                className="h-12 rounded-md px-5 font-semibold transition-all active:scale-[0.97]">
                 {isPending ? (
                   <div className="flex items-center gap-2">
                     <span>Saving</span>
@@ -243,14 +243,14 @@ function SecuritySection({ showWarning }: { showWarning: boolean }) {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-6 md:px-8 pt-6 md:pt-8 pb-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-primary p-2 text-white">
             <KeyRound />
           </div>
           <div>
-            <h2 className="text-base font-bold text-foreground tracking-tight">Password & Security</h2>
+            <h2 className="text-base font-semibold text-foreground tracking-tight">Password & Security</h2>
             <p className="text-xs text-muted-foreground font-medium">
               Keep your account protected with a strong password.
             </p>
@@ -258,7 +258,7 @@ function SecuritySection({ showWarning }: { showWarning: boolean }) {
         </div>
 
         {showWarning && (
-          <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-widest bg-destructive text-white px-2 py-1 rounded-md animate-pulse">
+          <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-[0.2em] bg-destructive text-white px-2 py-1 rounded-md animate-pulse">
             Action Required
           </span>
         )}
@@ -268,7 +268,7 @@ function SecuritySection({ showWarning }: { showWarning: boolean }) {
 
       <div className="p-6 md:p-8 space-y-5">
         {showWarning && (
-          <Alert className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/30 dark:border-amber-800/50 dark:text-amber-200 [&>svg]:text-amber-600 dark:[&>svg]:text-amber-400 rounded-xl">
+          <Alert className="bg-destructive/8 border-destructive/30 text-destructive [&>svg]:text-destructive rounded-xl">
             <ShieldAlert />
             <AlertTitle className="font-bold">You're using a temporary password.</AlertTitle>
             <AlertDescription>For your security, please set a new password below.</AlertDescription>
@@ -302,7 +302,7 @@ function SecuritySection({ showWarning }: { showWarning: boolean }) {
               <Button
                 disabled={isPending}
                 type="submit"
-                className="h-10 rounded-xl px-5 font-bold transition-all active:scale-[0.97] shadow-sm">
+                className="h-12 rounded-md px-5 font-semibold transition-all active:scale-[0.97]">
                 {isPending ? (
                   <div className="flex items-center gap-2">
                     <span>Updating</span>

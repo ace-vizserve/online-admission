@@ -34,7 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { CircleHelp, Info, Save } from "lucide-react";
+import { CircleHelp, Info, Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useParams } from "react-router";
@@ -452,15 +452,19 @@ function CurrentEnrollmentInformation() {
                   variant={"secondary"}
                   size={"lg"}
                   className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
-                  type="submit">
-                  Save details <Save />
+                  type="submit"
+                  disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? "Saving..." : "Save details"}
+                  {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Save />}
                 </Button>
 
                 <Button
                   variant={"secondary"}
                   className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-                  type="submit">
-                  Save details <Save />
+                  type="submit"
+                  disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? "Saving..." : "Save details"}
+                  {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Save />}
                 </Button>
               </form>
             </Form>

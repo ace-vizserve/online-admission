@@ -269,44 +269,43 @@ export default function StudentResidencyPage() {
                         ))}
                       </ul>
                     </div>
+
+                    {option.passOptions && selectedId === option.id && (
+                      <div
+                        className="mt-4 pt-4 border-t border-primary/30 animate-in fade-in slide-in-from-bottom-1 duration-200"
+                        onClick={(e) => e.stopPropagation()}>
+                        {enroleeType === "New" ? (
+                          <div className="space-y-2">
+                            <p className={cn("text-xs font-black uppercase tracking-[0.1em]", needsPassChoice && !passType ? "text-destructive" : "text-primary")}>
+                              {option.passLabel}
+                            </p>
+                            <Select value={passType} onValueChange={setPassType}>
+                              <SelectTrigger className={cn("h-11 w-full bg-background", needsPassChoice && !passType && "!border-destructive")}>
+                                <SelectValue placeholder="Select a pass type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {option.passOptions.map((pass) => (
+                                  <SelectItem key={pass.value} value={pass.value} className="py-3 text-sm">
+                                    {pass.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ) : (
+                          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm">
+                            <span className="text-muted-foreground">Using the pass on file: </span>
+                            <span className="font-bold text-primary">{currentPass}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </Radio>
                 </Field>
               );
             })}
           </RadioGroup>
 
-          {selectedOption?.passOptions && (
-            <div className="mt-8 max-w-md mx-auto">
-              {enroleeType === "New" ? (
-                <div className="space-y-2">
-                  <p
-                    className={cn("text-xs font-black uppercase tracking-[0.1em] text-muted-foreground", {
-                      "text-destructive": needsPassChoice && !passType,
-                    })}>
-                    {selectedOption.passLabel}
-                  </p>
-                  <Select value={passType} onValueChange={setPassType}>
-                    <SelectTrigger
-                      className={cn("h-11 w-full", { "!border-destructive": needsPassChoice && !passType })}>
-                      <SelectValue placeholder="Select a pass type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedOption.passOptions.map((pass) => (
-                        <SelectItem key={pass.value} value={pass.value} className="py-3 text-sm">
-                          {pass.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm">
-                  <span className="text-muted-foreground">Using the pass on file: </span>
-                  <span className="font-semibold text-foreground">{currentPass}</span>
-                </div>
-              )}
-            </div>
-          )}
         </main>
 
         <footer className="px-6 sticky bottom-0 bg-background border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">

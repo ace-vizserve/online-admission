@@ -35,7 +35,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { ArrowRight, CircleHelp, FilePen, Info } from "lucide-react";
+import { ArrowRight, CircleHelp, FilePen, Info, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useBeforeUnload, useNavigate } from "react-router";
@@ -140,7 +140,7 @@ function LearnerEnrollmentInformation() {
 
     setFormState({
       ...formState,
-      enrollmentInfo: { ...values },
+      enrollmentInfo: { ...values, isValid: true },
     });
 
     setCompletedTabs("/vizschool/enrol-student/new/enrollment-info");
@@ -177,7 +177,19 @@ function LearnerEnrollmentInformation() {
           <CardContent className="px-0">
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                  if (Object.keys(errors).length > 0) {
+                    setFormState({
+                      ...formState,
+                      enrollmentInfo: {
+                        ...formState.enrollmentInfo!,
+                        isValid: false,
+                      },
+                    });
+                    form.setValue("isValid", false);
+                    form.trigger();
+                  }
+                })}
                 className="space-y-8 max-w-6xl mx-auto py-0 md:py-6 lg:py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full">
                   <FormField
@@ -503,8 +515,8 @@ function LearnerEnrollmentInformation() {
                     size={"lg"}
                     className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
                     type="button">
-                    Save for later & exit
-                    <FilePen />
+                    {isLoading ? "Saving..." : "Save for later & exit"}
+                    {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
                   </Button>
 
                   <Button
@@ -512,8 +524,8 @@ function LearnerEnrollmentInformation() {
                     disabled={isLoading}
                     className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
                     type="button">
-                    Save for later & exit
-                    <FilePen />
+                    {isLoading ? "Saving..." : "Save for later & exit"}
+                    {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
                   </Button>
                 </div>
               </form>

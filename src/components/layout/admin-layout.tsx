@@ -10,7 +10,7 @@ export default function AdminLayout() {
   const { mutate: logout, isPending } = useMutation({ mutationFn: userLogout });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <header className="flex h-12 shrink-0 items-center justify-between border-b px-4 lg:px-6 transition-[width,height] ease-linear">
         <div className="flex items-center gap-2">
           <Logo className="h-7 w-auto" />

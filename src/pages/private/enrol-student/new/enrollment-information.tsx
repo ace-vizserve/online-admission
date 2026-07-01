@@ -39,7 +39,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
-import { ArrowRight, CircleHelp, FilePen, ImageIcon, Info } from "lucide-react";
+import { ArrowRight, CircleHelp, FilePen, ImageIcon, Info, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useBeforeUnload, useNavigate } from "react-router";
@@ -234,7 +234,7 @@ function EnrollmentInformation() {
 
     setFormState({
       ...formState,
-      enrollmentInfo: { ...values },
+      enrollmentInfo: { ...values, isValid: true },
     });
 
     setCompletedTabs("/enrol-student/new/enrollment-info");
@@ -756,8 +756,8 @@ function EnrollmentInformation() {
                     size={"lg"}
                     className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
                     type="button">
-                    Save for later & exit
-                    <FilePen />
+                    {isLoading ? "Saving..." : "Save for later & exit"}
+                    {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
                   </Button>
 
                   <Button
@@ -766,8 +766,8 @@ function EnrollmentInformation() {
                     variant={"secondary"}
                     className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
                     type="button">
-                    Save for later & exit
-                    <FilePen />
+                    {isLoading ? "Saving..." : "Save for later & exit"}
+                    {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
                   </Button>
                 </div>
               </form>

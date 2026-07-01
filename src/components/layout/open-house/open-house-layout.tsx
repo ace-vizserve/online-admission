@@ -28,6 +28,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import OpenHouseContextProvider, { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
+import { getStepValidity } from "@/lib/step-validity";
 import useSession from "@/hooks/use-session";
 import { OpenHouseFormState } from "@/types";
 import {
@@ -202,15 +203,14 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
     mutate({ ...(formState as OpenHouseFormState) });
   }
 
+  const v = getStepValidity(formState, "open-house");
+  const allValid = v.studentInfo && v.familyInfo && v.enrollmentInfo && v.uploadRequirements;
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          disabled={
-            formState.uploadRequirements?.studentUploadRequirements?.isValid != true ||
-            formState.uploadRequirements?.parentGuardianUploadRequirements?.isValid != true ||
-            isPending
-          }
+          disabled={!allValid || isPending}
           className="gap-2 bg-green-600 hover:bg-green-500 font-bold">
           {isPending ? (
             <>

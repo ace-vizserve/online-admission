@@ -1,7 +1,8 @@
 import { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
+import { getStepValidity, stepKeyFromUrl } from "@/lib/step-validity";
 import { cn } from "@/lib/utils";
 import { useSelectAcademicYear } from "@/zustand-store";
-import { Check } from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const STEPS = [
@@ -38,9 +39,11 @@ const STEPS = [
 ];
 
 function OpenHouseSteps() {
-  const { currentTab, completedTabs, activeTab, setActiveTab } = useOpenHouseContext();
+  const { currentTab, completedTabs, activeTab, setActiveTab, formState } = useOpenHouseContext();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
+
+  const validity = getStepValidity(formState, "open-house");
 
   return (
     <nav className="w-full bg-white mb-12 md:mb-0">
@@ -50,6 +53,11 @@ function OpenHouseSteps() {
           const isCurrent = currentTab === step.url && !completedTabs.includes(step.url);
           const isCompleted = completedTabs.includes(step.url);
           const isLocked = !isCurrent && !isCompleted;
+
+          // "account-info" has no isValid flag — stepKey is null → always valid
+          const stepKey = stepKeyFromUrl(step.url);
+          const stepValid = stepKey ? validity[stepKey] : true;
+          const isInvalid = isCompleted && !stepValid;
 
           return (
             <li
@@ -77,11 +85,19 @@ function OpenHouseSteps() {
                     "size-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-black transition-all",
                     isCurrent
                       ? "bg-primary text-white ring-4 ring-slate-100"
-                      : isCompleted
-                        ? "bg-green-600 text-white"
-                        : "bg-slate-100 text-slate-400",
+                      : isInvalid
+                        ? "bg-destructive text-white"
+                        : isCompleted
+                          ? "bg-green-600 text-white"
+                          : "bg-slate-100 text-slate-400",
                   )}>
-                  {isCompleted ? <Check size={14} strokeWidth={3} /> : index + 1}
+                  {isInvalid ? (
+                    <AlertCircle size={14} strokeWidth={3} />
+                  ) : isCompleted ? (
+                    <Check size={14} strokeWidth={3} />
+                  ) : (
+                    index + 1
+                  )}
                 </div>
 
                 {/* Text Content */}
@@ -89,7 +105,13 @@ function OpenHouseSteps() {
                   <p
                     className={cn(
                       "text-xs font-black uppercase tracking-tight transition-colors",
-                      isCurrent ? "text-primary" : isCompleted ? "text-green-700" : "text-slate-400",
+                      isCurrent
+                        ? "text-primary"
+                        : isInvalid
+                          ? "text-destructive"
+                          : isCompleted
+                            ? "text-green-700"
+                            : "text-slate-400",
                     )}>
                     {step.name}
                   </p>
@@ -101,7 +123,13 @@ function OpenHouseSteps() {
                 <div
                   className={cn(
                     "h-full w-full rounded-t-full transition-all duration-500",
-                    isCurrent ? "bg-primary" : isCompleted ? "bg-green-600/40" : "bg-slate-100",
+                    isCurrent
+                      ? "bg-primary"
+                      : isInvalid
+                        ? "bg-destructive"
+                        : isCompleted
+                          ? "bg-green-600/40"
+                          : "bg-slate-100",
                   )}
                 />
               </div>
