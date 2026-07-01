@@ -1,7 +1,8 @@
+/// <reference types="vitest/config" />
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import ViteSitemap from "vite-plugin-sitemap";
 
 const routes = ["/", "/login", "/registration", "/welcome", "/open-house-registration"];
@@ -30,5 +31,11 @@ export default defineConfig({
   },
   esbuild: {
     drop: ["console", "debugger"],
+  },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+    css: false,
   },
 });
