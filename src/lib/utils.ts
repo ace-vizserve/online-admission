@@ -1,5 +1,4 @@
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
-import { classLevels } from "@/data";
 import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
 import { ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { EnrolNewStudentDraftStore } from "@/zustand-store";
@@ -91,9 +90,7 @@ export async function canEnrollStudent(enroleeNumber: string, academicYear: stri
   }
 }
 
-export async function checkEmailExists(
-  email: string,
-): Promise<{ exists: boolean; emailConfirmed: boolean }> {
+export async function checkEmailExists(email: string): Promise<{ exists: boolean; emailConfirmed: boolean }> {
   const { data, error } = await supabase.functions.invoke("check-email-exists", {
     body: { email },
   });
@@ -106,17 +103,49 @@ export async function checkEmailExists(
   };
 }
 
+const NEXT_GRADE_LEVEL: Record<string, string | null> = {
+  "Youngstarters | Little Stars": "YoungStarter Junior Star",
+  "YoungStarter Little Star": "YoungStarter Junior Star",
+
+  "Youngstarters | Junior Stars": "Primary One",
+  "YoungStarter Junior Star": "Primary One",
+
+  "Primary One": "Primary Two",
+  "Primary Two": "Primary Three",
+  "Primary Three": "Primary Four",
+  "Primary Four": "Primary Five",
+  "Primary Five": "Primary Six",
+  "Primary Six": "Secondary One",
+
+  "Secondary One": "Secondary Two",
+  "Secondary Two": "Secondary Three",
+  "Secondary Three": "Secondary Four",
+  "Secondary Four": "Secondary Four",
+
+  "HFSE Global Education Programme – Year 1 (equivalent to K2)":
+    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)": "HFSE Global Education Programme - Primary 2",
+
+  "HFSE Global Education Programme - Primary 2": "HFSE Global Education Programme - Primary 3",
+
+  "HFSE Global Education Programme - Primary 3": "HFSE Global Education Programme - Primary 4",
+
+  "HFSE Global Education Programme - Primary 4": "HFSE Global Education Programme - Primary 5",
+
+  "HFSE Global Education Programme - Primary 5": "HFSE Global Education Programme - Primary 6",
+
+  "HFSE Global Education Programme - Primary 6": "HFSE Global Education Programme – Year 8",
+
+  "HFSE Global Education Programme – Year 8": "HFSE Global Education Programme – Year 9",
+
+  "HFSE Global Education Programme – Year 9": "HFSE Global Education Programme – Year 10",
+
+  "HFSE Global Education Programme – Year 10": "HFSE Global Education Programme – Year 10",
+};
+
 export function getNextGradeLevel(currentValue: string) {
-  if (currentValue === "Secondary Four") return "Secondary Four";
-
-  if (currentValue === "Youngstarters") return "Primary One";
-
-  const currentIndex = classLevels.findIndex((level) => level.value === currentValue);
-  if (currentIndex === -1 || currentIndex + 1 >= classLevels.length) {
-    return null;
-  }
-
-  return classLevels[currentIndex + 1].value;
+  return NEXT_GRADE_LEVEL[currentValue] ?? null;
 }
 
 export function extractStudentInfo(studentInformation: Student[]) {
@@ -372,20 +401,22 @@ export async function getStudentsList(parentEmail: string) {
           data.map((info) => info.enroleeNumber),
         );
 
-        return data
-          .map((info) => ({
-            enroleeNumber: info.enroleeNumber,
-            studentName: info.enroleeFullName,
-            age: differenceInYears(new Date(), parseISO(info.birthDay)),
-            mothersName: info.motherFullName ?? "--",
-            fathersName: info.fatherFullName ?? "--",
-            studentNumber: info.studentNumber,
-            // Live SIS lifecycle status; fall back to "Submitted" if no status row exists yet.
-            enrollmentStatus: statusByEnrolee.get(info.enroleeNumber) ?? "Submitted",
-            isVizSchool: (info.studentNumber as string).startsWith("V"),
-          }))
-          // Drop withdrawn/cancelled before dedup so they don't shadow an active prior-AY row.
-          .filter((student) => !HIDDEN_PARENT_STATUSES.includes(student.enrollmentStatus));
+        return (
+          data
+            .map((info) => ({
+              enroleeNumber: info.enroleeNumber,
+              studentName: info.enroleeFullName,
+              age: differenceInYears(new Date(), parseISO(info.birthDay)),
+              mothersName: info.motherFullName ?? "--",
+              fathersName: info.fatherFullName ?? "--",
+              studentNumber: info.studentNumber,
+              // Live SIS lifecycle status; fall back to "Submitted" if no status row exists yet.
+              enrollmentStatus: statusByEnrolee.get(info.enroleeNumber) ?? "Submitted",
+              isVizSchool: (info.studentNumber as string).startsWith("V"),
+            }))
+            // Drop withdrawn/cancelled before dedup so they don't shadow an active prior-AY row.
+            .filter((student) => !HIDDEN_PARENT_STATUSES.includes(student.enrollmentStatus))
+        );
       }),
     );
 
@@ -429,9 +460,7 @@ export async function getPreviousAYEnrolledStudents(parentEmail: string, academi
 
     const filteredPreviousEnrolled = currentEnrolled
       // Hide withdrawn/cancelled enrollees from the re-enroll selection.
-      .filter(
-        (student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"),
-      )
+      .filter((student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"))
       .filter((student) => {
         const key = JSON.stringify({
           studentNumber: student.studentNumber,
@@ -475,9 +504,7 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
 
     const filteredCurrentEnrolled = currentEnrolled
       // Exclude withdrawn/cancelled from the dashboard "Enrolled Students" count.
-      .filter(
-        (student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"),
-      )
+      .filter((student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"))
       .filter((student) => {
         const key = JSON.stringify({
           studentNumber: student.studentNumber,

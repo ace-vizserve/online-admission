@@ -46,38 +46,60 @@ import { useLocation, useParams } from "react-router";
 import { toast } from "sonner";
 
 const MORNING_AFTERNOON_CLASS_LEVEL = [
-  "Youngstarters | Little Stars",
-  "Youngstarters | Junior Stars",
-  "Youngstarters | Senior Stars",
+  "YoungStarter Little Star",
+  "YoungStarter Junior Star",
+
   "Primary One",
   "Primary Two",
   "Primary Three",
   "Primary Four",
   "Primary Five",
   "Primary Six",
-];
 
-const WHOLE_DAY_CLASS_LEVEL = [
   "Secondary One",
   "Secondary Two",
   "Secondary Three",
   "Secondary Four",
-  "Cambridge Secondary One (Year 8)",
-  "Cambridge Secondary Two (Year 9)",
+
+  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+
+  "HFSE Global Education Programme - Primary 2",
+  "HFSE Global Education Programme - Primary 3",
+  "HFSE Global Education Programme - Primary 4",
+  "HFSE Global Education Programme - Primary 5",
+  "HFSE Global Education Programme - Primary 6",
+];
+
+const WHOLE_DAY_CLASS_LEVEL = [
+  "HFSE Global Education Programme – Year 8",
+  "HFSE Global Education Programme – Year 9",
+  "HFSE Global Education Programme – Year 10",
 ];
 
 const ALLOWED_CAMBRIDGE_CLASS_TYPES = ["Global Class (CAMBRIDGE)", "Standard Class (ENGLISH + TAGALOG)"];
-const CAMBRIDGE_CLASS_LEVELS = ["Secondary One", "Secondary Two"];
+const CAMBRIDGE_CLASS_LEVELS = [
+  "Secondary One",
+  "Secondary Two",
+
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE Global Education Programme - Primary 2",
+  "HFSE Global Education Programme - Primary 3",
+  "HFSE Global Education Programme - Primary 4",
+  "HFSE Global Education Programme - Primary 5",
+  "HFSE Global Education Programme - Primary 6",
+];
+const CAMBRIDGE_YEAR_LEVELS = [
+  "HFSE Global Education Programme – Year 8",
+  "HFSE Global Education Programme – Year 9",
+  "HFSE Global Education Programme – Year 10",
+];
 
 const CAMBRIDGE_ONLY_CLASS_TYPES = ["Global Class (CAMBRIDGE)"];
-const CAMBRIDGE_YEAR_LEVELS = ["Cambridge Secondary One (Year 8)", "Cambridge Secondary Two (Year 9)"];
 
 const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary Three", "Secondary Four"];
-const ENRICHMENT_CLASS_LEVELS = [
-  "Youngstarters | Little Stars",
-  "Youngstarters | Junior Stars",
-  "Youngstarters | Senior Stars",
-];
+
+const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
 
 function OldEnrollmentInformation() {
   const location = useLocation();
@@ -307,7 +329,7 @@ function OldEnrollmentInformation() {
                           }}
                           defaultValue={getNextGradeLevel(data?.levelApplied) ?? field.value}>
                           <FormControl>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className="min-w-0 w-full">
                               <SelectValue placeholder="Select a class level" />
                             </SelectTrigger>
                           </FormControl>

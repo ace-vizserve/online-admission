@@ -178,21 +178,67 @@ export const religions = [
 ] as const;
 
 export const classLevels = [
-  { label: "Youngstarters | Little Stars", value: "Youngstarters | Little Stars" },
-  { label: "Youngstarters | Junior Stars", value: "Youngstarters | Junior Stars" },
-  { label: "Youngstarters | Senior Stars", value: "Youngstarters | Senior Stars" },
+  {
+    label: "YoungStarter Little Star",
+    value: "YoungStarter Little Star",
+  },
+  {
+    label: "YoungStarter Junior Star",
+    value: "YoungStarter Junior Star",
+  },
+
   { label: "Primary One", value: "Primary One" },
   { label: "Primary Two", value: "Primary Two" },
   { label: "Primary Three", value: "Primary Three" },
   { label: "Primary Four", value: "Primary Four" },
   { label: "Primary Five", value: "Primary Five" },
   { label: "Primary Six", value: "Primary Six" },
+
   { label: "Secondary One", value: "Secondary One" },
-  { label: "Cambridge Secondary One (Year 8)", value: "Cambridge Secondary One (Year 8)" },
   { label: "Secondary Two", value: "Secondary Two" },
-  { label: "Cambridge Secondary Two (Year 9)", value: "Cambridge Secondary Two (Year 9)" },
   { label: "Secondary Three", value: "Secondary Three" },
   { label: "Secondary Four", value: "Secondary Four" },
+
+  {
+    label: "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+    value: "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    value: "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 2",
+    value: "HFSE Global Education Programme - Primary 2",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 3",
+    value: "HFSE Global Education Programme - Primary 3",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 4",
+    value: "HFSE Global Education Programme - Primary 4",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 5",
+    value: "HFSE Global Education Programme - Primary 5",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 6",
+    value: "HFSE Global Education Programme - Primary 6",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 8",
+    value: "HFSE Global Education Programme – Year 8",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 9",
+    value: "HFSE Global Education Programme – Year 9",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 10",
+    value: "HFSE Global Education Programme – Year 10",
+  },
 ] as const;
 
 export const vizSchoolClassLevels = [
