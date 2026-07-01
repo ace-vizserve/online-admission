@@ -64,8 +64,8 @@ function FamilyInformationTabs() {
     return <Loader />;
   }
 
-  const motherInfoInvalid = Boolean(formState.familyInfo.motherInfo?.isValid) !== true;
-  const fatherInfoInvalid = Boolean(formState.familyInfo.fatherInfo?.isValid) !== true;
+  const motherInfoSaved = formState.familyInfo.motherInfo?.isValid === true;
+  const fatherInfoSaved = formState.familyInfo.fatherInfo?.isValid === true;
 
   const tabs = [
     {
@@ -75,7 +75,8 @@ function FamilyInformationTabs() {
       value: "mother-information",
       icon: User,
       component: MotherInformation,
-      hasError: motherInfoInvalid,
+      isSaved: motherInfoSaved,
+      hasError: !motherInfoSaved,
     },
     {
       name: "Father Information",
@@ -84,7 +85,8 @@ function FamilyInformationTabs() {
       value: "father-information",
       icon: Users,
       component: FatherInformation,
-      hasError: fatherInfoInvalid,
+      isSaved: fatherInfoSaved,
+      hasError: !fatherInfoSaved,
     },
     {
       name: "Guardian Information",
@@ -93,6 +95,8 @@ function FamilyInformationTabs() {
       value: "guardian-information",
       icon: ShieldUser,
       component: GuardianInformation,
+      isSaved: false,
+      hasError: false,
     },
     {
       name: "Sibling Information",
@@ -101,6 +105,8 @@ function FamilyInformationTabs() {
       value: "sibling-information",
       icon: Baby,
       component: SiblingInformation,
+      isSaved: false,
+      hasError: false,
     },
   ];
 
@@ -123,32 +129,47 @@ function FamilyInformationTabs() {
               "group relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
               "data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
-              tab.hasError && "bg-amber-50",
-              tab.hasError &&
-                "data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-amber-200",
+              tab.isSaved && "bg-green-50 border-green-100",
+              tab.isSaved && "data-[state=active]:bg-green-600 data-[state=active]:shadow-green-200",
+              !tab.isSaved && tab.hasError && "bg-amber-50",
+              !tab.isSaved && tab.hasError && "data-[state=active]:bg-amber-600 data-[state=active]:shadow-amber-200",
             )}>
             <div
               className={cn(
                 "relative flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
                 "bg-slate-100 text-slate-800",
-
-                tab.hasError && "bg-white text-amber-600",
-                tab.hasError && "group-data-[state=active]:bg-white/30 group-data-[state=active]:text-white",
+                tab.isSaved && "bg-green-100 text-green-600",
+                tab.isSaved && "group-data-[state=active]:bg-white/20 group-data-[state=active]:text-white",
+                !tab.isSaved && tab.hasError && "bg-white text-amber-600",
+                !tab.isSaved && tab.hasError && "group-data-[state=active]:bg-white/30 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />
 
-              {tab.hasError && (
+              {tab.isSaved && (
+                <span
+                  className={cn(
+                    "absolute right-0 top-0 inline-flex size-2 rounded-full bg-green-500 shadow-sm",
+                    "group-data-[state=active]:bg-green-300 group-data-[state=active]:border-2 group-data-[state=active]:border-white",
+                  )}
+                />
+              )}
+              {!tab.isSaved && tab.hasError && (
                 <span
                   className={cn(
                     "absolute right-0 top-0 inline-flex size-2 items-center rounded-full bg-amber-600 shadow-sm",
                     "group-data-[state=active]:bg-amber-400 group-data-[state=active]:border-2 group-data-[state=active]:border-white group-data-[state=active]:shadow-sm",
-                  )}></span>
+                  )}
+                />
               )}
             </div>
 
-            <div className=" flex flex-col items-start text-left">
-              <span className="font-bold text-sm tracking-tight flex items-center gap-1.5">{tab.name}</span>
-              {tab.hasError ? (
+            <div className="flex flex-col items-start text-left">
+              <span className="font-bold text-sm tracking-tight">{tab.name}</span>
+              {tab.isSaved ? (
+                <span className="group-data-[state=active]:text-white text-green-600 text-[11px] font-medium leading-none mt-1">
+                  Saved
+                </span>
+              ) : tab.hasError ? (
                 <span className="group-data-[state=active]:text-white text-amber-600 text-[11px] font-medium leading-none mt-1">
                   Confirmation Required
                 </span>

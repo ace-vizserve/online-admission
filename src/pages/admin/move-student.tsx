@@ -19,8 +19,8 @@ import { Separator } from "@/components/ui/separator";
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowRight, ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
@@ -41,7 +41,8 @@ function ayLabel(ay: string) {
   return AY_OPTIONS.find((o) => o.value === ay)?.label ?? ay;
 }
 
-const COL_HEADER = "text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 select-none";
+const COL_HEADER =
+  "text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 select-none";
 
 export default function MoveStudent() {
   const { session } = useSession();
@@ -92,42 +93,26 @@ export default function MoveStudent() {
     },
   });
 
-  const levels = useMemo(
-    () => [...new Set(students.map((s) => s.levelApplied))].sort(),
-    [students],
-  );
+  const levels = useMemo(() => [...new Set(students.map((s) => s.levelApplied))].sort(), [students]);
 
   const filteredStudents = useMemo(() => {
     let result = levelFilter === "all" ? students : students.filter((s) => s.levelApplied === levelFilter);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(
-        (s) =>
-          studentDisplayName(s).toLowerCase().includes(q) ||
-          s.enroleeNumber.toLowerCase().includes(q),
+        (s) => studentDisplayName(s).toLowerCase().includes(q) || s.enroleeNumber.toLowerCase().includes(q),
       );
     }
     return [...result].sort((a, b) => {
       const va =
-        sortCol === "level"
-          ? a.levelApplied
-          : sortCol === "enroleeNumber"
-            ? a.enroleeNumber
-            : studentDisplayName(a);
+        sortCol === "level" ? a.levelApplied : sortCol === "enroleeNumber" ? a.enroleeNumber : studentDisplayName(a);
       const vb =
-        sortCol === "level"
-          ? b.levelApplied
-          : sortCol === "enroleeNumber"
-            ? b.enroleeNumber
-            : studentDisplayName(b);
+        sortCol === "level" ? b.levelApplied : sortCol === "enroleeNumber" ? b.enroleeNumber : studentDisplayName(b);
       return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
     });
   }, [students, levelFilter, search, sortCol, sortDir]);
 
-  const filteredIds = useMemo(
-    () => new Set(filteredStudents.map((s) => s.enroleeNumber)),
-    [filteredStudents],
-  );
+  const filteredIds = useMemo(() => new Set(filteredStudents.map((s) => s.enroleeNumber)), [filteredStudents]);
 
   const allFilteredSelected =
     filteredStudents.length > 0 && filteredStudents.every((s) => selected.has(s.enroleeNumber));
@@ -167,14 +152,19 @@ export default function MoveStudent() {
 
   function toggleSort(col: SortCol) {
     if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortCol(col); setSortDir("asc"); }
+    else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
   }
 
   function SortIcon({ col }: { col: SortCol }) {
     if (sortCol !== col) return <ChevronsUpDown className="h-3 w-3 opacity-40 shrink-0" />;
-    return sortDir === "asc"
-      ? <ChevronUp className="h-3 w-3 text-primary shrink-0" />
-      : <ChevronDown className="h-3 w-3 text-primary shrink-0" />;
+    return sortDir === "asc" ? (
+      <ChevronUp className="h-3 w-3 text-primary shrink-0" />
+    ) : (
+      <ChevronDown className="h-3 w-3 text-primary shrink-0" />
+    );
   }
 
   function handleSourceAYChange(val: string) {
@@ -197,7 +187,6 @@ export default function MoveStudent() {
 
       <div className="animate-in fade-in duration-300 min-h-[calc(100vh-3rem)] flex items-start justify-center py-12 px-6">
         <div className="w-full max-w-lg space-y-8">
-
           {/* Header */}
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2">
@@ -211,7 +200,6 @@ export default function MoveStudent() {
 
           {/* Fields */}
           <div className="space-y-6">
-
             {/* From year */}
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
@@ -240,15 +228,12 @@ export default function MoveStudent() {
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.18 }}
                   className="space-y-3">
-
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       Students
                     </label>
                     {selected.size > 0 && (
-                      <span className="text-[11px] font-bold text-primary">
-                        {selected.size} selected
-                      </span>
+                      <span className="text-[11px] font-bold text-primary">{selected.size} selected</span>
                     )}
                   </div>
 
@@ -273,7 +258,9 @@ export default function MoveStudent() {
                       <SelectContent>
                         <SelectItem value="all">All levels</SelectItem>
                         {levels.map((l) => (
-                          <SelectItem key={l} value={l}>{l}</SelectItem>
+                          <SelectItem key={l} value={l}>
+                            {l}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -281,7 +268,6 @@ export default function MoveStudent() {
 
                   {/* Checklist panel */}
                   <div className="rounded-xl border border-border bg-muted/40 overflow-hidden">
-
                     {/* Select-all header */}
                     <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-muted/60">
                       <Checkbox
@@ -355,9 +341,7 @@ export default function MoveStudent() {
                                   isSelected ? "bg-primary/5" : "hover:bg-muted/80",
                                 )}>
                                 {/* Checkbox — stop propagation so div onClick doesn't double-fire */}
-                                <div
-                                  className="flex items-center"
-                                  onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
                                   <Checkbox
                                     checked={isSelected}
                                     onCheckedChange={() => toggleStudent(s.enroleeNumber)}
@@ -423,7 +407,6 @@ export default function MoveStudent() {
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
                 className="rounded-xl border border-border bg-muted/40 overflow-hidden">
-
                 <div className="flex items-center gap-4 px-5 py-4">
                   <div className="h-11 w-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                     <span className="text-sm font-black text-primary">{selected.size}</span>
@@ -463,37 +446,31 @@ export default function MoveStudent() {
                     onClick={() => setConfirmOpen(true)}
                     disabled={isPending}
                     className="w-full uppercase tracking-wider">
-                    {isPending
-                      ? "Transferring…"
-                      : `Transfer ${selected.size} record${selected.size !== 1 ? "s" : ""}`}
+                    {isPending ? "Transferring…" : `Transfer ${selected.size} record${selected.size !== 1 ? "s" : ""}`}
                   </Button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-
         </div>
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-black text-foreground">
-              Transfer these records?
-            </AlertDialogTitle>
+            <AlertDialogTitle className="font-black text-foreground">Transfer these records?</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-sm font-medium text-muted-foreground">
                 <p>
                   <span className="font-bold text-foreground">
                     {selected.size} student{selected.size !== 1 ? "s" : ""}
                   </span>{" "}
-                  will move from{" "}
-                  <span className="font-bold text-primary">{ayLabel(sourceAY)}</span> to{" "}
+                  will move from <span className="font-bold text-primary">{ayLabel(sourceAY)}</span> to{" "}
                   <span className="font-bold text-primary">{ayLabel(targetAY)}</span>.
                 </p>
                 <p>
-                  All database records and uploaded files transfer with them. Students are moved one
-                  at a time — you'll see a summary of successes and failures when done.
+                  All database records and uploaded files transfer with them. Students are moved one at a time — you'll
+                  see a summary of successes and failures when done.
                 </p>
               </div>
             </AlertDialogDescription>

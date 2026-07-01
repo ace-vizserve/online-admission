@@ -203,7 +203,7 @@ function OpenHouseEnrollmentInformation() {
 
     setFormState({
       ...formState,
-      enrollmentInfo: { ...values },
+      enrollmentInfo: { ...values, isValid: true },
     });
 
     setCompletedTabs("/open-house/enrollment-info");

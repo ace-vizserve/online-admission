@@ -1,6 +1,7 @@
 import PageMetaData from "@/components/page-metadata";
 import StudentAddressContact from "@/components/private/enrol-student/vizschool/steps/learner-information/student-address-contact";
 import StudentDetails from "@/components/private/enrol-student/vizschool/steps/learner-information/student-details";
+import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
@@ -8,22 +9,6 @@ import { cn } from "@/lib/utils";
 import { ChevronRight, MapPin, User } from "lucide-react";
 import { useCallback, useState } from "react";
 
-const tabs = [
-  {
-    name: "Student Details",
-    value: "student-details",
-    description: "Personal and academic background",
-    icon: User,
-    component: StudentDetails,
-  },
-  {
-    name: "Address & Contact",
-    value: "address-contact",
-    description: "Emergency and residence info",
-    icon: MapPin,
-    component: StudentAddressContact,
-  },
-];
 function LearnerInformation() {
   const { title, description } = ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION;
 
@@ -38,7 +23,8 @@ function LearnerInformation() {
 }
 
 function LearnerInformationTabs() {
-  const [tabOpened, setTabOpened] = useState<string>(tabs[0].value);
+  const { formState } = useEnrolNewLearnerContext();
+  const [tabOpened, setTabOpened] = useState<string>("student-details");
 
   const memoizedCb = useCallback(
     (tab: string) => {
@@ -46,6 +32,30 @@ function LearnerInformationTabs() {
     },
     [tabOpened],
   );
+
+  const detailsSaved = formState.studentInfo?.studentDetails?.isValid === true;
+  const addressSaved = formState.studentInfo?.addressContact?.isValid === true;
+
+  const tabs = [
+    {
+      name: "Student Details",
+      value: "student-details",
+      description: "Personal and academic background",
+      icon: User,
+      component: StudentDetails,
+      isSaved: detailsSaved,
+      hasError: !detailsSaved,
+    },
+    {
+      name: "Address & Contact",
+      value: "address-contact",
+      description: "Emergency and residence info",
+      icon: MapPin,
+      component: StudentAddressContact,
+      isSaved: addressSaved,
+      hasError: !addressSaved,
+    },
+  ];
 
   return (
     <Tabs
@@ -65,21 +75,56 @@ function LearnerInformationTabs() {
             key={tab.value}
             value={tab.value}
             className={cn(
-              "relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
+              "group relative flex flex-row items-center justify-start gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
               "bg-white border-slate-100 shadow-sm text-slate-800",
               "data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-slate-200",
+              tab.isSaved && "bg-green-50 border-green-100",
+              tab.isSaved && "data-[state=active]:bg-green-600 data-[state=active]:shadow-green-200",
+              !tab.isSaved && tab.hasError && "bg-amber-50",
+              !tab.isSaved && tab.hasError && "data-[state=active]:bg-amber-600 data-[state=active]:shadow-amber-200",
             )}>
             <div
               className={cn(
-                "flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
-                "bg-slate-100 text-slate-800 group-data-[state=active]:bg-white/10 group-data-[state=active]:text-white",
+                "relative flex items-center justify-center size-10 rounded-xl transition-colors shrink-0",
+                "bg-slate-100 text-slate-800",
+                tab.isSaved && "bg-green-100 text-green-600",
+                tab.isSaved && "group-data-[state=active]:bg-white/20 group-data-[state=active]:text-white",
+                !tab.isSaved && tab.hasError && "bg-white text-amber-600",
+                !tab.isSaved && tab.hasError && "group-data-[state=active]:bg-white/30 group-data-[state=active]:text-white",
               )}>
               <tab.icon className="size-5" />
+
+              {tab.isSaved && (
+                <span
+                  className={cn(
+                    "absolute right-0 top-0 inline-flex size-2 rounded-full bg-green-500 shadow-sm",
+                    "group-data-[state=active]:bg-green-300 group-data-[state=active]:border-2 group-data-[state=active]:border-white",
+                  )}
+                />
+              )}
+              {!tab.isSaved && tab.hasError && (
+                <span
+                  className={cn(
+                    "absolute right-0 top-0 inline-flex size-2 rounded-full bg-amber-600 shadow-sm",
+                    "group-data-[state=active]:bg-amber-400 group-data-[state=active]:border-2 group-data-[state=active]:border-white group-data-[state=active]:shadow-sm",
+                  )}
+                />
+              )}
             </div>
 
             <div className="flex flex-col items-start text-left">
               <span className="font-bold text-sm tracking-tight">{tab.name}</span>
-              <span className="text-[11px] font-medium leading-none mt-1">{tab.description}</span>
+              {tab.isSaved ? (
+                <span className="group-data-[state=active]:text-white text-green-600 text-[11px] font-medium leading-none mt-1">
+                  Saved
+                </span>
+              ) : tab.hasError ? (
+                <span className="group-data-[state=active]:text-white text-amber-600 text-[11px] font-medium leading-none mt-1">
+                  Confirmation Required
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium leading-none mt-1">{tab.description}</span>
+              )}
             </div>
 
             <ChevronRight className="ml-auto size-4 opacity-0 data-[state=active]:opacity-100 transition-opacity" />
