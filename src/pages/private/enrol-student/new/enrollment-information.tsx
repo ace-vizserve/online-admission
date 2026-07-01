@@ -79,7 +79,14 @@ const WHOLE_DAY_CLASS_LEVEL = [
   "HFSE Global Education Programme – Year 10",
 ];
 
-const ALLOWED_CAMBRIDGE_CLASS_TYPES = ["Global Class (CAMBRIDGE)", "Standard Class (ENGLISH + TAGALOG)"];
+const ALLOWED_CAMBRIDGE_CLASS_TYPES = [
+  "Global Class (CAMBRIDGE)",
+  "Global Class 1 (ENGLISH + MANDARIN)",
+  "Global Class 2 (ENGLISH + TAMIL)",
+  "Global Class 3 (ENGLISH + FRENCH)",
+  "Standard Class (ENGLISH + TAGALOG)",
+];
+
 const CAMBRIDGE_CLASS_LEVELS = [
   "Secondary One",
   "Secondary Two",
