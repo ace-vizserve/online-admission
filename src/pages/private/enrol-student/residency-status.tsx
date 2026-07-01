@@ -1,5 +1,5 @@
-import PageMetaData from "@/components/page-metadata";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
+import PageMetaData from "@/components/page-metadata";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { applicationTypes, studentPassTypes } from "@/data";
@@ -120,6 +120,7 @@ export default function StudentResidencyPage() {
   const setStpApplicationType = usePassTypeStore((state) => state.setStpApplicationType);
   const setPassType = usePassTypeStore((state) => state.setPassType);
   const clearSchoolFeeState = useSelectSchoolFee((state) => state.clearState);
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const clearState = useSelectAcademicYear((state) => state.clearState);
 
   const [isLoading, setTransition] = useTransition();
@@ -173,6 +174,11 @@ export default function StudentResidencyPage() {
       return;
     }
 
+    if (enroleeType === "Current") {
+      navigate(`/enrol-student/${state.enroleeNumber}/student-info?academicYear=${academicYear}`);
+      return;
+    }
+
     navigate("/enrol-student/stp-guidelines", {
       state: {
         enroleeNumber,
@@ -192,7 +198,10 @@ export default function StudentResidencyPage() {
 
   return (
     <>
-      <PageMetaData title="Residency Status | HFSE International School" description="Select your child's residency and pass type to proceed with enrollment." />
+      <PageMetaData
+        title="Residency Status | HFSE International School"
+        description="Select your child's residency and pass type to proceed with enrollment."
+      />
       <div className="w-full sticky top-0 z-20 bg-background/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link
@@ -260,9 +269,7 @@ export default function StudentResidencyPage() {
                       </p>
                       <ul className="space-y-2">
                         {option.details.map((detail, idx) => (
-                          <li
-                            key={idx}
-                            className="font-medium flex items-start gap-2 text-sm text-muted-foreground">
+                          <li key={idx} className="font-medium flex items-start gap-2 text-sm text-muted-foreground">
                             <div className="h-1.5 w-1.5 mt-1.5 rounded-full bg-muted-foreground/40 group-data-[checked]:bg-primary shrink-0" />
                             {detail}
                           </li>
@@ -276,11 +283,19 @@ export default function StudentResidencyPage() {
                         onClick={(e) => e.stopPropagation()}>
                         {enroleeType === "New" ? (
                           <div className="space-y-2">
-                            <p className={cn("text-xs font-black uppercase tracking-[0.1em]", needsPassChoice && !passType ? "text-destructive" : "text-primary")}>
+                            <p
+                              className={cn(
+                                "text-xs font-black uppercase tracking-[0.1em]",
+                                needsPassChoice && !passType ? "text-destructive" : "text-primary",
+                              )}>
                               {option.passLabel}
                             </p>
                             <Select value={passType} onValueChange={setPassType}>
-                              <SelectTrigger className={cn("h-11 w-full bg-background", needsPassChoice && !passType && "!border-destructive")}>
+                              <SelectTrigger
+                                className={cn(
+                                  "h-11 w-full bg-background",
+                                  needsPassChoice && !passType && "!border-destructive",
+                                )}>
                                 <SelectValue placeholder="Select a pass type" />
                               </SelectTrigger>
                               <SelectContent>
@@ -305,7 +320,6 @@ export default function StudentResidencyPage() {
               );
             })}
           </RadioGroup>
-
         </main>
 
         <footer className="px-6 sticky bottom-0 bg-background border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">

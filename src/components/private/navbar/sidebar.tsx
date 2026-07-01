@@ -9,7 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { BookOpenText, ClipboardList, FileText, FilePen, LayoutDashboardIcon } from "lucide-react";
+import { BookOpenText, ClipboardList, FilePen, LayoutDashboardIcon } from "lucide-react";
 import * as React from "react";
 import Logo from "../../logo";
 import { NavMain } from "./nav-main";
@@ -38,7 +38,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       label: "Resources",
       items: [
-        { title: "Report Cards", url: "/admission/report-cards", icon: FileText },
+        // { title: "Report Cards", url: "/admission/report-cards", icon: FileText },
         { title: "Admission Guide", url: "/admission/guidelines", icon: BookOpenText },
       ],
     },

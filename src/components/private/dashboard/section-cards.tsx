@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import useSession from "@/hooks/use-session";
 import { cn, getCurrentDayState } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

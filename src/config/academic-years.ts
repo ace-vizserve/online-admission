@@ -32,7 +32,7 @@ export const PARENT_FACING_ACADEMIC_YEARS: ParentFacingAcademicYear[] = [
 ];
 
 /** Every recognized academic year (incl. historical), newest first. */
-export const BACKEND_ACADEMIC_YEARS: string[] = ["ay2027", "ay2026", "ay2025"];
+export const BACKEND_ACADEMIC_YEARS: string[] = ["ay9999", "ay2027", "ay2026", "ay2025"];
 
 /** VizSchool mirrors the same years behind a `vizschool-` prefix. */
 export const VIZSCHOOL_ACADEMIC_YEARS: string[] = BACKEND_ACADEMIC_YEARS.map((ay) => `vizschool-${ay}`);
