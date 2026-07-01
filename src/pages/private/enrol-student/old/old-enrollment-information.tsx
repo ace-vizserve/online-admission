@@ -27,6 +27,8 @@ import {
   classLevels,
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
+  preferredPaymentMethod,
+  preferredPaymentScheme,
 } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
@@ -443,32 +445,7 @@ function OldEnrollmentInformation() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full">
-                  <FormField
-                    control={form.control}
-                    name="availUniform"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          School Uniform <span className="text-xs text-muted-foreground">(includes all 3 sets)</span>
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Yes or No" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Yes">Yes</SelectItem>
-                            <SelectItem value="No">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>Will you avail a school uniform? </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+                <div className="grid lg:grid-cols-2 items-start gap-4 lg:gap-6 w-full">
                   <div className="flex flex-col w-full gap-6">
                     <FormField
                       control={form.control}
@@ -547,7 +524,65 @@ function OldEnrollmentInformation() {
                           </SelectContent>
                         </Select>
 
+                        <FormDescription>Select your preferred Student Development Fee.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="preferredPaymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preferred Payment Method</FormLabel>
+
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a payment option" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {preferredPaymentMethod.map((fee) => (
+                              <SelectItem key={fee.value} value={fee.value}>
+                                {fee.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
                         <FormDescription>Select your preferred payment method.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="preferredPaymentScheme"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preferred Payment Scheme</FormLabel>
+
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a payment option" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {preferredPaymentScheme.map((fee) => (
+                              <SelectItem key={fee.value} value={fee.value}>
+                                {fee.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <FormDescription>Select your preferred payment scheme.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

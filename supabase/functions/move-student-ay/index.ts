@@ -1,14 +1,12 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const ADMIN_EMAILS = ["amier.vizbytes@vizserve.hfse.edu.sg", "ace.guevarra@vizserve.hfse.edu.sg"];
-const CORS = {
-  "Access-Control-Allow-Origin": "https://enrol.hfse.edu.sg",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+
+const allowedOrigins = ["https://enrol.hfse.edu.sg", "http://localhost:5173"];
+
 const BUCKET = "parent-portal";
 
-// URL fields in *_enrolment_documents that may contain storage paths
 const DOC_URL_FIELDS = [
   "passport",
   "birthCert",
@@ -85,27 +83,12 @@ async function moveOne(
   sourceAY: string,
   targetAY: string,
   enroleeNumber: string,
-): Promise<
-  | { ok: true; newEnroleeNumber: string; newStudentNumber: string }
-  | { ok: false; error: string }
-> {
+): Promise<{ ok: true; newEnroleeNumber: string; newStudentNumber: string } | { ok: false; error: string }> {
   // 1. Fetch all source records
   const [appRes, docRes, statusRes] = await Promise.all([
-    supabaseAdmin
-      .from(`${sourceAY}_enrolment_applications`)
-      .select("*")
-      .eq("enroleeNumber", enroleeNumber)
-      .single(),
-    supabaseAdmin
-      .from(`${sourceAY}_enrolment_documents`)
-      .select("*")
-      .eq("enroleeNumber", enroleeNumber)
-      .maybeSingle(),
-    supabaseAdmin
-      .from(`${sourceAY}_enrolment_status`)
-      .select("*")
-      .eq("enroleeNumber", enroleeNumber)
-      .maybeSingle(),
+    supabaseAdmin.from(`${sourceAY}_enrolment_applications`).select("*").eq("enroleeNumber", enroleeNumber).single(),
+    supabaseAdmin.from(`${sourceAY}_enrolment_documents`).select("*").eq("enroleeNumber", enroleeNumber).maybeSingle(),
+    supabaseAdmin.from(`${sourceAY}_enrolment_status`).select("*").eq("enroleeNumber", enroleeNumber).maybeSingle(),
   ]);
 
   if (appRes.error) {
@@ -129,9 +112,8 @@ async function moveOne(
   const yySuffix = targetAY.slice(-2); // "27" from "ay2027"
   const newEnroleeNumber = `E${yySuffix}${String(nextId).padStart(4, "0")}`;
   // Preserve the student number prefix (H = HFSE-IS, V = VizSchool)
-  const studentPrefix = typeof app.studentNumber === "string" && app.studentNumber.length > 0
-    ? app.studentNumber[0]
-    : "H";
+  const studentPrefix =
+    typeof app.studentNumber === "string" && app.studentNumber.length > 0 ? app.studentNumber[0] : "H";
   const newStudentNumber = `${studentPrefix}${yySuffix}${String(nextId).padStart(4, "0")}`;
 
   // 3. Build and insert into target tables
@@ -142,9 +124,7 @@ async function moveOne(
     sourceAY,
     targetAY,
   );
-  const { error: insertAppErr } = await supabaseAdmin
-    .from(`${targetAY}_enrolment_applications`)
-    .insert(newApp);
+  const { error: insertAppErr } = await supabaseAdmin.from(`${targetAY}_enrolment_applications`).insert(newApp);
   if (insertAppErr) {
     return { ok: false, error: `Insert application failed: ${insertAppErr.message}` };
   }
@@ -157,9 +137,7 @@ async function moveOne(
       sourceAY,
       targetAY,
     );
-    const { error: insertDocErr } = await supabaseAdmin
-      .from(`${targetAY}_enrolment_documents`)
-      .insert(newDoc);
+    const { error: insertDocErr } = await supabaseAdmin.from(`${targetAY}_enrolment_documents`).insert(newDoc);
     if (insertDocErr) {
       return { ok: false, error: `Insert documents failed: ${insertDocErr.message}` };
     }
@@ -168,9 +146,7 @@ async function moveOne(
   // Status
   if (status) {
     const newStatus = { ...stripAutoFields(status), enroleeNumber: newEnroleeNumber };
-    const { error: insertStatusErr } = await supabaseAdmin
-      .from(`${targetAY}_enrolment_status`)
-      .insert(newStatus);
+    const { error: insertStatusErr } = await supabaseAdmin.from(`${targetAY}_enrolment_status`).insert(newStatus);
     if (insertStatusErr) {
       return { ok: false, error: `Insert status failed: ${insertStatusErr.message}` };
     }
@@ -186,9 +162,7 @@ async function moveOne(
       if (doc[field] && typeof doc[field] === "string") rawUrls.push(doc[field]);
     }
   }
-  const sourcePaths = [
-    ...new Set(rawUrls.map((u) => storagePath(u)).filter((p): p is string => p !== null)),
-  ];
+  const sourcePaths = [...new Set(rawUrls.map((u) => storagePath(u)).filter((p): p is string => p !== null))];
 
   // 5. Copy files to target AY directory
   const copyErrors: string[] = [];
@@ -204,22 +178,13 @@ async function moveOne(
   // 6. Delete source DB records (documents + status in parallel, then applications)
   await Promise.all([
     doc
-      ? supabaseAdmin
-          .from(`${sourceAY}_enrolment_documents`)
-          .delete()
-          .eq("enroleeNumber", enroleeNumber)
+      ? supabaseAdmin.from(`${sourceAY}_enrolment_documents`).delete().eq("enroleeNumber", enroleeNumber)
       : Promise.resolve(),
     status
-      ? supabaseAdmin
-          .from(`${sourceAY}_enrolment_status`)
-          .delete()
-          .eq("enroleeNumber", enroleeNumber)
+      ? supabaseAdmin.from(`${sourceAY}_enrolment_status`).delete().eq("enroleeNumber", enroleeNumber)
       : Promise.resolve(),
   ]);
-  await supabaseAdmin
-    .from(`${sourceAY}_enrolment_applications`)
-    .delete()
-    .eq("enroleeNumber", enroleeNumber);
+  await supabaseAdmin.from(`${sourceAY}_enrolment_applications`).delete().eq("enroleeNumber", enroleeNumber);
 
   // 7. Delete source storage files
   if (sourcePaths.length > 0) {
@@ -230,22 +195,28 @@ async function moveOne(
 }
 
 Deno.serve(async (req) => {
+  const CORS = {
+    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "https://enrol.hfse.edu.sg",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: CORS });
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { auth: { autoRefreshToken: false, persistSession: false } },
-    );
+    const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
 
     // Verify caller is an authenticated admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Unauthorized" }, 401);
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
     if (!ADMIN_EMAILS.includes(user.email ?? "")) return json({ error: "Forbidden" }, 403);
 
@@ -299,7 +270,12 @@ Deno.serve(async (req) => {
       for (const num of enroleeNumbers) {
         const result = await moveOne(supabaseAdmin, sourceAY, targetAY, num);
         if (result.ok) {
-          results.push({ enroleeNumber: num, ok: true, newEnroleeNumber: result.newEnroleeNumber, newStudentNumber: result.newStudentNumber });
+          results.push({
+            enroleeNumber: num,
+            ok: true,
+            newEnroleeNumber: result.newEnroleeNumber,
+            newStudentNumber: result.newStudentNumber,
+          });
         } else {
           results.push({ enroleeNumber: num, ok: false, error: result.error });
         }

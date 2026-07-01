@@ -235,3 +235,14 @@ export const medicalConditions = [
   { id: "none", label: "None of the above" },
 ];
 
+export const preferredPaymentScheme = [
+  { label: "Annual (Full Payment)", value: "Annual (Full Payment)" },
+  { label: "Quarterly Payment", value: "Quarterly Payment" },
+  { label: "Monthly Payment", value: "Monthly Payment" },
+] as const;
+
+export const preferredPaymentMethod = [
+  { label: "Bank Transfer", value: "Bank Transfer" },
+  { label: "GIRO", value: "GIRO" },
+  { label: "Credit/Debit Card ( 3% platform fee)", value: "Credit/Debit Card Payment" },
+] as const;

@@ -303,31 +303,6 @@ function LearnerEnrollmentInformation() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full">
                   <FormField
                     control={form.control}
-                    name="availUniform"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          School Uniform <span className="text-xs text-muted-foreground">(includes all 3 sets)</span>
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Yes or No" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Yes">Yes</SelectItem>
-                            <SelectItem value="No">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>Will you avail a school uniform? </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="paymentOption"
                     render={({ field }) => (
                       <FormItem>
@@ -352,7 +327,7 @@ function LearnerEnrollmentInformation() {
                           </SelectContent>
                         </Select>
 
-                        <FormDescription>Select your preferred payment method.</FormDescription>
+                        <FormDescription>Select your preferred Student Development Fee.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

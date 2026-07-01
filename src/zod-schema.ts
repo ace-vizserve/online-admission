@@ -795,9 +795,6 @@ export const enrollmentInformationSchema = z
     availSchoolBus: z.string().min(1, {
       message: "Bus service selection is required",
     }),
-    availUniform: z.string().min(1, {
-      message: "School uniform selection is required",
-    }),
     availStudentCare: z.string().min(1, {
       message: "Student care selection is required",
     }),
@@ -815,6 +812,12 @@ export const enrollmentInformationSchema = z
       message: "Parent contract signatory is required",
     }),
     socialMediaConsent: z.boolean().default(false).optional(),
+    preferredPaymentScheme: z.string().min(1, {
+      message: "Preferred payment scheme selection is required",
+    }),
+    preferredPaymentMethod: z.string().min(1, {
+      message: "Preferred payment method selection is required",
+    }),
   })
   .superRefine((schema, ctx) => {
     if (schema.referrerName) {
@@ -860,9 +863,6 @@ export const vizSchoolEnrollmentInformationSchema = z
     }),
     preferredSchedule: z.string().min(1, {
       message: "Preferred schedule is required",
-    }),
-    availUniform: z.string().min(1, {
-      message: "School uniform selection is required",
     }),
     paymentOption: z.string().min(1, {
       message: "Campus development fee selection is required",
