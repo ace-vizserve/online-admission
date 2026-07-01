@@ -33,7 +33,9 @@ import EnrolNewLearnerContextProvider, {
 } from "@/context/vizschool/enrol-new-learner-context";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
-import { listNewStudentDrafts } from "@/lib/utils";
+import { getStepValidity } from "@/lib/step-validity";
+import { isExpired, listNewStudentDrafts, removeNewStudentDraft } from "@/lib/utils";
+import { EnrolNewStudentDraftStore } from "@/zustand-store";
 import { VizSchoolEnrolNewStudentFormState } from "@/types";
 import {
   useApplicationDraftsDialogStore,
@@ -47,6 +49,7 @@ import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "react-responsive";
+import { useLocation } from "react-router";
 import { toast } from "sonner";
 
 const academicYears = VIZSCHOOL_ACADEMIC_YEARS;
@@ -57,9 +60,12 @@ function NewLearnerLayout() {
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const academicYearParams = searchParams.get("academicYear");
   const [isPending, setIsPending] = useState<boolean>(false);
+
+  const isResumingFromDashboard = Boolean(location.state?.resumeDraftId);
 
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
@@ -84,7 +90,7 @@ function NewLearnerLayout() {
   useEffect(() => {
     if (hasCheckedDrafts.current) return;
 
-    if (studentDrafts.length > 0 && academicYears.includes(academicYear)) {
+    if (!isResumingFromDashboard && studentDrafts.length > 0 && academicYears.includes(academicYear)) {
       setIsOpen(true);
     }
 
@@ -93,6 +99,7 @@ function NewLearnerLayout() {
 
   return (
     <EnrolNewLearnerContextProvider>
+      <AutoResumeLearnerDraft />
       {isOpen ? (
         <VizSchoolSavedDraftsDialog />
       ) : (
@@ -135,6 +142,41 @@ function NewLearnerLayout() {
       )}
     </EnrolNewLearnerContextProvider>
   );
+}
+
+function AutoResumeLearnerDraft() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const resumeDraftId = location.state?.resumeDraftId as string | undefined;
+  const { setFormState, setActiveTab, setCurrentTab, setCompletedTabs } = useEnrolNewLearnerContext();
+  const hasRun = useRef(false);
+
+  useEffect(() => {
+    if (!resumeDraftId || hasRun.current) return;
+    hasRun.current = true;
+
+    const allDrafts = listNewStudentDrafts("viz-school");
+    const match = allDrafts.find(
+      (d: { state: EnrolNewStudentDraftStore }) => d.state?.draftId === resumeDraftId,
+    );
+    if (!match) return;
+
+    const state = match.state as EnrolNewStudentDraftStore;
+
+    if (isExpired(state.expiresAt)) {
+      navigate("/admission/drafts", { replace: true });
+      return;
+    }
+
+    setActiveTab(state.activeTab);
+    setCurrentTab(state.currentTab);
+    setCompletedTabs(state.completedTabs);
+    setFormState({ ...state.formState, draftId: state.draftId } as VizSchoolEnrolNewStudentFormState);
+
+    navigate(`${state.activeTab}?academicYear=${state.academicYear}`, { replace: true });
+  }, []);
+
+  return null;
 }
 
 function DraftApplication() {
@@ -181,10 +223,12 @@ function SubmitApplicationDialog() {
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
   const { formState } = useEnrolNewLearnerContext();
   const { mutate, isPending } = useMutation({
-    mutationFn: async (enrollmentDetails: VizSchoolEnrolNewStudentFormState) => {
-      return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, schoolFee, "VizSchool New");
+    mutationFn: async ({ enrollmentDetails, draftId }: { enrollmentDetails: VizSchoolEnrolNewStudentFormState; draftId: string | undefined }) => {
+      const result = await submitVizSchoolEnrollment(enrollmentDetails, academicYear, schoolFee, "VizSchool New");
+      return { ...result, draftId };
     },
     onSuccess(data) {
+      removeNewStudentDraft(data.draftId, "viz-school");
       navigate("/application-submitted", {
         state: {
           academicYear,
@@ -239,6 +283,8 @@ function SubmitApplicationDialog() {
       return;
     }
 
+    const draftId = formState.draftId ?? undefined;
+
     if (formState.createdAt) {
       delete formState.createdAt;
     }
@@ -247,18 +293,17 @@ function SubmitApplicationDialog() {
       delete formState.draftId;
     }
 
-    mutate(formState as VizSchoolEnrolNewStudentFormState);
+    mutate({ enrollmentDetails: formState as VizSchoolEnrolNewStudentFormState, draftId });
   }
+
+  const v = getStepValidity(formState, "viz-school");
+  const allValid = v.studentInfo && v.familyInfo && v.enrollmentInfo && v.uploadRequirements;
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          disabled={
-            formState.uploadRequirements?.studentUploadRequirements?.isValid != true ||
-            formState.uploadRequirements?.parentGuardianUploadRequirements?.isValid != true ||
-            isPending
-          }
+          disabled={!allValid || isPending}
           className="gap-2 bg-green-600 hover:bg-green-500 font-bold">
           {isPending ? (
             <>

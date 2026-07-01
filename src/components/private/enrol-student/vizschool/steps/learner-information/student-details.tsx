@@ -20,7 +20,7 @@ import {
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { differenceInYears, format } from "date-fns";
-import { Calendar as CalendarIcon, FilePen, Info, Save } from "lucide-react";
+import { Calendar as CalendarIcon, CheckCircle2, FilePen, Info, Loader2, Save } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
@@ -29,7 +29,9 @@ import { toast } from "sonner";
 const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOpened: (tab: string) => void }) {
   const { formState, setFormState } = useEnrolNewLearnerContext();
   const [isReligionOther, setIsReligionOther] = useState<boolean>(false);
+  const [showDraftSaved, setShowDraftSaved] = useState(false);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const isStepValid = formState.studentInfo?.studentDetails?.isValid === true;
   const { activeTab, completedTabs, currentTab } = useEnrolNewLearnerContext();
 
   const { isLoading, saveApplication } = useSaveApplication({
@@ -53,15 +55,19 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        studentDetails: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          studentDetails: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },
@@ -69,6 +75,12 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
         keepErrors: true,
       },
     );
+
+    if (wasDirty && formState.draftId) {
+      setShowDraftSaved(true);
+      const timer = setTimeout(() => setShowDraftSaved(false), 2000);
+      return () => clearTimeout(timer);
+    }
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -358,17 +370,19 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
             variant={"secondary"}
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-            type="submit">
-            Save details
-            <Save />
+            type="submit"
+            disabled={form.formState.isSubmitting || isLoading}>
+            {isStepValid ? "Update details" : "Save details"}
+            {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Save />}
           </Button>
 
           <Button
             variant={"secondary"}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-            type="submit">
-            Save details
-            <Save />
+            type="submit"
+            disabled={form.formState.isSubmitting || isLoading}>
+            {isStepValid ? "Update details" : "Save details"}
+            {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Save />}
           </Button>
 
           <Button
@@ -377,8 +391,8 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
 
           <Button
@@ -386,9 +400,16 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
             disabled={isLoading}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
+
+          {showDraftSaved && (
+            <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground animate-in fade-in">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+              Draft auto-saved
+            </p>
+          )}
         </div>
       </form>
     </Form>

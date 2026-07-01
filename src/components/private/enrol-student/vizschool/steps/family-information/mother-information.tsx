@@ -14,8 +14,8 @@ import { vizSchoolMotherInformationSchema, VizSchoolMotherInformationSchema } fr
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, CheckCircle, FilePen, Info } from "lucide-react";
-import { useEffect } from "react";
+import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, CheckCircle, CheckCircle2, FilePen, Info, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -99,19 +99,30 @@ function MotherInformation() {
     setActiveTab("/vizschool/enrol-student/new/enrollment-info");
   }
 
+  const [showDraftSaved, setShowDraftSaved] = useState(false);
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        motherInfo: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          motherInfo: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
+
+    if (wasDirty && formState.draftId) {
+      setShowDraftSaved(true);
+      const timer = setTimeout(() => setShowDraftSaved(false), 2000);
+      return () => clearTimeout(timer);
+    }
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -427,8 +438,8 @@ function MotherInformation() {
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
 
           <Button
@@ -436,9 +447,16 @@ function MotherInformation() {
             disabled={isLoading}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
+
+          {showDraftSaved && (
+            <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground animate-in fade-in">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+              Draft auto-saved
+            </p>
+          )}
         </div>
       </form>
     </Form>

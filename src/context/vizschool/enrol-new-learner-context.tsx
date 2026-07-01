@@ -32,11 +32,11 @@ function EnrolNewLearnerContextProvider({ children }: { children: ReactNode }) {
   const clearState = useVizSchoolEnrolNewStudentStore((state) => state.clearState);
 
   useEffect(() => {
-    if (currentTab != "") return;
+    if (useEnrolNewStudentTabStateStore.getState().currentTab !== "") return;
 
     setCurrentTab("/vizschool/enrol-student/new/student-info");
     setActiveTab("/vizschool/enrol-student/new/student-info");
-  }, [currentTab, setCurrentTab]);
+  }, []);
 
   return (
     <EnrolNewLearnerContext.Provider

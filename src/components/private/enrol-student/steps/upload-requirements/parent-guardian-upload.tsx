@@ -16,7 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
-import { AlertCircle, Clock, FilePen, Info, Save } from "lucide-react";
+import { AlertCircle, Clock, FilePen, Info, Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
@@ -73,15 +73,19 @@ function ParentGuardianUpload() {
   useEffect(() => {
     if (!isSuccess) return;
 
-    setFormState({
-      ...formState,
-      uploadRequirements: {
-        ...formState.uploadRequirements!,
-        parentGuardianUploadRequirements: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        uploadRequirements: {
+          ...formState.uploadRequirements!,
+          parentGuardianUploadRequirements: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },
@@ -410,8 +414,8 @@ function ParentGuardianUpload() {
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
 
           <Button
@@ -420,8 +424,8 @@ function ParentGuardianUpload() {
             variant={"secondary"}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
         </div>
       </form>

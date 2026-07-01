@@ -1,4 +1,4 @@
-import { createNewStudentDraft, DRAFT_EXPIRY_DAYS, now, wait } from "@/lib/utils";
+import { createNewStudentDraft, DRAFT_EXPIRY_DAYS, wait } from "@/lib/utils";
 import { createNewStudentDraftStore } from "@/zustand-store";
 import { addDays } from "date-fns";
 import { useCallback, useState } from "react";
@@ -50,7 +50,7 @@ export function useSaveApplication({
           },
           lastSavedAt: new Date(),
           createdAt: formState?.createdAt ?? new Date(),
-          expiresAt: addDays(now, DRAFT_EXPIRY_DAYS),
+          expiresAt: addDays(new Date(), DRAFT_EXPIRY_DAYS),
         });
 
         if (willExit) {
