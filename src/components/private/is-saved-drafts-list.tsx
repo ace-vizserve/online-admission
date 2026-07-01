@@ -26,7 +26,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router";
 import Logo from "../logo";
@@ -68,7 +68,7 @@ export default function ISSavedDraftsDialog() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExiting, setIsExiting] = useState<boolean>(false);
-  const studentDrafts = listNewStudentDrafts("hfse-is") || [];
+  const [drafts, setDrafts] = useState(() => listNewStudentDrafts("hfse-is") || []);
   const [sortBy, setSortBy] = useState<DraftSort>("lastUpdated");
   const isDesktop = useMediaQuery({
     query: "(min-width: 786px)",
@@ -79,8 +79,8 @@ export default function ISSavedDraftsDialog() {
   }, []);
 
   const sortedDrafts = useMemo(() => {
-    return sortDrafts(studentDrafts, sortBy);
-  }, [studentDrafts, sortBy]);
+    return sortDrafts(drafts, sortBy);
+  }, [drafts, sortBy]);
 
   const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
@@ -93,19 +93,14 @@ export default function ISSavedDraftsDialog() {
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [currentDraftCount, setCurrentDraftCount] = useState<number>(sortedDrafts.length);
 
-  const isEmpty = currentDraftCount === 0;
-
-  useEffect(() => {
-    setCurrentDraftCount(sortedDrafts.length);
-  }, [sortedDrafts]);
+  const isEmpty = drafts.length === 0;
 
   function handleDelete(id: string, type: "hfse-is" | "viz-school") {
     setDeletingId(id);
     setTimeout(() => {
       localStorage.removeItem(`enrolNewStudent:draft:${id}:${type}`);
-      setCurrentDraftCount((prev) => prev - 1);
+      setDrafts(listNewStudentDrafts("hfse-is") || []);
       setDeletingId(null);
     }, 200);
   }
@@ -207,10 +202,10 @@ export default function ISSavedDraftsDialog() {
                         const progressPercent = Math.round((internalState.completedTabs.length / STEPS.length) * 100);
 
                         const fullName =
-                          formState?.studentInfo?.studentDetails?.firstName ||
-                          formState?.studentInfo?.studentDetails?.lastName
-                            ? `${formState.studentInfo.studentDetails.firstName ?? ""} ${
-                                formState.studentInfo.studentDetails.lastName ?? ""
+                          internalFormState?.studentInfo?.studentDetails?.firstName ||
+                          internalFormState?.studentInfo?.studentDetails?.lastName
+                            ? `${internalFormState.studentInfo?.studentDetails?.firstName ?? ""} ${
+                                internalFormState.studentInfo?.studentDetails?.lastName ?? ""
                               }`.trim()
                             : "New Application";
 
@@ -463,9 +458,9 @@ export default function ISSavedDraftsDialog() {
                         const progressPercent = Math.round((internalState.completedTabs.length / STEPS.length) * 100);
 
                         const fullName =
-                          formState?.studentInfo?.studentDetails?.firstName ||
-                          formState?.studentInfo?.studentDetails?.lastName
-                            ? `${formState.studentInfo.studentDetails.firstName ?? ""} ${formState.studentInfo.studentDetails.lastName ?? ""}`.trim()
+                          internalFormState?.studentInfo?.studentDetails?.firstName ||
+                          internalFormState?.studentInfo?.studentDetails?.lastName
+                            ? `${internalFormState.studentInfo?.studentDetails?.firstName ?? ""} ${internalFormState.studentInfo?.studentDetails?.lastName ?? ""}`.trim()
                             : "New Application";
 
                         return (

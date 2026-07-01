@@ -32,11 +32,14 @@ function EnrolNewStudentContextProvider({ children }: { children: ReactNode }) {
   const clearState = useEnrolNewStudentStore((state) => state.clearState);
 
   useEffect(() => {
-    if (currentTab != "") return;
+    // Read live store state — not the render-time closure. AutoResumeDraft (a child
+    // component) runs its effect first (React bottom-up), so by the time this fires
+    // the store already has the resumed currentTab, if any.
+    if (useEnrolNewStudentTabStateStore.getState().currentTab !== "") return;
 
     setCurrentTab("/enrol-student/new/student-info");
     setActiveTab("/enrol-student/new/student-info");
-  }, [currentTab, setCurrentTab]);
+  }, []);
 
   return (
     <EnrolNewStudentContext.Provider

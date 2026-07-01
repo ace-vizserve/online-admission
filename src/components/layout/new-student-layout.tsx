@@ -31,7 +31,9 @@ import {
 } from "@/components/ui/drawer";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
-import { listNewStudentDrafts } from "@/lib/utils";
+import { getStepValidity } from "@/lib/step-validity";
+import { isExpired, listNewStudentDrafts, removeNewStudentDraft } from "@/lib/utils";
+import { EnrolNewStudentDraftStore } from "@/zustand-store";
 import { EnrolNewStudentFormState } from "@/types";
 import {
   useApplicationDraftsDialogStore,
@@ -46,6 +48,7 @@ import "ldrs/react/DotPulse.css";
 import { OctagonAlert } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "react-responsive";
+import { useLocation } from "react-router";
 import { toast } from "sonner";
 import ISSavedDraftsDialog from "../private/is-saved-drafts-list";
 
@@ -57,9 +60,12 @@ function NewStudentLayout() {
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const academicYearParams = searchParams.get("academicYear");
   const [isPending, setIsPending] = useState<boolean>(false);
+
+  const isResumingFromDashboard = Boolean(location.state?.resumeDraftId);
 
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
@@ -84,7 +90,7 @@ function NewStudentLayout() {
   useEffect(() => {
     if (hasCheckedDrafts.current) return;
 
-    if (studentDrafts.length > 0 && academicYears.includes(academicYear)) {
+    if (!isResumingFromDashboard && studentDrafts.length > 0 && academicYears.includes(academicYear)) {
       setIsOpen(true);
     }
 
@@ -93,6 +99,7 @@ function NewStudentLayout() {
 
   return (
     <EnrolNewStudentContextProvider>
+      <AutoResumeDraft />
       {isOpen ? (
         <ISSavedDraftsDialog />
       ) : (
@@ -135,6 +142,41 @@ function NewStudentLayout() {
       )}
     </EnrolNewStudentContextProvider>
   );
+}
+
+function AutoResumeDraft() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const resumeDraftId = location.state?.resumeDraftId as string | undefined;
+  const { setFormState, setActiveTab, setCurrentTab, setCompletedTabs } = useEnrolNewStudentContext();
+  const hasRun = useRef(false);
+
+  useEffect(() => {
+    if (!resumeDraftId || hasRun.current) return;
+    hasRun.current = true;
+
+    const allDrafts = listNewStudentDrafts("hfse-is");
+    const match = allDrafts.find(
+      (d: { state: EnrolNewStudentDraftStore }) => d.state?.draftId === resumeDraftId,
+    );
+    if (!match) return;
+
+    const state = match.state as EnrolNewStudentDraftStore;
+
+    if (isExpired(state.expiresAt)) {
+      navigate("/admission/drafts", { replace: true });
+      return;
+    }
+
+    setActiveTab(state.activeTab);
+    setCurrentTab(state.currentTab);
+    setCompletedTabs(state.completedTabs);
+    setFormState({ ...state.formState, draftId: state.draftId } as EnrolNewStudentFormState);
+
+    navigate(`${state.activeTab}?academicYear=${state.academicYear}`, { replace: true });
+  }, []);
+
+  return null;
 }
 
 function DraftApplication() {
@@ -182,14 +224,16 @@ function SubmitApplicationDialog() {
   const { formState } = useEnrolNewStudentContext();
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const { mutate, isPending } = useMutation({
-    mutationFn: async (enrollmentDetails: EnrolNewStudentFormState) => {
-      return await submitEnrollment(enrollmentDetails, academicYear, {
+    mutationFn: async ({ enrollmentDetails, draftId }: { enrollmentDetails: EnrolNewStudentFormState; draftId: string | undefined }) => {
+      const result = await submitEnrollment(enrollmentDetails, academicYear, {
         preCourseAcknowledgedAt: new Date(),
         preCourseAnswer: enrollmentDetails.preCourseAnswer as string,
         preCourseDate: enrollmentDetails.preCourseDate,
       });
+      return { ...result, draftId };
     },
     onSuccess(data) {
+      removeNewStudentDraft(data.draftId, "hfse-is");
       navigate("/application-submitted", {
         state: {
           academicYear,
@@ -245,6 +289,8 @@ function SubmitApplicationDialog() {
       return;
     }
 
+    const draftId = formState.draftId ?? undefined;
+
     if (formState.createdAt) {
       delete formState.createdAt;
     }
@@ -258,18 +304,17 @@ function SubmitApplicationDialog() {
       delete uploadReqs.showVaccinationInformation;
     }
 
-    mutate({ ...(formState as EnrolNewStudentFormState), stpApplicationType });
+    mutate({ enrollmentDetails: { ...(formState as EnrolNewStudentFormState), stpApplicationType }, draftId });
   }
+
+  const v = getStepValidity(formState, "hfse-is");
+  const allValid = v.studentInfo && v.familyInfo && v.enrollmentInfo && v.uploadRequirements;
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          disabled={
-            formState.uploadRequirements?.studentUploadRequirements?.isValid != true ||
-            formState.uploadRequirements?.parentGuardianUploadRequirements?.isValid != true ||
-            isPending
-          }
+          disabled={!allValid || isPending}
           className="gap-2 bg-green-600 hover:bg-green-500 font-bold">
           {isPending ? (
             <>

@@ -25,8 +25,8 @@ import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, FilePen, Info, MessageCircle } from "lucide-react";
-import { useEffect } from "react";
+import { AlertTriangleIcon, ArrowRight, Calendar as CalendarIcon, CheckCircle2, FilePen, Info, Loader2, MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -198,8 +198,11 @@ function GuardianInformation() {
 
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
+  const [showDraftSaved, setShowDraftSaved] = useState(false);
 
   useEffect(() => {
+    const wasDirty = form.formState.isDirty;
+
     setFormState({
       ...formState,
       familyInfo: {
@@ -216,6 +219,12 @@ function GuardianInformation() {
         keepErrors: true,
       },
     );
+
+    if (wasDirty && formState.draftId) {
+      setShowDraftSaved(true);
+      const timer = setTimeout(() => setShowDraftSaved(false), 2000);
+      return () => clearTimeout(timer);
+    }
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -589,8 +598,8 @@ function GuardianInformation() {
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
 
           <Button
@@ -599,9 +608,16 @@ function GuardianInformation() {
             variant={"secondary"}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
+
+          {showDraftSaved && (
+            <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground animate-in fade-in">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+              Draft auto-saved
+            </p>
+          )}
         </div>
       </form>
     </Form>

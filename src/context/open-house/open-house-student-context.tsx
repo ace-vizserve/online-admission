@@ -32,11 +32,11 @@ function OpenHouseContextProvider({ children }: { children: ReactNode }) {
   const clearState = useOpenHouseStore((state) => state.clearState);
 
   useEffect(() => {
-    if (currentTab != "") return;
+    if (useEnrolNewStudentTabStateStore.getState().currentTab !== "") return;
 
     setCurrentTab("/open-house/account-info");
     setActiveTab("/open-house/account-info");
-  }, [currentTab, setCurrentTab]);
+  }, []);
 
   return (
     <OpenHouseContext.Provider

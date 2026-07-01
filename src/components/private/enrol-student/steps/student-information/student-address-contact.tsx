@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils";
 import { studentAddressContactSchema, StudentAddressContactSchema } from "@/zod-schema";
 import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, FilePen, Globe, Info, PlusCircle, Save, Trash2 } from "lucide-react";
-import { memo, useEffect } from "react";
+import { Check, CheckCircle2, FilePen, Globe, Info, Loader2, PlusCircle, Save, Trash2 } from "lucide-react";
+import { memo, useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
@@ -28,6 +28,8 @@ const StudentAddressContact = memo(function StudentAddressContact({
 }) {
   const { formState, setFormState, activeTab, completedTabs, currentTab } = useEnrolNewStudentContext();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  const [showDraftSaved, setShowDraftSaved] = useState(false);
+  const isStepValid = formState.studentInfo?.addressContact?.isValid === true;
   const { isLoading, saveApplication } = useSaveApplication({
     academicYear,
     activeTab,
@@ -71,15 +73,25 @@ const StudentAddressContact = memo(function StudentAddressContact({
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        addressContact: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          addressContact: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
+
+    if (wasDirty && formState.draftId) {
+      setShowDraftSaved(true);
+      const timer = setTimeout(() => setShowDraftSaved(false), 2000);
+      return () => clearTimeout(timer);
+    }
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -513,16 +525,18 @@ const StudentAddressContact = memo(function StudentAddressContact({
           <Button
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
-            type="submit">
-            Save details
-            <Save />
+            type="submit"
+            disabled={form.formState.isSubmitting || isLoading}>
+            {isStepValid ? "Update details" : "Save details"}
+            {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Save />}
           </Button>
 
           <Button
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
-            type="submit">
-            Save details
-            <Save />
+            type="submit"
+            disabled={form.formState.isSubmitting || isLoading}>
+            {isStepValid ? "Update details" : "Save details"}
+            {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Save />}
           </Button>
 
           <Button
@@ -532,8 +546,8 @@ const StudentAddressContact = memo(function StudentAddressContact({
             size={"lg"}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
 
           <Button
@@ -542,9 +556,16 @@ const StudentAddressContact = memo(function StudentAddressContact({
             variant={"secondary"}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="button">
-            Save for later & exit
-            <FilePen />
+            {isLoading ? "Saving..." : "Save for later & exit"}
+            {isLoading ? <Loader2 className="animate-spin" /> : <FilePen />}
           </Button>
+
+          {showDraftSaved && (
+            <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground animate-in fade-in">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+              Draft auto-saved
+            </p>
+          )}
         </div>
       </form>
     </Form>

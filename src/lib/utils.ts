@@ -578,11 +578,13 @@ type DraftMeta = {
 };
 
 export function isExpired(expiresAt?: string | Date) {
-  if (!expiresAt) return false;
+  // Missing or corrupt expiry → treat as expired (fail-safe: don't allow
+  // resuming a draft whose lifetime cannot be determined).
+  if (!expiresAt) return true;
 
   const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
 
-  if (Number.isNaN(expiry.getTime())) return false;
+  if (Number.isNaN(expiry.getTime())) return true;
 
   return expiry < new Date();
 }
@@ -627,9 +629,21 @@ export function listNewStudentDrafts(type: "viz-school" | "hfse-is") {
     .filter((k) => k.startsWith(`enrolNewStudent:draft:`) && k.endsWith(`:${type}`))
     .map((key) => {
       const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        // Corrupted localStorage entry — skip rather than crashing the whole list.
+        return null;
+      }
     })
     .filter(Boolean);
+}
+
+export function removeNewStudentDraft(draftId: string | undefined, type: "viz-school" | "hfse-is") {
+  if (!draftId) return;
+  localStorage.removeItem(`${NEW_STUDENT_DRAFT_PREFIX}${draftId}:${type}`);
+  window.dispatchEvent(new Event("draft-list-changed"));
 }
 
 export type DraftSort = "lastUpdated" | "expiringSoon" | "expired" | "oldest";
