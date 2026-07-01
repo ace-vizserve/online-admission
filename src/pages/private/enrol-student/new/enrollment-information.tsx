@@ -373,10 +373,13 @@ function EnrollmentInformation() {
                               <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>
                             ) : CAMBRIDGE_CLASS_LEVELS.includes(selectedLevel) ? (
                               <>
-                                <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>
-                                <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
-                                  Standard Class (ENGLISH + TAGALOG)
-                                </SelectItem>
+                                {classTypes
+                                  .filter((type) => ALLOWED_CAMBRIDGE_CLASS_TYPES.includes(type.value))
+                                  .map((type) => (
+                                    <SelectItem key={type.value} value={type.value}>
+                                      {type.label}
+                                    </SelectItem>
+                                  ))}
                               </>
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
