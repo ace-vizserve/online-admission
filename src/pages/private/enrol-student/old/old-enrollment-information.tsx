@@ -171,6 +171,36 @@ function OldEnrollmentInformation() {
   }, [debouncedValues]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
+    if (values.levelApplied.includes("YoungStarter") && values.paymentOption != "Not Applicable") {
+      toast.warning("Invalid Student Development Fee!", {
+        description: "Kindly select the option 'Not Applicable'.",
+      });
+      form.setError("paymentOption", { message: "Please select 'Not Applicable'." });
+      return;
+    }
+
+    if (
+      PRIMARY_CLASS_LEVELS.includes(values.levelApplied) &&
+      !Boolean(campusDevelopmentFeePrimary.find((fee) => fee.value === values.paymentOption))
+    ) {
+      toast.warning("Invalid Student Development Fee!", {
+        description: "Kindly select the option the correct Student Development Fee.",
+      });
+      form.setError("paymentOption", { message: "Please select the correct Student Development Fee." });
+      return;
+    }
+
+    if (
+      SECONDARY_SDF_CLASS_LEVELS.includes(values.levelApplied) &&
+      !Boolean(campusDevelopmentFeeSecondary.find((fee) => fee.value === values.paymentOption))
+    ) {
+      toast.warning("Invalid Student Development Fee!", {
+        description: "Kindly select the option the correct Student Development Fee.",
+      });
+      form.setError("paymentOption", { message: "Please select the correct Student Development Fee." });
+      return;
+    }
+
     if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {
       toast.warning("Schedule Mismatch!", {
         description: "Only 'Whole Day' schedule is available for the selected grade level.",
