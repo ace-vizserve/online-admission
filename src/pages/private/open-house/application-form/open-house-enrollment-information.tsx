@@ -24,7 +24,6 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
 import {
-  campusDevelopmentFee,
   campusDevelopmentFeePrimary,
   campusDevelopmentFeeSecondary,
   classLevels,
@@ -520,23 +519,21 @@ function OpenHouseEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {PRIMARY_CLASS_LEVELS.includes(form.watch("levelApplied"))
-                              ? campusDevelopmentFeePrimary.map((fee) => (
-                                  <SelectItem key={fee.value} value={fee.value}>
-                                    {fee.label}
-                                  </SelectItem>
-                                ))
-                              : SECONDARY_SDF_CLASS_LEVELS.includes(form.watch("levelApplied"))
-                                ? campusDevelopmentFeeSecondary.map((fee) => (
-                                    <SelectItem key={fee.value} value={fee.value}>
-                                      {fee.label}
-                                    </SelectItem>
-                                  ))
-                                : campusDevelopmentFee.map((fee) => (
-                                    <SelectItem key={fee.value} value={fee.value}>
-                                      {fee.label}
-                                    </SelectItem>
-                                  ))}
+                            {PRIMARY_CLASS_LEVELS.includes(form.watch("levelApplied")) ? (
+                              campusDevelopmentFeePrimary.map((fee) => (
+                                <SelectItem key={fee.value} value={fee.value}>
+                                  {fee.label}
+                                </SelectItem>
+                              ))
+                            ) : SECONDARY_SDF_CLASS_LEVELS.includes(form.watch("levelApplied")) ? (
+                              campusDevelopmentFeeSecondary.map((fee) => (
+                                <SelectItem key={fee.value} value={fee.value}>
+                                  {fee.label}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="Not Applicable">Not Applicable</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
 
