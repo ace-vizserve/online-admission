@@ -2295,7 +2295,7 @@ type Feedback = {
   feedbackComments?: string;
   feedbackConsent: boolean;
   howDidYouKnowAboutHFSEIS: string;
-  referrerName?: string;
+  marketingReferrerName?: string;
 };
 
 export async function submitParentFeedback({
@@ -2305,7 +2305,7 @@ export async function submitParentFeedback({
   feedbackRating,
   feedbackComments,
   howDidYouKnowAboutHFSEIS,
-  referrerName,
+  marketingReferrerName,
 }: Feedback) {
   try {
     const {
@@ -2321,7 +2321,7 @@ export async function submitParentFeedback({
         feedbackRating,
         feedbackComments,
         feedbackConsent,
-        marketingReferrerName: referrerName,
+        marketingReferrerName,
         feedbackSubmittedAt: new Date(),
       })
       .eq("enroleeNumber", enroleeNumber);

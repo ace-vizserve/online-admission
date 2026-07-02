@@ -27,7 +27,7 @@ type Feedback = {
   feedbackComments?: string;
   feedbackConsent: boolean;
   howDidYouKnowAboutHFSEIS: string;
-  referrerName?: string;
+  marketingReferrerName?: string;
 };
 
 const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
@@ -72,7 +72,7 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
       feedbackComments,
       feedbackConsent,
       howDidYouKnowAboutHFSEIS,
-      referrerName,
+      marketingReferrerName,
     }: Feedback) => {
       return await submitParentFeedback({
         academicYear,
@@ -81,19 +81,19 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
         feedbackRating,
         feedbackComments,
         howDidYouKnowAboutHFSEIS,
-        referrerName,
+        marketingReferrerName,
       });
     },
 
-    // onSuccess() {
-    //   setOpen(false);
+    onSuccess() {
+      setOpen(false);
 
-    //   if (redirectTo) {
-    //     navigate("/login");
-    //   } else {
-    //     navigate("/admission/dashboard");
-    //   }
-    // },
+      if (redirectTo) {
+        navigate("/login");
+      } else {
+        navigate("/admission/dashboard");
+      }
+    },
   });
 
   const handleSkip = () => {
@@ -116,7 +116,7 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
       feedbackRating: selectedRating ? Number(selectedRating) : 0,
       feedbackComments: comments,
       howDidYouKnowAboutHFSEIS: howDidYouKnowAboutHFSEIS === "Other" ? otherSource.trim() : howDidYouKnowAboutHFSEIS,
-      referrerName: howDidYouKnowAboutHFSEIS === "Referral" ? referrerName.trim() : undefined,
+      marketingReferrerName: howDidYouKnowAboutHFSEIS === "Referral" ? referrerName.trim() : undefined,
     });
   };
 
