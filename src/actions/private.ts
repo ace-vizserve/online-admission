@@ -989,8 +989,7 @@ export async function submitVizSchoolEnrollment(
     const parentGuardianToFollowDocs =
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
 
-    const isParentGuardianToFollow = (docKey: string) =>
-      parentGuardianToFollowDocs.some((key) => docKey.toLowerCase().includes(key.toLowerCase()));
+    const isParentGuardianToFollow = (docKey: string) => parentGuardianToFollowDocs.includes(docKey);
 
     const processParentGuardian = async (
       role: "mother" | "father" | "guardian",
@@ -1343,8 +1342,7 @@ export async function submitEnrollment(
     const parentGuardianToFollowDocs =
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
 
-    const isParentGuardianToFollow = (docKey: string) =>
-      parentGuardianToFollowDocs.some((key) => docKey.toLowerCase().includes(key.toLowerCase()));
+    const isParentGuardianToFollow = (docKey: string) => parentGuardianToFollowDocs.includes(docKey);
 
     const processParentGuardian = async (
       role: "mother" | "father" | "guardian",
@@ -1699,8 +1697,7 @@ export async function submitExistingEnrollment(
     const parentGuardianToFollowDocs =
       enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
 
-    const isParentGuardianToFollow = (docKey: string) =>
-      parentGuardianToFollowDocs.some((key) => docKey.toLowerCase().includes(key.toLowerCase()));
+    const isParentGuardianToFollow = (docKey: string) => parentGuardianToFollowDocs.includes(docKey);
 
     const processParentGuardian = async (
       role: "mother" | "father" | "guardian",

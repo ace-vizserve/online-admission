@@ -60,7 +60,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
             "w-full md:max-w-xs flex items-center justify-between gap-4 rounded-xl border p-4 transition-all duration-200",
             editMode
               ? "bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20"
-              : "bg-primary/5 border-border hover:bg-primary/10"
+              : "bg-primary/5 border-border hover:bg-primary/10",
           )}>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
@@ -302,7 +302,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -517,7 +517,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -654,7 +654,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
         {/* GUARDIAN SECTION */}
         {guardianEmail && (
           <Card className="border-none py-0 shadow-none bg-transparent">
-            <SectionHeader title="Mother's Details" icon={<Heart className="size-5" />} color="text-rose-500" />
+            <SectionHeader title="Guardian's Details" icon={<Users className="size-5" />} color="text-indigo-600" />
             <CardContent className="px-0 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
                 <FormField
@@ -732,7 +732,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -934,7 +934,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                                     variant={"outline"}
                                     className={cn(
                                       "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
+                                      !field.value && "text-muted-foreground",
                                     )}>
                                     {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1040,7 +1040,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
   const renderDataField = (
     label: string,
     value: string | null | undefined,
-    icon: React.ReactElement<{ className: string }>
+    icon: React.ReactElement<{ className: string }>,
   ) => (
     <div className="space-y-1.5 group">
       <Label className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">{label}</Label>
@@ -1067,7 +1067,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
             {renderDataField(
               "Date of birth",
               familyInformation.fatherBirthDay ? formatDate(familyInformation.fatherBirthDay, "dd MMM yyyy") : null,
-              <Cake />
+              <Cake />,
             )}
             {renderDataField("Religion", familyInformation.fatherReligion, <Landmark />)}
             {renderDataField("Email Address", familyInformation.fatherEmail, <Mail />)}
@@ -1078,7 +1078,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
               familyInformation.fatherNric
                 ? familyInformation.fatherNric.slice(0, 3) + "****" + familyInformation.fatherNric.slice(-2)
                 : null,
-              <BadgeInfo />
+              <BadgeInfo />,
             )}
             {renderDataField("Company", familyInformation.fatherCompanyName, <Briefcase />)}
             {renderDataField("Occupation", familyInformation.fatherPosition, <Briefcase />)}
@@ -1098,7 +1098,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
             {renderDataField(
               "Date of birth",
               familyInformation.motherBirthDay ? formatDate(familyInformation.motherBirthDay, "dd MMM yyyy") : null,
-              <Cake />
+              <Cake />,
             )}
             {renderDataField("Religion", familyInformation.motherReligion, <Landmark />)}
             {renderDataField("Email Address", familyInformation.motherEmail, <Mail />)}
@@ -1109,7 +1109,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
               familyInformation.motherNric
                 ? familyInformation.motherNric.slice(0, 3) + "****" + familyInformation.motherNric.slice(-2)
                 : null,
-              <BadgeInfo />
+              <BadgeInfo />,
             )}
             {renderDataField("Company", familyInformation.motherCompanyName, <Briefcase />)}
             {renderDataField("Occupation", familyInformation.motherPosition, <Briefcase />)}
@@ -1129,7 +1129,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
             {renderDataField(
               "Date of birth",
               familyInformation.guardianBirthDay ? formatDate(familyInformation.guardianBirthDay, "dd MMM yyyy") : null,
-              <Cake />
+              <Cake />,
             )}
             {renderDataField("Religion", familyInformation.guardianReligion, <Landmark />)}
             {renderDataField("Email Address", familyInformation.guardianEmail, <Mail />)}
@@ -1140,7 +1140,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
               familyInformation.guardianNric
                 ? familyInformation.guardianNric.slice(0, 3) + "****" + familyInformation.guardianNric.slice(-2)
                 : null,
-              <BadgeInfo />
+              <BadgeInfo />,
             )}
             {renderDataField("Company", familyInformation.guardianCompanyName, <Briefcase />)}
             {renderDataField("Occupation", familyInformation.guardianPosition, <Briefcase />)}
@@ -1167,7 +1167,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
                   {renderDataField(
                     "Date of Birth",
                     sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "dd/MM/yyyy") : null,
-                    <Cake />
+                    <Cake />,
                   )}
                   {renderDataField("Religion", sibling.siblingReligion as string, <Landmark />)}
                   <div className="lg:col-span-2">
