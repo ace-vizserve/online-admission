@@ -1,4 +1,5 @@
 import { parentGuardianReuploadDocuments } from "@/actions/private";
+import { sendEmailNotification } from "@/actions/send-email-notification";
 import DocumentPreviewDialog from "@/components/document-preview-dialog";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
@@ -305,20 +306,20 @@ function ParentGuardianFileUploaderDialog({
 
       return await parentGuardianReuploadDocuments({ academicYear, documentType, enroleeNumber, payload, role });
     },
-    // onSuccess: async () => {
-    //   setIsOpen(false);
-    //   queryClient.invalidateQueries({ queryKey: ["family-documents", enroleeNumber] });
-    //   queryClient.invalidateQueries({ queryKey: ["student-profile", enroleeNumber] });
+    onSuccess: async () => {
+      setIsOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["family-documents", enroleeNumber] });
+      queryClient.invalidateQueries({ queryKey: ["student-profile", enroleeNumber] });
 
-    //   await sendEmailNotification({
-    //     parentEmail,
-    //     role,
-    //     updatedSections: [label],
-    //     section: "Parent/Guardian Documents",
-    //     academicYear,
-    //     enroleeNumber,
-    //   });
-    // },
+      await sendEmailNotification({
+        parentEmail,
+        role,
+        updatedSections: [label],
+        section: "Parent/Guardian Documents",
+        academicYear,
+        enroleeNumber,
+      });
+    },
   });
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
