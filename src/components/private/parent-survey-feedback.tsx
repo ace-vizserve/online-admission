@@ -85,15 +85,15 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
       });
     },
 
-    // onSuccess() {
-    //   setOpen(false);
+    onSuccess() {
+      setOpen(false);
 
-    //   if (redirectTo) {
-    //     navigate("/login");
-    //   } else {
-    //     navigate("/admission/dashboard");
-    //   }
-    // },
+      if (redirectTo) {
+        navigate("/login");
+      } else {
+        navigate("/admission/dashboard");
+      }
+    },
   });
 
   const handleSkip = () => {
