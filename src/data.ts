@@ -263,10 +263,47 @@ export const classTypes = [
   { label: "Standard Class (ENGLISH + TAGALOG)", value: "Standard Class (ENGLISH + TAGALOG)" },
 ] as const;
 
+export const PRIMARY_CLASS_LEVELS = [
+  "Primary One",
+  "Primary Two",
+  "Primary Three",
+  "Primary Four",
+  "Primary Five",
+  "Primary Six",
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE Global Education Programme - Primary 2",
+  "HFSE Global Education Programme - Primary 3",
+  "HFSE Global Education Programme - Primary 4",
+  "HFSE Global Education Programme - Primary 5",
+  "HFSE Global Education Programme - Primary 6",
+];
+
+export const SECONDARY_SDF_CLASS_LEVELS = [
+  "Secondary One",
+  "Secondary Two",
+  "Secondary Three",
+  "Secondary Four",
+  "HFSE Global Education Programme – Year 8",
+  "HFSE Global Education Programme – Year 9",
+  "HFSE Global Education Programme – Year 10",
+];
+
 export const campusDevelopmentFee = [
   { label: "Option 1 – Full payment (S$1,350 upfront)", value: "Option 1" },
   { label: "Option 2 – Partial + Monthly (S$250 + S$100/mo)", value: "Option 2" },
   { label: "Option 3 – Monthly only (S$125/mo)", value: "Option 3" },
+] as const;
+
+export const campusDevelopmentFeeSecondary = [
+  { label: "Option 1 – Full payment (S$1,350 upfront)", value: "Option 1" },
+  { label: "Option 2 – Partial + Monthly (S$250 + S$100/mo)", value: "Option 2" },
+  { label: "Option 3 – Monthly only (S$125/mo)", value: "Option 3" },
+] as const;
+
+export const campusDevelopmentFeePrimary = [
+  { label: "Option 1: Full Payment (SGD 1050 UPFRONT)", value: "Option 1" },
+  { label: "Option 2: Partial (SGD 250 + SGD 75/mo)", value: "Option 2" },
+  { label: "Option 3: Monthly Only (SGD 100/mo)", value: "Option 3" },
 ] as const;
 
 export const medicalConditions = [

@@ -25,11 +25,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import {
   campusDevelopmentFee,
+  campusDevelopmentFeePrimary,
+  campusDevelopmentFeeSecondary,
   classLevels,
   classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
   preferredPaymentMethod,
   preferredPaymentScheme,
+  PRIMARY_CLASS_LEVELS,
+  SECONDARY_SDF_CLASS_LEVELS,
 } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
@@ -545,11 +549,23 @@ function EnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {campusDevelopmentFee.map((fee) => (
-                              <SelectItem key={fee.value} value={fee.value}>
-                                {fee.label}
-                              </SelectItem>
-                            ))}
+                            {PRIMARY_CLASS_LEVELS.includes(form.watch("levelApplied"))
+                              ? campusDevelopmentFeePrimary.map((fee) => (
+                                  <SelectItem key={fee.value} value={fee.value}>
+                                    {fee.label}
+                                  </SelectItem>
+                                ))
+                              : SECONDARY_SDF_CLASS_LEVELS.includes(form.watch("levelApplied"))
+                                ? campusDevelopmentFeeSecondary.map((fee) => (
+                                    <SelectItem key={fee.value} value={fee.value}>
+                                      {fee.label}
+                                    </SelectItem>
+                                  ))
+                                : campusDevelopmentFee.map((fee) => (
+                                    <SelectItem key={fee.value} value={fee.value}>
+                                      {fee.label}
+                                    </SelectItem>
+                                  ))}
                           </SelectContent>
                         </Select>
 
