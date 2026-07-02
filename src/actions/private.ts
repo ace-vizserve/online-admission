@@ -1786,6 +1786,8 @@ export async function submitExistingEnrollment(
     if (enrollmentApplicationStatusError) {
       throw new Error(enrollmentApplicationStatusError.message);
     }
+
+    return generatedEnroleeNumber;
   } catch (error) {
     const err = error as AuthError;
     throw err;
@@ -2314,7 +2316,9 @@ export async function submitParentFeedback({
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const { error } = await supabase
+    console.log(enroleeNumber, academicYear);
+
+    const { data, error, count } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .update({
         howDidYouKnowAboutHFSEIS,
@@ -2322,9 +2326,12 @@ export async function submitParentFeedback({
         feedbackComments,
         feedbackConsent,
         marketingReferrerName,
-        feedbackSubmittedAt: new Date(),
+        feedbackSubmittedAt: new Date().toISOString(),
       })
-      .eq("enroleeNumber", enroleeNumber);
+      .eq("enroleeNumber", enroleeNumber)
+      .select();
+
+    console.log({ data, count, error });
 
     if (error) {
       throw new Error(error.message);

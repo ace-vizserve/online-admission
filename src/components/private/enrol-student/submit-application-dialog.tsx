@@ -41,11 +41,11 @@ function SubmitApplicationDialog() {
         preCourseAcknowledgedAt: new Date(),
       });
     },
-    onSuccess() {
+    onSuccess(enroleeNumber) {
       navigate("/application-submitted", {
         state: {
           academicYear,
-          enroleeNumber: params.id,
+          enroleeNumber,
         },
       });
       queryClient.invalidateQueries({
