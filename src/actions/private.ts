@@ -1116,8 +1116,8 @@ export async function submitEnrollment(
     delete enrollmentDetails.familyInfo?.fatherInfo?.isValid;
     delete enrollmentDetails.familyInfo?.fatherInfo?.noFatherInfo;
     delete enrollmentDetails.familyInfo?.guardianInfo?.noGuardianInfo;
-    delete enrollmentDetails.studentInfo?.medicalInformation.medicalChecklist.none;
-    delete enrollmentDetails.studentInfo?.medicalInformation.medicalChecklist.other;
+    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.none;
+    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.other;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -1217,8 +1217,8 @@ export async function submitEnrollment(
         ...enrollmentDetails.studentInfo.studentDetails,
         ...preCourseDetails,
         ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
-        ...enrollmentDetails.studentInfo.medicalInformation.medicalChecklist,
-        paracetamolConsent: enrollmentDetails.studentInfo.medicalInformation.paracetamolConsent,
+        ...enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist,
+        paracetamolConsent: enrollmentDetails.studentInfo?.medicalInformation?.paracetamolConsent,
         enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
@@ -1486,8 +1486,8 @@ export async function submitExistingEnrollment(
     delete enrollmentDetails.familyInfo?.fatherInfo?.isValid;
     delete enrollmentDetails.familyInfo?.fatherInfo?.noFatherInfo;
     delete enrollmentDetails.familyInfo?.guardianInfo?.noGuardianInfo;
-    delete enrollmentDetails.studentInfo?.medicalInformation.medicalChecklist.none;
-    delete enrollmentDetails.studentInfo?.medicalInformation.medicalChecklist.other;
+    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.none;
+    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.other;
 
     let flattenedSiblings: Record<string, unknown> = {};
 
@@ -1590,8 +1590,8 @@ export async function submitExistingEnrollment(
         stpApplicationStatus: stpApplicationType ? "Pending" : null,
         ...enrollmentDetails.studentInfo.studentDetails,
         ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
-        ...enrollmentDetails.studentInfo.medicalInformation.medicalChecklist,
-        paracetamolConsent: enrollmentDetails.studentInfo.medicalInformation.paracetamolConsent,
+        ...enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist,
+        paracetamolConsent: enrollmentDetails.studentInfo?.medicalInformation?.paracetamolConsent,
         enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
           middleName ? `, ${middleName.toUpperCase()}` : ""
         }`,
@@ -2295,6 +2295,7 @@ type Feedback = {
   feedbackComments?: string;
   feedbackConsent: boolean;
   howDidYouKnowAboutHFSEIS: string;
+  referrerName?: string;
 };
 
 export async function submitParentFeedback({
@@ -2304,6 +2305,7 @@ export async function submitParentFeedback({
   feedbackRating,
   feedbackComments,
   howDidYouKnowAboutHFSEIS,
+  referrerName,
 }: Feedback) {
   try {
     const {
@@ -2312,15 +2314,6 @@ export async function submitParentFeedback({
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const { data: ownership } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
-      .select("enroleeNumber")
-      .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
-      .maybeSingle();
-
-    if (!ownership) throw new Error("Unauthorized access");
-
     const { error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .update({
@@ -2328,6 +2321,7 @@ export async function submitParentFeedback({
         feedbackRating,
         feedbackComments,
         feedbackConsent,
+        marketingReferrerName: referrerName,
         feedbackSubmittedAt: new Date(),
       })
       .eq("enroleeNumber", enroleeNumber);

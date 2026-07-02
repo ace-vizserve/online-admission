@@ -27,6 +27,7 @@ export default function MedicalInformationSection() {
     resolver: zodResolver(medicalChecklistSchema),
     defaultValues: {
       ...formState.studentInfo?.medicalInformation,
+      medicalChecklist: formState.studentInfo?.medicalInformation?.medicalChecklist,
       paracetamolConsent: formState.studentInfo?.medicalInformation?.paracetamolConsent ?? false,
     },
   });

@@ -27,11 +27,13 @@ type Feedback = {
   feedbackComments?: string;
   feedbackConsent: boolean;
   howDidYouKnowAboutHFSEIS: string;
+  referrerName?: string;
 };
 
 const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
+  const [referrerName, setReferrerName] = useState<string>("");
 
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -70,6 +72,7 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
       feedbackComments,
       feedbackConsent,
       howDidYouKnowAboutHFSEIS,
+      referrerName,
     }: Feedback) => {
       return await submitParentFeedback({
         academicYear,
@@ -78,18 +81,19 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
         feedbackRating,
         feedbackComments,
         howDidYouKnowAboutHFSEIS,
+        referrerName,
       });
     },
 
-    onSuccess() {
-      setOpen(false);
+    // onSuccess() {
+    //   setOpen(false);
 
-      if (redirectTo) {
-        navigate("/login");
-      } else {
-        navigate("/admission/dashboard");
-      }
-    },
+    //   if (redirectTo) {
+    //     navigate("/login");
+    //   } else {
+    //     navigate("/admission/dashboard");
+    //   }
+    // },
   });
 
   const handleSkip = () => {
@@ -112,6 +116,7 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
       feedbackRating: selectedRating ? Number(selectedRating) : 0,
       feedbackComments: comments,
       howDidYouKnowAboutHFSEIS: howDidYouKnowAboutHFSEIS === "Other" ? otherSource.trim() : howDidYouKnowAboutHFSEIS,
+      referrerName: howDidYouKnowAboutHFSEIS === "Referral" ? referrerName.trim() : undefined,
     });
   };
 
@@ -164,6 +169,7 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
                   "Word of Mouth (Friend / Colleague)",
                   "Current / Former HFSE Parent",
                   "Sibling Enrolled at HFSE",
+                  "Referral",
                   "Walk-in / Open House",
                   "Education Fair",
                   "Education Agent / Consultant",
@@ -189,13 +195,36 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
                 })}
               </div>
 
+              {howDidYouKnowAboutHFSEIS === "Referral" && (
+                <div className="space-y-2 animate-in fade-in duration-150">
+                  <Label htmlFor="referrer-name">
+                    Referrer's Name <span className="text-destructive">*</span>
+                  </Label>
+
+                  <Input
+                    id="referrer-name"
+                    placeholder="Enter the referrer's name"
+                    value={referrerName}
+                    onChange={(e) => setReferrerName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
               {howDidYouKnowAboutHFSEIS === "Other" && (
-                <Input
-                  placeholder="Please specify"
-                  value={otherSource}
-                  onChange={(e) => setOtherSource(e.target.value)}
-                  className="animate-in fade-in duration-150"
-                />
+                <div className="space-y-2 animate-in fade-in duration-150">
+                  <Label htmlFor="other-source">
+                    Please specify <span className="text-destructive">*</span>
+                  </Label>
+
+                  <Input
+                    id="other-source"
+                    placeholder="Please specify"
+                    value={otherSource}
+                    onChange={(e) => setOtherSource(e.target.value)}
+                    required
+                  />
+                </div>
               )}
             </div>
 
@@ -211,6 +240,10 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
               <Button
                 type="button"
                 onClick={() => setStep(2)}
+                disabled={
+                  (howDidYouKnowAboutHFSEIS === "Referral" && !referrerName.trim()) ||
+                  (howDidYouKnowAboutHFSEIS === "Other" && !otherSource.trim())
+                }
                 className="px-8 py-5 rounded-xl font-bold shadow-lg shadow-primary/20 gap-2">
                 Next
                 <ArrowRight className="w-4 h-4" />
@@ -342,17 +375,7 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
 
               <div className="flex items-center gap-2">
                 <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={handleSkip}
-                  disabled={isPending}
-                  className="px-6 py-5 rounded-xl font-semibold text-muted-foreground">
-                  Skip for now
-                </Button>
-
-                <Button
-                  type="submit"
-                  disabled={isPending}
+                  disabled={isPending || !selectedRating}
                   className="px-8 py-5 rounded-xl font-bold shadow-lg shadow-primary/20">
                   {isPending ? (
                     <div className="flex items-center gap-3">
