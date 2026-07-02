@@ -1,10 +1,10 @@
-import discountPriceTag from "@/assets/discount-codes/sept-discounts-promo-tac.webp";
+import discountPriceTag from "@/assets/discount-codes/july-discounts-ay2026.png";
 import enrollmentProcess from "@/assets/enrollment-process.webp";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Stepper, { Step } from "@/components/ui/stepper";
-import "react-inner-image-zoom/lib/styles.min.css";
 import { Info, Maximize2, Phone } from "lucide-react";
 import InnerImageZoom from "react-inner-image-zoom";
+import "react-inner-image-zoom/lib/styles.min.css";
 
 type Props = {
   academicYear: string;
