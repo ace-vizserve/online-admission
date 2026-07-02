@@ -35,7 +35,7 @@ import {
 } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
-import { cn, getNextGradeLevel } from "@/lib/utils";
+import { cn, getNextGradeLevels } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -144,10 +144,16 @@ function OldEnrollmentInformation() {
     },
   });
 
+  const nextGradeLevels = data?.levelApplied ? getNextGradeLevels(data.levelApplied) : [];
+
   useEffect(() => {
     if (!isSuccess || !data) return;
-    setSelectedLevel(getNextGradeLevel(data.levelApplied) ?? "");
-    form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
+
+    const allowedNextLevels = getNextGradeLevels(data.levelApplied);
+    const defaultNextLevel = allowedNextLevels[0] ?? "";
+
+    setSelectedLevel(defaultNextLevel);
+    form.setValue("levelApplied", defaultNextLevel);
   }, [data, form, isSuccess]);
 
   useEffect(() => {
@@ -276,11 +282,15 @@ function OldEnrollmentInformation() {
       return;
     }
 
-    if (values.levelApplied !== getNextGradeLevel(data!.levelApplied)) {
+    const allowedNextLevels = getNextGradeLevels(data!.levelApplied);
+
+    if (!allowedNextLevels.includes(values.levelApplied)) {
       toast.warning("Invalid Grade Level!", {
-        description: "The grade level entered doesn't align with the student's expected progression",
+        description: "The selected grade level doesn't align with the student's expected progression.",
       });
-      form.setError("levelApplied", { message: "Please select the correct next academic year." });
+      form.setError("levelApplied", {
+        message: "Please select one valid next academic year option.",
+      });
       return;
     }
 
@@ -332,7 +342,7 @@ function OldEnrollmentInformation() {
                         Progressing from <span className="font-bold">{data?.levelApplied?.split("-")?.join(" ")}</span>
                         {" to "}
                         <span className="font-bold">
-                          {getNextGradeLevel(data?.levelApplied)?.split("-")?.join(" ")}
+                          {nextGradeLevels.map((level) => level.split("-").join(" ")).join(" or ")}
                         </span>
                       </>
                     )}
@@ -365,19 +375,22 @@ function OldEnrollmentInformation() {
                             field.onChange(value);
                             setSelectedLevel(value);
                           }}
-                          defaultValue={getNextGradeLevel(data?.levelApplied) ?? field.value}>
+                          defaultValue={field.value || nextGradeLevels[0] || ""}>
                           <FormControl>
                             <SelectTrigger className="min-w-0 w-full">
                               <SelectValue placeholder="Select a class level" />
                             </SelectTrigger>
                           </FormControl>
+
                           <SelectContent>
                             <ScrollArea className="h-52">
-                              {classLevels.map((level) => (
-                                <SelectItem key={level.value} value={level.value}>
-                                  {level.label}
-                                </SelectItem>
-                              ))}
+                              {classLevels
+                                .filter((level) => nextGradeLevels.includes(level.value))
+                                .map((level) => (
+                                  <SelectItem key={level.value} value={level.value}>
+                                    {level.label}
+                                  </SelectItem>
+                                ))}
                             </ScrollArea>
                           </SelectContent>
                         </Select>
