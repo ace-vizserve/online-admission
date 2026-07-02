@@ -1,5 +1,4 @@
 import { parentGuardianReuploadDocuments } from "@/actions/private";
-import { sendEmailNotification } from "@/actions/send-email-notification";
 import DocumentPreviewDialog from "@/components/document-preview-dialog";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
@@ -63,7 +62,7 @@ function RenderFamilyDocCard({
         <div
           className={cn(
             "size-11 shrink-0 rounded-xl flex items-center justify-center",
-            isMissing ? "bg-slate-100 text-slate-400" : "bg-primary text-white shadow-sm"
+            isMissing ? "bg-slate-100 text-slate-400" : "bg-primary text-white shadow-sm",
           )}>
           {isMissing ? <EyeClosed size={20} /> : <FileText size={20} />}
         </div>
@@ -71,7 +70,10 @@ function RenderFamilyDocCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
             <h3 className="text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{label}</h3>
-            <StatusBadge status={status ? (status as StatusProps) : "Missing"} className="text-[10px] font-bold uppercase" />
+            <StatusBadge
+              status={status ? (status as StatusProps) : "Missing"}
+              className="text-[10px] font-bold uppercase"
+            />
           </div>
 
           <div className="flex flex-col gap-0.5">
@@ -83,7 +85,7 @@ function RenderFamilyDocCard({
               <p
                 className={cn(
                   "text-[11px] font-bold uppercase tracking-tighter",
-                  isMissing ? "text-amber-600" : "text-slate-400"
+                  isMissing ? "text-amber-600" : "text-slate-400",
                 )}>
                 {isMissing ? "Action Required" : "Record Verified"}
               </p>
@@ -204,7 +206,7 @@ function FamilyFiles({
       status: documents?.fatherPassStatus ?? undefined,
       expiry: documents?.fatherPassExpiry ?? undefined,
       typeLabel: documents?.fatherPassType ?? undefined,
-      documentType: "motherPass",
+      documentType: "fatherPass",
       payload: {
         fatherPass: documents?.fatherPass,
         fatherPassType: documents?.fatherPassType,
@@ -299,22 +301,24 @@ function ParentGuardianFileUploaderDialog({
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: ParentGuardianDocumentUpdatePayload) => {
+      console.log(payload);
+
       return await parentGuardianReuploadDocuments({ academicYear, documentType, enroleeNumber, payload, role });
     },
-    onSuccess: async () => {
-      setIsOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["family-documents", enroleeNumber] });
-      queryClient.invalidateQueries({ queryKey: ["student-profile", enroleeNumber] });
+    // onSuccess: async () => {
+    //   setIsOpen(false);
+    //   queryClient.invalidateQueries({ queryKey: ["family-documents", enroleeNumber] });
+    //   queryClient.invalidateQueries({ queryKey: ["student-profile", enroleeNumber] });
 
-      await sendEmailNotification({
-        parentEmail,
-        role,
-        updatedSections: [label],
-        section: "Parent/Guardian Documents",
-        academicYear,
-        enroleeNumber,
-      });
-    },
+    //   await sendEmailNotification({
+    //     parentEmail,
+    //     role,
+    //     updatedSections: [label],
+    //     section: "Parent/Guardian Documents",
+    //     academicYear,
+    //     enroleeNumber,
+    //   });
+    // },
   });
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -577,7 +581,7 @@ function ParentGuardianFileUploaderDialog({
                     variant={"outline"}
                     className={cn(
                       "w-full pl-3 text-left font-normal",
-                      !motherPassportExpiry && "text-muted-foreground"
+                      !motherPassportExpiry && "text-muted-foreground",
                     )}>
                     {motherPassportExpiry ? format(motherPassportExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -640,7 +644,7 @@ function ParentGuardianFileUploaderDialog({
                     variant={"outline"}
                     className={cn(
                       "w-full pl-3 text-left font-normal",
-                      !motherPassportExpiry && "text-muted-foreground"
+                      !fatherPassportExpiry && "text-muted-foreground",
                     )}>
                     {fatherPassportExpiry ? format(fatherPassportExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -697,7 +701,7 @@ function ParentGuardianFileUploaderDialog({
               <PassportInput
                 required
                 placeholder="Enter passport number"
-                value={fatherPassportNumber}
+                value={guardianPassportNumber}
                 onChange={(e) => setGuardianPassportNumber(e.target.value)}
               />
 
@@ -707,7 +711,7 @@ function ParentGuardianFileUploaderDialog({
                     variant={"outline"}
                     className={cn(
                       "w-full pl-3 text-left font-normal",
-                      !guardianPassportExpiry && "text-muted-foreground"
+                      !guardianPassportExpiry && "text-muted-foreground",
                     )}>
                     {guardianPassportExpiry ? format(guardianPassportExpiry, "dd/MM/yyyy") : <span>Pick a date</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
