@@ -27,7 +27,6 @@ import {
   campusDevelopmentFeePrimary,
   campusDevelopmentFeeSecondary,
   classLevels,
-  classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
   preferredPaymentMethod,
   preferredPaymentScheme,
@@ -81,36 +80,36 @@ const WHOLE_DAY_CLASS_LEVEL = [
   "HFSE Global Education Programme – Year 10",
 ];
 
-const ALLOWED_CAMBRIDGE_CLASS_TYPES = [
-  "Global Class (CAMBRIDGE)",
-  "Global Class 1 (ENGLISH + MANDARIN)",
-  "Global Class 2 (ENGLISH + TAMIL)",
-  "Global Class 3 (ENGLISH + FRENCH)",
-  "Standard Class (ENGLISH + TAGALOG)",
+const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
+
+const CAMBRIDGE_ONLY_LEVELS = [
+  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE Global Education Programme – Year 8",
+  "HFSE Global Education Programme – Year 9",
+  "HFSE Global Education Programme – Year 10",
 ];
 
-const CAMBRIDGE_CLASS_LEVELS = [
-  "Secondary One",
-  "Secondary Two",
-
-  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+const GLOBAL_LANGUAGE_LEVELS = [
   "HFSE Global Education Programme - Primary 2",
   "HFSE Global Education Programme - Primary 3",
   "HFSE Global Education Programme - Primary 4",
   "HFSE Global Education Programme - Primary 5",
   "HFSE Global Education Programme - Primary 6",
 ];
-const CAMBRIDGE_YEAR_LEVELS = [
-  "HFSE Global Education Programme – Year 8",
-  "HFSE Global Education Programme – Year 9",
-  "HFSE Global Education Programme – Year 10",
+
+const STANDARD_CLASS_LEVELS = [
+  "Primary One",
+  "Primary Two",
+  "Primary Three",
+  "Primary Four",
+  "Primary Five",
+  "Primary Six",
+  "Secondary One",
+  "Secondary Two",
+  "Secondary Three",
+  "Secondary Four",
 ];
-
-const CAMBRIDGE_ONLY_CLASS_TYPES = ["Global Class (CAMBRIDGE)"];
-
-const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary Three", "Secondary Four"];
-
-const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
 
 function OpenHouseEnrollmentInformation() {
   const { session } = useSession();
@@ -206,29 +205,34 @@ function OpenHouseEnrollmentInformation() {
       return;
     }
 
-    if (
-      CAMBRIDGE_CLASS_LEVELS.includes(values.levelApplied) &&
-      !ALLOWED_CAMBRIDGE_CLASS_TYPES.includes(values.classType)
-    ) {
+    if (CAMBRIDGE_ONLY_LEVELS.includes(values.levelApplied) && values.classType !== "Global Class (CAMBRIDGE)") {
       toast.warning("Class Type Mismatch!", {
-        description:
-          "Only 'Global Class (CAMBRIDGE)' or 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
+        description: "Only 'Global Class (CAMBRIDGE)' is available for this grade level.",
       });
 
       form.setError("classType", {
-        message: "Please select a valid class type for this level.",
+        message: "Please select 'Global Class (CAMBRIDGE)'.",
       });
 
       return;
     }
 
-    if (CAMBRIDGE_YEAR_LEVELS.includes(values.levelApplied) && !CAMBRIDGE_ONLY_CLASS_TYPES.includes(values.classType)) {
+    if (
+      GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied) &&
+      ![
+        "Global Class 1 (ENGLISH + MANDARIN)",
+        "Global Class 2 (ENGLISH + TAMIL)",
+        "Global Class 3 (ENGLISH + FRENCH)",
+      ].includes(values.classType)
+    ) {
       toast.warning("Class Type Mismatch!", {
-        description: "Only 'Global Class (CAMBRIDGE)' is available for this grade level.",
+        description: "Please select one of the available Global Class language tracks.",
       });
+
       form.setError("classType", {
-        message: "Please select 'Global Class (CAMBRIDGE)' for this level.",
+        message: "Please select a valid Global Class option.",
       });
+
       return;
     }
 
@@ -239,9 +243,11 @@ function OpenHouseEnrollmentInformation() {
       toast.warning("Class Type Mismatch!", {
         description: "Only 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
       });
+
       form.setError("classType", {
-        message: "Please select 'Standard Class (ENGLISH + TAGALOG)' for this level.",
+        message: "Please select 'Standard Class (ENGLISH + TAGALOG)'.",
       });
+
       return;
     }
 
@@ -372,33 +378,31 @@ function OpenHouseEnrollmentInformation() {
                           </FormControl>
                           <SelectContent>
                             {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Enrichment Class"}>Enrichment Class</SelectItem>
-                            ) : CAMBRIDGE_YEAR_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>
-                            ) : CAMBRIDGE_CLASS_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value="Enrichment Class">Enrichment Class</SelectItem>
+                            ) : CAMBRIDGE_ONLY_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value="Global Class (CAMBRIDGE)">Global Class (CAMBRIDGE)</SelectItem>
+                            ) : GLOBAL_LANGUAGE_LEVELS.includes(selectedLevel) ? (
                               <>
-                                {classTypes
-                                  .filter((type) => ALLOWED_CAMBRIDGE_CLASS_TYPES.includes(type.value))
-                                  .map((type) => (
-                                    <SelectItem key={type.value} value={type.value}>
-                                      {type.label}
-                                    </SelectItem>
-                                  ))}
+                                <SelectItem value="Global Class 1 (ENGLISH + MANDARIN)">
+                                  Global Class (ENGLISH + MANDARIN)
+                                </SelectItem>
+
+                                <SelectItem value="Global Class 2 (ENGLISH + TAMIL)">
+                                  Global Class (ENGLISH + TAMIL)
+                                </SelectItem>
+
+                                <SelectItem value="Global Class 3 (ENGLISH + FRENCH)">
+                                  Global Class (ENGLISH + FRENCH)
+                                </SelectItem>
                               </>
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
+                              <SelectItem value="Standard Class (ENGLISH + TAGALOG)">
                                 Standard Class (ENGLISH + TAGALOG)
                               </SelectItem>
-                            ) : selectedLevel == "" ? (
-                              <SelectItem disabled value={"None"}>
+                            ) : (
+                              <SelectItem disabled value="None">
                                 Select a class level
                               </SelectItem>
-                            ) : (
-                              classTypes.slice(-4).map((type) => (
-                                <SelectItem key={type.value} value={type.value}>
-                                  {type.label}
-                                </SelectItem>
-                              ))
                             )}
                           </SelectContent>
                         </Select>
