@@ -26,7 +26,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-const AY_OPTIONS = BACKEND_ACADEMIC_YEARS.filter((ay) => ay !== "ay9999").map((ay) => ({
+const AY_OPTIONS = BACKEND_ACADEMIC_YEARS.map((ay) => ({
   value: ay,
   label: `AY ${ay.slice(2)}`,
 }));
