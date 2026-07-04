@@ -31,6 +31,13 @@ import {
   buildStudentDocumentUpdatePayload,
   processParentGuardian,
 } from "@/actions/enrolment-payload";
+import {
+  createMergeState,
+  isMergeComplete,
+  mergeYearIntoState,
+  ParentGuardianApplicationRow,
+  ParentGuardianDocumentRow,
+} from "@/actions/merge-parent-guardian-documents";
 
 export async function getSectionCardsDetails() {
   try {
@@ -543,7 +550,7 @@ export async function getFamilyInformation(enroleeNumber?: string) {
       let query = supabase
         .from(`${academicYear}_enrolment_applications`)
         .select("*")
-        .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
+        .or(buildApplicationOwnershipFilter(session.user.email));
 
       if (enroleeNumber) {
         query = query.eq("enroleeNumber", enroleeNumber);
@@ -617,7 +624,7 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
       .from(`${academicYear}_enrolment_applications`)
       .select("pass, passportExpiry, passExpiry, passportNumber")
       .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
+      .or(buildApplicationOwnershipFilter(session.user.email));
 
     if (studentInformationError) {
       throw new Error(studentInformationError.message);
@@ -660,7 +667,21 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
   }
 }
 
-export async function getPreviousParentGuardianDocuments(enroleeNumber?: string) {
+const PARENT_GUARDIAN_APPLICATION_COLUMNS =
+  "enroleeNumber, motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport";
+
+/** How many of a parent's most-recent applications (per academic year) the cross-year carry-over
+ * scan will look at before giving up on that year. A generous safety bound, not a realistic limit
+ * on how many children a family enrolls in one year — it just keeps a pathological account from
+ * triggering an unbounded fetch. */
+const CANDIDATE_ROWS_PER_YEAR = 20;
+
+export async function getPreviousParentGuardianDocuments(
+  enroleeNumber?: string,
+): Promise<
+  | { parentGuardianUploadRequirements?: Record<string, unknown> & { hasFatherInfo: boolean; hasGuardianInfo: boolean } }
+  | undefined
+> {
   try {
     const {
       data: { session },
@@ -668,101 +689,133 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
 
     if (!session?.user?.email) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let applicationsData: any = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let documentsData: any = null;
+    let docs: Record<string, unknown> = {};
+    let foundAnyApplication = false;
 
-    const academicYears = enroleeNumber ? [academicYearFromEnroleeNumber(enroleeNumber)] : BACKEND_ACADEMIC_YEARS;
+    if (enroleeNumber) {
+      // Re-enrollment: fetch THIS exact application's own prior parent/guardian documents. This
+      // is deliberately not the cross-application merge below — it's fetching a specific known
+      // record's own carried-forward docs, not the family's best-available set.
+      const academicYear = academicYearFromEnroleeNumber(enroleeNumber);
 
-    for (const academicYear of academicYears) {
-      let appQuery = supabase
+      const { data: applicationsData } = await supabase
         .from(`${academicYear}_enrolment_applications`)
-        .select(
-          "enroleeNumber, motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
-        )
-        .order("created_at", { ascending: false })
-        .limit(1);
+        .select(PARENT_GUARDIAN_APPLICATION_COLUMNS)
+        .eq("enroleeNumber", enroleeNumber)
+        .or(buildApplicationOwnershipFilter(session.user.email))
+        .maybeSingle();
 
-      let docQuery = supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .select(
-          "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let documentsData: any = null;
+
+      if (applicationsData) {
+        foundAnyApplication = true;
+
+        const docResult = await supabase
+          .from(`${academicYear}_enrolment_documents`)
+          .select(
+            "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
+          )
+          .eq("enroleeNumber", applicationsData.enroleeNumber)
+          .maybeSingle();
+
+        documentsData = docResult.data;
+      }
+
+      const motherPassDocument = {
+        motherPass: documentsData?.motherPass,
+        motherPassType: applicationsData?.motherPass,
+        motherPassExpiry: applicationsData?.motherPassExpiry,
+      };
+
+      const motherPassportDocument = {
+        motherPassport: documentsData?.motherPassport,
+        motherPassportNumber: applicationsData?.motherPassport,
+        motherPassportExpiry: applicationsData?.motherPassportExpiry,
+      };
+
+      const fatherPassDocument = {
+        fatherPass: documentsData?.fatherPass,
+        fatherPassType: applicationsData?.fatherPass,
+        fatherPassExpiry: applicationsData?.fatherPassExpiry,
+      };
+
+      const fatherPassportDocument = {
+        fatherPassport: documentsData?.fatherPassport,
+        fatherPassportNumber: applicationsData?.fatherPassport,
+        fatherPassportExpiry: applicationsData?.fatherPassportExpiry,
+      };
+
+      const guardianPassDocument = {
+        guardianPass: documentsData?.guardianPass,
+        guardianPassType: applicationsData?.guardianPass,
+        guardianPassExpiry: applicationsData?.guardianPassExpiry,
+      };
+
+      const guardianPassportDocument = {
+        guardianPassport: documentsData?.guardianPassport,
+        guardianPassportNumber: applicationsData?.guardianPassport,
+        guardianPassportExpiry: applicationsData?.guardianPassportExpiry,
+      };
+
+      docs = {
+        ...removeEmptyKeys(motherPassDocument),
+        ...removeEmptyKeys(motherPassportDocument),
+        ...removeEmptyKeys(fatherPassDocument),
+        ...removeEmptyKeys(fatherPassportDocument),
+        ...removeEmptyKeys(guardianPassDocument),
+        ...removeEmptyKeys(guardianPassportDocument),
+      };
+    } else {
+      // New enrollment: scan academic years newest-first, resolving each of the 6 document slots
+      // (mother/father/guardian x passport/pass) independently from whichever prior application
+      // most recently actually had it uploaded — not just taking every field from a single
+      // "latest" row, which can be incomplete (e.g. an application that didn't need guardian info
+      // would otherwise hide guardian docs sitting on an older application). See
+      // merge-parent-guardian-documents.ts for the merge algorithm itself.
+      let mergeState = createMergeState();
+
+      for (const academicYear of BACKEND_ACADEMIC_YEARS) {
+        if (isMergeComplete(mergeState)) break;
+
+        const { data: appRows, error: appError } = await supabase
+          .from(`${academicYear}_enrolment_applications`)
+          .select(PARENT_GUARDIAN_APPLICATION_COLUMNS)
+          .or(buildApplicationOwnershipFilter(session.user.email))
+          .order("created_at", { ascending: false })
+          .limit(CANDIDATE_ROWS_PER_YEAR);
+
+        if (appError) throw new Error(appError.message);
+        if (!appRows?.length) continue;
+
+        foundAnyApplication = true;
+
+        const applicationRows = appRows as ParentGuardianApplicationRow[];
+
+        const { data: docRows, error: docError } = await supabase
+          .from(`${academicYear}_enrolment_documents`)
+          .select("enroleeNumber, motherPassport, motherPass, fatherPassport, fatherPass, guardianPassport, guardianPass")
+          .in(
+            "enroleeNumber",
+            applicationRows.map((row) => row.enroleeNumber),
+          );
+
+        if (docError) throw new Error(docError.message);
+
+        const docsByEnrolee = new Map<string, ParentGuardianDocumentRow>(
+          (docRows as (ParentGuardianDocumentRow & { enroleeNumber: string })[] | null)?.map((row) => [
+            row.enroleeNumber,
+            row,
+          ]) ?? [],
         );
 
-      appQuery = appQuery.or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
-
-      if (enroleeNumber) {
-        appQuery = appQuery.eq("enroleeNumber", enroleeNumber);
-        docQuery = docQuery.eq("enroleeNumber", enroleeNumber);
+        mergeState = mergeYearIntoState(mergeState, applicationRows, docsByEnrolee);
       }
 
-      const { data: appData } = await appQuery.maybeSingle();
-      let docData = null;
-
-      if (appData) {
-        docData = await docQuery.eq("enroleeNumber", appData.enroleeNumber).maybeSingle();
-      }
-
-      if (appData || docData) {
-        applicationsData = appData;
-        documentsData = docData?.data;
-        break;
-      }
+      docs = mergeState.docs;
     }
 
-    if (!applicationsData && !documentsData) return {};
-
-    const motherPassDocument = {
-      motherPass: documentsData?.motherPass,
-      motherPassType: applicationsData?.motherPass,
-      motherPassExpiry: applicationsData?.motherPassExpiry,
-    };
-
-    const motherPassportDocument = {
-      motherPassport: documentsData?.motherPassport,
-      motherPassportNumber: applicationsData?.motherPassport,
-      motherPassportExpiry: applicationsData?.motherPassportExpiry,
-    };
-
-    const fatherPassDocument = {
-      fatherPass: documentsData?.fatherPass,
-      fatherPassType: applicationsData?.fatherPass,
-      fatherPassExpiry: applicationsData?.fatherPassExpiry,
-    };
-
-    const fatherPassportDocument = {
-      fatherPassport: documentsData?.fatherPassport,
-      fatherPassportNumber: applicationsData?.fatherPassport,
-      fatherPassportExpiry: applicationsData?.fatherPassportExpiry,
-    };
-
-    const guardianPassDocument = {
-      guardianPass: documentsData?.guardianPass,
-      guardianPassType: applicationsData?.guardianPass,
-      guardianPassExpiry: applicationsData?.guardianPassExpiry,
-    };
-
-    const guardianPassportDocument = {
-      guardianPassport: documentsData?.guardianPassport,
-      guardianPassportNumber: applicationsData?.guardianPassport,
-      guardianPassportExpiry: applicationsData?.guardianPassportExpiry,
-    };
-
-    const motherDocuments = {
-      ...removeEmptyKeys(motherPassDocument),
-      ...removeEmptyKeys(motherPassportDocument),
-    };
-
-    const fatherDocuments = {
-      ...removeEmptyKeys(fatherPassDocument),
-      ...removeEmptyKeys(fatherPassportDocument),
-    };
-
-    const guardianDocuments = {
-      ...removeEmptyKeys(guardianPassDocument),
-      ...removeEmptyKeys(guardianPassportDocument),
-    };
+    if (!foundAnyApplication) return {};
 
     const result = await getFamilyInformation(enroleeNumber);
 
@@ -776,9 +829,7 @@ export async function getPreviousParentGuardianDocuments(enroleeNumber?: string)
 
     return {
       parentGuardianUploadRequirements: {
-        ...motherDocuments,
-        ...fatherDocuments,
-        ...guardianDocuments,
+        ...docs,
         hasFatherInfo: fatherInfo[0] != null && Object.keys(fatherInfo[0] as Record<string, unknown>).length > 1,
         hasGuardianInfo: guardianInfo[0] != null && Object.keys(guardianInfo[0] as Record<string, unknown>).length > 1,
       },

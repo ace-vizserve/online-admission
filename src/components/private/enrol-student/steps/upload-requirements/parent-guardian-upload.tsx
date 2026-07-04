@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 
-import { getPreviousParentGuardianDocuments } from "@/actions/private";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +11,6 @@ import { cn, documentErrors } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
@@ -21,7 +19,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
-import { DocumentUploader, PARENT_GUARDIAN_DOCUMENTS } from "@/components/private/shared/upload-requirements";
+import {
+  DocumentUploader,
+  PARENT_GUARDIAN_DOCUMENTS,
+  useCarriedParentGuardianDocuments,
+} from "@/components/private/shared/upload-requirements";
 
 const MAX_SKIPS = 2;
 
@@ -31,12 +33,6 @@ const GUARDIAN_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsW
 
 function ParentGuardianUpload() {
   const { session } = useSession();
-  const { data, isPending, fetchStatus, isSuccess } = useQuery({
-    queryKey: ["parent-guardian-documents", session?.user.email],
-    queryFn: async () => {
-      return await getPreviousParentGuardianDocuments();
-    },
-  });
 
   const [fatherPassport, setFatherPassport] = useState<File[] | null>(null);
   const [motherPassport, setMotherPassport] = useState<File[] | null>(null);
@@ -70,11 +66,21 @@ function ParentGuardianUpload() {
   const form = useForm<ParentGuardianUploadRequirementsSchema>({
     resolver: zodResolver(parentGuardianUploadRequirementsSchema),
     defaultValues: {
-      ...data?.parentGuardianUploadRequirements,
       ...formState.uploadRequirements?.parentGuardianUploadRequirements,
     },
     mode: "onChange",
     reValidateMode: "onChange",
+  });
+
+  // Carries a returning parent's latest passport/pass documents (matched by their login email
+  // against prior applications, across academic years) into this brand-new enrollment, as long
+  // as they have any on file — see use-carried-parent-guardian-docs.ts for the seed/hydrate
+  // guards that keep this from ever clobbering a user's own uploads or a completed step.
+  const { isFetching: isFetchingCarriedDocs } = useCarriedParentGuardianDocuments({
+    queryKey: ["parent-guardian-documents", session?.user.email],
+    formState,
+    setFormState,
+    form,
   });
 
   const toFollowDocs = form.watch("toFollowDocs");
@@ -84,8 +90,6 @@ function ParentGuardianUpload() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    if (!isSuccess) return;
-
     const wasDirty = form.formState.isDirty;
 
     if (wasDirty) {
@@ -98,17 +102,17 @@ function ParentGuardianUpload() {
           },
         },
       });
+
+      form.reset(
+        { ...debouncedValues },
+        {
+          keepErrors: true,
+        },
+      );
     }
 
-    form.reset(
-      { ...debouncedValues },
-      {
-        keepErrors: true,
-      },
-    );
-
     form.trigger();
-  }, [debouncedValues, isSuccess]);
+  }, [debouncedValues]);
 
   useEffect(() => {
     if (form.formState.isSubmitSuccessful) {
@@ -200,7 +204,7 @@ function ParentGuardianUpload() {
     });
   }
 
-  if (fetchStatus === "fetching" && isPending) {
+  if (isFetchingCarriedDocs) {
     return <Loader />;
   }
 

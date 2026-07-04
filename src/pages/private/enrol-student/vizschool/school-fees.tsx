@@ -70,7 +70,7 @@ const SchoolFees = () => {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-6 space-y-12">
       <div className="space-y-4 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">School Fees</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-balance">School Fees</h1>
         <p className="text-lg md:text-xl text-muted-foreground text-pretty">
           Choose the plan that fits your needs and get started today
         </p>
@@ -94,7 +94,7 @@ const SchoolFees = () => {
 
               <div className="relative p-8 flex flex-col flex-1">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-black mb-2 text-secondary">{plan.programName}</h3>
+                  <h3 className="text-2xl font-bold mb-2 text-secondary">{plan.programName}</h3>
                   <p className="text-sm font-semibold text-muted-foreground">{plan.overview}</p>
                 </div>
 
@@ -134,7 +134,7 @@ const SchoolFees = () => {
                   onClick={() => setSchoolFee(plan.programName)}
                   variant={"secondary"}
                   size="lg"
-                  className="mt-auto w-full py-6 rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 text-base font-bold">
+                  className="mt-auto w-full py-6 shadow-md transition-all gap-3 text-base font-semibold">
                   Enrol in {plan.programName} <ArrowUpRight />
                 </Button>
               </div>
@@ -149,7 +149,7 @@ const SchoolFees = () => {
         whileInView="show"
         viewport={{ once: true }}
         className="w-full max-w-4xl p-1 rounded-2xl bg-gradient-to-r from-secondary/20 via-primary/20 to-secondary/20">
-        <div className="bg-card/80 backdrop-blur-sm p-6 md:p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-white/20 shadow-xl">
+        <div className="bg-card p-6 md:p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-border shadow-md">
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-full bg-secondary/15 text-secondary">
               <Info className="h-6 w-6" />
@@ -167,7 +167,7 @@ const SchoolFees = () => {
             target="_blank"
             className={buttonVariants({
               variant: "secondary",
-              className: "w-full md:w-auto !px-8 !py-6 !rounded-xl !font-bold gap-2 group transition-all",
+              className: "w-full md:w-auto !px-8 !py-6 font-semibold gap-2 group transition-all",
             })}>
             Learn more about VizSchool
             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />

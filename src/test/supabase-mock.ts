@@ -11,6 +11,8 @@
  *   .from(table).select(cols).eq(col, val).or(expr).single()   // ownership lookup
  *   .from(table).select(cols).eq(col, val).or(expr)             // awaited directly, no .single()/.maybeSingle() — returns an array (options.rows)
  *   .from(table).select(cols).eq(col, val)                      // awaited directly, no .single()/.maybeSingle() — returns an array (options.rows)
+ *   .from(table).select(cols).or(expr).order(...).limit(...)    // awaited directly — returns an array (options.rows)
+ *   .from(table).select(cols).in(col, values)                   // awaited directly — returns an array (options.rows)
  *   .auth.getSession()
  *
  * Every terminal call is recorded (table, op, payload, filters) so tests can assert on
@@ -31,6 +33,13 @@ export type RecordedCall = {
 export type SupabaseMockOptions = {
   sessionEmail?: string;
   ownershipLookup?: { data: Record<string, unknown> | null; error: { message: string } | null };
+  /** Exact `.single()`/`.maybeSingle()` result per table, checked before the generic
+   * `ownershipLookup` fallback below. `ownershipLookup` returns the SAME shape for every
+   * `_enrolment_applications` + `.or()` single-row call regardless of which dynamic (per-year)
+   * table was queried — fine for a call site that only ever does one such lookup, but not enough
+   * to test code that does several DIFFERENT single-row lookups (e.g. one academic year's
+   * applications row AND its documents row) against distinct expected results. */
+  singleRows?: Record<string, { data: Record<string, unknown> | null; error?: { message: string } | null }>;
   /** Rows returned per table for un-singled select chains (awaited directly, no `.single()`/`.maybeSingle()`). */
   rows?: Record<string, Record<string, unknown>[]>;
   errorOn?: (call: RecordedCall) => { message: string } | null | undefined;
@@ -71,6 +80,11 @@ export function createSupabaseMock(options: SupabaseMockOptions = {}) {
         return { data: options.rows?.[table] ?? [], error: null };
       }
 
+      if (options.singleRows && table in options.singleRows) {
+        const entry = options.singleRows[table];
+        return { data: entry.data, error: entry.error ?? null };
+      }
+
       // Pure select chains via `.single()`/`.maybeSingle()` occur for the re-enrollment
       // ownership lookup in this mock's scope (submitExistingEnrollment reads the returning
       // student's studentNumber).
@@ -109,6 +123,10 @@ export function createSupabaseMock(options: SupabaseMockOptions = {}) {
       },
       or(expr: string) {
         filters.or = expr;
+        return builder;
+      },
+      in(col: string, values: unknown[]) {
+        filters[col] = values;
         return builder;
       },
       order() {

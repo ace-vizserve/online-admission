@@ -1,7 +1,11 @@
+import { discardDraft } from "@/actions/discard-draft";
+import type { RemoteDraftEntry } from "@/actions/drafts";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
-import { cn, DraftSort, isExpired, isExpiringSoon, listNewStudentDrafts, sortDrafts, wait } from "@/lib/utils";
+import { useDraftsList } from "@/hooks/use-drafts-list";
+import { DraftSort, isExpired, isExpiringSoon, sortDrafts } from "@/lib/draft-storage";
+import { cn, wait } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
   EnrolNewStudentDraftStore,
@@ -11,6 +15,7 @@ import {
   usePreCourseAcknowledgementStore,
   useSelectAcademicYear,
 } from "@/zustand-store";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import {
   Ban,
@@ -74,9 +79,11 @@ const STEPS = [
 
 export default function VizSchoolSavedDraftsDialog() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExiting, setIsExiting] = useState<boolean>(false);
-  const [drafts, setDrafts] = useState(() => listNewStudentDrafts("viz-school") || []);
+  const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
+  const { data: drafts } = useDraftsList("viz-school", isOpen);
   const [sortBy, setSortBy] = useState<DraftSort>("lastUpdated");
   const isDesktop = useMediaQuery({
     query: "(min-width: 768px)",
@@ -90,7 +97,6 @@ export default function VizSchoolSavedDraftsDialog() {
     return sortDrafts(drafts, sortBy);
   }, [drafts, sortBy]);
 
-  const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
@@ -108,8 +114,10 @@ export default function VizSchoolSavedDraftsDialog() {
   function handleDelete(id: string, type: "hfse-is" | "viz-school") {
     setDeletingId(id);
     setTimeout(() => {
-      localStorage.removeItem(`enrolNewStudent:draft:${id}:${type}`);
-      setDrafts(listNewStudentDrafts("viz-school") || []);
+      discardDraft(id, type);
+      queryClient.setQueryData<RemoteDraftEntry[]>(["drafts", "viz-school"], (prev) =>
+        (prev ?? []).filter((d) => d.state.draftId !== id),
+      );
       setDeletingId(null);
     }, 200);
   }

@@ -1,6 +1,7 @@
 import { ArrowLeft, CheckCircle2, FilePen, Send } from "lucide-react";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
 
+import { discardDraft } from "@/actions/discard-draft";
 import { submitVizSchoolEnrollment } from "@/actions/private";
 import { VIZSCHOOL_ACADEMIC_YEARS } from "@/config/academic-years";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
@@ -31,10 +32,11 @@ import {
 import EnrolNewLearnerContextProvider, {
   useEnrolNewLearnerContext,
 } from "@/context/vizschool/enrol-new-learner-context";
+import { useResolveResumeDraft } from "@/hooks/use-resolve-resume-draft";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
+import { isExpired, listNewStudentDrafts } from "@/lib/draft-storage";
 import { getStepValidity } from "@/lib/step-validity";
-import { isExpired, listNewStudentDrafts, removeNewStudentDraft } from "@/lib/utils";
 import { EnrolNewStudentDraftStore } from "@/zustand-store";
 import { VizSchoolEnrolNewStudentFormState } from "@/types";
 import {
@@ -151,17 +153,20 @@ function AutoResumeLearnerDraft() {
   const { setFormState, setActiveTab, setCurrentTab, setCompletedTabs } = useEnrolNewLearnerContext();
   const hasRun = useRef(false);
 
+  // Falls back to a server lookup when there's no local match — e.g. the draft was started on
+  // a different browser/device (src/actions/resolve-draft.ts).
+  const { data: match, isSuccess } = useResolveResumeDraft(resumeDraftId, "viz-school");
+
   useEffect(() => {
-    if (!resumeDraftId || hasRun.current) return;
+    if (!isSuccess || hasRun.current) return;
     hasRun.current = true;
 
-    const allDrafts = listNewStudentDrafts("viz-school");
-    const match = allDrafts.find(
-      (d: { state: EnrolNewStudentDraftStore }) => d.state?.draftId === resumeDraftId,
-    );
-    if (!match) return;
+    if (!match) {
+      navigate("/admission/drafts", { replace: true });
+      return;
+    }
 
-    const state = match.state as EnrolNewStudentDraftStore;
+    const state = match.state as unknown as EnrolNewStudentDraftStore;
 
     if (isExpired(state.expiresAt)) {
       navigate("/admission/drafts", { replace: true });
@@ -174,7 +179,8 @@ function AutoResumeLearnerDraft() {
     setFormState({ ...state.formState, draftId: state.draftId } as VizSchoolEnrolNewStudentFormState);
 
     navigate(`${state.activeTab}?academicYear=${state.academicYear}`, { replace: true });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, match]);
 
   return null;
 }
@@ -228,7 +234,7 @@ function SubmitApplicationDialog() {
       return { ...result, draftId };
     },
     onSuccess(data) {
-      removeNewStudentDraft(data.draftId, "viz-school");
+      discardDraft(data.draftId, "viz-school");
       navigate("/application-submitted", {
         state: {
           academicYear,

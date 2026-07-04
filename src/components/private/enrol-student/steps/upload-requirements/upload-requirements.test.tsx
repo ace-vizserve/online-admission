@@ -13,17 +13,31 @@ import ParentGuardianUpload from "./parent-guardian-upload";
 import OpenHouseStudentUpload from "@/components/private/open-house/steps/upload-requirements/student-upload";
 import OpenHouseParentGuardianUpload from "@/components/private/open-house/steps/upload-requirements/parent-guardian-upload";
 import VizSchoolStudentUpload from "@/components/private/enrol-student/vizschool/steps/upload-requirements/student-upload";
+import VizSchoolParentGuardianUpload from "@/components/private/enrol-student/vizschool/steps/upload-requirements/parent-guardian-upload";
 import { renderForm, resetEnrolmentStores, seedFormState } from "@/test/render-form";
-import { useEnrolNewStudentStore, useOpenHouseStore, usePassTypeStore } from "@/zustand-store";
+import { useEnrolNewStudentStore, useOpenHouseStore, usePassTypeStore, useVizSchoolEnrolNewStudentStore } from "@/zustand-store";
+import { getPreviousParentGuardianDocuments } from "@/actions/private";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 vi.mock("@/actions/private", () => ({
   getPreviousParentGuardianDocuments: vi.fn().mockResolvedValue({ parentGuardianUploadRequirements: {} }),
 }));
 
+const FUTURE_DATE = new Date("2099-01-01");
+
+/** `getPreviousParentGuardianDocuments`'s inferred return type is a union across its many
+ * early-return branches (empty object, undefined, or the full shape) — too awkward for a test
+ * fixture to satisfy structurally. Matches the `as never` idiom already used for this same
+ * situation in use-document-upload-dialog.test.tsx. */
+function mockCarriedDocs(parentGuardianUploadRequirements: Record<string, unknown>) {
+  vi.mocked(getPreviousParentGuardianDocuments).mockResolvedValueOnce({ parentGuardianUploadRequirements } as never);
+}
+
 beforeEach(() => {
   resetEnrolmentStores();
   usePassTypeStore.getState().clearState();
+  vi.mocked(getPreviousParentGuardianDocuments).mockReset();
+  vi.mocked(getPreviousParentGuardianDocuments).mockResolvedValue({ parentGuardianUploadRequirements: {} } as never);
 });
 
 const VALID_STUDENT_DOCS = {
@@ -149,6 +163,100 @@ describe("parent-guardian-upload.tsx (HFSE new)", () => {
 
     expect(setFormStateSpy).not.toHaveBeenCalled();
   });
+
+  it("carries over a returning parent's prior documents and displays them, without overriding this enrollment's hasFatherInfo/hasGuardianInfo", async () => {
+    mockCarriedDocs({
+      motherPassport: "http://old.pdf",
+      motherPassportExpiry: FUTURE_DATE,
+      hasFatherInfo: true,
+      hasGuardianInfo: true,
+    });
+    seedFormState("hfse-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { hasFatherInfo: false, hasGuardianInfo: false },
+      },
+    });
+
+    renderForm(<ParentGuardianUpload />, { flow: "hfse-new" });
+
+    await waitFor(() => {
+      expect(
+        useEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+          ?.motherPassport,
+      ).toBe("http://old.pdf");
+    });
+
+    expect(screen.getAllByRole("button", { name: /^view$/i }).length).toBeGreaterThan(0);
+    // The current enrollment's own family-info choices must win over the fetched ones.
+    expect(
+      useEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+        ?.hasFatherInfo,
+    ).toBe(false);
+    expect(screen.queryByText(/father documents/i)).not.toBeInTheDocument();
+  });
+
+  it("leaves every document row empty when the parent has no prior documents", async () => {
+    seedFormState("hfse-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { hasFatherInfo: false, hasGuardianInfo: false },
+      },
+    });
+
+    renderForm(<ParentGuardianUpload />, { flow: "hfse-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/mother documents/i)).toBeInTheDocument();
+    });
+
+    expect(screen.queryAllByRole("button", { name: /^view$/i })).toHaveLength(0);
+    expect(screen.getAllByRole("button", { name: /^upload$/i }).length).toBeGreaterThan(0);
+  });
+
+  it("does not overwrite an already-completed step with the fetched previous-application data", async () => {
+    mockCarriedDocs({ motherPassport: "http://old.pdf" });
+    seedFormState("hfse-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { motherPassport: "http://local.pdf", isValid: true },
+      },
+    });
+
+    renderForm(<ParentGuardianUpload />, { flow: "hfse-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/mother documents/i)).toBeInTheDocument();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(
+      useEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+        ?.motherPassport,
+    ).toBe("http://local.pdf");
+  });
+
+  it("does not overwrite a document the user already uploaded with the fetched previous-application data", async () => {
+    mockCarriedDocs({ motherPassport: "http://old.pdf" });
+    seedFormState("hfse-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { motherPassport: "http://local.pdf", hasFatherInfo: false },
+      },
+    });
+
+    renderForm(<ParentGuardianUpload />, { flow: "hfse-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/mother documents/i)).toBeInTheDocument();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(
+      useEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+        ?.motherPassport,
+    ).toBe("http://local.pdf");
+  });
 });
 
 describe("student-upload.tsx (Open House)", () => {
@@ -220,5 +328,119 @@ describe("student-upload.tsx (VizSchool new)", () => {
     const [submitButton] = screen.getAllByRole("button", { name: /save documents/i });
 
     await expect(user.click(submitButton)).resolves.not.toThrow();
+  });
+});
+
+describe("parent-guardian-upload.tsx (VizSchool new)", () => {
+  it("carries over a returning parent's prior documents and displays them, without overriding this enrollment's hasFatherInfo/hasGuardianInfo", async () => {
+    mockCarriedDocs({
+      motherPassport: "http://old.pdf",
+      motherPassportExpiry: FUTURE_DATE,
+      hasFatherInfo: true,
+      hasGuardianInfo: true,
+    });
+    seedFormState("vizschool-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { hasFatherInfo: false, hasGuardianInfo: false },
+      },
+    });
+
+    renderForm(<VizSchoolParentGuardianUpload />, { flow: "vizschool-new" });
+
+    await waitFor(() => {
+      expect(
+        useVizSchoolEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+          ?.motherPassport,
+      ).toBe("http://old.pdf");
+    });
+
+    expect(screen.getAllByRole("button", { name: /^view$/i }).length).toBeGreaterThan(0);
+    expect(
+      useVizSchoolEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+        ?.hasFatherInfo,
+    ).toBe(false);
+    expect(screen.queryByText(/father documents/i)).not.toBeInTheDocument();
+  });
+
+  it("leaves every document row empty when the parent has no prior documents", async () => {
+    seedFormState("vizschool-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { hasFatherInfo: false, hasGuardianInfo: false },
+      },
+    });
+
+    renderForm(<VizSchoolParentGuardianUpload />, { flow: "vizschool-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/mother documents/i)).toBeInTheDocument();
+    });
+
+    expect(screen.queryAllByRole("button", { name: /^view$/i })).toHaveLength(0);
+    expect(screen.getAllByRole("button", { name: /^upload$/i }).length).toBeGreaterThan(0);
+  });
+
+  it("does not overwrite an already-completed step with the fetched previous-application data", async () => {
+    mockCarriedDocs({ motherPassport: "http://old.pdf" });
+    seedFormState("vizschool-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { motherPassport: "http://local.pdf", isValid: true },
+      },
+    });
+
+    renderForm(<VizSchoolParentGuardianUpload />, { flow: "vizschool-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/mother documents/i)).toBeInTheDocument();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(
+      useVizSchoolEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+        ?.motherPassport,
+    ).toBe("http://local.pdf");
+  });
+
+  it("does not overwrite a document the user already uploaded with the fetched previous-application data", async () => {
+    mockCarriedDocs({ motherPassport: "http://old.pdf" });
+    seedFormState("vizschool-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { motherPassport: "http://local.pdf", hasFatherInfo: false },
+      },
+    });
+
+    renderForm(<VizSchoolParentGuardianUpload />, { flow: "vizschool-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/mother documents/i)).toBeInTheDocument();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(
+      useVizSchoolEnrolNewStudentStore.getState().formState.uploadRequirements?.parentGuardianUploadRequirements
+        ?.motherPassport,
+    ).toBe("http://local.pdf");
+  });
+
+  it("does not write to the store on mount (wasDirty gate)", async () => {
+    seedFormState("vizschool-new", {
+      uploadRequirements: {
+        studentUploadRequirements: { isValid: true },
+        parentGuardianUploadRequirements: { hasFatherInfo: false, hasGuardianInfo: false },
+      },
+    });
+    const setFormStateSpy = vi.spyOn(useVizSchoolEnrolNewStudentStore.getState(), "setFormState");
+
+    renderForm(<VizSchoolParentGuardianUpload />, { flow: "vizschool-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/mother documents/i)).toBeInTheDocument();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(setFormStateSpy).not.toHaveBeenCalled();
   });
 });

@@ -1,0 +1,185 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { MemoryRouter, useLocation } from "react-router";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createNewStudentDraftStore } from "@/zustand-store";
+
+vi.mock("@/actions/drafts", () => ({ saveDraftRemote: vi.fn() }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), info: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+
+const { useSaveApplication } = await import("./use-save-application");
+const { saveDraftRemote } = await import("@/actions/drafts");
+const { toast } = await import("sonner");
+
+function wrapper({ children }: { children: React.ReactNode }) {
+  return <MemoryRouter initialEntries={["/enrol-student/new/student-info"]}>{children}</MemoryRouter>;
+}
+
+function baseProps(overrides: Partial<Parameters<typeof useSaveApplication>[0]> = {}) {
+  return {
+    setFormState: vi.fn(),
+    formState: {},
+    currentTab: "/enrol-student/new/student-info",
+    completedTabs: ["/enrol-student/new/student-info"],
+    activeTab: "/enrol-student/new/student-info",
+    type: "hfse-is" as const,
+    academicYear: "2024-2025",
+    ...overrides,
+  };
+}
+
+function renderSaveApplication(overrides: Partial<Parameters<typeof useSaveApplication>[0]> = {}) {
+  return renderHook(
+    (props: Partial<Parameters<typeof useSaveApplication>[0]>) => ({
+      ...useSaveApplication(baseProps({ ...overrides, ...props })),
+      location: useLocation(),
+    }),
+    { wrapper },
+  );
+}
+
+beforeEach(() => {
+  localStorage.clear();
+  vi.clearAllMocks();
+  vi.mocked(saveDraftRemote).mockResolvedValue(undefined);
+});
+
+afterEach(() => {
+  localStorage.clear();
+});
+
+describe("useSaveApplication", () => {
+  it("creates a new draftId and calls setFormState when formState has none", async () => {
+    const setFormState = vi.fn();
+    const { result } = renderSaveApplication({ setFormState, formState: {} });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+
+    expect(setFormState).toHaveBeenCalledWith({ draftId: expect.any(String) });
+  });
+
+  it("reuses an existing draftId and does not call setFormState with a new one", async () => {
+    const setFormState = vi.fn();
+    const { result } = renderSaveApplication({ setFormState, formState: { draftId: "existing-draft" } });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+
+    expect(setFormState).not.toHaveBeenCalled();
+  });
+
+  it("always persists the draft to the local cache store, regardless of willExit", async () => {
+    const { result } = renderSaveApplication({ formState: { draftId: "local-draft" }, academicYear: "2024-2025" });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+
+    const persisted = JSON.parse(localStorage.getItem("enrolNewStudent:draft:local-draft:hfse-is")!);
+    expect(persisted.state.draftId).toBe("local-draft");
+    expect(persisted.state.academicYear).toBe("2024-2025");
+    expect(persisted.state.currentTab).toBe("/enrol-student/new/student-info");
+  });
+
+  it("does not call saveDraftRemote, toast, or navigate when willExit is false", async () => {
+    const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+
+    expect(saveDraftRemote).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(result.current.location.pathname).toBe("/enrol-student/new/student-info");
+  });
+
+  it("calls saveDraftRemote with the assembled draft, toasts success, and navigates when willExit is true", async () => {
+    const { result } = renderSaveApplication({
+      formState: { draftId: "local-draft" },
+      academicYear: "2024-2025",
+      type: "viz-school",
+    });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: true });
+    });
+
+    expect(saveDraftRemote).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draftId: "local-draft",
+        type: "viz-school",
+        academicYear: "2024-2025",
+      }),
+    );
+    expect(toast.success).toHaveBeenCalledWith(
+      "Your application has been saved!",
+      expect.objectContaining({ description: expect.any(String) }),
+    );
+
+    await waitFor(() => expect(result.current.location.pathname).toBe("/admission/dashboard"));
+  });
+
+  it("swallows a saveDraftRemote failure: local save, soft toast, and navigation still occur", async () => {
+    vi.mocked(saveDraftRemote).mockRejectedValueOnce(new Error("network down"));
+
+    const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+    await act(async () => {
+      await expect(result.current.saveApplication({ willExit: true })).resolves.toBeUndefined();
+    });
+
+    expect(toast.info).toHaveBeenCalledWith(
+      "Saved on this device",
+      expect.objectContaining({ description: expect.any(String) }),
+    );
+    expect(toast.success).toHaveBeenCalled();
+
+    const persisted = JSON.parse(localStorage.getItem("enrolNewStudent:draft:local-draft:hfse-is")!);
+    expect(persisted.state.draftId).toBe("local-draft");
+
+    await waitFor(() => expect(result.current.location.pathname).toBe("/admission/dashboard"));
+  });
+
+  it("toggles isLoading true during the save and false once it settles", async () => {
+    let resolveSave!: () => void;
+    vi.mocked(saveDraftRemote).mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        resolveSave = resolve;
+      }),
+    );
+
+    const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+    expect(result.current.isLoading).toBe(false);
+
+    let savePromise!: Promise<void>;
+    act(() => {
+      savePromise = result.current.saveApplication({ willExit: true });
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(true));
+
+    await act(async () => {
+      resolveSave();
+      await savePromise;
+    });
+
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it("preserves an existing createdAt from formState rather than stamping a new one", async () => {
+    const existingCreatedAt = new Date("2024-01-01T00:00:00.000Z");
+    const { result } = renderSaveApplication({
+      formState: { draftId: "local-draft", createdAt: existingCreatedAt },
+    });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+
+    const store = createNewStudentDraftStore("hfse-is", "local-draft");
+    expect(new Date(store.getState().createdAt).toISOString()).toBe(existingCreatedAt.toISOString());
+  });
+});

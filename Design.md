@@ -21,6 +21,9 @@ All values are OKLch, defined in `src/index.css` and surfaced via `@theme inline
 | `--destructive` | `bg-destructive` / `text-destructive` | Error state — form validation, delete actions. |
 | `--accent` | `bg-accent` | Subtle tinted highlight — hover backgrounds on nav items. |
 | `--secondary` | `bg-secondary` | Warm amber secondary accent (use in sub-brand / badge contexts only). |
+| `--success` | `bg-success` / `text-success` | Positive / renewal / completed state — never raw `emerald-`/`green-`. |
+| `--transfer` | `bg-transfer` / `text-transfer` | Third-party / transfer-type state — never raw `purple-`. |
+| `--alert` | `bg-alert` / `text-alert` | Soft warning distinct from `destructive` (health/compliance notices) — never raw `rose-`. |
 
 ### Usage rules
 - Primary carries **every** CTA, active link, and accent moment. Used scarcely — 90% of the page is background + foreground.

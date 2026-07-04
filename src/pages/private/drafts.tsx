@@ -1,19 +1,23 @@
+import { discardDraft } from "@/actions/discard-draft";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import PageMetaData from "@/components/page-metadata";
 import type { DraftRow } from "@/components/private/drafts/draft-ticket";
-import { DraftTicket, getDraftRows } from "@/components/private/drafts/draft-ticket";
+import { DraftTicket } from "@/components/private/drafts/draft-ticket";
 import { buttonVariants } from "@/components/ui/button";
-import { removeNewStudentDraft } from "@/lib/utils";
+import { useMergedDraftRows } from "@/hooks/use-merged-draft-rows";
 import { useSelectAcademicYear } from "@/zustand-store";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, FilePen, PlusCircle } from "lucide-react";
-import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+
+const MERGED_DRAFT_ROWS_KEY = ["drafts", "merged-rows"];
 
 export default function Drafts() {
   const navigate = useNavigate();
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
+  const queryClient = useQueryClient();
 
-  const [rows, setRows] = useState<DraftRow[]>(() => getDraftRows());
+  const { data: rows } = useMergedDraftRows();
 
   function handleContinue(row: DraftRow) {
     const { state, flowType } = row;
@@ -31,8 +35,10 @@ export default function Drafts() {
   }
 
   function handleDiscard(draftId: string, flowType: "hfse-is" | "viz-school") {
-    removeNewStudentDraft(draftId, flowType);
-    setRows((prev) => prev.filter((r) => r.state.draftId !== draftId));
+    discardDraft(draftId, flowType);
+    queryClient.setQueryData<DraftRow[]>(MERGED_DRAFT_ROWS_KEY, (prev) =>
+      (prev ?? []).filter((r) => r.state.draftId !== draftId),
+    );
   }
 
   return (

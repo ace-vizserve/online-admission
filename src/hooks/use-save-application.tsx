@@ -1,4 +1,6 @@
-import { createNewStudentDraft, DRAFT_EXPIRY_DAYS, wait } from "@/lib/utils";
+import { saveDraftRemote } from "@/actions/drafts";
+import { createNewStudentDraft, DRAFT_EXPIRY_DAYS } from "@/lib/draft-storage";
+import { wait } from "@/lib/utils";
 import { createNewStudentDraftStore } from "@/zustand-store";
 import { addDays } from "date-fns";
 import { useCallback, useState } from "react";
@@ -39,7 +41,9 @@ export function useSaveApplication({
           setFormState({ draftId });
         }
 
-        createNewStudentDraftStore(type, draftId).setState({
+        const draftRecord = {
+          draftId,
+          type,
           academicYear,
           currentTab,
           activeTab,
@@ -51,9 +55,21 @@ export function useSaveApplication({
           lastSavedAt: new Date(),
           createdAt: formState?.createdAt ?? new Date(),
           expiresAt: addDays(new Date(), DRAFT_EXPIRY_DAYS),
-        });
+        };
+
+        createNewStudentDraftStore(type, draftId).setState(draftRecord);
 
         if (willExit) {
+          try {
+            await saveDraftRemote(draftRecord);
+          } catch {
+            // Offline-first: the local save above already succeeded. Remote sync is
+            // best-effort and will retry on the next Save & exit.
+            toast.info("Saved on this device", {
+              description: "We couldn't reach the server to sync this draft. It'll sync next time you're online.",
+            });
+          }
+
           await wait(1000);
           toast.success("Your application has been saved!", {
             description: "Your progress is saved. You may leave this page and resume later from Drafts.",

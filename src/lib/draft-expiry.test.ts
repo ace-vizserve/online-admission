@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { isExpired, isExpiringSoon } from "./utils";
+import { isExpired, isExpiringSoon } from "./draft-storage";
 
 // Freeze time at a fixed point so assertions are deterministic.
 const FIXED_NOW = new Date("2024-06-15T12:00:00Z");
@@ -110,5 +110,15 @@ describe("isExpiringSoon", () => {
 
   it("respects a custom 10-day window — outside", () => {
     expect(isExpiringSoon("2024-06-30T12:00:00Z", 10)).toBe(false);
+  });
+
+  // --- Date object overload ---
+
+  it("accepts a Date object — within window", () => {
+    expect(isExpiringSoon(new Date("2024-06-17T12:00:00Z"))).toBe(true);
+  });
+
+  it("accepts a Date object — beyond window", () => {
+    expect(isExpiringSoon(new Date("2024-06-25T12:00:00Z"))).toBe(false);
   });
 });

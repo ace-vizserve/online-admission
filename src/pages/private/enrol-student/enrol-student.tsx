@@ -154,9 +154,7 @@ function EnrolStudent() {
       <PageMetaData title={title} description={description} />
 
       <div
-        className={
-          "w-full sticky lg:fixed top-0 z-20 bg-white/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b"
-        }>
+        className={"w-full sticky lg:fixed top-0 z-20 bg-background/80 h-20 md:h-24 flex items-center border-b"}>
         <MaxWidthWrapper className="flex items-center justify-between w-full max-w-screen-2xl px-4 md:px-6">
           <Link
             onClick={goBack}
@@ -188,17 +186,17 @@ function EnrolStudent() {
                 damping: 15,
               }}
               className="w-full px-4">
-              <Card className="w-full sm:max-w-xl sm:mx-auto rounded-2xl border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
+              <Card className="w-full sm:max-w-xl sm:mx-auto rounded-2xl border-border shadow-md overflow-hidden">
                 <CardHeader className="text-center space-y-4 px-0">
                   <VizSchoolLogo className="mx-auto h-16 md:h-20" />
 
                   <div className="space-y-2">
-                    <CardTitle className="text-2xl md:text-3xl font-black tracking-tight text-secondary">
+                    <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-secondary">
                       Select a Learner
                     </CardTitle>
-                    <CardDescription className="text-sm font-medium text-slate-500 leading-relaxed px-4">
+                    <CardDescription className="text-sm font-medium text-muted-foreground leading-relaxed px-4">
                       Choose a registered learner to continue enrolment for{" "}
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-secondary text-xs font-black uppercase tracking-wider ml-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-wider ml-1">
                         AY 2026
                       </span>
                     </CardDescription>
@@ -209,7 +207,7 @@ function EnrolStudent() {
                 <CardContent className="px-2 md:px-4">
                   <ScrollArea className="h-52 md:h-64">
                     {isPending ? (
-                      <div className="flex h-64 w-full flex-col gap-4 items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/50 transition-all">
+                      <div className="flex h-64 w-full flex-col gap-4 items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 transition-all">
                         <Tailspin size="24" stroke="5" speed="0.9" color="#4F46E5" />
                         <p className="text-sm font-bold text-muted-foreground animate-pulse">Syncing Learners</p>
                       </div>
@@ -234,9 +232,8 @@ function EnrolStudent() {
                     disabled={isCheckingEnrollment || selected == null}
                     onClick={async () => await checkEnrollmentAndProceed()}
                     variant="secondary"
-                    className={cn(
-                      "h-14 rounded-2xl shadow-lg transition-all gap-3 text-xs md:text-sm font-black uppercase tracking-widest w-full",
-                    )}>
+                    size="lg"
+                    className="h-14 w-full gap-3 text-xs md:text-sm font-semibold uppercase tracking-widest">
                     {isCheckingEnrollment ? (
                       <DotPulse size="30" speed="1.3" color="#FFF" />
                     ) : (
@@ -253,7 +250,7 @@ function EnrolStudent() {
                     )}`}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-14 rounded-2xl gap-3 font-bold text-primary hover:text-primary hover:bg-indigo-50 transition-all w-full",
+                      "h-14 rounded-md gap-3 font-semibold text-primary hover:text-primary hover:bg-primary/10 transition-all w-full",
                     )}>
                     <Plus size={16} strokeWidth={3} />
                     Add a new learner
@@ -271,18 +268,18 @@ function EnrolStudent() {
                 damping: 15,
               }}
               className="w-full px-4">
-              <Card className="w-full sm:max-w-xl sm:mx-auto rounded-2xl border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
+              <Card className="w-full sm:max-w-xl sm:mx-auto rounded-2xl border-border shadow-md overflow-hidden">
                 <CardHeader className="text-center space-y-4 px-0">
                   <Logo className="mx-auto h-12 md:16" />
 
                   <div className="space-y-2">
-                    <CardTitle className="text-2xl md:text-3xl font-black tracking-tight text-primary">
+                    <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-primary">
                       Select a student
                     </CardTitle>
 
-                    <CardDescription className="text-sm font-medium text-slate-500 leading-relaxed px-4">
+                    <CardDescription className="text-sm font-medium text-muted-foreground leading-relaxed px-4">
                       All registered students for
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-primary text-xs font-black uppercase tracking-wider ml-1 mr-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider ml-1 mr-1">
                         AY {"ay" + (parseInt(academicYear.replace("ay", ""), 10) - 1)}
                       </span>
                       are listed below.
@@ -294,7 +291,7 @@ function EnrolStudent() {
                 <CardContent className="px-2 md:px-4">
                   <ScrollArea className="h-52 md:h-64">
                     {isRefetching || isPending ? (
-                      <div className="flex h-64 w-full flex-col gap-4 items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/50 transition-all">
+                      <div className="flex h-64 w-full flex-col gap-4 items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 transition-all">
                         <Tailspin size="24" stroke="5" speed="0.9" color="#4F46E5" />
                         <p className="text-sm font-bold text-muted-foreground animate-pulse">Syncing Students</p>
                       </div>
@@ -317,10 +314,9 @@ function EnrolStudent() {
                   <Button
                     disabled={isCheckingEnrollment || selected == null}
                     onClick={async () => await checkEnrollmentAndProceed()}
-                    size={"lg"}
-                    className={cn(
-                      "h-14 rounded-2xl shadow-lg transition-all gap-3 text-xs md:text-sm font-black uppercase tracking-widest w-full",
-                    )}>
+                    variant="cta"
+                    size="lg"
+                    className="h-14 w-full gap-3 text-xs md:text-sm font-semibold uppercase tracking-widest">
                     {isCheckingEnrollment ? (
                       <DotPulse size="30" speed="1.3" color="#FFF" />
                     ) : (
@@ -337,7 +333,7 @@ function EnrolStudent() {
                     to={"/enrol-student/residency-status"}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-14 rounded-2xl gap-3 font-bold text-secondary hover:text-secondary hover:bg-indigo-50 transition-all w-full",
+                      "h-14 rounded-md gap-3 font-semibold text-secondary hover:text-secondary hover:bg-secondary/10 transition-all w-full",
                     )}>
                     <Plus size={16} strokeWidth={3} />
                     Add new student
@@ -390,9 +386,9 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
                 </Avatar>
                 <div className="flex flex-col gap-1">
                   <span
-                    className={`font-bold text-[13px] md:text-[13.5px] capitalize text-${
-                      forVizSChool ? "secondary" : "primary"
-                    }`}>
+                    className={cn("font-bold text-[13px] md:text-[13.5px] capitalize text-primary", {
+                      "text-secondary": forVizSChool,
+                    })}>
                     {student.enroleeFullName}
                   </span>
                   <span className="text-xs font-medium capitalize text-muted-foreground">{student.levelApplied}</span>
@@ -400,9 +396,9 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
               </div>
               <CircleCheck
                 className={cn(
-                  "size-6 md:size-7 fill-primary stroke-white opacity-0 scale-30 transition group-data-checked:opacity-100 group-data-checked:scale-100",
+                  "size-6 md:size-7 fill-primary stroke-primary-foreground opacity-0 scale-50 transition group-data-[checked]:opacity-100 group-data-[checked]:scale-100",
                   {
-                    "fill-secondary": forVizSChool,
+                    "fill-secondary stroke-secondary-foreground": forVizSChool,
                   },
                 )}
               />
@@ -437,10 +433,9 @@ const StudentsList = memo(function ({ selected, setSelected, studentList, forViz
 
 function NoStudents({ forVizSchool = true }: { forVizSchool: boolean }) {
   return (
-    <div className="flex h-72 w-full flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/30 transition-all">
+    <div className="flex h-72 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/20 transition-all">
       <div className="relative mb-6">
-        <div className="absolute inset-0 scale-150 bg-indigo-100/40 blur-2xl rounded-full" />
-        <div className="relative rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+        <div className="relative rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
           <UserRoundPlus
             className={cn("h-8 w-8 text-primary", {
               "text-secondary": forVizSchool,
@@ -451,10 +446,10 @@ function NoStudents({ forVizSchool = true }: { forVizSchool: boolean }) {
       </div>
 
       <div className="text-center space-y-2 px-6">
-        <h3 className="text-lg font-black tracking-tight text-slate-900">
+        <h3 className="text-lg font-bold tracking-tight text-foreground">
           No {forVizSchool ? "learners" : "students"} found
         </h3>
-        <p className="text-balance text-[13px] font-medium text-slate-500 leading-relaxed max-w-[320px] mx-auto">
+        <p className="text-balance text-[13px] font-medium text-muted-foreground leading-relaxed max-w-[320px] mx-auto">
           Your learner list is currently empty. Start by clicking the
           <span
             className={cn("font-bold text-primary", {

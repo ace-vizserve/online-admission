@@ -6,10 +6,12 @@ import { Separator } from "@/components/ui/separator";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
+import useSession from "@/hooks/use-session";
 import { cn, documentErrors } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
 import { AlertCircle, Clock, FilePen, Info, Loader2, Save } from "lucide-react";
@@ -17,7 +19,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
-import { DocumentUploader, PARENT_GUARDIAN_DOCUMENTS } from "@/components/private/shared/upload-requirements";
+import {
+  DocumentUploader,
+  PARENT_GUARDIAN_DOCUMENTS,
+  useCarriedParentGuardianDocuments,
+} from "@/components/private/shared/upload-requirements";
 
 const MAX_SKIPS = 2;
 
@@ -26,6 +32,7 @@ const FATHER_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWit
 const GUARDIAN_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWith("guardian"));
 
 function ParentGuardianUpload() {
+  const { session } = useSession();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { formState, setFormState, activeTab, completedTabs, currentTab, setCompletedTabs } =
     useEnrolNewLearnerContext();
@@ -64,6 +71,18 @@ function ParentGuardianUpload() {
     reValidateMode: "onChange",
   });
 
+  // Carries a returning parent's latest passport/pass documents (matched by their login email
+  // against prior applications, across academic years and across brands) into this brand-new
+  // enrollment, as long as they have any on file — see use-carried-parent-guardian-docs.ts for
+  // the seed/hydrate guards that keep this from ever clobbering a user's own uploads or a
+  // completed step.
+  const { isFetching: isFetchingCarriedDocs } = useCarriedParentGuardianDocuments({
+    queryKey: ["parent-guardian-documents", session?.user.email],
+    formState,
+    setFormState,
+    form,
+  });
+
   const toFollowDocs = form.watch("toFollowDocs");
   const skippedDocsCount = toFollowDocs?.length ?? 0;
 
@@ -83,14 +102,14 @@ function ParentGuardianUpload() {
           },
         },
       });
-    }
 
-    form.reset(
-      { ...debouncedValues },
-      {
-        keepErrors: true,
-      },
-    );
+      form.reset(
+        { ...debouncedValues },
+        {
+          keepErrors: true,
+        },
+      );
+    }
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -187,11 +206,14 @@ function ParentGuardianUpload() {
     }
   }
 
+  if (isFetchingCarriedDocs) {
+    return <Loader />;
+  }
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.log(errors);
           if (Object.keys(errors).includes("toFollowDocs")) {
             toast.error("Too many skipped documents!", {
               description: "You can only skip up to 2 parent/guardian documents.",
@@ -444,4 +466,14 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
     </div>
   );
 }
+
+function Loader() {
+  return (
+    <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
+      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching documents...</p>
+    </div>
+  );
+}
+
 export default ParentGuardianUpload;
