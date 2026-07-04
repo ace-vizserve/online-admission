@@ -8,10 +8,10 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { ReEnrollmentData } from "@/actions/get-reenrollment-data";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
-import { EnrolNewStudentFormState } from "@/types";
 import {
   guardianInformationSchema,
   GuardianInformationSchema,
@@ -46,15 +46,26 @@ function GuardianInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        guardianInfo: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          guardianInfo: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   function onSubmit(values: GuardianInformationSchema) {
@@ -139,13 +150,11 @@ function GuardianInformation() {
       });
     } else {
       await queryClient.refetchQueries({
-        queryKey: ["old-family-information", params.id],
+        queryKey: ["re-enrollment", params.id],
         fetchStatus: "idle",
       });
-      const familyInfo = queryClient.getQueryData([
-        "old-family-information",
-        params.id,
-      ]) as EnrolNewStudentFormState["familyInfo"];
+      const reEnrollmentData = queryClient.getQueryData(["re-enrollment", params.id]) as ReEnrollmentData | undefined;
+      const familyInfo = reEnrollmentData?.familyInfo;
       form.reset({ ...(familyInfo?.guardianInfo ?? {}), noGuardianInfo: false });
       setFormState({
         ...formState,

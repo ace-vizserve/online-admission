@@ -71,7 +71,7 @@ function SiblingInformation() {
   });
 
   function proceedToNextStep(values: SiblingInformationSchema) {
-    if (!formState.familyInfo?.motherInfo.isValid) {
+    if (!formState.familyInfo?.motherInfo?.isValid) {
       toast.warning("Mother's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
@@ -79,7 +79,7 @@ function SiblingInformation() {
       return;
     }
 
-    if (!formState.familyInfo?.fatherInfo.isValid) {
+    if (!formState.familyInfo?.fatherInfo?.isValid) {
       toast.warning("Father's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
@@ -110,15 +110,17 @@ function SiblingInformation() {
   useEffect(() => {
     const wasDirty = form.formState.isDirty;
 
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        siblingsInfo: {
-          ...debouncedValues,
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          siblingsInfo: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },

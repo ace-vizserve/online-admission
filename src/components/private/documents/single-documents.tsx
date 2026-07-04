@@ -1,5 +1,6 @@
 import { updateEnrollmentApplicationDetails } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
+import { DataField, EditModeToggle, SectionHeader } from "@/components/private/documents/shared";
 import InputWithIcon from "@/components/private/student-profile/input-with-icon";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,7 +11,6 @@ import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { applicationTypes, maritalStatuses, religions } from "@/data";
 import useSession from "@/hooks/use-session";
 import { cn, getChangedKeys } from "@/lib/utils";
@@ -44,7 +44,7 @@ import {
   Users,
   VenetianMask,
 } from "lucide-react";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -62,43 +62,7 @@ function SingleDocuments({ label, studentInformation }: { label: string; student
           </p>
         </div>
 
-        <div
-          className={cn(
-            "w-full md:max-w-xs flex items-center justify-between gap-4 rounded-xl border p-4 transition-all duration-200",
-            editMode
-              ? "bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20"
-              : "bg-primary/5 border-border hover:bg-primary/10",
-          )}>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2">
-              <div className={cn("size-2 rounded-full", editMode ? "bg-secondary" : "bg-primary")} />
-              <p className="text-sm font-semibold leading-none tracking-tight">
-                {editMode ? "Editing Mode" : "Viewing Mode"}
-              </p>
-            </div>
-            <p className="text-xs font-medium leading-relaxed text-muted-foreground">
-              {editMode ? "You can now modify student details." : "Switch to edit to update information."}
-            </p>
-          </div>
-
-          <Switch
-            checked={editMode}
-            onCheckedChange={(checked) => {
-              if (checked) {
-                toast.info("Edit mode enabled!", {
-                  description: "You can now modify the student details.",
-                });
-              } else {
-                toast.info("View mode enabled!", {
-                  description: "Fields are locked and cannot be edited.",
-                });
-              }
-
-              setEditMode(checked);
-            }}
-            className="data-[state=checked]:bg-secondary cursor-pointer"
-          />
-        </div>
+        <EditModeToggle editMode={editMode} onEditModeChange={setEditMode} />
       </div>
 
       {editMode ? (
@@ -479,7 +443,7 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
                   <FormLabel className="text-[10px] uppercase tracking-wider text-slate-400 ml-1">
                     Marital Status
                   </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value.trim()}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="bg-white w-full">
                         <SelectValue />
@@ -898,40 +862,6 @@ function ViewStudentInformation({ studentInformation }: { studentInformation: St
           ))}
         </section>
       )}
-    </div>
-  );
-}
-
-/* Helper Component for Section Headers */
-function SectionHeader({ title, icon }: { title: string; icon: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-3 pb-2">
-      <div className="p-2 bg-indigo-50 rounded-lg">{icon}</div>
-      <h2 className="font-bold text-lg text-slate-800 tracking-tight">{title}</h2>
-    </div>
-  );
-}
-
-/* Helper Component for Data Fields */
-function DataField({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string | undefined;
-  icon: React.ReactElement<{ className: string }>;
-}) {
-  return (
-    <div className="space-y-1.5 group">
-      <Label className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">{label}</Label>
-      <div className="flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 bg-white border-slate-200 group-hover:border-slate-300 shadow-sm">
-        {React.cloneElement(icon, {
-          className: "size-4 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors",
-        })}
-
-        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value}</span>
-      </div>
     </div>
   );
 }

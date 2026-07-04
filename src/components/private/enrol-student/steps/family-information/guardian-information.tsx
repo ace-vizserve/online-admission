@@ -69,7 +69,7 @@ function GuardianInformation() {
   }
 
   function proceedToNextStep(values: GuardianInformationSchema) {
-    if (!formState.familyInfo?.motherInfo.isValid) {
+    if (!formState.familyInfo?.motherInfo?.isValid) {
       toast.warning("Mother's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
@@ -77,7 +77,7 @@ function GuardianInformation() {
       return;
     }
 
-    if (!formState.familyInfo?.fatherInfo.isValid) {
+    if (!formState.familyInfo?.fatherInfo?.isValid) {
       toast.warning("Father's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
@@ -172,7 +172,10 @@ function GuardianInformation() {
       await queryClient.refetchQueries({
         queryKey: ["new-family-information", session?.user.email],
       });
-      const familyInfo = queryClient.getQueryData(["new-family-information"]) as EnrolNewStudentFormState["familyInfo"];
+      const familyInfo = queryClient.getQueryData([
+        "new-family-information",
+        session?.user.email,
+      ]) as EnrolNewStudentFormState["familyInfo"];
       form.reset({ ...(familyInfo?.guardianInfo ?? {}), noGuardianInfo: false });
       setFormState({
         ...formState,
@@ -203,15 +206,17 @@ function GuardianInformation() {
   useEffect(() => {
     const wasDirty = form.formState.isDirty;
 
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        guardianInfo: {
-          ...debouncedValues,
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          guardianInfo: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },
@@ -402,7 +407,6 @@ function GuardianInformation() {
                   />
                 </FormControl>
                 <FormDescription>Select the country that best represents the guardian's nationality.</FormDescription>
-                <FormMessage />
                 <FormMessage />
               </FormItem>
             )}

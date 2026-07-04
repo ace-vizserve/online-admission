@@ -84,7 +84,7 @@ function LearnerEnrollmentInformation() {
     resolver: zodResolver(vizSchoolEnrollmentInformationSchema),
     defaultValues: {
       ...formState.enrollmentInfo,
-      contractSignatory: formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo
+      contractSignatory: formState.uploadRequirements?.parentGuardianUploadRequirements?.hasFatherInfo
         ? "Father"
         : "Mother",
     },
@@ -94,12 +94,23 @@ function LearnerEnrollmentInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      enrollmentInfo: {
-        ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        enrollmentInfo: {
+          ...debouncedValues,
+        },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -348,7 +359,7 @@ function LearnerEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo && (
+                            {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasFatherInfo && (
                               <SelectItem value={"Father"}>Father</SelectItem>
                             )}
                             <SelectItem value={"Mother"}>Mother</SelectItem>

@@ -29,15 +29,26 @@ function LearnerAddressContact() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        addressContact: {
-          ...form.watch(),
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          addressContact: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   function onSubmit(values: StudentAddressContactSchema) {
@@ -110,7 +121,7 @@ function LearnerAddressContact() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.studentInfo?.addressContact?.nationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
@@ -175,7 +186,7 @@ function LearnerAddressContact() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Parent's Marital Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value.trim()}>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select marital status" />

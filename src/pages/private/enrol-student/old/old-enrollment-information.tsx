@@ -1,4 +1,5 @@
-import { getCurrentStudentDiscounts, getStudentEnrollmentInformation } from "@/actions/private";
+import { getCurrentStudentDiscounts } from "@/actions/private";
+import { getReEnrollmentData } from "@/actions/get-reenrollment-data";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
 import AdditionalLearningNeedsComboBox from "@/components/ui/additional-learning-needs-combo-box";
@@ -122,9 +123,9 @@ function OldEnrollmentInformation() {
   );
   const params = useParams();
   const { data, isPending, isSuccess } = useQuery({
-    queryKey: ["enrollment-information", params.id],
+    queryKey: ["re-enrollment", params.id],
     queryFn: async () => {
-      return await getStudentEnrollmentInformation(params.id!);
+      return await getReEnrollmentData({ enroleeNumber: params.id! });
     },
   });
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
@@ -167,12 +168,23 @@ function OldEnrollmentInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      enrollmentInfo: {
-        ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        enrollmentInfo: {
+          ...debouncedValues,
+        },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
@@ -186,7 +198,7 @@ function OldEnrollmentInformation() {
 
     if (
       PRIMARY_CLASS_LEVELS.includes(values.levelApplied) &&
-      !Boolean(campusDevelopmentFeePrimary.find((fee) => fee.value === values.paymentOption))
+      !campusDevelopmentFeePrimary.find((fee) => fee.value === values.paymentOption)
     ) {
       toast.warning("Invalid Student Development Fee!", {
         description: "Kindly select the option the correct Student Development Fee.",
@@ -197,7 +209,7 @@ function OldEnrollmentInformation() {
 
     if (
       SECONDARY_SDF_CLASS_LEVELS.includes(values.levelApplied) &&
-      !Boolean(campusDevelopmentFeeSecondary.find((fee) => fee.value === values.paymentOption))
+      !campusDevelopmentFeeSecondary.find((fee) => fee.value === values.paymentOption)
     ) {
       toast.warning("Invalid Student Development Fee!", {
         description: "Kindly select the option the correct Student Development Fee.",

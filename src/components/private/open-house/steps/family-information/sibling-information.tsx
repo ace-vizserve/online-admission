@@ -37,7 +37,7 @@ function SiblingInformation() {
   });
 
   function proceedToNextStep(values: SiblingInformationSchema) {
-    if (!formState.familyInfo?.motherInfo.isValid) {
+    if (!formState.familyInfo?.motherInfo?.isValid) {
       toast.warning("Mother's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
@@ -45,7 +45,7 @@ function SiblingInformation() {
       return;
     }
 
-    if (!formState.familyInfo?.fatherInfo.isValid) {
+    if (!formState.familyInfo?.fatherInfo?.isValid) {
       toast.warning("Father's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
@@ -61,33 +61,37 @@ function SiblingInformation() {
       },
     });
 
-    setCompletedTabs("/enrol-student/new/family-info");
+    setCompletedTabs("/open-house/family-info");
 
-    if (completedTabs.includes("/enrol-student/new/enrollment-info")) return;
+    if (completedTabs.includes("/open-house/enrollment-info")) return;
 
-    setCurrentTab("/enrol-student/new/enrollment-info");
-    setActiveTab("/enrol-student/new/enrollment-info");
+    setCurrentTab("/open-house/enrollment-info");
+    setActiveTab("/open-house/enrollment-info");
 
     toast.success("Sibling information saved!", {
       description: "Make sure to double check everything",
     });
 
-    navigate("/enrol-student/new/enrollment-info");
+    navigate("/open-house/enrollment-info");
   }
 
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        siblingsInfo: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          siblingsInfo: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },

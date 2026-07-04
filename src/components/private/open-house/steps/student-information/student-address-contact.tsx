@@ -36,6 +36,7 @@ const StudentAddressContact = memo(function StudentAddressContact({
     resolver: zodResolver(studentAddressContactSchema),
     defaultValues: {
       ...savedAddressContact,
+      stpApplicationType,
       residenceHistory: shouldShowResidenceHistory
         ? savedAddressContact?.residenceHistory && savedAddressContact.residenceHistory.length > 0
           ? savedAddressContact.residenceHistory
@@ -51,24 +52,59 @@ const StudentAddressContact = memo(function StudentAddressContact({
     },
   });
 
+  // Carried through (not user-editable here) so the schema's superRefine can require
+  // residence history when an STP application is in progress — otherwise that requirement
+  // silently never fires, same reasoning as in student-details.tsx.
+  useEffect(() => {
+    form.setValue("stpApplicationType", stpApplicationType);
+  }, [stpApplicationType]);
+
   const { append, fields, remove } = useFieldArray({
     control: form.control,
     name: "residenceHistory",
   });
 
+  // shouldShowResidenceHistory is derived from a store value that can change after this
+  // component already mounted (e.g. the student answers the STP question, navigates back).
+  // The section's visibility reacts to that immediately via the JSX condition below, but the
+  // field array itself was only ever seeded with a default row at mount — without this, the
+  // section would appear with zero rows and no way to tell the user one is expected.
+  useEffect(() => {
+    if (shouldShowResidenceHistory && fields.length === 0) {
+      append({
+        purposeOfStay: "",
+        country: "",
+        cityOrTown: "",
+        fromYear: undefined as unknown as number,
+        toYear: undefined as unknown as number,
+      });
+    }
+  }, [shouldShowResidenceHistory, fields.length]);
+
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        addressContact: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          addressContact: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   useEffect(() => {

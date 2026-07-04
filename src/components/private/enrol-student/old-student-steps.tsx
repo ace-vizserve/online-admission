@@ -13,12 +13,12 @@ function OldStudentSteps() {
 
   const { familyInfo, enrollmentInfo, uploadRequirements, studentInfo } = formState;
 
-  const isAddressContactInvalid = applicationTypes.includes(stpApplicationType) && !studentInfo?.addressContact.isValid;
+  const isAddressContactInvalid = applicationTypes.includes(stpApplicationType) && !studentInfo?.addressContact?.isValid;
   const isFamilyInfoInvalid = familyInfo == null;
   const enrollmentInfoIsInvalid = enrollmentInfo == null || enrollmentInfo.isValid !== true;
   const docsInvalid =
-    uploadRequirements?.studentUploadRequirements.isValid !== true ||
-    uploadRequirements?.parentGuardianUploadRequirements.isValid !== true;
+    uploadRequirements?.studentUploadRequirements?.isValid !== true ||
+    uploadRequirements?.parentGuardianUploadRequirements?.isValid !== true;
 
   const STEPS = [
     {

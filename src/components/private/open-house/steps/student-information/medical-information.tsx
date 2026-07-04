@@ -87,15 +87,19 @@ export default function MedicalInformationSection() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        medicalInformation: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          medicalInformation: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },

@@ -1,4 +1,3 @@
-import { UseFormReturn } from "react-hook-form";
 import {
   EnrollmentInformationSchema,
   FatherInformationSchema,
@@ -145,7 +144,6 @@ export type Siblings = {
 export type FamilyInfo = Mother & Father & Guardian & Siblings;
 
 export type FamilyDocument = {
-  motherPassNumber: string | null;
   motherPassport: string | null;
   motherPassportStatus: string | null;
   motherPassportExpiry: string | null;
@@ -267,7 +265,7 @@ export type EnrolNewStudentFormState = {
 };
 
 export type OpenHouseFormState = {
-  accountInfo: RegistrationSchema;
+  accountInfo: Omit<RegistrationSchema, "password" | "confirmPassword">;
   studentInfo: {
     studentDetails: StudentDetailsSchema;
     addressContact: StudentAddressContactSchema;
@@ -344,50 +342,6 @@ export type VizSchoolEnrolOldStudentFormState = {
     studentUploadRequirements: StudentUploadRequirementsSchema;
     parentGuardianUploadRequirements: ParentGuardianUploadRequirementsSchema;
   };
-};
-
-export type StudentFileUploaderDialogProps = {
-  label: string;
-  description?: string;
-  form: UseFormReturn<StudentUploadRequirementsSchema>;
-  name: keyof StudentUploadRequirementsSchema;
-  value: File[] | null;
-  onValueChange: (files: File[] | null) => void;
-  formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
-  setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
-};
-
-export type ParentGuardianFileUploaderDialogProps = {
-  label: string;
-  description?: string;
-  form: UseFormReturn<ParentGuardianUploadRequirementsSchema>;
-  name: keyof ParentGuardianUploadRequirementsSchema;
-  value: File[] | null;
-  onValueChange: (files: File[] | null) => void;
-  formState: Partial<EnrolNewStudentFormState> | Record<string, null>;
-  setFormState: (data: Partial<EnrolNewStudentFormState>) => void;
-};
-
-export type VizSchoolStudentFileUploaderDialogProps = {
-  label: string;
-  description?: string;
-  form: UseFormReturn<StudentUploadRequirementsSchema>;
-  name: keyof StudentUploadRequirementsSchema;
-  value: File[] | null;
-  onValueChange: (files: File[] | null) => void;
-  formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
-  setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
-};
-
-export type VizSchoolParentGuardianFileUploaderDialogProps = {
-  label: string;
-  description?: string;
-  form: UseFormReturn<ParentGuardianUploadRequirementsSchema>;
-  name: keyof ParentGuardianUploadRequirementsSchema;
-  value: File[] | null;
-  onValueChange: (files: File[] | null) => void;
-  formState: Partial<VizSchoolEnrolNewStudentFormState> | Record<string, null>;
-  setFormState: (data: Partial<VizSchoolEnrolNewStudentFormState>) => void;
 };
 
 export type StudentDocumentUpdatePayload = Partial<Omit<StudentUploadRequirementsSchema, "isValid">>;

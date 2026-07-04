@@ -47,8 +47,17 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
     resolver: zodResolver(studentDetailsSchema),
     defaultValues: {
       ...formState.studentInfo?.studentDetails,
+      stpApplicationType,
     },
   });
+
+  // stpApplicationType is never a user-editable field on this form — it's carried through so
+  // the schema's superRefine can require NRIC when an STP application is in progress. Without
+  // this, that requirement silently never fires because the value is otherwise never part of
+  // the form's tracked values.
+  useEffect(() => {
+    form.setValue("stpApplicationType", stpApplicationType);
+  }, [stpApplicationType]);
 
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
@@ -246,7 +255,7 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    defaultValue={formState.studentInfo?.studentDetails?.gender}
+                    value={field.value}
                     onValueChange={field.onChange}
                     className="flex gap-2">
                     {[
@@ -283,8 +292,10 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
                         if (value === "Other") {
                           setIsReligionOther(true);
                         } else {
+                          // form.reset() clears religionOther locally; the debounced sync
+                          // effect below propagates that cleared value to the store shortly
+                          // after — no need to (and must not) write to the store directly here.
                           form.reset({ ...form.getValues(), religionOther: undefined });
-                          if (formState.studentInfo) formState.studentInfo.studentDetails.religionOther = undefined;
                           setIsReligionOther(false);
                         }
 

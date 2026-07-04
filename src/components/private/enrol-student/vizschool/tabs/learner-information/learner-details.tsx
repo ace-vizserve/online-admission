@@ -39,15 +39,26 @@ function LearnerDetails() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        studentDetails: {
-          ...form.watch(),
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          studentDetails: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   async function onSubmit(values: VizSchoolStudentDetailsSchema) {
@@ -194,7 +205,7 @@ function LearnerDetails() {
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    defaultValue={formState.studentInfo?.studentDetails.gender}
+                    value={field.value}
                     onValueChange={field.onChange}
                     className="flex gap-2">
                     {[
@@ -231,8 +242,10 @@ function LearnerDetails() {
                         if (value === "Other") {
                           setIsOtherReligion(true);
                         } else {
+                          // form.reset() clears religionOther locally; the debounced sync
+                          // effect below propagates that cleared value to the store shortly
+                          // after — no need to (and must not) write to the store directly here.
                           form.reset({ ...form.getValues(), religionOther: undefined });
-                          if (formState.studentInfo) formState.studentInfo.studentDetails.religionOther = undefined;
                           setIsOtherReligion(false);
                         }
 
@@ -255,7 +268,7 @@ function LearnerDetails() {
                     <FormDescription>Your student's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(formState.studentInfo?.studentDetails.religionOther || isOtherReligion) && (
+                  {(formState.studentInfo?.studentDetails?.religionOther || isOtherReligion) && (
                     <FormField
                       control={form.control}
                       name="religionOther"

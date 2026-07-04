@@ -1,38 +1,23 @@
-import { getPreviousStudentDocuments } from "@/actions/private";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { cn } from "@/lib/utils";
-import {
-  ParentGuardianUploadRequirementsSchema,
-  studentUploadRequirementsSchema,
-  StudentUploadRequirementsSchema,
-} from "@/zod-schema";
+import { studentUploadRequirementsSchema, StudentUploadRequirementsSchema } from "@/zod-schema";
 import { usePassTypeStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { AlertCircle, Clock, Info, Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router";
 import { toast } from "sonner";
-import StudentFileUploaderDialog from "./student-file-uploader-dialog";
+import { DocumentUploader, STUDENT_DOCUMENTS } from "@/components/private/shared/upload-requirements";
 
 const MAX_SKIPS = 3;
 
 function StudentUpload() {
-  const params = useParams();
   const { formState, setFormState } = useEnrolOldStudentContext();
-
-  const { data, isPending, isSuccess, fetchStatus } = useQuery({
-    queryKey: ["student-documents", params.id],
-    queryFn: async () => {
-      return await getPreviousStudentDocuments(params.id!);
-    },
-  });
 
   const [idPicture, setIdPicture] = useState<File[] | null>(null);
   const [birthCertificate, setBirthCertificate] = useState<File[] | null>(null);
@@ -47,6 +32,15 @@ function StudentUpload() {
   const passType = usePassTypeStore((state) => state.passType);
   const hydratedRef = useRef<boolean>(false);
 
+  const fileState: Record<string, [File[] | null, (files: File[] | null) => void]> = {
+    idPicture: [idPicture, setIdPicture],
+    birthCert: [birthCertificate, setBirthCertificate],
+    educCert: [transcriptOfRecords, setTranscriptOfRecords],
+    medical: [medicalExam, setMedicalExam],
+    passport: [passport, setPassport],
+    pass: [pass, setPass],
+  };
+
   const form = useForm<StudentUploadRequirementsSchema>({
     resolver: zodResolver(studentUploadRequirementsSchema),
     mode: "onChange",
@@ -55,29 +49,6 @@ function StudentUpload() {
 
   const toFollowDocs = form.watch("toFollowDocs");
   const skippedDocsCount = toFollowDocs?.length ?? 0;
-
-  useEffect(() => {
-    if (!isSuccess || !data) return;
-
-    const studentReq = formState.uploadRequirements?.studentUploadRequirements;
-    const isValid = formState.uploadRequirements?.studentUploadRequirements.isValid;
-
-    if (studentReq != null && Object.keys(studentReq).length > 0) return;
-
-    if (isValid) return;
-
-    setFormState({
-      uploadRequirements: {
-        parentGuardianUploadRequirements: {
-          ...formState.uploadRequirements?.parentGuardianUploadRequirements,
-        } as ParentGuardianUploadRequirementsSchema,
-        studentUploadRequirements: {
-          ...data.studentUploadRequirements,
-          stpApplicationType,
-        } as StudentUploadRequirementsSchema,
-      },
-    });
-  }, [isSuccess, data, formState.uploadRequirements]);
 
   useEffect(() => {
     const studentReq = formState.uploadRequirements?.studentUploadRequirements;
@@ -96,8 +67,15 @@ function StudentUpload() {
     hydratedRef.current = true;
   }, [form, formState.uploadRequirements?.studentUploadRequirements]);
 
+  // stpApplicationType is live client state (not part of the fetched application/documents
+  // data), so it's kept in sync with the RHF form independently of hydration above.
+  useEffect(() => {
+    form.setValue("stpApplicationType", stpApplicationType);
+  }, [form, stpApplicationType]);
+
   function onSubmit(values: StudentUploadRequirementsSchema) {
-    const isPassTypeInCorrect = !isStpApplication && values.passType !== passType;
+    const isPassTypeInCorrect =
+      !isStpApplication && !values.toFollowDocs?.includes("pass") && values.passType !== passType;
     const isPassExpiryNull = values.passExpiry?.getFullYear() === 1970 && values.passExpiry?.getTime() === 0;
 
     const isPassportExpiryNull =
@@ -138,10 +116,6 @@ function StudentUpload() {
     toast.success("Student documents saved!", {
       description: "Make sure to double check everything",
     });
-  }
-
-  if (fetchStatus === "fetching" && isPending) {
-    return <Loader />;
   }
 
   if (formState.uploadRequirements?.studentUploadRequirements == null) {
@@ -256,71 +230,42 @@ function StudentUpload() {
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="ID Picture"
-            form={form}
-            name="idPicture"
-            value={idPicture}
-            onValueChange={setIdPicture}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Birth Certificate"
-            form={form}
-            name="birthCert"
-            value={birthCertificate}
-            onValueChange={setBirthCertificate}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Transcript of Records"
-            form={form}
-            name="educCert"
-            value={transcriptOfRecords}
-            onValueChange={setTranscriptOfRecords}
-          />
+          {STUDENT_DOCUMENTS.slice(0, 3).map((cfg) => {
+            const [value, onValueChange] = fileState[cfg.name];
+            return (
+              <DocumentUploader
+                key={cfg.name}
+                cfg={cfg}
+                form={form}
+                value={value}
+                onValueChange={onValueChange}
+                formState={formState}
+                setFormState={setFormState}
+              />
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Medical Examination"
-            form={form}
-            name="medical"
-            value={medicalExam}
-            onValueChange={setMedicalExam}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Passport Copy"
-            form={form}
-            name="passport"
-            value={passport}
-            onValueChange={setPassport}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Singapore Pass"
-            form={form}
-            name="pass"
-            value={pass}
-            onValueChange={setPass}
-          />
+          {STUDENT_DOCUMENTS.slice(3).map((cfg) => {
+            const [value, onValueChange] = fileState[cfg.name];
+            return (
+              <DocumentUploader
+                key={cfg.name}
+                cfg={cfg}
+                form={form}
+                value={value}
+                onValueChange={onValueChange}
+                formState={formState}
+                setFormState={setFormState}
+              />
+            );
+          })}
         </div>
 
         <Button
           size="lg"
+          disabled={form.formState.isSubmitting}
           className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
           type="submit">
           Save documents
@@ -328,6 +273,7 @@ function StudentUpload() {
         </Button>
 
         <Button
+          disabled={form.formState.isSubmitting}
           className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
           type="submit">
           Save documents

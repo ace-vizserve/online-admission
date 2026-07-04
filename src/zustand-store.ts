@@ -182,6 +182,23 @@ export const useOpenHouseStore = create<OpenHouseStore>()(
   ),
 );
 
+type OpenHouseCredentialsStore = {
+  password: string;
+  confirmPassword: string;
+  setCredentials: (password: string, confirmPassword: string) => void;
+  clearState: () => void;
+};
+
+// Deliberately NOT persisted (no `persist` middleware) — the account registration password must
+// never be written to sessionStorage in plaintext. Lives only in memory for the current page
+// session; a reload requires the user to re-enter it, which is the correct trade-off.
+export const useOpenHouseCredentialsStore = create<OpenHouseCredentialsStore>()((set) => ({
+  password: "",
+  confirmPassword: "",
+  setCredentials: (password, confirmPassword) => set({ password, confirmPassword }),
+  clearState: () => set({ password: "", confirmPassword: "" }),
+}));
+
 export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
   persist(
     (set, _, store) => ({

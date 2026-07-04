@@ -31,6 +31,7 @@ function StudentAddressContact() {
     resolver: zodResolver(studentAddressContactSchema),
     defaultValues: {
       ...savedAddressContact,
+      stpApplicationType,
       residenceHistory: shouldShowResidenceHistory
         ? savedAddressContact?.residenceHistory && savedAddressContact.residenceHistory.length > 0
           ? savedAddressContact.residenceHistory
@@ -46,25 +47,60 @@ function StudentAddressContact() {
     },
   });
 
-  const watchedValues = form.watch();
-  const debouncedValues = useDebounce(watchedValues, 150);
-
+  // Carried through (not user-editable here) so the schema's superRefine can require
+  // residence history when an STP application is in progress — otherwise that requirement
+  // silently never fires, same reasoning as in student-details.tsx.
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        addressContact: {
-          ...debouncedValues,
-        },
-      },
-    });
-  }, [debouncedValues]);
+    form.setValue("stpApplicationType", stpApplicationType);
+  }, [stpApplicationType]);
 
   const { append, fields, remove } = useFieldArray({
     control: form.control,
     name: "residenceHistory",
   });
+
+  // shouldShowResidenceHistory is derived from a store value that can change after this
+  // component already mounted (e.g. the student answers the STP question, navigates back).
+  // The section's visibility reacts to that immediately via the JSX condition below, but the
+  // field array itself was only ever seeded with a default row at mount — without this, the
+  // section would appear with zero rows and no way to tell the user one is expected.
+  useEffect(() => {
+    if (shouldShowResidenceHistory && fields.length === 0) {
+      append({
+        purposeOfStay: "",
+        country: "",
+        cityOrTown: "",
+        fromYear: undefined as unknown as number,
+        toYear: undefined as unknown as number,
+      });
+    }
+  }, [shouldShowResidenceHistory, fields.length]);
+
+  const watchedValues = form.watch();
+  const debouncedValues = useDebounce(watchedValues, 150);
+
+  useEffect(() => {
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          addressContact: {
+            ...debouncedValues,
+          },
+        },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
+      },
+    );
+  }, [debouncedValues]);
 
   function onSubmit(values: StudentAddressContactSchema) {
     setFormState({
@@ -135,7 +171,7 @@ function StudentAddressContact() {
                 <FormControl>
                   <LocationSelector
                     showStates={false}
-                    currentCountry={formState.studentInfo?.addressContact.nationality}
+                    currentCountry={formState.studentInfo?.addressContact?.nationality}
                     onCountryChange={(value) => field.onChange(value?.name)}
                   />
                 </FormControl>
@@ -200,7 +236,7 @@ function StudentAddressContact() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Parent's Marital Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value.trim()}>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select marital status" />
@@ -246,7 +282,7 @@ function StudentAddressContact() {
                 {/* Decorative Background Icon - Gives it a modern, premium feel */}
                 <Globe className="absolute -right-6 -top-6 size-40 text-slate-200/40 rotate-12" />
 
-                {!formState.studentInfo?.addressContact.isValid && (
+                {!formState.studentInfo?.addressContact?.isValid && (
                   <Badge variant={"destructive"} className="uppercase mb-6 rounded-full font-bold">
                     Action required
                   </Badge>

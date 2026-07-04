@@ -30,22 +30,42 @@ function StudentDetails() {
     resolver: zodResolver(studentDetailsSchema),
     defaultValues: {
       ...formState.studentInfo?.studentDetails,
+      stpApplicationType,
     },
   });
+
+  // stpApplicationType is never a user-editable field on this form — it's carried through so
+  // the schema's superRefine can require NRIC when an STP application is in progress. Without
+  // this, that requirement silently never fires because the value is otherwise never part of
+  // the form's tracked values.
+  useEffect(() => {
+    form.setValue("stpApplicationType", stpApplicationType);
+  }, [stpApplicationType]);
 
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        studentDetails: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          studentDetails: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   async function onSubmit(values: StudentDetailsSchema) {
@@ -190,7 +210,7 @@ function StudentDetails() {
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    defaultValue={formState.studentInfo?.studentDetails.gender}
+                    value={field.value}
                     onValueChange={field.onChange}
                     className="flex gap-2">
                     {[
@@ -227,8 +247,10 @@ function StudentDetails() {
                         if (value === "Other") {
                           setIsOtherReligion(true);
                         } else {
+                          // form.reset() clears religionOther locally; the debounced sync
+                          // effect below propagates that cleared value to the store shortly
+                          // after — no need to (and must not) write to the store directly here.
                           form.reset({ ...form.getValues(), religionOther: undefined });
-                          if (formState.studentInfo) formState.studentInfo.studentDetails.religionOther = undefined;
                           setIsOtherReligion(false);
                         }
 
@@ -251,7 +273,7 @@ function StudentDetails() {
                     <FormDescription>Your student's religion</FormDescription>
                     <FormMessage />
                   </FormItem>
-                  {(formState.studentInfo?.studentDetails.religionOther || isOtherReligion) && (
+                  {(formState.studentInfo?.studentDetails?.religionOther || isOtherReligion) && (
                     <FormField
                       control={form.control}
                       name="religionOther"

@@ -153,9 +153,6 @@ function EnrollmentInformation() {
     resolver: zodResolver(enrollmentInformationSchema),
     defaultValues: {
       ...formState.enrollmentInfo,
-      contractSignatory: formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo
-        ? "Father"
-        : "Mother",
     },
   });
 
@@ -163,12 +160,23 @@ function EnrollmentInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      enrollmentInfo: {
-        ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        enrollmentInfo: {
+          ...debouncedValues,
+        },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -200,7 +208,7 @@ function EnrollmentInformation() {
 
     if (
       PRIMARY_CLASS_LEVELS.includes(values.levelApplied) &&
-      !Boolean(campusDevelopmentFeePrimary.find((fee) => fee.value === values.paymentOption))
+      !campusDevelopmentFeePrimary.find((fee) => fee.value === values.paymentOption)
     ) {
       toast.warning("Invalid Student Development Fee!", {
         description: "Kindly select the option the correct Student Development Fee.",
@@ -211,7 +219,7 @@ function EnrollmentInformation() {
 
     if (
       SECONDARY_SDF_CLASS_LEVELS.includes(values.levelApplied) &&
-      !Boolean(campusDevelopmentFeeSecondary.find((fee) => fee.value === values.paymentOption))
+      !campusDevelopmentFeeSecondary.find((fee) => fee.value === values.paymentOption)
     ) {
       toast.warning("Invalid Student Development Fee!", {
         description: "Kindly select the option the correct Student Development Fee.",
@@ -719,7 +727,7 @@ function EnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {formState.uploadRequirements?.parentGuardianUploadRequirements.hasFatherInfo && (
+                            {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasFatherInfo && (
                               <SelectItem value={"Father"}>Father</SelectItem>
                             )}
                             <SelectItem value={"Mother"}>Mother</SelectItem>

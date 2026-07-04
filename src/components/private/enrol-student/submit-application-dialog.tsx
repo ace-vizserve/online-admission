@@ -72,7 +72,7 @@ function SubmitApplicationDialog() {
   async function verifyEnrollmentDetails() {
     try {
       const isAddressContactInvalid =
-        applicationTypes.includes(stpApplicationType) && !formState.studentInfo?.addressContact.isValid;
+        applicationTypes.includes(stpApplicationType) && !formState.studentInfo?.addressContact?.isValid;
 
       if (isAddressContactInvalid) {
         toast.warning("Review Address & Contact Information!", {

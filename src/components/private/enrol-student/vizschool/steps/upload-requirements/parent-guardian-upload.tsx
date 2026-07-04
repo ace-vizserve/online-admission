@@ -17,9 +17,13 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
-import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
+import { DocumentUploader, PARENT_GUARDIAN_DOCUMENTS } from "@/components/private/shared/upload-requirements";
 
 const MAX_SKIPS = 2;
+
+const MOTHER_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWith("mother"));
+const FATHER_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWith("father"));
+const GUARDIAN_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWith("guardian"));
 
 function ParentGuardianUpload() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
@@ -41,6 +45,15 @@ function ParentGuardianUpload() {
   const [fatherPass, setFatherPass] = useState<File[] | null>(null);
   const [motherPass, setMotherPass] = useState<File[] | null>(null);
   const [guardianPass, setGuardianPass] = useState<File[] | null>(null);
+
+  const fileState: Record<string, [File[] | null, (files: File[] | null) => void]> = {
+    motherPassport: [motherPassport, setMotherPassport],
+    motherPass: [motherPass, setMotherPass],
+    fatherPassport: [fatherPassport, setFatherPassport],
+    fatherPass: [fatherPass, setFatherPass],
+    guardianPassport: [guardianPassport, setGuardianPassport],
+    guardianPass: [guardianPass, setGuardianPass],
+  };
 
   const form = useForm<ParentGuardianUploadRequirementsSchema>({
     resolver: zodResolver(parentGuardianUploadRequirementsSchema),
@@ -107,7 +120,7 @@ function ParentGuardianUpload() {
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
       !Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length &&
-      !formState.uploadRequirements!.studentUploadRequirements.isValid
+      !formState.uploadRequirements!.studentUploadRequirements?.isValid
     ) {
       toast.warning("Student Documents are missing!", {
         description: "Please fill out all required fields to proceed.",
@@ -169,7 +182,7 @@ function ParentGuardianUpload() {
       },
     });
 
-    if (formState.uploadRequirements?.studentUploadRequirements.isValid) {
+    if (formState.uploadRequirements?.studentUploadRequirements?.isValid) {
       setCompletedTabs("/vizschool/enrol-student/new/upload-requirements");
     }
   }
@@ -285,25 +298,20 @@ function ParentGuardianUpload() {
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
         <h1 className="max-w-4xl mx-auto font-bold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
-          <ParentGuardianFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Passport Copy"
-            form={form}
-            name="motherPassport"
-            value={motherPassport}
-            onValueChange={setMotherPassport}
-          />
-
-          <ParentGuardianFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Singapore Pass"
-            form={form}
-            name="motherPass"
-            value={motherPass}
-            onValueChange={setMotherPass}
-          />
+          {MOTHER_DOCS.map((cfg) => {
+            const [value, onValueChange] = fileState[cfg.name];
+            return (
+              <DocumentUploader
+                key={cfg.name}
+                cfg={cfg}
+                form={form}
+                value={value}
+                onValueChange={onValueChange}
+                formState={formState}
+                setFormState={setFormState}
+              />
+            );
+          })}
         </div>
 
         {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasFatherInfo && (
@@ -311,25 +319,20 @@ function ParentGuardianUpload() {
             <Separator />
             <h1 className="max-w-4xl mx-auto font-bold uppercase">Father Documents</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Passport Copy"
-                form={form}
-                name="fatherPassport"
-                value={fatherPassport}
-                onValueChange={setFatherPassport}
-              />
-
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Singapore Pass"
-                form={form}
-                name="fatherPass"
-                value={fatherPass}
-                onValueChange={setFatherPass}
-              />
+              {FATHER_DOCS.map((cfg) => {
+                const [value, onValueChange] = fileState[cfg.name];
+                return (
+                  <DocumentUploader
+                    key={cfg.name}
+                    cfg={cfg}
+                    form={form}
+                    value={value}
+                    onValueChange={onValueChange}
+                    formState={formState}
+                    setFormState={setFormState}
+                  />
+                );
+              })}
             </div>
           </>
         )}
@@ -339,25 +342,20 @@ function ParentGuardianUpload() {
             <Separator />
             <h1 className="max-w-4xl mx-auto font-bold uppercase">Guardian Documents</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Passport Copy"
-                form={form}
-                name="guardianPassport"
-                value={guardianPassport}
-                onValueChange={setGuardianPassport}
-              />
-
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Singapore Pass"
-                form={form}
-                name="guardianPass"
-                value={guardianPass}
-                onValueChange={setGuardianPass}
-              />
+              {GUARDIAN_DOCS.map((cfg) => {
+                const [value, onValueChange] = fileState[cfg.name];
+                return (
+                  <DocumentUploader
+                    key={cfg.name}
+                    cfg={cfg}
+                    form={form}
+                    value={value}
+                    onValueChange={onValueChange}
+                    formState={formState}
+                    setFormState={setFormState}
+                  />
+                );
+              })}
             </div>
           </>
         )}
@@ -370,6 +368,7 @@ function ParentGuardianUpload() {
           <Button
             variant={"secondary"}
             size="lg"
+            disabled={isLoading || form.formState.isSubmitting}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="submit">
             Save documents
@@ -378,6 +377,7 @@ function ParentGuardianUpload() {
 
           <Button
             variant={"secondary"}
+            disabled={isLoading || form.formState.isSubmitting}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="submit">
             Save documents

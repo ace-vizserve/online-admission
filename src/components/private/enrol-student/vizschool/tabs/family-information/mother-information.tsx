@@ -31,25 +31,30 @@ function MotherInformation() {
     },
   });
 
-  useEffect(() => {
-    if (!formState.familyInfo?.motherInfo) return;
-
-    form.reset(formState.familyInfo.motherInfo);
-  }, [form, formState.familyInfo?.motherInfo]);
-
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        motherInfo: {
-          ...form.watch(),
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          motherInfo: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   function onSubmit(values: VizSchoolMotherInformationSchema) {

@@ -4,7 +4,7 @@ import StudentDocuments from "@/components/private/documents/student-files";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { StudentDocumentsList } from "@/types";
+import { FamilyDocument, StudentDocumentsList } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
@@ -164,8 +164,9 @@ function InfoBox({
   label: string;
   value: string;
   studentDetails: StudentDocumentsList;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  familyDocuments?: any;
+  // `getFamilyDocuments` returns `{}` on its no-ownership/not-found paths, so callers can't rely on
+  // every field being present.
+  familyDocuments?: Partial<FamilyDocument>;
 }) {
   const { familyInformation, studentDocuments, studentInformation } = studentDetails;
 

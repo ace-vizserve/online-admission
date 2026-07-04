@@ -29,6 +29,30 @@ export function wait(time: number) {
   return new Promise((res) => setTimeout(res, time));
 }
 
+const PASSWORD_CHARSETS = ["abcdefghijkmnopqrstuvwxyz", "ABCDEFGHJKLMNPQRSTUVWXYZ", "23456789", "!@#$%^&*"];
+
+export function generatePassword(length = 14) {
+  const allChars = PASSWORD_CHARSETS.join("");
+  const randomValues = crypto.getRandomValues(new Uint32Array(length));
+
+  // Guarantee at least one char from each set, then fill the rest randomly
+  const required = PASSWORD_CHARSETS.map((set, i) => set[randomValues[i] % set.length]);
+  const rest = Array.from(
+    { length: length - required.length },
+    (_, i) => allChars[randomValues[i + required.length] % allChars.length],
+  );
+
+  const combined = [...required, ...rest];
+  // Fisher-Yates shuffle with fresh randomness so required chars aren't always at the start
+  const shuffleValues = crypto.getRandomValues(new Uint32Array(combined.length));
+  for (let i = combined.length - 1; i > 0; i--) {
+    const j = shuffleValues[i] % (i + 1);
+    [combined[i], combined[j]] = [combined[j], combined[i]];
+  }
+
+  return combined.join("");
+}
+
 export function documentErrors(
   role: "guardian" | "mother" | "father",
   errors: FieldErrors<ParentGuardianUploadRequirementsSchema>,
@@ -114,7 +138,7 @@ const GRADE_PROGRESSIONS: Record<GradeLevel, GradeLevel[]> = {
     "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
   ],
   "YoungStarter Junior Star": ["Primary One", "HFSE Global Education Programme – Year 2 (equivalent to Primary One)"],
-
+  Youngstarters: ["Primary One"],
   "Primary One": ["Primary Two", "HFSE Global Education Programme - Primary 2"],
   "Primary Two": ["Primary Three", "HFSE Global Education Programme - Primary 3"],
   "Primary Three": ["Primary Four", "HFSE Global Education Programme - Primary 4"],

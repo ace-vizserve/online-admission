@@ -1,4 +1,3 @@
-import { getStudentInformation } from "@/actions/private";
 import PageMetaData from "@/components/page-metadata";
 import MedicalInformationSection from "@/components/private/enrol-student/tabs/student-information/medical-information";
 import StudentAddressContact from "@/components/private/enrol-student/tabs/student-information/student-address-contact";
@@ -8,18 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes, ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
-import { EnrolOldStudentFormState } from "@/types";
 import { usePassTypeStore } from "@/zustand-store";
-import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { BriefcaseMedical, ChevronRight, MapPin, User } from "lucide-react";
-import { useEffect } from "react";
-import { useLocation, useParams } from "react-router";
+import { useLocation } from "react-router";
 
 function OldStudentInformation() {
   const { title, description } = ENROL_NEW_STUDENT_STUDENT_INFORMATION_TITLE_DESCRIPTION;
-  const params = useParams();
 
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
 
@@ -27,35 +22,11 @@ function OldStudentInformation() {
 
   const activeTab = state?.activeTab;
 
-  const { formState, setFormState } = useEnrolOldStudentContext();
+  const { formState } = useEnrolOldStudentContext();
 
   const { studentInfo } = formState;
 
-  const isAddressContactInvalid = applicationTypes.includes(stpApplicationType) && !studentInfo?.addressContact.isValid;
-
-  const { data, isSuccess, isPending, fetchStatus } = useQuery({
-    queryKey: ["student-information", params.id],
-    queryFn: async () => {
-      return await getStudentInformation(params.id!);
-    },
-    enabled: Object.keys(formState.studentInfo ?? {}).length < 1,
-  });
-
-  useEffect(() => {
-    if (!isSuccess || !data) return;
-
-    const isValid = formState.studentInfo?.addressContact.isValid;
-
-    if (isValid) return;
-
-    setFormState({
-      studentInfo: data?.studentInfo as EnrolOldStudentFormState["studentInfo"],
-    });
-  }, [data, isSuccess, setFormState]);
-
-  if (fetchStatus === "fetching" && isPending) {
-    return <Loader />;
-  }
+  const isAddressContactInvalid = applicationTypes.includes(stpApplicationType) && !studentInfo?.addressContact?.isValid;
 
   if (formState.studentInfo == null) {
     return <Loader />;

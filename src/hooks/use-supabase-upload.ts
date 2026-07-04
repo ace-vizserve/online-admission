@@ -1,7 +1,8 @@
-import { mergeAndUploadPDF } from "@/actions/private";
+import { MAX_UPLOAD_FILE_SIZE, mergeAndUploadPDF } from "@/actions/private";
 import { supabase } from "@/lib/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type FileError, type FileRejection, useDropzone } from "react-dropzone";
+import { toast } from "sonner";
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -133,24 +134,38 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
         return;
       }
 
-      const timestamp = Date.now();
-      const filePath = path
-        ? `${path}/${timestamp}-${mergedFile.name}`
-        : `${timestamp}-${mergedFile.name}`;
-
-      const { error, data } = await supabase.storage.from(bucketName).upload(filePath, mergedFile, {
-        cacheControl: cacheControl.toString(),
-        upsert,
-      });
-
-      if (error) {
-        responses.push({ name: mergedFile.name, message: error.message });
+      // Each source file can individually pass the per-file `maxFileSize` check (enforced by
+      // react-dropzone above) yet still merge into a combined PDF that exceeds it — the same case
+      // `uploadFileToBucket` already guards against for the enrollment wizard's uploader. This
+      // pipeline uploads straight to Supabase storage instead of going through that function, so it
+      // needs its own check against the same ceiling rather than silently accepting an oversized file.
+      if (mergedFile.size > MAX_UPLOAD_FILE_SIZE) {
+        // The per-file error list in `DropzoneContent` only matches errors against each SOURCE
+        // file's own name, so an error keyed by the merged file's name ("merged.pdf") would never
+        // render there — toast directly instead so the rejection is actually visible.
+        const message = `The combined PDF is too large (max ${MAX_UPLOAD_FILE_SIZE / 1024 / 1024}MB). Please upload fewer or smaller pages.`;
+        toast.error(message);
+        responses.push({ name: mergedFile.name, message });
       } else {
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from(bucketName).getPublicUrl(data.path);
+        const timestamp = Date.now();
+        const filePath = path
+          ? `${path}/${timestamp}-${mergedFile.name}`
+          : `${timestamp}-${mergedFile.name}`;
 
-        responses.push({ name: mergedFile.name, message: undefined, filePath: publicUrl });
+        const { error, data } = await supabase.storage.from(bucketName).upload(filePath, mergedFile, {
+          cacheControl: cacheControl.toString(),
+          upsert,
+        });
+
+        if (error) {
+          responses.push({ name: mergedFile.name, message: error.message });
+        } else {
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from(bucketName).getPublicUrl(data.path);
+
+          responses.push({ name: mergedFile.name, message: undefined, filePath: publicUrl });
+        }
       }
     } else {
       const parallelUploads = await Promise.all(

@@ -1,7 +1,8 @@
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import EnrolOldStudentContextProvider, { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { ArrowLeft } from "lucide-react";
-import { Outlet, useNavigate, useSearchParams } from "react-router";
+import { useHydrateReEnrollment } from "@/hooks/use-hydrate-reenrollment";
+import { ArrowLeft, FolderOpen } from "lucide-react";
+import { Link, Outlet, useNavigate, useParams, useSearchParams } from "react-router";
 import MaxWidthWrapper from "../max-width-wrapper";
 import OldStudentSteps from "../private/enrol-student/old-student-steps";
 import SubmitApplicationDialog from "../private/enrol-student/submit-application-dialog";
@@ -39,9 +40,11 @@ const academicYears = BACKEND_ACADEMIC_YEARS;
 function OldStudentLayout() {
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
+  const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const academicYearParams = searchParams.get("academicYear");
   const [isPending, setIsPending] = useState<boolean>(false);
+  const { isPending: isHydratingReEnrollment, isNotFound: reEnrollmentNotFound } = useHydrateReEnrollment(params.id);
 
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
@@ -76,7 +79,7 @@ function OldStudentLayout() {
             <OldStudentSteps />
           </div>
           <div className="w-full">
-            {isPending ? (
+            {isPending || isHydratingReEnrollment ? (
               <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-50 animate-in fade-in duration-300">
                 <div className="flex flex-col items-center gap-4">
                   <div className="relative flex items-center justify-center">
@@ -92,6 +95,8 @@ function OldStudentLayout() {
                   </div>
                 </div>
               </div>
+            ) : reEnrollmentNotFound ? (
+              <ReEnrollmentNotFound />
             ) : (
               <Outlet />
             )}
@@ -194,6 +199,38 @@ function ExitApplicationDialog() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+function ReEnrollmentNotFound() {
+  return (
+    <div className="w-full h-[70vh] flex items-center justify-center flex-col gap-6 text-center px-6">
+      <div className="relative">
+        <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full"></div>
+        <div className="relative p-6 bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl">
+          <FolderOpen className="size-16 text-indigo-500" />
+        </div>
+      </div>
+
+      <div className="max-w-sm">
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Record Not Found</h1>
+        <p className="text-sm font-medium text-slate-500 mt-2 leading-relaxed">
+          We couldn't find an application you own for this student. It may have been moved, or this link may no
+          longer be valid.
+        </p>
+      </div>
+
+      <Link
+        to="/admission/dashboard"
+        className={buttonVariants({
+          size: "lg",
+          className:
+            "gap-2 shadow-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white !rounded-2xl border-b-4 border-indigo-800 hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all mt-2",
+        })}>
+        <ArrowLeft className="w-5 h-5" />
+        Back to Dashboard
+      </Link>
+    </div>
   );
 }
 

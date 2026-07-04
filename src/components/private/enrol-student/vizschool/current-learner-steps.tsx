@@ -14,8 +14,8 @@ function OldStudentSteps() {
   const isFamilyInfoInvalid = familyInfo == null;
   const enrollmentInfoIsInvalid = enrollmentInfo == null || enrollmentInfo.isValid !== true;
   const docsInvalid =
-    uploadRequirements?.studentUploadRequirements.isValid !== true ||
-    uploadRequirements?.parentGuardianUploadRequirements.isValid !== true;
+    uploadRequirements?.studentUploadRequirements?.isValid !== true ||
+    uploadRequirements?.parentGuardianUploadRequirements?.isValid !== true;
 
   const STEPS = [
     {

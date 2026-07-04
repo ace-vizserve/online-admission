@@ -19,6 +19,11 @@ export const updatePasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
+export const adminSetPasswordSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
 export const updateAccountNameSchema = z.object({
   lastName: z.string().min(1, "Last name is required").transform(capitalizeWords),
   firstName: z.string().min(1, "First name is required").transform(capitalizeWords),
@@ -968,7 +973,7 @@ export const studentUploadRequirementsSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["toFollowDocs"],
-        message: "You may only skip up to 2 documents.",
+        message: `You may only skip up to ${TO_FOLLOW_LIMIT} documents.`,
       });
     }
 
@@ -1043,7 +1048,7 @@ export const studentUploadRequirementsSchema = z
 
       ctx.addIssue({
         code: "custom",
-        message: "",
+        message: "Please provide a valid expiry date for this passport.",
         path: ["passport"],
       });
     }
@@ -1057,7 +1062,7 @@ export const studentUploadRequirementsSchema = z
 
       ctx.addIssue({
         code: "custom",
-        message: "",
+        message: "Please provide your passport number.",
         path: ["passport"],
       });
     }
@@ -1095,7 +1100,7 @@ export const studentUploadRequirementsSchema = z
 
       ctx.addIssue({
         code: "custom",
-        message: "",
+        message: "Please provide a valid expiry date for this pass.",
         path: ["pass"],
       });
     }
@@ -1114,7 +1119,7 @@ export const studentUploadRequirementsSchema = z
 
       ctx.addIssue({
         code: "custom",
-        message: "",
+        message: "Please select a pass type.",
         path: ["pass"],
       });
     }
@@ -1229,14 +1234,14 @@ export const parentGuardianUploadRequirementsSchema = z
       if (!isSkipped(passport as string) && data[passport]) {
         if (!data[passportNumber]) {
           addIssue(passportNumber, "Passport number is required");
-          addIssue(passport, "");
+          addIssue(passport, "Please review this document's details below.");
         }
         if (!data[passportExpiry]) {
           addIssue(passportExpiry, "Enter a valid passport expiry date");
-          addIssue(passport, "");
+          addIssue(passport, "Please review this document's details below.");
         } else if (isBefore(data[passportExpiry] as Date, now)) {
           addIssue(passportExpiry, `${prefix[0].toUpperCase() + prefix.slice(1)} passport is expired`);
-          addIssue(passport, "");
+          addIssue(passport, "Please review this document's details below.");
         }
       }
 
@@ -1244,14 +1249,14 @@ export const parentGuardianUploadRequirementsSchema = z
         addIssue(passport, `${prefix[0].toUpperCase() + prefix.slice(1)} passport is required`);
         if (!data[passportNumber]) {
           addIssue(passportNumber, "Passport number is required");
-          addIssue(passport, "");
+          addIssue(passport, "Please review this document's details below.");
         }
         if (!data[passportExpiry]) {
           addIssue(passportExpiry, "Enter a valid passport expiry date");
-          addIssue(passport, "");
+          addIssue(passport, "Please review this document's details below.");
         } else if (isBefore(data[passportExpiry] as Date, now)) {
           addIssue(passportExpiry, `${prefix[0].toUpperCase() + prefix.slice(1)} passport is expired`);
-          addIssue(passport, "");
+          addIssue(passport, "Please review this document's details below.");
         }
       }
 
@@ -1286,7 +1291,7 @@ export const parentGuardianUploadRequirementsSchema = z
     };
 
     if (data.toFollowDocs && data.toFollowDocs.length > TO_FOLLOW_LIMIT) {
-      addIssue("toFollowDocs", "You may only skip up to 2 documents.");
+      addIssue("toFollowDocs", `You may only skip up to ${TO_FOLLOW_LIMIT} documents.`);
     }
 
     if (!data?.isOpenHouseApplication) {
@@ -1311,6 +1316,7 @@ export type FamilyInformationSchema = Omit<z.infer<typeof familyInformationSchem
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 export type UpdatePasswordSchema = z.infer<typeof updatePasswordSchema>;
+export type AdminSetPasswordSchema = z.infer<typeof adminSetPasswordSchema>;
 export type UpdateAccountNameSchema = z.input<typeof updateAccountNameSchema>;
 export type StudentDetailsSchema = z.infer<typeof studentDetailsSchema>;
 export type StudentAddressContactSchema = z.infer<typeof studentAddressContactSchema>;

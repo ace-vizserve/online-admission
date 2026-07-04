@@ -1,5 +1,4 @@
 import { academicYearFromEnroleeNumber, BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
-import { applicationTypes } from "@/data";
 import { supabase } from "@/lib/client";
 import {
   extractFamilyInfo,
@@ -23,10 +22,15 @@ import {
   VizSchoolEnrolOldStudentFormState,
 } from "@/types";
 import { FamilyInformationSchema, StudentAddressContactAndInformationSchema } from "@/zod-schema";
-import { AuthError, PostgrestError } from "@supabase/supabase-js";
+import { AuthError } from "@supabase/supabase-js";
 import { isBefore } from "date-fns";
 import PDFMerger from "pdf-merger-js";
 import { toast } from "sonner";
+import {
+  buildEnrolmentApplicationPayload,
+  buildStudentDocumentUpdatePayload,
+  processParentGuardian,
+} from "@/actions/enrolment-payload";
 
 export async function getSectionCardsDetails() {
   try {
@@ -215,6 +219,36 @@ export async function getStudentEnrollmentInformation(enroleeNumber: string) {
   }
 }
 
+/**
+ * Every ownership check on the post-submission "update application / reupload documents" page
+ * (`src/components/private/documents/**`, `src/components/private/uploaded/**`) used to hand-type
+ * its own `.or("fatherEmail.eq....,motherEmail.eq....")` filter string — all five call sites
+ * independently forgot `guardianEmail`, silently locking guardian-only logins out of a page whose
+ * UI otherwise fully supports them (see `guardianEmail`/`noGuardianInfo` in
+ * `upload-files.tsx`). One shared filter builder so this can't drift out of sync again.
+ */
+function buildApplicationOwnershipFilter(email: string) {
+  return `fatherEmail.eq.${email},motherEmail.eq.${email},guardianEmail.eq.${email}`;
+}
+
+/**
+ * Gate for the "check ownership first, then do the real query" call sites. Throws (rather than
+ * toasting) so the caller — typically a mutation — can decide how to surface it; mutations must
+ * re-throw after their own toast (see `deleteFile` above) so a failed/unauthorized write doesn't
+ * look like a success to `useMutation`'s `onSuccess`.
+ */
+async function assertApplicationOwnership(academicYear: string, enroleeNumber: string, email: string) {
+  const { data: ownership, error } = await supabase
+    .from(`${academicYear}_enrolment_applications`)
+    .select("enroleeNumber")
+    .eq("enroleeNumber", enroleeNumber)
+    .or(buildApplicationOwnershipFilter(email))
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!ownership) throw new Error("Unauthorized access");
+}
+
 export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: string }) {
   try {
     const {
@@ -230,7 +264,7 @@ export async function getStudentDetails({ enroleeNumber }: { enroleeNumber: stri
       .from(APPLICATIONS_TABLE)
       .select("*")
       .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session?.user.email},motherEmail.eq.${session?.user.email}`);
+      .or(buildApplicationOwnershipFilter(session?.user.email ?? ""));
 
     if (error) throw new Error(error.message);
     if (!studentInformation || studentInformation.length === 0) return null;
@@ -762,124 +796,17 @@ export async function submitVizSchoolEnrollment(
   enrolleeType: "VizSchool New" | "VizSchool Current",
 ) {
   try {
-    const {
-      birthCert,
-      idPicture,
-      medical,
-      pass,
-      passExpiry,
-      passType,
-      passport,
-      passportExpiry,
-      passportNumber,
-      educCert,
-    } = {
-      ...enrollmentDetails.uploadRequirements.studentUploadRequirements,
-    };
-
-    delete enrollmentDetails.uploadRequirements.studentUploadRequirements.isValid;
-    delete enrollmentDetails.studentInfo.studentDetails.isValid;
-    delete enrollmentDetails.studentInfo.addressContact.isValid;
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
-    delete enrollmentDetails.familyInfo?.fatherInfo?.isValid;
-    delete enrollmentDetails.familyInfo?.fatherInfo?.noFatherInfo;
-    delete enrollmentDetails.familyInfo?.guardianInfo?.noGuardianInfo;
-
-    let flattenedSiblings: Record<string, unknown> = {};
-
-    if (enrollmentDetails.familyInfo.siblingsInfo?.siblings?.length) {
-      flattenedSiblings = flattenSiblings(enrollmentDetails.familyInfo.siblingsInfo.siblings);
-    }
-
-    const familyInfo = {
-      motherFullName: "",
-      fatherFullName: "",
-      guardianFullName: "",
-      ...enrollmentDetails.familyInfo.motherInfo,
-      ...enrollmentDetails.familyInfo.fatherInfo,
-      ...enrollmentDetails.familyInfo.guardianInfo,
-      ...flattenedSiblings,
-    };
-
-    if (familyInfo.motherMiddleName == null) {
-      delete familyInfo.motherMiddleName;
-    }
-
-    if (familyInfo.fatherMiddleName == null) {
-      delete familyInfo.fatherMiddleName;
-    }
-
-    if (familyInfo.guardianMiddleName == null) {
-      delete familyInfo.guardianMiddleName;
-    }
-
-    delete familyInfo.isValid;
-
-    const flattenedDiscounts: Record<string, unknown> = {};
-
-    if (enrollmentDetails.enrollmentInfo.discount && enrollmentDetails.enrollmentInfo.discount.length > 0) {
-      enrollmentDetails.enrollmentInfo.discount.forEach((discount, index) => {
-        const i = index + 1;
-        if (!discount?.includes("Referred by someone")) {
-          flattenedDiscounts[`discount${i}`] = discount;
-        }
-      });
-    }
-
-    delete enrollmentDetails.enrollmentInfo.discount;
-
-    const enrollmentInfo = {
-      ...enrollmentDetails.enrollmentInfo,
-      ...flattenedDiscounts,
-    };
-
-    delete enrollmentInfo.isValid;
-
-    if (
-      familyInfo.fatherLastName &&
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo
-    ) {
-      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}${
-        familyInfo?.fatherMiddleName ? `, ${familyInfo.fatherMiddleName.toUpperCase()}` : ""
-      }`;
-    }
-
-    if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo) {
-      familyInfo.guardianFullName = `${familyInfo.guardianLastName?.toUpperCase()}, ${familyInfo.guardianFirstName?.toUpperCase()}${
-        familyInfo?.guardianMiddleName ? `, ${familyInfo.guardianMiddleName.toUpperCase()}` : ""
-      }`;
-    }
-
-    familyInfo.motherFullName = `${familyInfo.motherLastName.toUpperCase()}, ${familyInfo.motherFirstName.toUpperCase()}${
-      familyInfo?.motherMiddleName ? `, ${familyInfo.motherMiddleName.toUpperCase()}` : ""
-    }`;
-
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo;
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
-
-    const firstName = enrollmentDetails.studentInfo.studentDetails.firstName.toUpperCase();
-    const lastName = enrollmentDetails.studentInfo.studentDetails.lastName.toUpperCase();
-    const middleName = enrollmentDetails.studentInfo.studentDetails?.middleName?.toUpperCase() ?? "";
+    const built = buildEnrolmentApplicationPayload(enrollmentDetails, {
+      category: enrolleeType,
+      includeMedicalInfo: false,
+      includeLearningNeeds: false,
+      includeStpFields: false,
+      vizSchoolProgram: schoolFee,
+    });
 
     const { data: enrollmentApplication, error: enrollmentApplicationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
-      .insert({
-        ...enrollmentDetails.studentInfo.studentDetails,
-        ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
-        enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-          middleName ? `, ${middleName.toUpperCase()}` : ""
-        }`,
-        enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: enrolleeType,
-        pass: passType,
-        passExpiry,
-        passportNumber,
-        passportExpiry,
-        ...removeEmptyKeys(familyInfo),
-        ...enrollmentInfo,
-        applicationStatus: "Registered",
-        vizSchoolProgram: schoolFee,
-      })
+      .insert(built.applicationInsertPayload)
       .select("id")
       .single();
 
@@ -928,146 +855,35 @@ export async function submitVizSchoolEnrollment(
       throw new Error(enrolmentDocumentsError.message);
     }
 
-    const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
+    const { error: studentDocError } = await supabase
+      .from(`${academicYear}_enrolment_documents`)
+      .update(buildStudentDocumentUpdatePayload(built.studentDocFields, built.studentToFollowDocs))
+      .eq("studentNumber", studentNumber?.studentNumber)
+      .eq("enroleeNumber", data.enroleeNumber);
 
-    const isToFollow = (docKey: string) => studentToFollowDocs.includes(docKey);
-
-    const getFileValue = (file: unknown, docKey: string) => (isToFollow(docKey) ? null : file || null);
-
-    const getStatus = (file: unknown, docKey: string, validLabel: "Uploaded" | "Valid" = "Uploaded") => {
-      if (isToFollow(docKey)) return "To follow";
-      if (!file) return null;
-      return validLabel;
-    };
-
-    const studentDocumentUploadResults = await Promise.all([
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          medical: getFileValue(medical, "medical"),
-          medicalStatus: getStatus(medical, "medical"),
-
-          passport: getFileValue(passport, "passport"),
-          passportExpiry: isToFollow("passport") ? null : passportExpiry,
-          passportStatus: getStatus(passport, "passport", "Valid"),
-
-          pass: getFileValue(pass, "pass"),
-          passExpiry: isToFollow("pass") ? null : passExpiry,
-          passStatus: getStatus(pass, "pass", "Valid"),
-
-          birthCert: getFileValue(birthCert, "birthCert"),
-          birthCertStatus: getStatus(birthCert, "birthCert"),
-
-          educCert: getFileValue(educCert, "educCert"),
-          educCertStatus: getStatus(educCert, "educCert"),
-
-          idPicture: getFileValue(idPicture, "idPicture"),
-          idPictureStatus: getStatus(idPicture, "idPicture"),
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-    ]);
-
-    const hasStudentUploadError = studentDocumentUploadResults.map((result) => {
-      if (result.error) {
-        toast.error(result.error.message);
-        return { message: result.error.message };
-      }
-    })[0];
-
-    if (hasStudentUploadError) {
-      throw new Error(hasStudentUploadError.message);
+    if (studentDocError) {
+      toast.error(studentDocError.message);
+      throw new Error(studentDocError.message);
     }
 
-    const handleError = (error: PostgrestError | null) => {
-      if (error) {
-        toast.error(error.message);
-        throw new Error(error.message);
-      }
-    };
-
-    const parentGuardianToFollowDocs =
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
-
-    const isParentGuardianToFollow = (docKey: string) => parentGuardianToFollowDocs.includes(docKey);
-
-    const processParentGuardian = async (
-      role: "mother" | "father" | "guardian",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      documents: any,
-    ) => {
-      if (!documents || Object.keys(documents).length <= 1) return;
-
-      const passKey = `${role}Pass`;
-      const passportKey = `${role}Passport`;
-
-      const passType = documents[`${role}PassType`];
-      const passExpiry = documents[`${role}PassExpiry`];
-      const passportNumber = documents[`${role}PassportNumber`];
-      const passportExpiry = documents[`${role}PassportExpiry`];
-
-      const { error: applicationError } = await supabase
-        .from(`${academicYear}_enrolment_applications`)
-        .update({
-          [`${role}Pass`]: getFileValue(passType, passKey),
-          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : passExpiry,
-          [`${role}Passport`]: getFileValue(passportNumber, passportKey),
-          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : passportExpiry,
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data?.enroleeNumber);
-
-      handleError(applicationError);
-
-      const { error: documentError } = await supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          [`${role}Passport`]: getFileValue(documents[`${role}Passport`], passportKey),
-          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
-          [`${role}PassportStatus`]: getStatus(documents[`${role}Passport`], passportKey, "Valid"),
-
-          [`${role}Pass`]: getFileValue(documents[`${role}Pass`], passKey),
-          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : documents[`${role}PassExpiry`],
-          [`${role}PassStatus`]: getStatus(documents[`${role}Pass`], passKey, "Valid"),
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber);
-
-      handleError(documentError);
-    };
-
-    const motherDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "mother",
-    );
-
-    await processParentGuardian("mother", motherDocs);
-
-    const fatherDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "father",
-    );
-
-    await processParentGuardian("father", fatherDocs);
-
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
-
-    const guardianDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "guardian",
-    );
-
-    await processParentGuardian("guardian", guardianDocs);
+    for (const role of ["mother", "father", "guardian"] as const) {
+      await processParentGuardian({
+        role,
+        documents: filterKeysBySubstring(built.parentGuardianUploadRequirements, role),
+        toFollowDocs: built.parentGuardianToFollowDocs,
+        academicYear,
+        studentNumber: studentNumber?.studentNumber,
+        enroleeNumber: data.enroleeNumber,
+      });
+    }
 
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
 
     const { error: enrollmentApplicationStatusError } = await supabase.from(`${academicYear}_enrolment_status`).insert({
-      levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
+      levelApplied: built.levelApplied,
       enroleeNumber: data.enroleeNumber,
       enrolmentDate: today,
-      enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-        middleName ? `, ${middleName.toUpperCase()}` : ""
-      }`,
+      enroleeName: built.names.enroleeFullName,
       enroleeType: enrolleeType,
       applicationStatus: "Submitted",
     });
@@ -1089,150 +905,17 @@ export async function submitEnrollment(
   preCourseDetails: PreCourseDetails,
 ) {
   try {
-    const stpApplicationType = applicationTypes.includes(enrollmentDetails.stpApplicationType || "")
-      ? enrollmentDetails.stpApplicationType
-      : null;
-
-    const {
-      birthCert,
-      idPicture,
-      medical,
-      pass,
-      passExpiry,
-      passType,
-      passport,
-      passportExpiry,
-      passportNumber,
-      educCert,
-    } = {
-      ...enrollmentDetails.uploadRequirements.studentUploadRequirements,
-    };
-
-    delete enrollmentDetails.uploadRequirements.studentUploadRequirements.isValid;
-    delete enrollmentDetails.studentInfo.studentDetails.isValid;
-    delete enrollmentDetails.studentInfo.addressContact.isValid;
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
-    delete enrollmentDetails.familyInfo?.fatherInfo?.isValid;
-    delete enrollmentDetails.familyInfo?.fatherInfo?.noFatherInfo;
-    delete enrollmentDetails.familyInfo?.guardianInfo?.noGuardianInfo;
-    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.none;
-    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.other;
-
-    let flattenedSiblings: Record<string, unknown> = {};
-
-    if (enrollmentDetails.familyInfo.siblingsInfo?.siblings?.length) {
-      flattenedSiblings = flattenSiblings(enrollmentDetails.familyInfo.siblingsInfo.siblings);
-    }
-
-    const familyInfo = {
-      motherFullName: "",
-      fatherFullName: "",
-      guardianFullName: "",
-      ...enrollmentDetails.familyInfo.motherInfo,
-      ...enrollmentDetails.familyInfo.fatherInfo,
-      ...enrollmentDetails.familyInfo.guardianInfo,
-      ...flattenedSiblings,
-    };
-
-    if (familyInfo.motherMiddleName == null) {
-      delete familyInfo.motherMiddleName;
-    }
-
-    if (familyInfo.fatherMiddleName == null) {
-      delete familyInfo.fatherMiddleName;
-    }
-
-    if (familyInfo.guardianMiddleName == null) {
-      delete familyInfo.guardianMiddleName;
-    }
-
-    delete familyInfo.isValid;
-
-    const flattenedDiscounts: Record<string, unknown> = {};
-
-    if (enrollmentDetails.enrollmentInfo.discount && enrollmentDetails.enrollmentInfo.discount.length > 0) {
-      enrollmentDetails.enrollmentInfo.discount.forEach((discount, index) => {
-        const i = index + 1;
-        if (!discount?.includes("Referred by someone")) {
-          flattenedDiscounts[`discount${i}`] = discount;
-        }
-      });
-    }
-
-    delete enrollmentDetails.enrollmentInfo.discount;
-
-    const {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      additionalLearningNeedsOthers,
-      ...restEnrollmentInfo
-    } = enrollmentDetails.enrollmentInfo;
-
-    const enrollmentInfo = {
-      ...restEnrollmentInfo,
-      ...flattenedDiscounts,
-      ...(Array.isArray(enrollmentDetails.enrollmentInfo.additionalLearningNeeds)
-        ? {
-            additionalLearningNeeds: enrollmentDetails.enrollmentInfo.additionalLearningNeeds.join(", "),
-            otherLearningNeeds: enrollmentDetails.enrollmentInfo.additionalLearningNeeds.includes(
-              "Others (please specify)",
-            )
-              ? enrollmentDetails.enrollmentInfo.additionalLearningNeedsOthers
-              : null,
-          }
-        : {}),
-    };
-
-    delete enrollmentInfo.isValid;
-
-    if (
-      familyInfo.fatherLastName &&
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo
-    ) {
-      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}${
-        familyInfo?.fatherMiddleName ? `, ${familyInfo.fatherMiddleName.toUpperCase()}` : ""
-      }`;
-    }
-
-    if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo) {
-      familyInfo.guardianFullName = `${familyInfo.guardianLastName?.toUpperCase()}, ${familyInfo.guardianFirstName?.toUpperCase()}${
-        familyInfo?.guardianMiddleName ? `, ${familyInfo.guardianMiddleName.toUpperCase()}` : ""
-      }`;
-    }
-
-    familyInfo.motherFullName = `${familyInfo.motherLastName.toUpperCase()}, ${familyInfo.motherFirstName.toUpperCase()}${
-      familyInfo?.motherMiddleName ? `, ${familyInfo.motherMiddleName.toUpperCase()}` : ""
-    }`;
-
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo;
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
-
-    const firstName = enrollmentDetails.studentInfo.studentDetails.firstName.toUpperCase();
-    const lastName = enrollmentDetails.studentInfo.studentDetails.lastName.toUpperCase();
-    const middleName = enrollmentDetails.studentInfo.studentDetails?.middleName?.toUpperCase() ?? "";
+    const built = buildEnrolmentApplicationPayload(enrollmentDetails, {
+      category: "New",
+      includeMedicalInfo: true,
+      includeLearningNeeds: true,
+      includeStpFields: true,
+      preCourseDetails,
+    });
 
     const { data: enrollmentApplication, error: enrollmentApplicationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
-      .insert({
-        ...enrollmentDetails.studentInfo.studentDetails,
-        ...preCourseDetails,
-        ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
-        ...enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist,
-        paracetamolConsent: enrollmentDetails.studentInfo?.medicalInformation?.paracetamolConsent,
-        enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-          middleName ? `, ${middleName.toUpperCase()}` : ""
-        }`,
-        stpApplicationType: stpApplicationType,
-        stpApplicationStatus: stpApplicationType ? "Pending" : null,
-        enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: "New",
-        pass: passType,
-        passExpiry,
-        passportNumber,
-        passportExpiry,
-        ...removeEmptyKeys(familyInfo),
-        ...enrollmentInfo,
-        applicationStatus: "Registered",
-      })
+      .insert(built.applicationInsertPayload)
       .select("id")
       .single();
 
@@ -1281,146 +964,35 @@ export async function submitEnrollment(
       throw new Error(enrolmentDocumentsError.message);
     }
 
-    const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
+    const { error: studentDocError } = await supabase
+      .from(`${academicYear}_enrolment_documents`)
+      .update(buildStudentDocumentUpdatePayload(built.studentDocFields, built.studentToFollowDocs))
+      .eq("studentNumber", studentNumber?.studentNumber)
+      .eq("enroleeNumber", data.enroleeNumber);
 
-    const isToFollow = (docKey: string) => studentToFollowDocs.includes(docKey);
-
-    const getFileValue = (file: unknown, docKey: string) => (isToFollow(docKey) ? null : file || null);
-
-    const getStatus = (file: unknown, docKey: string, validLabel: "Uploaded" | "Valid" = "Uploaded") => {
-      if (isToFollow(docKey)) return "To follow";
-      if (!file) return null;
-      return validLabel;
-    };
-
-    const studentDocumentUploadResults = await Promise.all([
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          medical: getFileValue(medical, "medical"),
-          medicalStatus: getStatus(medical, "medical"),
-
-          passport: getFileValue(passport, "passport"),
-          passportExpiry: isToFollow("passport") ? null : passportExpiry,
-          passportStatus: getStatus(passport, "passport", "Valid"),
-
-          pass: getFileValue(pass, "pass"),
-          passExpiry: isToFollow("pass") ? null : passExpiry,
-          passStatus: getStatus(pass, "pass", "Valid"),
-
-          birthCert: getFileValue(birthCert, "birthCert"),
-          birthCertStatus: getStatus(birthCert, "birthCert"),
-
-          educCert: getFileValue(educCert, "educCert"),
-          educCertStatus: getStatus(educCert, "educCert"),
-
-          idPicture: getFileValue(idPicture, "idPicture"),
-          idPictureStatus: getStatus(idPicture, "idPicture"),
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-    ]);
-
-    const hasStudentUploadError = studentDocumentUploadResults.map((result) => {
-      if (result.error) {
-        toast.error(result.error.message);
-        return { message: result.error.message };
-      }
-    })[0];
-
-    if (hasStudentUploadError) {
-      throw new Error(hasStudentUploadError.message);
+    if (studentDocError) {
+      toast.error(studentDocError.message);
+      throw new Error(studentDocError.message);
     }
 
-    const handleError = (error: PostgrestError | null) => {
-      if (error) {
-        toast.error(error.message);
-        throw new Error(error.message);
-      }
-    };
-
-    const parentGuardianToFollowDocs =
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
-
-    const isParentGuardianToFollow = (docKey: string) => parentGuardianToFollowDocs.includes(docKey);
-
-    const processParentGuardian = async (
-      role: "mother" | "father" | "guardian",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      documents: any,
-    ) => {
-      if (!documents || Object.keys(documents).length <= 1) return;
-
-      const passKey = `${role}Pass`;
-      const passportKey = `${role}Passport`;
-
-      const passType = documents[`${role}PassType`];
-      const passExpiry = documents[`${role}PassExpiry`];
-      const passportNumber = documents[`${role}PassportNumber`];
-      const passportExpiry = documents[`${role}PassportExpiry`];
-
-      const { error: applicationError } = await supabase
-        .from(`${academicYear}_enrolment_applications`)
-        .update({
-          [`${role}Pass`]: getFileValue(passType, passKey),
-          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : passExpiry,
-          [`${role}Passport`]: getFileValue(passportNumber, passportKey),
-          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : passportExpiry,
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data?.enroleeNumber);
-
-      handleError(applicationError);
-
-      const { error: documentError } = await supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          [`${role}Passport`]: getFileValue(documents[`${role}Passport`], passportKey),
-          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
-          [`${role}PassportStatus`]: getStatus(documents[`${role}Passport`], passportKey, "Valid"),
-
-          [`${role}Pass`]: getFileValue(documents[`${role}Pass`], passKey),
-          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : documents[`${role}PassExpiry`],
-          [`${role}PassStatus`]: getStatus(documents[`${role}Pass`], passKey, "Valid"),
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber);
-
-      handleError(documentError);
-    };
-
-    const motherDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "mother",
-    );
-
-    await processParentGuardian("mother", motherDocs);
-
-    const fatherDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "father",
-    );
-
-    await processParentGuardian("father", fatherDocs);
-
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
-
-    const guardianDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "guardian",
-    );
-
-    await processParentGuardian("guardian", guardianDocs);
+    for (const role of ["mother", "father", "guardian"] as const) {
+      await processParentGuardian({
+        role,
+        documents: filterKeysBySubstring(built.parentGuardianUploadRequirements, role),
+        toFollowDocs: built.parentGuardianToFollowDocs,
+        academicYear,
+        studentNumber: studentNumber?.studentNumber,
+        enroleeNumber: data.enroleeNumber,
+      });
+    }
 
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
 
     const { error: enrollmentApplicationStatusError } = await supabase.from(`${academicYear}_enrolment_status`).insert({
-      levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
+      levelApplied: built.levelApplied,
       enroleeNumber: data.enroleeNumber,
       enrolmentDate: today,
-      enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-        middleName ? `, ${middleName.toUpperCase()}` : ""
-      }`,
+      enroleeName: built.names.enroleeFullName,
       enroleeType: "New",
       applicationStatus: "Submitted",
     });
@@ -1451,158 +1023,35 @@ export async function submitExistingEnrollment(
 
     if (!existingSession?.user?.email) throw new Error("Not authenticated");
 
-    const { data: studentNumber } = await supabase
+    const { data: existingApplication, error: existingApplicationError } = await supabase
       .from(`${currentAY}_enrolment_applications`)
       .select("studentNumber")
       .eq("enroleeNumber", enroleeNumber)
       .or(`fatherEmail.eq.${existingSession.user.email},motherEmail.eq.${existingSession.user.email}`)
       .single();
 
-    const stpApplicationType = applicationTypes.includes(enrollmentDetails.stpApplicationType || "")
-      ? enrollmentDetails.stpApplicationType
-      : null;
-
-    const {
-      birthCert,
-      idPicture,
-      medical,
-      pass,
-      passExpiry,
-      passType,
-      passport,
-      passportExpiry,
-      passportNumber,
-      educCert,
-    } = {
-      ...enrollmentDetails.uploadRequirements.studentUploadRequirements,
-    };
-
-    delete enrollmentDetails.uploadRequirements.studentUploadRequirements.isValid;
-    delete enrollmentDetails.studentInfo.studentDetails.isValid;
-    delete enrollmentDetails.studentInfo.addressContact.isValid;
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.isValid;
-    delete enrollmentDetails.familyInfo?.fatherInfo?.isValid;
-    delete enrollmentDetails.familyInfo?.fatherInfo?.noFatherInfo;
-    delete enrollmentDetails.familyInfo?.guardianInfo?.noGuardianInfo;
-    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.none;
-    delete enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist?.other;
-
-    let flattenedSiblings: Record<string, unknown> = {};
-
-    if (enrollmentDetails.familyInfo.siblingsInfo?.siblings?.length) {
-      flattenedSiblings = flattenSiblings(enrollmentDetails.familyInfo.siblingsInfo.siblings);
+    // Previously this error was discarded, so a missing/duplicate row silently proceeded
+    // with studentNumber === undefined and the record was written under a bogus filter.
+    if (existingApplicationError || !existingApplication?.studentNumber) {
+      throw new Error(
+        existingApplicationError?.message ?? "Could not find an existing enrolment record to re-enrol from.",
+      );
     }
 
-    const familyInfo = {
-      motherFullName: "",
-      fatherFullName: "",
-      guardianFullName: "",
-      ...enrollmentDetails.familyInfo.motherInfo,
-      ...enrollmentDetails.familyInfo?.fatherInfo,
-      ...enrollmentDetails.familyInfo?.guardianInfo,
-      ...flattenedSiblings,
-    };
+    const studentNumberValue = existingApplication.studentNumber;
 
-    if (familyInfo.motherMiddleName == null) {
-      delete familyInfo.motherMiddleName;
-    }
-
-    if (familyInfo.fatherMiddleName == null) {
-      delete familyInfo.fatherMiddleName;
-    }
-
-    if (familyInfo.guardianMiddleName == null) {
-      delete familyInfo.guardianMiddleName;
-    }
-
-    delete familyInfo.isValid;
-
-    const flattenedDiscounts: Record<string, unknown> = {};
-
-    if (enrollmentDetails.enrollmentInfo.discount && enrollmentDetails.enrollmentInfo.discount.length > 0) {
-      enrollmentDetails.enrollmentInfo.discount.forEach((discount, index) => {
-        const i = index + 1;
-        if (!discount?.includes("Referred by someone")) {
-          flattenedDiscounts[`discount${i}`] = discount;
-        }
-      });
-    }
-
-    delete enrollmentDetails.enrollmentInfo.discount;
-
-    const {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      additionalLearningNeedsOthers,
-      ...restEnrollmentInfo
-    } = enrollmentDetails.enrollmentInfo;
-
-    const enrollmentInfo = {
-      ...restEnrollmentInfo,
-      ...flattenedDiscounts,
-      ...(Array.isArray(enrollmentDetails.enrollmentInfo.additionalLearningNeeds)
-        ? {
-            additionalLearningNeeds: enrollmentDetails.enrollmentInfo.additionalLearningNeeds.join(", "),
-            otherLearningNeeds: enrollmentDetails.enrollmentInfo.additionalLearningNeeds.includes(
-              "Others (please specify)",
-            )
-              ? enrollmentDetails.enrollmentInfo.additionalLearningNeedsOthers
-              : null,
-          }
-        : {}),
-    };
-
-    delete enrollmentInfo.isValid;
-
-    if (
-      familyInfo.fatherLastName &&
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasFatherInfo
-    ) {
-      familyInfo.fatherFullName = `${familyInfo.fatherLastName!.toUpperCase()}, ${familyInfo.fatherFirstName!.toUpperCase()}${
-        familyInfo?.fatherMiddleName ? `, ${familyInfo.fatherMiddleName.toUpperCase()}` : ""
-      }`;
-    }
-
-    if (enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo) {
-      familyInfo.guardianFullName = `${familyInfo.guardianLastName?.toUpperCase()}, ${familyInfo.guardianFirstName?.toUpperCase()}${
-        familyInfo?.guardianMiddleName ? `, ${familyInfo.guardianMiddleName.toUpperCase()}` : ""
-      }`;
-    }
-
-    familyInfo.motherFullName = `${familyInfo.motherLastName.toUpperCase()}, ${familyInfo.motherFirstName.toUpperCase()}${
-      familyInfo?.motherMiddleName ? `, ${familyInfo.motherMiddleName.toUpperCase()}` : ""
-    }`;
-
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements?.hasFatherInfo;
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements?.hasGuardianInfo;
-
-    const firstName = enrollmentDetails.studentInfo.studentDetails.firstName.toUpperCase();
-    const lastName = enrollmentDetails.studentInfo.studentDetails.lastName.toUpperCase();
-    const middleName = enrollmentDetails.studentInfo.studentDetails?.middleName?.toUpperCase() ?? "";
+    const built = buildEnrolmentApplicationPayload(enrollmentDetails, {
+      category: "Current",
+      includeMedicalInfo: true,
+      includeLearningNeeds: true,
+      includeStpFields: true,
+      preCourseDetails,
+      existingStudentNumber: studentNumberValue,
+    });
 
     const { data: enrollmentApplication, error: enrollmentApplicationError } = await supabase
       .from(`${academicYear}_enrolment_applications`)
-      .insert({
-        studentNumber: studentNumber?.studentNumber,
-        ...preCourseDetails,
-        stpApplicationType: stpApplicationType,
-        stpApplicationStatus: stpApplicationType ? "Pending" : null,
-        ...enrollmentDetails.studentInfo.studentDetails,
-        ...removeEmptyKeys(enrollmentDetails.studentInfo.addressContact),
-        ...enrollmentDetails.studentInfo?.medicalInformation?.medicalChecklist,
-        paracetamolConsent: enrollmentDetails.studentInfo?.medicalInformation?.paracetamolConsent,
-        enroleeFullName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-          middleName ? `, ${middleName.toUpperCase()}` : ""
-        }`,
-        enroleePhoto: enrollmentDetails.uploadRequirements.studentUploadRequirements.idPicture,
-        category: "Current",
-        pass: passType,
-        passExpiry,
-        passportNumber,
-        passportExpiry,
-        ...removeEmptyKeys(familyInfo),
-        ...enrollmentInfo,
-        applicationStatus: "Registered",
-      })
+      .insert(built.applicationInsertPayload)
       .select("id")
       .single();
 
@@ -1619,7 +1068,7 @@ export async function submitExistingEnrollment(
       .update({
         enroleeNumber: generatedEnroleeNumber,
       })
-      .eq("studentNumber", studentNumber?.studentNumber)
+      .eq("studentNumber", studentNumberValue)
       .select("enroleeNumber")
       .single();
 
@@ -1628,7 +1077,7 @@ export async function submitExistingEnrollment(
     }
 
     const { error: enrolmentDocumentsError } = await supabase.from(`${academicYear}_enrolment_documents`).insert({
-      studentNumber: studentNumber?.studentNumber,
+      studentNumber: studentNumberValue,
       enroleeNumber: data.enroleeNumber,
     });
 
@@ -1636,146 +1085,35 @@ export async function submitExistingEnrollment(
       throw new Error(enrolmentDocumentsError.message);
     }
 
-    const studentToFollowDocs = enrollmentDetails.uploadRequirements.studentUploadRequirements.toFollowDocs ?? [];
+    const { error: studentDocError } = await supabase
+      .from(`${academicYear}_enrolment_documents`)
+      .update(buildStudentDocumentUpdatePayload(built.studentDocFields, built.studentToFollowDocs))
+      .eq("studentNumber", studentNumberValue)
+      .eq("enroleeNumber", data.enroleeNumber);
 
-    const isToFollow = (docKey: string) => studentToFollowDocs.includes(docKey);
-
-    const getFileValue = (file: unknown, docKey: string) => (isToFollow(docKey) ? null : file || null);
-
-    const getStatus = (file: unknown, docKey: string, validLabel: "Uploaded" | "Valid" = "Uploaded") => {
-      if (isToFollow(docKey)) return "To follow";
-      if (!file) return null;
-      return validLabel;
-    };
-
-    const studentDocumentUploadResults = await Promise.all([
-      supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          medical: getFileValue(medical, "medical"),
-          medicalStatus: getStatus(medical, "medical"),
-
-          passport: getFileValue(passport, "passport"),
-          passportExpiry: isToFollow("passport") ? null : passportExpiry,
-          passportStatus: getStatus(passport, "passport", "Valid"),
-
-          pass: getFileValue(pass, "pass"),
-          passExpiry: isToFollow("pass") ? null : passExpiry,
-          passStatus: getStatus(pass, "pass", "Valid"),
-
-          birthCert: getFileValue(birthCert, "birthCert"),
-          birthCertStatus: getStatus(birthCert, "birthCert"),
-
-          educCert: getFileValue(educCert, "educCert"),
-          educCertStatus: getStatus(educCert, "educCert"),
-
-          idPicture: getFileValue(idPicture, "idPicture"),
-          idPictureStatus: getStatus(idPicture, "idPicture"),
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber),
-    ]);
-
-    const hasStudentUploadError = studentDocumentUploadResults.map((result) => {
-      if (result.error) {
-        toast.error(result.error.message);
-        return { message: result.error.message };
-      }
-    })[0];
-
-    if (hasStudentUploadError) {
-      throw new Error(hasStudentUploadError.message);
+    if (studentDocError) {
+      toast.error(studentDocError.message);
+      throw new Error(studentDocError.message);
     }
 
-    const handleError = (error: PostgrestError | null) => {
-      if (error) {
-        toast.error(error.message);
-        throw new Error(error.message);
-      }
-    };
-
-    const parentGuardianToFollowDocs =
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.toFollowDocs ?? [];
-
-    const isParentGuardianToFollow = (docKey: string) => parentGuardianToFollowDocs.includes(docKey);
-
-    const processParentGuardian = async (
-      role: "mother" | "father" | "guardian",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      documents: any,
-    ) => {
-      if (!documents || Object.keys(documents).length <= 1) return;
-
-      const passKey = `${role}Pass`;
-      const passportKey = `${role}Passport`;
-
-      const passType = documents[`${role}PassType`];
-      const passExpiry = documents[`${role}PassExpiry`];
-      const passportNumber = documents[`${role}PassportNumber`];
-      const passportExpiry = documents[`${role}PassportExpiry`];
-
-      const { error: applicationError } = await supabase
-        .from(`${academicYear}_enrolment_applications`)
-        .update({
-          [`${role}Pass`]: getFileValue(passType, passKey),
-          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : passExpiry,
-          [`${role}Passport`]: getFileValue(passportNumber, passportKey),
-          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : passportExpiry,
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data?.enroleeNumber);
-
-      handleError(applicationError);
-
-      const { error: documentError } = await supabase
-        .from(`${academicYear}_enrolment_documents`)
-        .update({
-          [`${role}Passport`]: getFileValue(documents[`${role}Passport`], passportKey),
-          [`${role}PassportExpiry`]: isParentGuardianToFollow(passportKey) ? null : documents[`${role}PassportExpiry`],
-          [`${role}PassportStatus`]: getStatus(documents[`${role}Passport`], passportKey, "Valid"),
-
-          [`${role}Pass`]: getFileValue(documents[`${role}Pass`], passKey),
-          [`${role}PassExpiry`]: isParentGuardianToFollow(passKey) ? null : documents[`${role}PassExpiry`],
-          [`${role}PassStatus`]: getStatus(documents[`${role}Pass`], passKey, "Valid"),
-        })
-        .eq("studentNumber", studentNumber?.studentNumber)
-        .eq("enroleeNumber", data.enroleeNumber);
-
-      handleError(documentError);
-    };
-
-    const motherDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "mother",
-    );
-
-    await processParentGuardian("mother", motherDocs);
-
-    const fatherDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "father",
-    );
-
-    await processParentGuardian("father", fatherDocs);
-
-    delete enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements.hasGuardianInfo;
-
-    const guardianDocs = filterKeysBySubstring(
-      enrollmentDetails.uploadRequirements.parentGuardianUploadRequirements,
-      "guardian",
-    );
-
-    await processParentGuardian("guardian", guardianDocs);
+    for (const role of ["mother", "father", "guardian"] as const) {
+      await processParentGuardian({
+        role,
+        documents: filterKeysBySubstring(built.parentGuardianUploadRequirements, role),
+        toFollowDocs: built.parentGuardianToFollowDocs,
+        academicYear,
+        studentNumber: studentNumberValue,
+        enroleeNumber: data.enroleeNumber,
+      });
+    }
 
     const today = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Singapore" });
 
     const { error: enrollmentApplicationStatusError } = await supabase.from(`${academicYear}_enrolment_status`).insert({
-      levelApplied: enrollmentDetails.enrollmentInfo.levelApplied,
+      levelApplied: built.levelApplied,
       enroleeNumber: data.enroleeNumber,
       enrolmentDate: today,
-      enroleeName: `${lastName.toUpperCase()}, ${firstName.toUpperCase()}${
-        middleName ? `, ${middleName.toUpperCase()}` : ""
-      }`,
+      enroleeName: built.names.enroleeFullName,
       enroleeType: "Current",
       applicationStatus: "Submitted",
     });
@@ -1804,15 +1142,7 @@ export async function getFamilyDocuments(enroleeNumber: string) {
     const academicYear = academicYearFromEnroleeNumber(enroleeNumber);
 
     // Verify ownership via the applications table before querying documents
-    const { data: ownership, error: ownershipError } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
-      .select("enroleeNumber")
-      .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
-      .maybeSingle();
-
-    if (ownershipError) throw new Error(ownershipError.message);
-    if (!ownership) return {};
+    await assertApplicationOwnership(academicYear, enroleeNumber, session.user.email);
 
     const { data: documents, error } = await supabase
       .from(`${academicYear}_enrolment_documents`)
@@ -1946,14 +1276,7 @@ export async function studentReuploadDocuments({
     const documentsTable = `${academicYear}_enrolment_documents`;
 
     // Verify ownership before allowing updates
-    const { data: ownership } = await supabase
-      .from(applicationsTable)
-      .select("enroleeNumber")
-      .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
-      .maybeSingle();
-
-    if (!ownership) throw new Error("Unauthorized access");
+    await assertApplicationOwnership(academicYear, enroleeNumber, session.user.email);
 
     const appUpdates: Record<string, unknown> = {};
     const docUpdates: Record<string, unknown> = {};
@@ -2015,6 +1338,10 @@ export async function studentReuploadDocuments({
   } catch (error) {
     const err = error as Error;
     toast.error(err.message);
+    // Re-thrown deliberately (mirrors `deleteFile`): otherwise `onSuccess` fires unconditionally on
+    // the calling `useMutation`, closing the reupload dialog and emailing the other parent that the
+    // document was updated even when the write failed or the user wasn't authorized.
+    throw err;
   }
 }
 
@@ -2036,14 +1363,7 @@ export async function parentGuardianReuploadDocuments({
     const documentsTable = `${academicYear}_enrolment_documents`;
 
     // Verify ownership before allowing updates
-    const { data: ownership } = await supabase
-      .from(applicationsTable)
-      .select("enroleeNumber")
-      .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
-      .maybeSingle();
-
-    if (!ownership) throw new Error("Unauthorized access");
+    await assertApplicationOwnership(academicYear, enroleeNumber, session.user.email);
 
     const appUpdates: Record<string, unknown> = {};
     const docUpdates: Record<string, unknown> = {};
@@ -2089,6 +1409,10 @@ export async function parentGuardianReuploadDocuments({
   } catch (error) {
     const err = error as Error;
     toast.error(err.message);
+    // Re-thrown deliberately (mirrors `deleteFile`): otherwise `onSuccess` fires unconditionally on
+    // the calling `useMutation`, closing the reupload dialog and emailing the other parent that the
+    // document was updated even when the write failed or the user wasn't authorized.
+    throw err;
   }
 }
 
@@ -2118,6 +1442,15 @@ export async function mergeAndUploadPDF(files: File[]) {
     toast.error(err.message);
   }
 }
+
+// Matches the per-file client-side limit each upload dialog enforces (see `dropZoneConfig` in
+// `use-document-upload-dialog.ts`). Merging 2+ files that each pass that check can still produce
+// a combined PDF larger than any single file was allowed to be — this catches that case before
+// it's uploaded, rather than silently accepting an oversized merged document.
+// Exported so `use-supabase-upload.ts` (the post-submission reupload portal's separate upload
+// pipeline) can enforce the exact same merged-PDF ceiling as this one, instead of drifting out of
+// sync with a second hardcoded value.
+export const MAX_UPLOAD_FILE_SIZE = 4 * 1024 * 1024;
 
 export async function uploadFileToBucket(isImage: boolean, files: File[], academicYear: string) {
   try {
@@ -2152,6 +1485,12 @@ export async function uploadFileToBucket(isImage: boolean, files: File[], academ
 
       if (!mergedFile) {
         throw new Error("No file to upload!");
+      }
+
+      if (mergedFile.size > MAX_UPLOAD_FILE_SIZE) {
+        throw new Error(
+          `The combined PDF is too large (max ${MAX_UPLOAD_FILE_SIZE / 1024 / 1024}MB). Please upload fewer or smaller pages.`,
+        );
       }
 
       const { data: fileUpload, error: uploadError } = await supabase.storage
@@ -2196,6 +1535,10 @@ export async function deleteFile(file: string, academicYear: string) {
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
+    // Re-thrown deliberately: callers (e.g. the file-uploader dialogs' `changeDocument`) await
+    // this before clearing the document from form state, specifically so a failed storage
+    // delete doesn't silently clear the UI while the file is still orphaned in the bucket.
+    throw err;
   }
 }
 
@@ -2215,14 +1558,7 @@ export async function updateEnrollmentApplicationDetails({
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const { data: ownership } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
-      .select("enroleeNumber")
-      .eq("enroleeNumber", enroleeNumber)
-      .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`)
-      .maybeSingle();
-
-    if (!ownership) throw new Error("Unauthorized access");
+    await assertApplicationOwnership(academicYear, enroleeNumber, session.user.email);
 
     const { firstName, middleName, lastName, siblings } = enrollmentDetails;
 
@@ -2284,6 +1620,11 @@ export async function updateEnrollmentApplicationDetails({
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
+    // Re-thrown deliberately (mirrors `deleteFile`): the caller's `useMutation` must see this as a
+    // failure, otherwise `onSuccess` fires unconditionally — closing the edit form, overwriting
+    // `initialValuesRef` as if the save succeeded, and emailing the other parent that fields were
+    // updated even though the write failed or the user wasn't authorized.
+    throw err;
   }
 }
 

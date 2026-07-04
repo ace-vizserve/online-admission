@@ -249,7 +249,7 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    defaultValue={formState.studentInfo?.studentDetails?.gender}
+                    value={field.value}
                     onValueChange={field.onChange}
                     className="flex gap-2">
                     {[
@@ -286,8 +286,10 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
                         if (value === "Other") {
                           setIsReligionOther(true);
                         } else {
+                          // form.reset() clears religionOther locally; the debounced sync
+                          // effect below propagates that cleared value to the store shortly
+                          // after — no need to (and must not) write to the store directly here.
                           form.reset({ ...form.getValues(), religionOther: undefined });
-                          if (formState.studentInfo) formState.studentInfo.studentDetails.religionOther = undefined;
                           setIsReligionOther(false);
                         }
 

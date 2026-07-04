@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
-import StudentFileUploaderDialog from "./student-file-uploader-dialog";
+import { DocumentUploader, STUDENT_DOCUMENTS } from "@/components/private/shared/upload-requirements";
 
 const MAX_SKIPS = 3;
 
@@ -41,6 +41,15 @@ function StudentUpload() {
   const [pass, setPass] = useState<File[] | null>(null);
   const hydratedRef = useRef<boolean>(false);
 
+  const fileState: Record<string, [File[] | null, (files: File[] | null) => void]> = {
+    idPicture: [idPicture, setIdPicture],
+    birthCert: [birthCertificate, setBirthCertificate],
+    educCert: [transcriptOfRecords, setTranscriptOfRecords],
+    medical: [medicalExam, setMedicalExam],
+    passport: [passport, setPassport],
+    pass: [pass, setPass],
+  };
+
   const form = useForm<StudentUploadRequirementsSchema>({
     resolver: zodResolver(studentUploadRequirementsSchema),
     mode: "onChange",
@@ -54,7 +63,7 @@ function StudentUpload() {
     if (!isSuccess || !data) return;
 
     const studentReq = formState.uploadRequirements?.studentUploadRequirements;
-    const isValid = formState.uploadRequirements?.studentUploadRequirements.isValid;
+    const isValid = formState.uploadRequirements?.studentUploadRequirements?.isValid;
 
     if (studentReq != null && Object.keys(studentReq).length > 0) return;
 
@@ -229,72 +238,45 @@ function StudentUpload() {
 
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="ID Picture"
-            form={form}
-            name="idPicture"
-            value={idPicture}
-            onValueChange={setIdPicture}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Birth Certificate"
-            form={form}
-            name="birthCert"
-            value={birthCertificate}
-            onValueChange={setBirthCertificate}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Transcript of Records"
-            form={form}
-            name="educCert"
-            value={transcriptOfRecords}
-            onValueChange={setTranscriptOfRecords}
-          />
+          {STUDENT_DOCUMENTS.slice(0, 3).map((cfg) => {
+            const [value, onValueChange] = fileState[cfg.name];
+            return (
+              <DocumentUploader
+                key={cfg.name}
+                cfg={cfg}
+                form={form}
+                value={value}
+                onValueChange={onValueChange}
+                formState={formState}
+                setFormState={setFormState}
+                resetStrategy="undefined"
+              />
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Medical Examination"
-            form={form}
-            name="medical"
-            value={medicalExam}
-            onValueChange={setMedicalExam}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Passport Copy"
-            form={form}
-            name="passport"
-            value={passport}
-            onValueChange={setPassport}
-          />
-
-          <StudentFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Singapore Pass"
-            form={form}
-            name="pass"
-            value={pass}
-            onValueChange={setPass}
-          />
+          {STUDENT_DOCUMENTS.slice(3).map((cfg) => {
+            const [value, onValueChange] = fileState[cfg.name];
+            return (
+              <DocumentUploader
+                key={cfg.name}
+                cfg={cfg}
+                form={form}
+                value={value}
+                onValueChange={onValueChange}
+                formState={formState}
+                setFormState={setFormState}
+                resetStrategy="undefined"
+              />
+            );
+          })}
         </div>
 
         <Button
           variant={"secondary"}
           size="lg"
+          disabled={form.formState.isSubmitting}
           className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full max-w-4xl mx-auto"
           type="submit">
           Save documents
@@ -303,6 +285,7 @@ function StudentUpload() {
 
         <Button
           variant={"secondary"}
+          disabled={form.formState.isSubmitting}
           className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
           type="submit">
           Save documents
