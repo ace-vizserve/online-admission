@@ -32,15 +32,26 @@ function SiblingInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        siblingsInfo: {
-          ...form.watch(),
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          siblingsInfo: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   const { append, fields, remove } = useFieldArray({

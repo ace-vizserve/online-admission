@@ -27,6 +27,7 @@ export default function MedicalInformationSection() {
     resolver: zodResolver(medicalChecklistSchema),
     defaultValues: {
       ...formState.studentInfo?.medicalInformation,
+      medicalChecklist: formState.studentInfo?.medicalInformation?.medicalChecklist,
       paracetamolConsent: formState.studentInfo?.medicalInformation?.paracetamolConsent ?? false,
     },
   });
@@ -86,15 +87,19 @@ export default function MedicalInformationSection() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      studentInfo: {
-        ...formState.studentInfo!,
-        medicalInformation: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        studentInfo: {
+          ...formState.studentInfo!,
+          medicalInformation: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },

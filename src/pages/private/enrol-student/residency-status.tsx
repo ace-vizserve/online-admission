@@ -1,6 +1,6 @@
-import PageMetaData from "@/components/page-metadata";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
-import { buttonVariants } from "@/components/ui/button";
+import PageMetaData from "@/components/page-metadata";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { applicationTypes, studentPassTypes } from "@/data";
 import { cn } from "@/lib/utils";
@@ -120,6 +120,7 @@ export default function StudentResidencyPage() {
   const setStpApplicationType = usePassTypeStore((state) => state.setStpApplicationType);
   const setPassType = usePassTypeStore((state) => state.setPassType);
   const clearSchoolFeeState = useSelectSchoolFee((state) => state.clearState);
+  const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const clearState = useSelectAcademicYear((state) => state.clearState);
 
   const [isLoading, setTransition] = useTransition();
@@ -173,6 +174,11 @@ export default function StudentResidencyPage() {
       return;
     }
 
+    if (enroleeType === "Current") {
+      navigate(`/enrol-student/${state.enroleeNumber}/student-info?academicYear=${academicYear}`);
+      return;
+    }
+
     navigate("/enrol-student/stp-guidelines", {
       state: {
         enroleeNumber,
@@ -192,8 +198,11 @@ export default function StudentResidencyPage() {
 
   return (
     <>
-      <PageMetaData title="Residency Status | HFSE International School" description="Select your child's residency and pass type to proceed with enrollment." />
-      <div className="w-full sticky top-0 z-20 bg-background/70 backdrop-blur-lg h-20 md:h-24 flex items-center border-b">
+      <PageMetaData
+        title="Residency Status | HFSE International School"
+        description="Select your child's residency and pass type to proceed with enrollment."
+      />
+      <div className="w-full sticky top-0 z-20 bg-background/80 h-20 md:h-24 flex items-center border-b">
         <MaxWidthWrapper className="w-full max-w-screen-2xl px-4 md:px-6">
           <Link
             onClick={goBack}
@@ -209,7 +218,7 @@ export default function StudentResidencyPage() {
 
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 flex flex-col min-h-screen bg-muted/40">
         <header className="px-6 mt-12 text-center space-y-6">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">Student Residency Status</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-balance">Student Residency Status</h1>
           <p className="text-lg md:text-xl text-muted-foreground text-pretty">
             Select the appropriate residency or pass status so we can apply the correct ICA process.
           </p>
@@ -243,7 +252,7 @@ export default function StudentResidencyPage() {
                           {option.title}
                         </Label>
                         {option.badge && (
-                          <span className="w-fit text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary group-data-[checked]:bg-primary group-data-[checked]:text-primary-foreground transition-colors">
+                          <span className="w-fit text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary group-data-[checked]:bg-primary group-data-[checked]:text-primary-foreground transition-colors">
                             {option.badge}
                           </span>
                         )}
@@ -255,14 +264,12 @@ export default function StudentResidencyPage() {
                     </Description>
 
                     <div className="mt-auto pt-5 border-t border-border group-data-[checked]:border-primary/30">
-                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground group-data-[checked]:text-primary mb-3">
+                      <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-data-[checked]:text-primary mb-3">
                         {option.detailsTitle}
                       </p>
                       <ul className="space-y-2">
                         {option.details.map((detail, idx) => (
-                          <li
-                            key={idx}
-                            className="font-medium flex items-start gap-2 text-sm text-muted-foreground">
+                          <li key={idx} className="font-medium flex items-start gap-2 text-sm text-muted-foreground">
                             <div className="h-1.5 w-1.5 mt-1.5 rounded-full bg-muted-foreground/40 group-data-[checked]:bg-primary shrink-0" />
                             {detail}
                           </li>
@@ -276,11 +283,19 @@ export default function StudentResidencyPage() {
                         onClick={(e) => e.stopPropagation()}>
                         {enroleeType === "New" ? (
                           <div className="space-y-2">
-                            <p className={cn("text-xs font-black uppercase tracking-[0.1em]", needsPassChoice && !passType ? "text-destructive" : "text-primary")}>
+                            <p
+                              className={cn(
+                                "text-xs font-bold uppercase tracking-[0.1em]",
+                                needsPassChoice && !passType ? "text-destructive" : "text-primary",
+                              )}>
                               {option.passLabel}
                             </p>
                             <Select value={passType} onValueChange={setPassType}>
-                              <SelectTrigger className={cn("h-11 w-full bg-background", needsPassChoice && !passType && "!border-destructive")}>
+                              <SelectTrigger
+                                className={cn(
+                                  "h-11 w-full bg-background",
+                                  needsPassChoice && !passType && "!border-destructive",
+                                )}>
                                 <SelectValue placeholder="Select a pass type" />
                               </SelectTrigger>
                               <SelectContent>
@@ -305,23 +320,20 @@ export default function StudentResidencyPage() {
               );
             })}
           </RadioGroup>
-
         </main>
 
-        <footer className="px-6 sticky bottom-0 bg-background border-t py-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <footer className="px-6 sticky bottom-0 bg-background border-t py-6 shadow-md">
           <div className="max-w-5xl mx-auto flex flex-col gap-4">
-            <button
+            <Button
               type="button"
-              onClick={disableContinue ? undefined : redirect}
-              className={buttonVariants({
-                className: cn(
-                  "h-14 !rounded-xl shadow-xl transition-all !gap-3 !font-black !uppercase w-full flex items-center justify-center",
-                  disableContinue && "pointer-events-none opacity-50 grayscale",
-                ),
-              })}>
+              onClick={redirect}
+              disabled={disableContinue}
+              variant="cta"
+              size="lg"
+              className="h-14 w-full gap-3 font-semibold uppercase">
               Continue to Application
               <ArrowRight size={20} />
-            </button>
+            </Button>
           </div>
         </footer>
       </div>

@@ -178,21 +178,67 @@ export const religions = [
 ] as const;
 
 export const classLevels = [
-  { label: "Youngstarters | Little Stars", value: "Youngstarters | Little Stars" },
-  { label: "Youngstarters | Junior Stars", value: "Youngstarters | Junior Stars" },
-  { label: "Youngstarters | Senior Stars", value: "Youngstarters | Senior Stars" },
+  {
+    label: "YoungStarter Little Star",
+    value: "YoungStarter Little Star",
+  },
+  {
+    label: "YoungStarter Junior Star",
+    value: "YoungStarter Junior Star",
+  },
+
   { label: "Primary One", value: "Primary One" },
   { label: "Primary Two", value: "Primary Two" },
   { label: "Primary Three", value: "Primary Three" },
   { label: "Primary Four", value: "Primary Four" },
   { label: "Primary Five", value: "Primary Five" },
   { label: "Primary Six", value: "Primary Six" },
+
   { label: "Secondary One", value: "Secondary One" },
-  { label: "Cambridge Secondary One (Year 8)", value: "Cambridge Secondary One (Year 8)" },
   { label: "Secondary Two", value: "Secondary Two" },
-  { label: "Cambridge Secondary Two (Year 9)", value: "Cambridge Secondary Two (Year 9)" },
   { label: "Secondary Three", value: "Secondary Three" },
   { label: "Secondary Four", value: "Secondary Four" },
+
+  {
+    label: "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+    value: "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    value: "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 2",
+    value: "HFSE Global Education Programme - Primary 2",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 3",
+    value: "HFSE Global Education Programme - Primary 3",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 4",
+    value: "HFSE Global Education Programme - Primary 4",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 5",
+    value: "HFSE Global Education Programme - Primary 5",
+  },
+  {
+    label: "HFSE Global Education Programme - Primary 6",
+    value: "HFSE Global Education Programme - Primary 6",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 8",
+    value: "HFSE Global Education Programme – Year 8",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 9",
+    value: "HFSE Global Education Programme – Year 9",
+  },
+  {
+    label: "HFSE Global Education Programme – Year 10",
+    value: "HFSE Global Education Programme – Year 10",
+  },
 ] as const;
 
 export const vizSchoolClassLevels = [
@@ -217,10 +263,47 @@ export const classTypes = [
   { label: "Standard Class (ENGLISH + TAGALOG)", value: "Standard Class (ENGLISH + TAGALOG)" },
 ] as const;
 
+export const PRIMARY_CLASS_LEVELS = [
+  "Primary One",
+  "Primary Two",
+  "Primary Three",
+  "Primary Four",
+  "Primary Five",
+  "Primary Six",
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE Global Education Programme - Primary 2",
+  "HFSE Global Education Programme - Primary 3",
+  "HFSE Global Education Programme - Primary 4",
+  "HFSE Global Education Programme - Primary 5",
+  "HFSE Global Education Programme - Primary 6",
+];
+
+export const SECONDARY_SDF_CLASS_LEVELS = [
+  "Secondary One",
+  "Secondary Two",
+  "Secondary Three",
+  "Secondary Four",
+  "HFSE Global Education Programme – Year 8",
+  "HFSE Global Education Programme – Year 9",
+  "HFSE Global Education Programme – Year 10",
+];
+
 export const campusDevelopmentFee = [
   { label: "Option 1 – Full payment (S$1,350 upfront)", value: "Option 1" },
   { label: "Option 2 – Partial + Monthly (S$250 + S$100/mo)", value: "Option 2" },
   { label: "Option 3 – Monthly only (S$125/mo)", value: "Option 3" },
+] as const;
+
+export const campusDevelopmentFeeSecondary = [
+  { label: "Option 1 – Full payment (S$1,350 upfront)", value: "Option 1" },
+  { label: "Option 2 – Partial + Monthly (S$250 + S$100/mo)", value: "Option 2" },
+  { label: "Option 3 – Monthly only (S$125/mo)", value: "Option 3" },
+] as const;
+
+export const campusDevelopmentFeePrimary = [
+  { label: "Option 1: Full Payment (SGD 1050 UPFRONT)", value: "Option 1" },
+  { label: "Option 2: Partial (SGD 250 + SGD 75/mo)", value: "Option 2" },
+  { label: "Option 3: Monthly Only (SGD 100/mo)", value: "Option 3" },
 ] as const;
 
 export const medicalConditions = [
@@ -235,3 +318,14 @@ export const medicalConditions = [
   { id: "none", label: "None of the above" },
 ];
 
+export const preferredPaymentScheme = [
+  { label: "Annual (Full Payment)", value: "Annual (Full Payment)" },
+  { label: "Quarterly Payment", value: "Quarterly Payment" },
+  { label: "Monthly Payment", value: "Monthly Payment" },
+] as const;
+
+export const preferredPaymentMethod = [
+  { label: "Bank Transfer", value: "Bank Transfer" },
+  { label: "GIRO", value: "GIRO" },
+  { label: "Credit/Debit Card ( 3% platform fee)", value: "Credit/Debit Card Payment" },
+] as const;

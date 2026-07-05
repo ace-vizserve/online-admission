@@ -1,8 +1,6 @@
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
-import { classLevels } from "@/data";
 import { EnrolNewStudentFormState, FamilyInfo, Student } from "@/types";
 import { ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
-import { EnrolNewStudentDraftStore } from "@/zustand-store";
 import { AuthError } from "@supabase/supabase-js";
 import { clsx, type ClassValue } from "clsx";
 import { differenceInYears, getHours, parseISO } from "date-fns";
@@ -28,6 +26,30 @@ export function cn(...inputs: ClassValue[]) {
 
 export function wait(time: number) {
   return new Promise((res) => setTimeout(res, time));
+}
+
+const PASSWORD_CHARSETS = ["abcdefghijkmnopqrstuvwxyz", "ABCDEFGHJKLMNPQRSTUVWXYZ", "23456789", "!@#$%^&*"];
+
+export function generatePassword(length = 14) {
+  const allChars = PASSWORD_CHARSETS.join("");
+  const randomValues = crypto.getRandomValues(new Uint32Array(length));
+
+  // Guarantee at least one char from each set, then fill the rest randomly
+  const required = PASSWORD_CHARSETS.map((set, i) => set[randomValues[i] % set.length]);
+  const rest = Array.from(
+    { length: length - required.length },
+    (_, i) => allChars[randomValues[i + required.length] % allChars.length],
+  );
+
+  const combined = [...required, ...rest];
+  // Fisher-Yates shuffle with fresh randomness so required chars aren't always at the start
+  const shuffleValues = crypto.getRandomValues(new Uint32Array(combined.length));
+  for (let i = combined.length - 1; i > 0; i--) {
+    const j = shuffleValues[i] % (i + 1);
+    [combined[i], combined[j]] = [combined[j], combined[i]];
+  }
+
+  return combined.join("");
 }
 
 export function documentErrors(
@@ -91,9 +113,7 @@ export async function canEnrollStudent(enroleeNumber: string, academicYear: stri
   }
 }
 
-export async function checkEmailExists(
-  email: string,
-): Promise<{ exists: boolean; emailConfirmed: boolean }> {
+export async function checkEmailExists(email: string): Promise<{ exists: boolean; emailConfirmed: boolean }> {
   const { data, error } = await supabase.functions.invoke("check-email-exists", {
     body: { email },
   });
@@ -106,17 +126,50 @@ export async function checkEmailExists(
   };
 }
 
-export function getNextGradeLevel(currentValue: string) {
-  if (currentValue === "Secondary Four") return "Secondary Four";
+type GradeLevel = string;
 
-  if (currentValue === "Youngstarters") return "Primary One";
+const GRADE_PROGRESSIONS: Record<GradeLevel, GradeLevel[]> = {
+  "Youngstarters | Little Stars": ["YoungStarter Junior Star"],
+  "YoungStarter Little Star": ["YoungStarter Junior Star"],
 
-  const currentIndex = classLevels.findIndex((level) => level.value === currentValue);
-  if (currentIndex === -1 || currentIndex + 1 >= classLevels.length) {
-    return null;
-  }
+  "Youngstarters | Junior Stars": [
+    "Primary One",
+    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  ],
+  "YoungStarter Junior Star": ["Primary One", "HFSE Global Education Programme – Year 2 (equivalent to Primary One)"],
+  Youngstarters: ["Primary One"],
+  "Primary One": ["Primary Two", "HFSE Global Education Programme - Primary 2"],
+  "Primary Two": ["Primary Three", "HFSE Global Education Programme - Primary 3"],
+  "Primary Three": ["Primary Four", "HFSE Global Education Programme - Primary 4"],
+  "Primary Four": ["Primary Five", "HFSE Global Education Programme - Primary 5"],
+  "Primary Five": ["Primary Six", "HFSE Global Education Programme - Primary 6"],
+  "Primary Six": ["Secondary One", "HFSE Global Education Programme – Year 8"],
 
-  return classLevels[currentIndex + 1].value;
+  "Secondary One": ["Secondary Two", "HFSE Global Education Programme – Year 9"],
+  "Secondary Two": ["Secondary Three", "HFSE Global Education Programme – Year 10"],
+  "Secondary Three": ["Secondary Four"],
+  "Secondary Four": ["Secondary Four"],
+
+  "HFSE Global Education Programme – Year 1 (equivalent to K2)": [
+    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    "Primary One",
+  ],
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)": [
+    "HFSE Global Education Programme - Primary 2",
+    "Primary Two",
+  ],
+  "HFSE Global Education Programme - Primary 2": ["HFSE Global Education Programme - Primary 3", "Primary Three"],
+  "HFSE Global Education Programme - Primary 3": ["HFSE Global Education Programme - Primary 4", "Primary Four"],
+  "HFSE Global Education Programme - Primary 4": ["HFSE Global Education Programme - Primary 5", "Primary Five"],
+  "HFSE Global Education Programme - Primary 5": ["HFSE Global Education Programme - Primary 6", "Primary Six"],
+  "HFSE Global Education Programme - Primary 6": ["HFSE Global Education Programme – Year 8", "Secondary One"],
+  "HFSE Global Education Programme – Year 8": ["HFSE Global Education Programme – Year 9", "Secondary Two"],
+  "HFSE Global Education Programme – Year 9": ["HFSE Global Education Programme – Year 10", "Secondary Three"],
+  "HFSE Global Education Programme – Year 10": ["HFSE Global Education Programme – Year 10", "Secondary Four"],
+};
+
+export function getNextGradeLevels(currentValue: string): string[] {
+  return GRADE_PROGRESSIONS[currentValue] ?? [];
 }
 
 export function extractStudentInfo(studentInformation: Student[]) {
@@ -372,20 +425,22 @@ export async function getStudentsList(parentEmail: string) {
           data.map((info) => info.enroleeNumber),
         );
 
-        return data
-          .map((info) => ({
-            enroleeNumber: info.enroleeNumber,
-            studentName: info.enroleeFullName,
-            age: differenceInYears(new Date(), parseISO(info.birthDay)),
-            mothersName: info.motherFullName ?? "--",
-            fathersName: info.fatherFullName ?? "--",
-            studentNumber: info.studentNumber,
-            // Live SIS lifecycle status; fall back to "Submitted" if no status row exists yet.
-            enrollmentStatus: statusByEnrolee.get(info.enroleeNumber) ?? "Submitted",
-            isVizSchool: (info.studentNumber as string).startsWith("V"),
-          }))
-          // Drop withdrawn/cancelled before dedup so they don't shadow an active prior-AY row.
-          .filter((student) => !HIDDEN_PARENT_STATUSES.includes(student.enrollmentStatus));
+        return (
+          data
+            .map((info) => ({
+              enroleeNumber: info.enroleeNumber,
+              studentName: info.enroleeFullName,
+              age: differenceInYears(new Date(), parseISO(info.birthDay)),
+              mothersName: info.motherFullName ?? "--",
+              fathersName: info.fatherFullName ?? "--",
+              studentNumber: info.studentNumber,
+              // Live SIS lifecycle status; fall back to "Submitted" if no status row exists yet.
+              enrollmentStatus: statusByEnrolee.get(info.enroleeNumber) ?? "Submitted",
+              isVizSchool: (info.studentNumber as string).startsWith("V"),
+            }))
+            // Drop withdrawn/cancelled before dedup so they don't shadow an active prior-AY row.
+            .filter((student) => !HIDDEN_PARENT_STATUSES.includes(student.enrollmentStatus))
+        );
       }),
     );
 
@@ -429,9 +484,7 @@ export async function getPreviousAYEnrolledStudents(parentEmail: string, academi
 
     const filteredPreviousEnrolled = currentEnrolled
       // Hide withdrawn/cancelled enrollees from the re-enroll selection.
-      .filter(
-        (student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"),
-      )
+      .filter((student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"))
       .filter((student) => {
         const key = JSON.stringify({
           studentNumber: student.studentNumber,
@@ -475,9 +528,7 @@ export async function getCurrentAYEnrolledStudents(parentEmail: string) {
 
     const filteredCurrentEnrolled = currentEnrolled
       // Exclude withdrawn/cancelled from the dashboard "Enrolled Students" count.
-      .filter(
-        (student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"),
-      )
+      .filter((student) => !HIDDEN_PARENT_STATUSES.includes(statusByEnrolee.get(student.enroleeNumber) ?? "Submitted"))
       .filter((student) => {
         const key = JSON.stringify({
           studentNumber: student.studentNumber,
@@ -566,117 +617,4 @@ export async function getStudentEnrollments(studentNumber: string, parentEmail: 
   }
 }
 
-const NEW_STUDENT_DRAFT_PREFIX = "enrolNewStudent:draft:";
-
-export const DRAFT_EXPIRY_DAYS = 30;
 export const now = new Date();
-
-type DraftMeta = {
-  createdAt: string;
-  lastSavedAt: string;
-  expiresAt: string;
-};
-
-export function isExpired(expiresAt?: string | Date) {
-  // Missing or corrupt expiry → treat as expired (fail-safe: don't allow
-  // resuming a draft whose lifetime cannot be determined).
-  if (!expiresAt) return true;
-
-  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
-
-  if (Number.isNaN(expiry.getTime())) return true;
-
-  return expiry < new Date();
-}
-
-export function isExpiringSoon(expiresAt?: string | Date, days = 5) {
-  if (!expiresAt) return false;
-
-  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
-
-  if (Number.isNaN(expiry.getTime())) return false;
-
-  const now = new Date();
-  const soon = new Date();
-  soon.setDate(now.getDate() + days);
-
-  return expiry > now && expiry <= soon;
-}
-
-export function createNewStudentDraft() {
-  const now = new Date();
-
-  const draftKeys = Object.keys(localStorage).filter((k) => k.startsWith(NEW_STUDENT_DRAFT_PREFIX));
-
-  for (const key of draftKeys) {
-    const raw = localStorage.getItem(key);
-    if (!raw) continue;
-
-    const meta: DraftMeta = JSON.parse(raw);
-
-    if (new Date(meta.expiresAt) < now) {
-      localStorage.removeItem(key);
-    }
-  }
-
-  const draftId = crypto.randomUUID();
-
-  return draftId;
-}
-
-export function listNewStudentDrafts(type: "viz-school" | "hfse-is") {
-  return Object.keys(localStorage)
-    .filter((k) => k.startsWith(`enrolNewStudent:draft:`) && k.endsWith(`:${type}`))
-    .map((key) => {
-      const raw = localStorage.getItem(key);
-      if (!raw) return null;
-      try {
-        return JSON.parse(raw);
-      } catch {
-        // Corrupted localStorage entry — skip rather than crashing the whole list.
-        return null;
-      }
-    })
-    .filter(Boolean);
-}
-
-export function removeNewStudentDraft(draftId: string | undefined, type: "viz-school" | "hfse-is") {
-  if (!draftId) return;
-  localStorage.removeItem(`${NEW_STUDENT_DRAFT_PREFIX}${draftId}:${type}`);
-  window.dispatchEvent(new Event("draft-list-changed"));
-}
-
-export type DraftSort = "lastUpdated" | "expiringSoon" | "expired" | "oldest";
-
-export function sortDrafts(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  drafts: any[],
-  sortBy: DraftSort,
-) {
-  const now = new Date();
-
-  const draftsWithState = drafts as { state: EnrolNewStudentDraftStore }[];
-
-  switch (sortBy) {
-    case "lastUpdated":
-      return [...draftsWithState].sort(
-        (a, b) => new Date(b.state.lastSavedAt).getTime() - new Date(a.state.lastSavedAt).getTime(),
-      );
-
-    case "oldest":
-      return [...draftsWithState].sort(
-        (a, b) => new Date(a.state.createdAt).getTime() - new Date(b.state.createdAt).getTime(),
-      );
-
-    case "expiringSoon":
-      return [...draftsWithState].sort(
-        (a, b) => new Date(a.state.expiresAt ?? 0).getTime() - new Date(b.state.expiresAt ?? 0).getTime(),
-      );
-
-    case "expired":
-      return draftsWithState.filter((draft) => draft.state.expiresAt && new Date(draft.state.expiresAt) < now);
-
-    default:
-      return draftsWithState;
-  }
-}

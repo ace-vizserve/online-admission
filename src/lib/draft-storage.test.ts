@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { listNewStudentDrafts, removeNewStudentDraft } from "./utils";
+import { listNewStudentDrafts, removeNewStudentDraft, sortDrafts } from "./draft-storage";
 
 // Zustand's persist middleware serialises store state in this wrapper.
 // Keys: enrolNewStudent:draft:{draftId}:{type}
@@ -70,6 +70,21 @@ describe("listNewStudentDrafts", () => {
     seedDraft("draft-a", "hfse-is");
 
     expect(listNewStudentDrafts("hfse-is")).toHaveLength(1);
+  });
+
+  it("skips a key that disappears between the keys scan and the read (raw is null)", () => {
+    const key = seedDraft("vanishing", "hfse-is");
+    const originalGetItem = Storage.prototype.getItem;
+    const getItemSpy = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(function (this: Storage, k: string) {
+        if (k === key) return null;
+        return originalGetItem.call(this, k);
+      });
+
+    expect(listNewStudentDrafts("hfse-is")).toHaveLength(0);
+
+    getItemSpy.mockRestore();
   });
 
   it("includes drafts regardless of expiry (listNewStudentDrafts does NOT filter)", () => {
@@ -147,32 +162,174 @@ describe("removeNewStudentDraft", () => {
 describe("createNewStudentDraft", () => {
   it("returns a UUID string", async () => {
     // Dynamically import to avoid module-level side effects in other tests.
-    const { createNewStudentDraft } = await import("./utils");
+    const { createNewStudentDraft } = await import("./draft-storage");
     const id = createNewStudentDraft();
     expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   });
 
   it("returns a different UUID on each call", async () => {
-    const { createNewStudentDraft } = await import("./utils");
+    const { createNewStudentDraft } = await import("./draft-storage");
     const ids = new Set([createNewStudentDraft(), createNewStudentDraft(), createNewStudentDraft()]);
     expect(ids.size).toBe(3);
   });
 
-  // NOTE: createNewStudentDraft's GC loop reads JSON.parse(raw).expiresAt
-  // at the top level, but Zustand persist stores state under { state: { expiresAt } }.
-  // This means expired draft GC is currently a no-op — a known pre-existing bug
-  // outside the scope of this change. Document it here so it's visible.
-  it("does NOT gc expired drafts due to format mismatch (known pre-existing bug)", async () => {
-    const { createNewStudentDraft } = await import("./utils");
+  it("gc's an expired draft (reads nested state.expiresAt)", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
 
-    // Seed a Zustand-persisted expired draft (state.expiresAt, not top-level expiresAt)
     seedDraft("expired", "hfse-is", { expiresAt: new Date("2020-01-01").toISOString() });
 
     createNewStudentDraft(); // GC loop runs
 
-    // The expired draft is still present because createNewStudentDraft reads
-    // JSON.parse(raw).expiresAt (undefined) instead of .state.expiresAt
     const remaining = localStorage.getItem("enrolNewStudent:draft:expired:hfse-is");
-    expect(remaining).not.toBeNull(); // still there — GC did not fire
+    expect(remaining).toBeNull(); // removed — GC fired
+  });
+
+  it("keeps a non-expired draft", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
+
+    seedDraft("still-valid", "hfse-is", { expiresAt: new Date("2099-01-01").toISOString() });
+
+    createNewStudentDraft();
+
+    expect(localStorage.getItem("enrolNewStudent:draft:still-valid:hfse-is")).not.toBeNull();
+  });
+
+  it("gc's a draft with a missing expiresAt (treated as expired, fail-safe)", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
+
+    seedDraft("no-expiry", "hfse-is", { expiresAt: undefined });
+
+    createNewStudentDraft();
+
+    expect(localStorage.getItem("enrolNewStudent:draft:no-expiry:hfse-is")).toBeNull();
+  });
+
+  it("gc's a draft with a corrupt (unparseable) expiresAt", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
+
+    seedDraft("bad-expiry", "hfse-is", { expiresAt: "not-a-date" });
+
+    createNewStudentDraft();
+
+    expect(localStorage.getItem("enrolNewStudent:draft:bad-expiry:hfse-is")).toBeNull();
+  });
+
+  it("does not throw and leaves a malformed JSON entry untouched", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
+
+    localStorage.setItem("enrolNewStudent:draft:corrupt-json:hfse-is", "{INVALID JSON}");
+    seedDraft("valid", "hfse-is");
+
+    expect(() => createNewStudentDraft()).not.toThrow();
+    expect(localStorage.getItem("enrolNewStudent:draft:corrupt-json:hfse-is")).not.toBeNull();
+  });
+
+  it("does nothing when there are no draft keys in localStorage", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
+
+    expect(() => createNewStudentDraft()).not.toThrow();
+  });
+
+  it("does not gc keys that don't match the draft prefix", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
+
+    localStorage.setItem("someOtherKey", '{"data": 1}');
+
+    createNewStudentDraft();
+
+    expect(localStorage.getItem("someOtherKey")).not.toBeNull();
+  });
+
+  it("skips a draft key that disappears between the keys scan and the read (raw is null)", async () => {
+    const { createNewStudentDraft } = await import("./draft-storage");
+
+    const key = seedDraft("vanishing", "hfse-is");
+    const originalGetItem = Storage.prototype.getItem;
+    const getItemSpy = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(function (this: Storage, k: string) {
+        if (k === key) return null;
+        return originalGetItem.call(this, k);
+      });
+
+    expect(() => createNewStudentDraft()).not.toThrow();
+
+    getItemSpy.mockRestore();
+    // The key itself is untouched by the GC pass since it was never read as JSON.
+    expect(localStorage.getItem(key)).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sortDrafts
+// ---------------------------------------------------------------------------
+
+describe("sortDrafts", () => {
+  function draftRow(overrides: Record<string, unknown>) {
+    return { state: overrides };
+  }
+
+  it("sorts by lastUpdated descending (most recently saved first)", () => {
+    const older = draftRow({ lastSavedAt: new Date("2024-01-01").toISOString() });
+    const newer = draftRow({ lastSavedAt: new Date("2024-06-01").toISOString() });
+
+    const result = sortDrafts([older, newer], "lastUpdated");
+
+    expect(result).toEqual([newer, older]);
+  });
+
+  it("sorts by oldest ascending (earliest created first)", () => {
+    const older = draftRow({ createdAt: new Date("2024-01-01").toISOString() });
+    const newer = draftRow({ createdAt: new Date("2024-06-01").toISOString() });
+
+    const result = sortDrafts([newer, older], "oldest");
+
+    expect(result).toEqual([older, newer]);
+  });
+
+  it("sorts by expiringSoon ascending (soonest expiry first)", () => {
+    const soon = draftRow({ expiresAt: new Date("2024-06-01").toISOString() });
+    const later = draftRow({ expiresAt: new Date("2024-12-01").toISOString() });
+
+    const result = sortDrafts([later, soon], "expiringSoon");
+
+    expect(result).toEqual([soon, later]);
+  });
+
+  it("treats a missing expiresAt as epoch 0 when sorting by expiringSoon", () => {
+    const noExpiry = draftRow({ expiresAt: undefined });
+    const withExpiry = draftRow({ expiresAt: new Date("2024-06-01").toISOString() });
+
+    // Both orderings so the comparator runs with the missing-expiresAt draft in
+    // both the `a` and `b` position, exercising the `?? 0` fallback on each side.
+    expect(sortDrafts([withExpiry, noExpiry], "expiringSoon")).toEqual([noExpiry, withExpiry]);
+    expect(sortDrafts([noExpiry, withExpiry], "expiringSoon")).toEqual([noExpiry, withExpiry]);
+  });
+
+  it("filters to only expired drafts when sortBy is 'expired'", () => {
+    const expired = draftRow({ expiresAt: new Date("2020-01-01").toISOString() });
+    const valid = draftRow({ expiresAt: new Date("2099-01-01").toISOString() });
+
+    const result = sortDrafts([expired, valid], "expired");
+
+    expect(result).toEqual([expired]);
+  });
+
+  it("excludes drafts with a missing expiresAt from the 'expired' filter", () => {
+    const noExpiry = draftRow({ expiresAt: undefined });
+
+    const result = sortDrafts([noExpiry], "expired");
+
+    expect(result).toEqual([]);
+  });
+
+  it("returns drafts unchanged for an unrecognized sortBy (default branch)", () => {
+    const a = draftRow({ lastSavedAt: new Date("2024-01-01").toISOString() });
+    const b = draftRow({ lastSavedAt: new Date("2024-06-01").toISOString() });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = sortDrafts([a, b], "unknown" as any);
+
+    expect(result).toEqual([a, b]);
   });
 });

@@ -46,8 +46,8 @@ export type BulkMoveResult = {
   failed: number;
 };
 
-async function callMoveStudentAY(session: Session, body: Record<string, unknown>): Promise<unknown> {
-  const res = await fetch(FUNCTION_URL, {
+async function callFunction(url: string, session: Session, body: Record<string, unknown>): Promise<unknown> {
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -58,6 +58,10 @@ async function callMoveStudentAY(session: Session, body: Record<string, unknown>
   const data = await res.json();
   if (!res.ok) throw new Error((data as { error?: string }).error ?? "Request failed");
   return data;
+}
+
+async function callMoveStudentAY(session: Session, body: Record<string, unknown>): Promise<unknown> {
+  return callFunction(FUNCTION_URL, session, body);
 }
 
 export async function listStudentsInAY(session: Session, sourceAY: string): Promise<AdminStudent[]> {
@@ -79,4 +83,27 @@ export async function moveStudentsBulkAY(
 ): Promise<BulkMoveResult> {
   const data = await callMoveStudentAY(session, { action: "move-bulk", ...params });
   return data as BulkMoveResult;
+}
+
+const SET_PASSWORD_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-set-password`;
+
+export type AdminAccount = {
+  id: string;
+  email: string;
+  fullName: string;
+  relationship: string;
+  emailConfirmed: boolean;
+  lastSignInAt: string | null;
+};
+
+export async function listAdminAccounts(session: Session): Promise<AdminAccount[]> {
+  const data = await callFunction(SET_PASSWORD_FUNCTION_URL, session, { action: "list-accounts" });
+  return (data as { accounts: AdminAccount[] }).accounts;
+}
+
+export async function adminSetPassword(
+  session: Session,
+  params: { email: string; password: string },
+): Promise<void> {
+  await callFunction(SET_PASSWORD_FUNCTION_URL, session, { action: "set-password", ...params });
 }

@@ -55,7 +55,7 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
   return (
     <div className="animate-in fade-in duration-500 relative min-h-screen flex items-center justify-center flex-col px-4 py-12 md:py-16 lg:py-0">
       <div className="text-center space-y-6 max-w-3xl">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-balance">Choose Academic Year</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-balance">Choose Academic Year</h1>
         <p className="text-lg md:text-xl text-muted-foreground text-pretty">
           Select the academic year for your child's enrolment journey
         </p>
@@ -64,15 +64,13 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
         {academicYears.map((year) => (
           <div
             key={year.name}
-            className={cn("relative bg-white transition-all duration-300 border rounded-xl p-8 flex flex-col", {
-              "border-2 border-secondary shadow-2xl shadow-indigo-100 lg:py-12 order-first lg:order-none":
-                year.isPopular && !year.isClosed,
-              "hover:-translate-y-1 hover:shadow-xl": !year.isClosed,
-              "bg-slate-50/50 border-slate-200 opacity-75 grayscale-[0.5] cursor-not-allowed select-none":
-                year.isClosed,
+            className={cn("relative bg-card transition-all duration-300 border border-border rounded-xl p-8 flex flex-col", {
+              "border-2 border-secondary shadow-md lg:py-12 order-first lg:order-none": year.isPopular && !year.isClosed,
+              "hover:shadow-md": !year.isClosed,
+              "bg-muted/20 border-border opacity-75 grayscale-[0.5] cursor-not-allowed select-none": year.isClosed,
             })}>
             {year.isClosed ? (
-              <Badge className="absolute font-black uppercase tracking-widest text-[10px] top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-400 text-white border-none px-4 py-1.5 shadow-md">
+              <Badge className="absolute font-bold uppercase tracking-widest text-[10px] top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-muted-foreground text-background border-none px-4 py-1.5 shadow-sm">
                 Applications Closed
               </Badge>
             ) : null}
@@ -84,8 +82,8 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
 
               <h3
                 className={cn(
-                  "text-xl md:text-2xl font-black text-center",
-                  year.isClosed ? "text-slate-500" : year.isPopular ? "text-secondary" : "text-primary",
+                  "text-xl md:text-2xl font-bold text-center",
+                  year.isClosed ? "text-muted-foreground" : year.isPopular ? "text-secondary" : "text-primary",
                 )}>
                 {year.label}
               </h3>
@@ -94,13 +92,16 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
                 {year.description}
               </p>
 
-              <Separator className="my-6 bg-slate-100" />
+              <Separator className="my-6" />
 
               <ul className="space-y-3 flex-grow">
                 {year.details.map((detail) => (
-                  <li key={detail} className="flex items-start gap-3 text-sm font-medium text-slate-500">
+                  <li key={detail} className="flex items-start gap-3 text-sm font-medium text-muted-foreground">
                     <CircleCheck
-                      className={cn("size-4 mt-0.5 shrink-0", year.isClosed ? "text-slate-300" : "text-emerald-500")}
+                      className={cn(
+                        "size-4 mt-0.5 shrink-0",
+                        year.isClosed ? "text-muted-foreground/50" : "text-success",
+                      )}
                     />
                     {detail}
                   </li>
@@ -111,13 +112,11 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
             <Button
               disabled={year.isClosed}
               onClick={() => setSelectedAy(year.value)}
-              variant={year.isClosed ? "outline" : year.isPopular ? "secondary" : "default"}
+              variant={year.isClosed ? "outline" : year.isPopular ? "secondary" : "cta"}
               size={"lg"}
               className={cn(
-                "text-xs mt-8 w-full py-7 rounded-xl transition-all gap-3 md:text-sm font-black uppercase tracking-widest",
-                year.isClosed
-                  ? "bg-transparent border-slate-200 text-slate-400"
-                  : "shadow-xl shadow-indigo-100 hover:shadow-indigo-200",
+                "text-xs mt-8 w-full py-7 transition-all gap-3 md:text-sm font-semibold uppercase tracking-widest",
+                year.isClosed && "bg-transparent text-muted-foreground",
               )}>
               {year.isClosed ? "Unavailable" : year.buttonText}
               {!year.isClosed && <ArrowUpRight size={18} strokeWidth={3} />}

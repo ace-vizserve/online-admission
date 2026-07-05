@@ -12,6 +12,7 @@ import { ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION } from "@/da
 import { useDebounce } from "@/hooks/use-debounce";
 import { checkEmailExists } from "@/lib/utils";
 import { OpenHouseAccountInformationSchema, registrationSchema } from "@/zod-schema";
+import { useOpenHouseCredentialsStore } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ldrs/react/Tailspin.css";
 import { ArrowRight, Info } from "lucide-react";
@@ -28,23 +29,41 @@ function AccountInformation() {
 
   const navigate = useNavigate();
 
+  const { password, confirmPassword, setCredentials } = useOpenHouseCredentialsStore();
+
   const form = useForm<OpenHouseAccountInformationSchema>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       ...formState.accountInfo,
+      password,
+      confirmPassword,
     },
   });
 
   const watchedValues = form.watch();
   const debouncedValues = useDebounce(watchedValues, 150);
 
+  // password/confirmPassword are deliberately kept out of `setFormState` — that store is
+  // persisted to sessionStorage in plaintext, which must never hold a password. They're synced
+  // to the separate, non-persisted credentials store instead.
   useEffect(() => {
-    setFormState({
-      ...formState,
-      accountInfo: {
-        ...form.watch(),
+    const wasDirty = form.formState.isDirty;
+    const { password, confirmPassword, ...accountInfo } = debouncedValues;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        accountInfo,
+      });
+      setCredentials(password, confirmPassword);
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -68,10 +87,13 @@ function AccountInformation() {
 
       form.setValue("email", email.toLowerCase());
 
+      const { password, confirmPassword, ...accountInfo } = values;
+
       setFormState({
         ...formState,
-        accountInfo: { ...values, email: email.toLowerCase() },
+        accountInfo: { ...accountInfo, email: email.toLowerCase() },
       });
+      setCredentials(password, confirmPassword);
 
       setCompletedTabs("/open-house/account-info");
       setCurrentTab("/open-house/student-info");

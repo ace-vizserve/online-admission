@@ -150,7 +150,7 @@ function FatherInformation() {
       },
     });
 
-    if (!formState.familyInfo?.motherInfo.isValid) {
+    if (!formState.familyInfo?.motherInfo?.isValid) {
       toast.info("Father's information confirmed!", {
         description: "Please proceed in confirming the Mother's information",
       });
@@ -176,15 +176,19 @@ function FatherInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        fatherInfo: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          fatherInfo: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },

@@ -2,25 +2,36 @@
  * Integration tests for the AutoResumeDraft / AutoResumeLearnerDraft behaviour.
  *
  * AutoResumeDraft is an internal (non-exported) component of new-student-layout.tsx.
- * We test its behaviour via a thin harness that reproduces the exact logic —
- * this keeps tests green without exporting an internal component, while still
- * proving the flow works end-to-end. The `isExpired` guard behaviour is also
- * covered in src/lib/draft-expiry.test.ts with exhaustive edge-case coverage.
+ * We test its behaviour via a thin harness that reproduces the exact glue logic (isExpired
+ * check + navigate), while delegating the actual "find locally, else fetch from the server"
+ * work to the real useResolveResumeDraft hook (src/hooks/use-resolve-resume-draft.ts), which
+ * wraps resolveResumeDraft (src/actions/resolve-draft.ts) in a TanStack Query — only the
+ * remote leg (loadDraftRemote) is mocked. This keeps tests green without exporting an internal
+ * component, while still exercising the real cross-device resume logic. The `isExpired` guard
+ * behaviour is also covered in src/lib/draft-expiry.test.ts with exhaustive edge-case coverage.
  *
  * Key behaviours under test
  * ─────────────────────────
- * 1. Restore — valid draft is found → context receives draft data, navigate fires
- * 2. Expired guard — expired draft → navigate to /admission/drafts, no restore
- * 3. Not found — no matching draftId → nothing happens
- * 4. Ordering guard — hasRun.current prevents double-fire on StrictMode remount
- * 5. Cross-draft contamination — after loading draft A, loading draft B replaces A's data
+ * 1. Restore (local) — valid local draft is found → context receives draft data, navigate fires
+ * 2. Restore (remote fallback) — no local match, server has it → hydrates local cache, restores
+ * 3. Not found anywhere (local nor remote) → navigates to /admission/drafts
+ * 4. Remote lookup fails (offline/unauthenticated) → navigates to /admission/drafts
+ * 5. Expired guard (local match) — expired draft → navigate to /admission/drafts, no restore
+ * 6. Ordering guard — hasRun.current prevents double-fire on StrictMode remount
+ * 7. Cross-draft contamination — after loading draft A, loading draft B replaces A's data
  */
-import { act, render } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, render, waitFor } from "@testing-library/react";
 import { useEffect, useRef } from "react";
 import { MemoryRouter, useLocation, useNavigate } from "react-router";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { isExpired, listNewStudentDrafts } from "../../lib/utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { isExpired } from "../../lib/draft-storage";
 import type { EnrolNewStudentDraftStore } from "../../zustand-store";
+
+vi.mock("@/actions/drafts", () => ({ loadDraftRemote: vi.fn() }));
+
+const { useResolveResumeDraft } = await import("@/hooks/use-resolve-resume-draft");
+const { loadDraftRemote } = await import("@/actions/drafts");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -53,10 +64,28 @@ function seedDraft(
   return key;
 }
 
+function remoteDraft(draftId: string, type: "hfse-is" | "viz-school", overrides: Record<string, unknown> = {}) {
+  return {
+    state: {
+      draftId,
+      type,
+      academicYear: "2024-2025",
+      activeTab: "/enrol-student/new/family-info",
+      currentTab: "/enrol-student/new/family-info",
+      completedTabs: ["/enrol-student/new/student-info"],
+      formState: { studentInfo: { studentDetails: { firstName: "Remote" } } },
+      lastSavedAt: new Date("2024-06-01").toISOString(),
+      createdAt: new Date("2024-05-01").toISOString(),
+      expiresAt: new Date("2099-01-01").toISOString(),
+      ...overrides,
+    },
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFn = (...args: any[]) => void;
 
-/** Thin harness: reproduces AutoResumeDraft's exact post-fix logic in testable form. */
+/** Thin harness: reproduces AutoResumeDraft's glue logic, delegating to the real useResolveResumeDraft hook. */
 function AutoResumeDraftHarness({
   type,
   callbacks,
@@ -74,17 +103,18 @@ function AutoResumeDraftHarness({
   const resumeDraftId = location.state?.resumeDraftId as string | undefined;
   const hasRun = useRef(false);
 
+  const { data: match, isSuccess } = useResolveResumeDraft(resumeDraftId, type);
+
   useEffect(() => {
-    if (!resumeDraftId || hasRun.current) return;
+    if (!isSuccess || hasRun.current) return;
     hasRun.current = true;
 
-    const allDrafts = listNewStudentDrafts(type);
-    const match = allDrafts.find(
-      (d: { state: EnrolNewStudentDraftStore }) => d.state?.draftId === resumeDraftId,
-    );
-    if (!match) return;
+    if (!match) {
+      navigate("/admission/drafts", { replace: true });
+      return;
+    }
 
-    const state = match.state as EnrolNewStudentDraftStore;
+    const state = match.state as unknown as EnrolNewStudentDraftStore;
 
     if (isExpired(state.expiresAt)) {
       navigate("/admission/drafts", { replace: true });
@@ -97,16 +127,19 @@ function AutoResumeDraftHarness({
     callbacks.setFormState({ ...state.formState, draftId: state.draftId });
 
     navigate(`${state.activeTab}?academicYear=${state.academicYear}`, { replace: true });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, match]);
 
   return <div data-testid="harness" />;
 }
 
-/** Wraps the harness in MemoryRouter with the given initial location state. */
-function renderHarness(
-  resumeDraftId: string | undefined,
-  type: "hfse-is" | "viz-school",
-) {
+function LocationDisplay() {
+  const location = useLocation();
+  return <div data-testid="pathname">{location.pathname}</div>;
+}
+
+/** Wraps the harness in MemoryRouter + a fresh QueryClientProvider with the given initial location state. */
+function renderHarness(resumeDraftId: string | undefined, type: "hfse-is" | "viz-school") {
   const cbs = {
     setFormState: vi.fn(),
     setActiveTab: vi.fn(),
@@ -114,19 +147,28 @@ function renderHarness(
     setCompletedTabs: vi.fn(),
   };
 
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
   const utils = render(
-    <MemoryRouter
-      initialEntries={[
-        {
-          pathname: "/enrol-student/new/student-info",
-          state: resumeDraftId ? { resumeDraftId } : undefined,
-        },
-      ]}>
-      <AutoResumeDraftHarness type={type} callbacks={cbs} />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: "/enrol-student/new/student-info",
+            state: resumeDraftId ? { resumeDraftId } : undefined,
+          },
+        ]}>
+        <AutoResumeDraftHarness type={type} callbacks={cbs} />
+        <LocationDisplay />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 
   return { ...utils, cbs };
+}
+
+function pathnameOf(utils: ReturnType<typeof renderHarness>) {
+  return utils.getByTestId("pathname").textContent;
 }
 
 // ---------------------------------------------------------------------------
@@ -134,75 +176,102 @@ function renderHarness(
 // ---------------------------------------------------------------------------
 
 beforeEach(() => {
-  vi.useFakeTimers();
+  vi.clearAllMocks();
 });
 
-afterEach(() => {
-  vi.useRealTimers();
-});
-
-describe("AutoResumeDraft — restore valid draft", () => {
-  it("calls context setters when a valid draft is found", async () => {
+describe("AutoResumeDraft — restore a local draft", () => {
+  it("calls context setters and navigates when a valid local draft is found", async () => {
     seedDraft("draft-abc", "hfse-is");
 
-    const { cbs } = renderHarness("draft-abc", "hfse-is");
+    const utils = renderHarness("draft-abc", "hfse-is");
 
-    await act(async () => { vi.runAllTimers(); });
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/enrol-student/new/student-info"));
 
-    expect(cbs.setActiveTab).toHaveBeenCalledWith("/enrol-student/new/student-info");
-    expect(cbs.setCurrentTab).toHaveBeenCalledWith("/enrol-student/new/student-info");
-    expect(cbs.setCompletedTabs).toHaveBeenCalledWith(["/enrol-student/new/student-info"]);
-    expect(cbs.setFormState).toHaveBeenCalledWith(
+    expect(utils.cbs.setActiveTab).toHaveBeenCalledWith("/enrol-student/new/student-info");
+    expect(utils.cbs.setCurrentTab).toHaveBeenCalledWith("/enrol-student/new/student-info");
+    expect(utils.cbs.setCompletedTabs).toHaveBeenCalledWith(["/enrol-student/new/student-info"]);
+    expect(utils.cbs.setFormState).toHaveBeenCalledWith(
       expect.objectContaining({
         draftId: "draft-abc",
         studentInfo: { studentDetails: { firstName: "Juan" } },
       }),
     );
+    // Local match found — no need to hit the server.
+    expect(loadDraftRemote).not.toHaveBeenCalled();
   });
 
   it("does not call context setters when no resumeDraftId in location state", async () => {
     seedDraft("draft-abc", "hfse-is");
 
-    const { cbs } = renderHarness(undefined, "hfse-is");
+    const utils = renderHarness(undefined, "hfse-is");
 
-    await act(async () => { vi.runAllTimers(); });
+    await act(async () => {});
 
-    expect(cbs.setFormState).not.toHaveBeenCalled();
-  });
-
-  it("does not call context setters when draftId does not match any stored draft", async () => {
-    seedDraft("draft-different", "hfse-is");
-
-    const { cbs } = renderHarness("draft-xyz-not-found", "hfse-is");
-
-    await act(async () => { vi.runAllTimers(); });
-
-    expect(cbs.setFormState).not.toHaveBeenCalled();
+    expect(utils.cbs.setFormState).not.toHaveBeenCalled();
+    expect(loadDraftRemote).not.toHaveBeenCalled();
   });
 });
 
-describe("AutoResumeDraft — expired draft guard (Bug fix #3)", () => {
-  it("navigates to /admission/drafts without restoring when draft is expired", async () => {
-    // Freeze time so we can control what "now" is.
-    vi.setSystemTime(new Date("2024-07-01T12:00:00Z"));
+describe("AutoResumeDraft — remote fallback (cross-device resume)", () => {
+  it("falls back to the server, hydrates the local cache, and restores when found remotely", async () => {
+    vi.mocked(loadDraftRemote).mockResolvedValueOnce(remoteDraft("remote-draft-1", "hfse-is"));
 
-    seedDraft("expired-draft", "hfse-is", {
-      expiresAt: new Date("2024-06-01T12:00:00Z") as unknown as Date, // past
-    });
+    const utils = renderHarness("remote-draft-1", "hfse-is");
 
-    const { cbs } = renderHarness("expired-draft", "hfse-is");
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/enrol-student/new/family-info"));
 
-    await act(async () => { vi.runAllTimers(); });
+    expect(loadDraftRemote).toHaveBeenCalledWith("remote-draft-1");
+    expect(utils.cbs.setFormState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draftId: "remote-draft-1",
+        studentInfo: { studentDetails: { firstName: "Remote" } },
+      }),
+    );
 
-    // Context setters must NOT be called
-    expect(cbs.setFormState).not.toHaveBeenCalled();
-    expect(cbs.setActiveTab).not.toHaveBeenCalled();
-    expect(cbs.setCurrentTab).not.toHaveBeenCalled();
-    expect(cbs.setCompletedTabs).not.toHaveBeenCalled();
+    // The remote entry must now be cached locally so it's resumable offline afterwards.
+    const cached = localStorage.getItem("enrolNewStudent:draft:remote-draft-1:hfse-is");
+    expect(cached).not.toBeNull();
+    expect(JSON.parse(cached!).state.draftId).toBe("remote-draft-1");
   });
 
-  it("navigates to /admission/drafts when draft has no expiresAt (fail-safe)", async () => {
-    // A draft missing expiresAt is untrustworthy → treat as expired
+  it("navigates to /admission/drafts when the draft is found neither locally nor remotely", async () => {
+    vi.mocked(loadDraftRemote).mockResolvedValueOnce(null);
+
+    const utils = renderHarness("nowhere-to-be-found", "hfse-is");
+
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/admission/drafts"));
+
+    expect(utils.cbs.setFormState).not.toHaveBeenCalled();
+  });
+
+  it("navigates to /admission/drafts when the remote lookup fails (offline/unauthenticated)", async () => {
+    vi.mocked(loadDraftRemote).mockRejectedValueOnce(new Error("Not authenticated"));
+
+    const utils = renderHarness("draft-during-outage", "hfse-is");
+
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/admission/drafts"));
+
+    expect(utils.cbs.setFormState).not.toHaveBeenCalled();
+  });
+});
+
+describe("AutoResumeDraft — expired draft guard", () => {
+  it("navigates to /admission/drafts without restoring when the local draft is expired", async () => {
+    seedDraft("expired-draft", "hfse-is", {
+      expiresAt: new Date("2020-01-01T00:00:00Z") as unknown as Date, // well in the past
+    });
+
+    const utils = renderHarness("expired-draft", "hfse-is");
+
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/admission/drafts"));
+
+    expect(utils.cbs.setFormState).not.toHaveBeenCalled();
+    expect(utils.cbs.setActiveTab).not.toHaveBeenCalled();
+    expect(utils.cbs.setCurrentTab).not.toHaveBeenCalled();
+    expect(utils.cbs.setCompletedTabs).not.toHaveBeenCalled();
+  });
+
+  it("navigates to /admission/drafts when the local draft has no expiresAt (fail-safe)", async () => {
     const key = `enrolNewStudent:draft:no-expiry:hfse-is`;
     localStorage.setItem(
       key,
@@ -221,27 +290,23 @@ describe("AutoResumeDraft — expired draft guard (Bug fix #3)", () => {
       }),
     );
 
-    const { cbs } = renderHarness("no-expiry", "hfse-is");
+    const utils = renderHarness("no-expiry", "hfse-is");
 
-    await act(async () => { vi.runAllTimers(); });
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/admission/drafts"));
 
-    expect(cbs.setFormState).not.toHaveBeenCalled();
+    expect(utils.cbs.setFormState).not.toHaveBeenCalled();
   });
 });
 
 describe("AutoResumeDraft — hasRun guard", () => {
-  it("restores the draft on initial mount", async () => {
+  it("restores the draft on initial mount exactly once", async () => {
     seedDraft("draft-once", "hfse-is");
 
-    const { cbs } = renderHarness("draft-once", "hfse-is");
+    const utils = renderHarness("draft-once", "hfse-is");
 
-    await act(async () => { vi.runAllTimers(); });
+    await waitFor(() => expect(utils.cbs.setFormState).toHaveBeenCalledOnce());
 
-    // On first mount the draft is restored exactly once.
-    expect(cbs.setFormState).toHaveBeenCalledOnce();
-    expect(cbs.setFormState).toHaveBeenCalledWith(
-      expect.objectContaining({ draftId: "draft-once" }),
-    );
+    expect(utils.cbs.setFormState).toHaveBeenCalledWith(expect.objectContaining({ draftId: "draft-once" }));
   });
 });
 
@@ -256,18 +321,17 @@ describe("AutoResumeDraft — cross-draft contamination", () => {
       activeTab: "/enrol-student/new/family-info",
     } as Partial<EnrolNewStudentDraftStore>);
 
-    const { cbs } = renderHarness("draft-b", "hfse-is");
+    const utils = renderHarness("draft-b", "hfse-is");
 
-    await act(async () => { vi.runAllTimers(); });
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/enrol-student/new/family-info"));
 
-    // Only draft B's data should be in the setFormState call
-    expect(cbs.setFormState).toHaveBeenCalledWith(
+    expect(utils.cbs.setFormState).toHaveBeenCalledWith(
       expect.objectContaining({
         draftId: "draft-b",
         studentInfo: { studentDetails: { firstName: "Bob" } },
       }),
     );
-    expect(cbs.setActiveTab).toHaveBeenCalledWith("/enrol-student/new/family-info");
+    expect(utils.cbs.setActiveTab).toHaveBeenCalledWith("/enrol-student/new/family-info");
   });
 });
 
@@ -278,24 +342,25 @@ describe("AutoResumeDraft — viz-school flow", () => {
       currentTab: "/vizschool/enrol-student/new/student-info",
     } as Partial<EnrolNewStudentDraftStore>);
 
-    const { cbs } = renderHarness("viz-draft-1", "viz-school");
+    const utils = renderHarness("viz-draft-1", "viz-school");
 
-    await act(async () => { vi.runAllTimers(); });
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/vizschool/enrol-student/new/student-info"));
 
-    expect(cbs.setActiveTab).toHaveBeenCalledWith("/vizschool/enrol-student/new/student-info");
-    expect(cbs.setFormState).toHaveBeenCalledWith(
-      expect.objectContaining({ draftId: "viz-draft-1" }),
-    );
+    expect(utils.cbs.setActiveTab).toHaveBeenCalledWith("/vizschool/enrol-student/new/student-info");
+    expect(utils.cbs.setFormState).toHaveBeenCalledWith(expect.objectContaining({ draftId: "viz-draft-1" }));
   });
 
-  it("does not restore a hfse-is draft when type is viz-school", async () => {
-    // Draft exists in hfse-is, but we look in viz-school
+  it("falls back to the server (not the hfse-is store) when a hfse-is draft exists under the same id but type is viz-school", async () => {
+    // Draft exists in hfse-is only; looking under viz-school finds no local match, so it
+    // must fall through to the remote lookup rather than accidentally matching the wrong flow.
     seedDraft("hfse-only-draft", "hfse-is");
+    vi.mocked(loadDraftRemote).mockResolvedValueOnce(null);
 
-    const { cbs } = renderHarness("hfse-only-draft", "viz-school");
+    const utils = renderHarness("hfse-only-draft", "viz-school");
 
-    await act(async () => { vi.runAllTimers(); });
+    await waitFor(() => expect(pathnameOf(utils)).toBe("/admission/drafts"));
 
-    expect(cbs.setFormState).not.toHaveBeenCalled();
+    expect(utils.cbs.setFormState).not.toHaveBeenCalled();
+    expect(loadDraftRemote).toHaveBeenCalledWith("hfse-only-draft");
   });
 });

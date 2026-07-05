@@ -17,6 +17,7 @@ import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
 import AdminLogin from "@/pages/admin/login";
 import MoveStudent from "@/pages/admin/move-student";
+import ResetPassword from "@/pages/admin/reset-password";
 import NotFound from "@/pages/not-found";
 import AccountSettings from "@/pages/private/account-settings";
 import AdmissionGuidelines from "@/pages/private/admission-guidelines";
@@ -527,6 +528,14 @@ function AppRoutes() {
             element={
               <AdminGuard>
                 <MoveStudent />
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="reset-password"
+            element={
+              <AdminGuard>
+                <ResetPassword />
               </AdminGuard>
             }
           />

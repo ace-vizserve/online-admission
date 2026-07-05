@@ -6,10 +6,12 @@ import { Separator } from "@/components/ui/separator";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
+import useSession from "@/hooks/use-session";
 import { cn, documentErrors } from "@/lib/utils";
 import { parentGuardianUploadRequirementsSchema, ParentGuardianUploadRequirementsSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Tailspin } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import "ldrs/react/Tailspin.css";
 import { AlertCircle, Clock, FilePen, Info, Loader2, Save } from "lucide-react";
@@ -17,11 +19,20 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
-import ParentGuardianFileUploaderDialog from "./parent-guardian-file-uploader-dialog";
+import {
+  DocumentUploader,
+  PARENT_GUARDIAN_DOCUMENTS,
+  useCarriedParentGuardianDocuments,
+} from "@/components/private/shared/upload-requirements";
 
 const MAX_SKIPS = 2;
 
+const MOTHER_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWith("mother"));
+const FATHER_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWith("father"));
+const GUARDIAN_DOCS = PARENT_GUARDIAN_DOCUMENTS.filter((cfg) => cfg.name.startsWith("guardian"));
+
 function ParentGuardianUpload() {
+  const { session } = useSession();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { formState, setFormState, activeTab, completedTabs, currentTab, setCompletedTabs } =
     useEnrolNewLearnerContext();
@@ -42,6 +53,15 @@ function ParentGuardianUpload() {
   const [motherPass, setMotherPass] = useState<File[] | null>(null);
   const [guardianPass, setGuardianPass] = useState<File[] | null>(null);
 
+  const fileState: Record<string, [File[] | null, (files: File[] | null) => void]> = {
+    motherPassport: [motherPassport, setMotherPassport],
+    motherPass: [motherPass, setMotherPass],
+    fatherPassport: [fatherPassport, setFatherPassport],
+    fatherPass: [fatherPass, setFatherPass],
+    guardianPassport: [guardianPassport, setGuardianPassport],
+    guardianPass: [guardianPass, setGuardianPass],
+  };
+
   const form = useForm<ParentGuardianUploadRequirementsSchema>({
     resolver: zodResolver(parentGuardianUploadRequirementsSchema),
     defaultValues: {
@@ -49,6 +69,18 @@ function ParentGuardianUpload() {
     },
     mode: "onChange",
     reValidateMode: "onChange",
+  });
+
+  // Carries a returning parent's latest passport/pass documents (matched by their login email
+  // against prior applications, across academic years and across brands) into this brand-new
+  // enrollment, as long as they have any on file — see use-carried-parent-guardian-docs.ts for
+  // the seed/hydrate guards that keep this from ever clobbering a user's own uploads or a
+  // completed step.
+  const { isFetching: isFetchingCarriedDocs } = useCarriedParentGuardianDocuments({
+    queryKey: ["parent-guardian-documents", session?.user.email],
+    formState,
+    setFormState,
+    form,
   });
 
   const toFollowDocs = form.watch("toFollowDocs");
@@ -70,14 +102,14 @@ function ParentGuardianUpload() {
           },
         },
       });
-    }
 
-    form.reset(
-      { ...debouncedValues },
-      {
-        keepErrors: true,
-      },
-    );
+      form.reset(
+        { ...debouncedValues },
+        {
+          keepErrors: true,
+        },
+      );
+    }
   }, [debouncedValues]);
 
   useEffect(() => {
@@ -107,7 +139,7 @@ function ParentGuardianUpload() {
   async function onSubmit(values: ParentGuardianUploadRequirementsSchema) {
     if (
       !Object.keys(formState.uploadRequirements?.studentUploadRequirements ?? {}).length &&
-      !formState.uploadRequirements!.studentUploadRequirements.isValid
+      !formState.uploadRequirements!.studentUploadRequirements?.isValid
     ) {
       toast.warning("Student Documents are missing!", {
         description: "Please fill out all required fields to proceed.",
@@ -169,16 +201,19 @@ function ParentGuardianUpload() {
       },
     });
 
-    if (formState.uploadRequirements?.studentUploadRequirements.isValid) {
+    if (formState.uploadRequirements?.studentUploadRequirements?.isValid) {
       setCompletedTabs("/vizschool/enrol-student/new/upload-requirements");
     }
+  }
+
+  if (isFetchingCarriedDocs) {
+    return <Loader />;
   }
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.log(errors);
           if (Object.keys(errors).includes("toFollowDocs")) {
             toast.error("Too many skipped documents!", {
               description: "You can only skip up to 2 parent/guardian documents.",
@@ -285,25 +320,20 @@ function ParentGuardianUpload() {
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
         <h1 className="max-w-4xl mx-auto font-bold uppercase">Mother Documents</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
-          <ParentGuardianFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Passport Copy"
-            form={form}
-            name="motherPassport"
-            value={motherPassport}
-            onValueChange={setMotherPassport}
-          />
-
-          <ParentGuardianFileUploaderDialog
-            formState={formState}
-            setFormState={setFormState}
-            label="Singapore Pass"
-            form={form}
-            name="motherPass"
-            value={motherPass}
-            onValueChange={setMotherPass}
-          />
+          {MOTHER_DOCS.map((cfg) => {
+            const [value, onValueChange] = fileState[cfg.name];
+            return (
+              <DocumentUploader
+                key={cfg.name}
+                cfg={cfg}
+                form={form}
+                value={value}
+                onValueChange={onValueChange}
+                formState={formState}
+                setFormState={setFormState}
+              />
+            );
+          })}
         </div>
 
         {formState.uploadRequirements?.parentGuardianUploadRequirements?.hasFatherInfo && (
@@ -311,25 +341,20 @@ function ParentGuardianUpload() {
             <Separator />
             <h1 className="max-w-4xl mx-auto font-bold uppercase">Father Documents</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Passport Copy"
-                form={form}
-                name="fatherPassport"
-                value={fatherPassport}
-                onValueChange={setFatherPassport}
-              />
-
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Singapore Pass"
-                form={form}
-                name="fatherPass"
-                value={fatherPass}
-                onValueChange={setFatherPass}
-              />
+              {FATHER_DOCS.map((cfg) => {
+                const [value, onValueChange] = fileState[cfg.name];
+                return (
+                  <DocumentUploader
+                    key={cfg.name}
+                    cfg={cfg}
+                    form={form}
+                    value={value}
+                    onValueChange={onValueChange}
+                    formState={formState}
+                    setFormState={setFormState}
+                  />
+                );
+              })}
             </div>
           </>
         )}
@@ -339,25 +364,20 @@ function ParentGuardianUpload() {
             <Separator />
             <h1 className="max-w-4xl mx-auto font-bold uppercase">Guardian Documents</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-4 max-w-4xl mx-auto">
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Passport Copy"
-                form={form}
-                name="guardianPassport"
-                value={guardianPassport}
-                onValueChange={setGuardianPassport}
-              />
-
-              <ParentGuardianFileUploaderDialog
-                formState={formState}
-                setFormState={setFormState}
-                label="Singapore Pass"
-                form={form}
-                name="guardianPass"
-                value={guardianPass}
-                onValueChange={setGuardianPass}
-              />
+              {GUARDIAN_DOCS.map((cfg) => {
+                const [value, onValueChange] = fileState[cfg.name];
+                return (
+                  <DocumentUploader
+                    key={cfg.name}
+                    cfg={cfg}
+                    form={form}
+                    value={value}
+                    onValueChange={onValueChange}
+                    formState={formState}
+                    setFormState={setFormState}
+                  />
+                );
+              })}
             </div>
           </>
         )}
@@ -370,6 +390,7 @@ function ParentGuardianUpload() {
           <Button
             variant={"secondary"}
             size="lg"
+            disabled={isLoading || form.formState.isSubmitting}
             className="hidden lg:flex p-8 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold w-full"
             type="submit">
             Save documents
@@ -378,6 +399,7 @@ function ParentGuardianUpload() {
 
           <Button
             variant={"secondary"}
+            disabled={isLoading || form.formState.isSubmitting}
             className="flex lg:hidden w-full p-6 uppercase rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 !text-sm md:!text-base font-bold"
             type="submit">
             Save documents
@@ -444,4 +466,14 @@ function DocumentSkipBadge({ skippedDocsCount, MAX_SKIPS }: { skippedDocsCount: 
     </div>
   );
 }
+
+function Loader() {
+  return (
+    <div className="h-72 w-full flex flex-col gap-4 items-center justify-center my-7 md:my-14">
+      <Tailspin size="30" stroke="5" speed="0.9" color="#4F46E5" />
+      <p className="text-sm font-bold text-muted-foreground animate-pulse">Fetching documents...</p>
+    </div>
+  );
+}
+
 export default ParentGuardianUpload;

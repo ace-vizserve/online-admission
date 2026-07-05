@@ -1,4 +1,3 @@
-import { getFamilyInformation } from "@/actions/private";
 import PageMetaData from "@/components/page-metadata";
 import FatherInformation from "@/components/private/enrol-student/tabs/family-information/father-information";
 import GuardianInformation from "@/components/private/enrol-student/tabs/family-information/guardian-information";
@@ -9,13 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import { cn } from "@/lib/utils";
-import { EnrolOldStudentFormState } from "@/types";
-import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import "ldrs/react/Tailspin.css";
 import { Baby, ChevronRight, ShieldUser, User, Users } from "lucide-react";
-import { useEffect } from "react";
-import { useParams } from "react-router";
 
 const tabs = [
   {
@@ -66,29 +61,7 @@ function OldFamilyInformation() {
 }
 
 function FamilyInformationTabs() {
-  const params = useParams();
-  const { setFormState, formState } = useEnrolOldStudentContext();
-  const { data, isPending, isSuccess, fetchStatus } = useQuery({
-    queryKey: ["old-family-information", params.id],
-    queryFn: async () => {
-      return await getFamilyInformation(params.id);
-    },
-    enabled: Object.keys(formState.familyInfo ?? {}).length < 1,
-  });
-
-  useEffect(() => {
-    if (!isSuccess || !data) return;
-
-    if (formState.familyInfo != null) return;
-
-    setFormState({
-      familyInfo: { ...data! } as unknown as EnrolOldStudentFormState["familyInfo"],
-    });
-  }, [data, formState.familyInfo, isSuccess, setFormState]);
-
-  if (fetchStatus === "fetching" && isPending) {
-    return <Loader />;
-  }
+  const { formState } = useEnrolOldStudentContext();
 
   if (formState.familyInfo == null) {
     return <Loader />;

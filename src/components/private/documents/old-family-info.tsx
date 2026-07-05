@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 
 import { updateEnrollmentApplicationDetails } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
+import { DataField, EditModeToggle, SectionHeader } from "@/components/private/documents/shared";
 import InputWithIcon from "@/components/private/student-profile/input-with-icon";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,7 +10,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
 import useSession from "@/hooks/use-session";
 import { cn, extractSiblings, getChangedKeys, removeEmptyKeys } from "@/lib/utils";
 import { FamilyInfo } from "@/types";
@@ -37,7 +36,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import React, { useRef, useState } from "react";
+import { ReactElement, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -55,43 +54,7 @@ function OldFamilyInfo({ label, familyInformation }: { label: string; familyInfo
           </p>
         </div>
 
-        <div
-          className={cn(
-            "w-full md:max-w-xs flex items-center justify-between gap-4 rounded-xl border p-4 transition-all duration-200",
-            editMode
-              ? "bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20"
-              : "bg-primary/5 border-border hover:bg-primary/10"
-          )}>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2">
-              <div className={cn("size-2 rounded-full", editMode ? "bg-secondary" : "bg-primary")} />
-              <p className="text-sm font-semibold leading-none tracking-tight">
-                {editMode ? "Editing Mode" : "Viewing Mode"}
-              </p>
-            </div>
-            <p className="text-xs font-medium leading-relaxed text-muted-foreground">
-              {editMode ? "You can now modify student details." : "Switch to edit to update information."}
-            </p>
-          </div>
-
-          <Switch
-            checked={editMode}
-            onCheckedChange={(checked) => {
-              if (checked) {
-                toast.info("Edit mode enabled!", {
-                  description: "You can now modify the student details.",
-                });
-              } else {
-                toast.info("View mode enabled!", {
-                  description: "Fields are locked and cannot be edited.",
-                });
-              }
-
-              setEditMode(checked);
-            }}
-            className="data-[state=checked]:bg-secondary cursor-pointer"
-          />
-        </div>
+        <EditModeToggle editMode={editMode} onEditModeChange={setEditMode} />
       </div>
 
       {editMode ? (
@@ -302,7 +265,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -517,7 +480,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -654,7 +617,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
         {/* GUARDIAN SECTION */}
         {guardianEmail && (
           <Card className="border-none py-0 shadow-none bg-transparent">
-            <SectionHeader title="Mother's Details" icon={<Heart className="size-5" />} color="text-rose-500" />
+            <SectionHeader title="Guardian's Details" icon={<Users className="size-5" />} color="text-indigo-600" />
             <CardContent className="px-0 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
                 <FormField
@@ -732,7 +695,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}>
                               {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -934,7 +897,7 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                                     variant={"outline"}
                                     className={cn(
                                       "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
+                                      !field.value && "text-muted-foreground",
                                     )}>
                                     {field.value ? format(field.value, "dd/MM/yyyy") : <span>Pick a date</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -1037,20 +1000,11 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
 function ViewFamilyInformation({ familyInformation }: { familyInformation: FamilyInfo }) {
   const siblings = extractSiblings(familyInformation);
 
-  const renderDataField = (
-    label: string,
-    value: string | null | undefined,
-    icon: React.ReactElement<{ className: string }>
-  ) => (
-    <div className="space-y-1.5 group">
-      <Label className="text-[10px] uppercase tracking-[0.1em] font-black text-slate-400 ml-1">{label}</Label>
-      <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white group-hover:border-slate-300 transition-all duration-200 shadow-sm">
-        {React.cloneElement(icon, {
-          className: "size-4 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors",
-        })}
-        <span className="text-sm font-bold text-slate-700 truncate capitalize">{value || undefined}</span>
-      </div>
-    </div>
+  // Thin wrapper over the shared `DataField` component — kept as a function (rather than converting
+  // every one of this view's ~40 call sites to JSX) so this migration doesn't have to hand-edit that
+  // many call sites to get the duplication benefit of a single shared implementation.
+  const renderDataField = (label: string, value: string | null | undefined, icon: ReactElement<{ className: string }>) => (
+    <DataField label={label} value={value} icon={icon} />
   );
 
   return (
@@ -1067,7 +1021,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
             {renderDataField(
               "Date of birth",
               familyInformation.fatherBirthDay ? formatDate(familyInformation.fatherBirthDay, "dd MMM yyyy") : null,
-              <Cake />
+              <Cake />,
             )}
             {renderDataField("Religion", familyInformation.fatherReligion, <Landmark />)}
             {renderDataField("Email Address", familyInformation.fatherEmail, <Mail />)}
@@ -1078,7 +1032,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
               familyInformation.fatherNric
                 ? familyInformation.fatherNric.slice(0, 3) + "****" + familyInformation.fatherNric.slice(-2)
                 : null,
-              <BadgeInfo />
+              <BadgeInfo />,
             )}
             {renderDataField("Company", familyInformation.fatherCompanyName, <Briefcase />)}
             {renderDataField("Occupation", familyInformation.fatherPosition, <Briefcase />)}
@@ -1098,7 +1052,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
             {renderDataField(
               "Date of birth",
               familyInformation.motherBirthDay ? formatDate(familyInformation.motherBirthDay, "dd MMM yyyy") : null,
-              <Cake />
+              <Cake />,
             )}
             {renderDataField("Religion", familyInformation.motherReligion, <Landmark />)}
             {renderDataField("Email Address", familyInformation.motherEmail, <Mail />)}
@@ -1109,7 +1063,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
               familyInformation.motherNric
                 ? familyInformation.motherNric.slice(0, 3) + "****" + familyInformation.motherNric.slice(-2)
                 : null,
-              <BadgeInfo />
+              <BadgeInfo />,
             )}
             {renderDataField("Company", familyInformation.motherCompanyName, <Briefcase />)}
             {renderDataField("Occupation", familyInformation.motherPosition, <Briefcase />)}
@@ -1129,7 +1083,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
             {renderDataField(
               "Date of birth",
               familyInformation.guardianBirthDay ? formatDate(familyInformation.guardianBirthDay, "dd MMM yyyy") : null,
-              <Cake />
+              <Cake />,
             )}
             {renderDataField("Religion", familyInformation.guardianReligion, <Landmark />)}
             {renderDataField("Email Address", familyInformation.guardianEmail, <Mail />)}
@@ -1140,7 +1094,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
               familyInformation.guardianNric
                 ? familyInformation.guardianNric.slice(0, 3) + "****" + familyInformation.guardianNric.slice(-2)
                 : null,
-              <BadgeInfo />
+              <BadgeInfo />,
             )}
             {renderDataField("Company", familyInformation.guardianCompanyName, <Briefcase />)}
             {renderDataField("Occupation", familyInformation.guardianPosition, <Briefcase />)}
@@ -1167,7 +1121,7 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
                   {renderDataField(
                     "Date of Birth",
                     sibling.siblingBirthDay ? formatDate(sibling.siblingBirthDay as string, "dd/MM/yyyy") : null,
-                    <Cake />
+                    <Cake />,
                   )}
                   {renderDataField("Religion", sibling.siblingReligion as string, <Landmark />)}
                   <div className="lg:col-span-2">
@@ -1180,15 +1134,6 @@ function ViewFamilyInformation({ familyInformation }: { familyInformation: Famil
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-function SectionHeader({ title, icon, color }: { title: string; icon: React.ReactNode; color: string }) {
-  return (
-    <div className="flex items-center gap-3 pb-2">
-      <div className={cn("p-2 bg-indigo-50 rounded-lg", color)}>{icon}</div>
-      <h2 className="font-bold text-lg text-slate-800 tracking-tight">{title}</h2>
     </div>
   );
 }

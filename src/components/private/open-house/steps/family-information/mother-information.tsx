@@ -77,15 +77,19 @@ function MotherInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        motherInfo: {
-          ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          motherInfo: {
+            ...debouncedValues,
+          },
         },
-      },
-    });
+      });
+    }
 
     form.reset(
       { ...debouncedValues },

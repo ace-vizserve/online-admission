@@ -124,7 +124,10 @@ function FatherInformation() {
       await queryClient.refetchQueries({
         queryKey: ["new-family-information", session?.user.email],
       });
-      const familyInfo = queryClient.getQueryData(["new-family-information"]) as EnrolNewStudentFormState["familyInfo"];
+      const familyInfo = queryClient.getQueryData([
+        "new-family-information",
+        session?.user.email,
+      ]) as EnrolNewStudentFormState["familyInfo"];
       form.reset({ ...(familyInfo?.fatherInfo ?? {}), noFatherInfo: false });
       setFormState({
         ...formState,
@@ -203,7 +206,7 @@ function FatherInformation() {
       },
     });
 
-    if (!formState.familyInfo?.motherInfo.isValid) {
+    if (!formState.familyInfo?.motherInfo?.isValid) {
       toast.info("Father's information confirmed!", {
         description: "Please proceed in confirming the Mother's information",
       });

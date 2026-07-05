@@ -1,7 +1,7 @@
 import { cn, wait } from "@/lib/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { AnimatePresence, motion, Variants } from "motion/react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { AnimatePresence, motion, Variants } from "motion/react";
 import React, { Children, HTMLAttributes, ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "./button";
 import { Checkbox } from "./checkbox";
@@ -144,9 +144,9 @@ export default function Stepper({
 
                     {backButtonText}
                   </Button>
-                  <div className="w-full sm:w-max p-4 rounded-xl bg-green-50 border border-green-400 flex justify-center items-center space-x-2">
+                  <div className="w-full sm:w-max p-4 rounded-xl bg-secondary flex justify-center items-center space-x-4 text-white">
                     <Checkbox
-                      className="cursor-pointer size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      className="cursor-pointer size-5 rounded-full data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 bg-white border-white"
                       onCheckedChange={async (checked) => {
                         if (checked) {
                           await wait(250);
@@ -158,7 +158,7 @@ export default function Stepper({
                     <label
                       htmlFor="terms"
                       className="cursor-pointer text-xs sm:text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      I/We agree to the enrolment promo and discount terms
+                      Continue to application
                     </label>
                   </div>
                 </div>

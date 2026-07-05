@@ -43,15 +43,26 @@ function GuardianInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      familyInfo: {
-        ...formState.familyInfo!,
-        guardianInfo: {
-          ...form.watch(),
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        familyInfo: {
+          ...formState.familyInfo!,
+          guardianInfo: {
+            ...debouncedValues,
+          },
         },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   function onSubmit(values: VizSchoolGuardianInformationSchema) {

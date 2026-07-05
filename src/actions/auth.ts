@@ -147,9 +147,7 @@ export async function updateAccountName({
   middleName?: string;
 }) {
   try {
-    const fullName = middleName
-      ? `${lastName}, ${firstName}, ${middleName}`
-      : `${lastName}, ${firstName}`;
+    const fullName = middleName ? `${lastName}, ${firstName}, ${middleName}` : `${lastName}, ${firstName}`;
 
     const { error } = await supabase.auth.updateUser({
       data: { fullName },

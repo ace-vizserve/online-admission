@@ -1,4 +1,5 @@
-import { getCurrentStudentDiscounts, getStudentEnrollmentInformation } from "@/actions/private";
+import { getCurrentStudentDiscounts } from "@/actions/private";
+import { getReEnrollmentData } from "@/actions/get-reenrollment-data";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
 import AdditionalLearningNeedsComboBox from "@/components/ui/additional-learning-needs-combo-box";
@@ -23,14 +24,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import {
-  campusDevelopmentFee,
+  campusDevelopmentFeePrimary,
+  campusDevelopmentFeeSecondary,
   classLevels,
-  classTypes,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
+  preferredPaymentMethod,
+  preferredPaymentScheme,
+  PRIMARY_CLASS_LEVELS,
+  SECONDARY_SDF_CLASS_LEVELS,
 } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
-import { cn, getNextGradeLevel } from "@/lib/utils";
+import { cn, getNextGradeLevels } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,37 +49,66 @@ import { useLocation, useParams } from "react-router";
 import { toast } from "sonner";
 
 const MORNING_AFTERNOON_CLASS_LEVEL = [
-  "Youngstarters | Little Stars",
-  "Youngstarters | Junior Stars",
-  "Youngstarters | Senior Stars",
+  "YoungStarter Little Star",
+  "YoungStarter Junior Star",
+
   "Primary One",
   "Primary Two",
   "Primary Three",
   "Primary Four",
   "Primary Five",
   "Primary Six",
-];
 
-const WHOLE_DAY_CLASS_LEVEL = [
   "Secondary One",
   "Secondary Two",
   "Secondary Three",
   "Secondary Four",
-  "Cambridge Secondary One (Year 8)",
-  "Cambridge Secondary Two (Year 9)",
+
+  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+
+  "HFSE Global Education Programme - Primary 2",
+  "HFSE Global Education Programme - Primary 3",
+  "HFSE Global Education Programme - Primary 4",
+  "HFSE Global Education Programme - Primary 5",
+  "HFSE Global Education Programme - Primary 6",
 ];
 
-const ALLOWED_CAMBRIDGE_CLASS_TYPES = ["Global Class (CAMBRIDGE)", "Standard Class (ENGLISH + TAGALOG)"];
-const CAMBRIDGE_CLASS_LEVELS = ["Secondary One", "Secondary Two"];
+const WHOLE_DAY_CLASS_LEVEL = [
+  "HFSE Global Education Programme – Year 8",
+  "HFSE Global Education Programme – Year 9",
+  "HFSE Global Education Programme – Year 10",
+];
 
-const CAMBRIDGE_ONLY_CLASS_TYPES = ["Global Class (CAMBRIDGE)"];
-const CAMBRIDGE_YEAR_LEVELS = ["Cambridge Secondary One (Year 8)", "Cambridge Secondary Two (Year 9)"];
+const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
 
-const STANDARD_CLASS_LEVELS = ["Primary Six", "Secondary Three", "Secondary Four"];
-const ENRICHMENT_CLASS_LEVELS = [
-  "Youngstarters | Little Stars",
-  "Youngstarters | Junior Stars",
-  "Youngstarters | Senior Stars",
+const CAMBRIDGE_ONLY_LEVELS = [
+  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE Global Education Programme – Year 8",
+  "HFSE Global Education Programme – Year 9",
+  "HFSE Global Education Programme – Year 10",
+];
+
+const GLOBAL_LANGUAGE_LEVELS = [
+  "HFSE Global Education Programme - Primary 2",
+  "HFSE Global Education Programme - Primary 3",
+  "HFSE Global Education Programme - Primary 4",
+  "HFSE Global Education Programme - Primary 5",
+  "HFSE Global Education Programme - Primary 6",
+];
+
+const STANDARD_CLASS_LEVELS = [
+  "Primary One",
+  "Primary Two",
+  "Primary Three",
+  "Primary Four",
+  "Primary Five",
+  "Primary Six",
+  "Secondary One",
+  "Secondary Two",
+  "Secondary Three",
+  "Secondary Four",
 ];
 
 function OldEnrollmentInformation() {
@@ -89,9 +123,9 @@ function OldEnrollmentInformation() {
   );
   const params = useParams();
   const { data, isPending, isSuccess } = useQuery({
-    queryKey: ["enrollment-information", params.id],
+    queryKey: ["re-enrollment", params.id],
     queryFn: async () => {
-      return await getStudentEnrollmentInformation(params.id!);
+      return await getReEnrollmentData({ enroleeNumber: params.id! });
     },
   });
   const { data: currentStudentDiscounts, isPending: isPendingCurrentStudentDiscounts } = useQuery({
@@ -107,15 +141,19 @@ function OldEnrollmentInformation() {
     defaultValues: {
       ...formState.enrollmentInfo,
       socialMediaConsent: Boolean(formState.enrollmentInfo?.socialMediaConsent),
-      contractSignatory:
-        data?.fatherEmail != null && !formState.familyInfo?.fatherInfo?.noFatherInfo ? "Father" : "Mother",
     },
   });
 
+  const nextGradeLevels = data?.levelApplied ? getNextGradeLevels(data.levelApplied) : [];
+
   useEffect(() => {
     if (!isSuccess || !data) return;
-    setSelectedLevel(getNextGradeLevel(data.levelApplied) ?? "");
-    form.setValue("levelApplied", getNextGradeLevel(data!.levelApplied)!);
+
+    const allowedNextLevels = getNextGradeLevels(data.levelApplied);
+    const defaultNextLevel = allowedNextLevels[0] ?? "";
+
+    setSelectedLevel(defaultNextLevel);
+    form.setValue("levelApplied", defaultNextLevel);
   }, [data, form, isSuccess]);
 
   useEffect(() => {
@@ -130,15 +168,56 @@ function OldEnrollmentInformation() {
   const debouncedValues = useDebounce(watchedValues, 150);
 
   useEffect(() => {
-    setFormState({
-      ...formState,
-      enrollmentInfo: {
-        ...debouncedValues,
+    const wasDirty = form.formState.isDirty;
+
+    if (wasDirty) {
+      setFormState({
+        ...formState,
+        enrollmentInfo: {
+          ...debouncedValues,
+        },
+      });
+    }
+
+    form.reset(
+      { ...debouncedValues },
+      {
+        keepErrors: true,
       },
-    });
+    );
   }, [debouncedValues]);
 
   function onSubmit(values: EnrollmentInformationSchema) {
+    if (values.levelApplied.includes("YoungStarter") && values.paymentOption != "Not Applicable") {
+      toast.warning("Invalid Student Development Fee!", {
+        description: "Kindly select the option 'Not Applicable'.",
+      });
+      form.setError("paymentOption", { message: "Please select 'Not Applicable'." });
+      return;
+    }
+
+    if (
+      PRIMARY_CLASS_LEVELS.includes(values.levelApplied) &&
+      !campusDevelopmentFeePrimary.find((fee) => fee.value === values.paymentOption)
+    ) {
+      toast.warning("Invalid Student Development Fee!", {
+        description: "Kindly select the option the correct Student Development Fee.",
+      });
+      form.setError("paymentOption", { message: "Please select the correct Student Development Fee." });
+      return;
+    }
+
+    if (
+      SECONDARY_SDF_CLASS_LEVELS.includes(values.levelApplied) &&
+      !campusDevelopmentFeeSecondary.find((fee) => fee.value === values.paymentOption)
+    ) {
+      toast.warning("Invalid Student Development Fee!", {
+        description: "Kindly select the option the correct Student Development Fee.",
+      });
+      form.setError("paymentOption", { message: "Please select the correct Student Development Fee." });
+      return;
+    }
+
     if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {
       toast.warning("Schedule Mismatch!", {
         description: "Only 'Whole Day' schedule is available for the selected grade level.",
@@ -155,29 +234,34 @@ function OldEnrollmentInformation() {
       return;
     }
 
-    if (
-      CAMBRIDGE_CLASS_LEVELS.includes(values.levelApplied) &&
-      !ALLOWED_CAMBRIDGE_CLASS_TYPES.includes(values.classType)
-    ) {
+    if (CAMBRIDGE_ONLY_LEVELS.includes(values.levelApplied) && values.classType !== "Global Class (CAMBRIDGE)") {
       toast.warning("Class Type Mismatch!", {
-        description:
-          "Only 'Global Class (CAMBRIDGE)' or 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
+        description: "Only 'Global Class (CAMBRIDGE)' is available for this grade level.",
       });
 
       form.setError("classType", {
-        message: "Please select a valid class type for this level.",
+        message: "Please select 'Global Class (CAMBRIDGE)'.",
       });
 
       return;
     }
 
-    if (CAMBRIDGE_YEAR_LEVELS.includes(values.levelApplied) && !CAMBRIDGE_ONLY_CLASS_TYPES.includes(values.classType)) {
+    if (
+      GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied) &&
+      ![
+        "Global Class 1 (ENGLISH + MANDARIN)",
+        "Global Class 2 (ENGLISH + TAMIL)",
+        "Global Class 3 (ENGLISH + FRENCH)",
+      ].includes(values.classType)
+    ) {
       toast.warning("Class Type Mismatch!", {
-        description: "Only 'Global Class (CAMBRIDGE)' is available for this grade level.",
+        description: "Please select one of the available Global Class language tracks.",
       });
+
       form.setError("classType", {
-        message: "Please select 'Global Class (CAMBRIDGE)' for this level.",
+        message: "Please select a valid Global Class option.",
       });
+
       return;
     }
 
@@ -188,9 +272,11 @@ function OldEnrollmentInformation() {
       toast.warning("Class Type Mismatch!", {
         description: "Only 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
       });
+
       form.setError("classType", {
-        message: "Please select 'Standard Class (ENGLISH + TAGALOG)' for this level.",
+        message: "Please select 'Standard Class (ENGLISH + TAGALOG)'.",
       });
+
       return;
     }
 
@@ -214,11 +300,15 @@ function OldEnrollmentInformation() {
       return;
     }
 
-    if (values.levelApplied !== getNextGradeLevel(data!.levelApplied)) {
+    const allowedNextLevels = getNextGradeLevels(data!.levelApplied);
+
+    if (!allowedNextLevels.includes(values.levelApplied)) {
       toast.warning("Invalid Grade Level!", {
-        description: "The grade level entered doesn't align with the student's expected progression",
+        description: "The selected grade level doesn't align with the student's expected progression.",
       });
-      form.setError("levelApplied", { message: "Please select the correct next academic year." });
+      form.setError("levelApplied", {
+        message: "Please select one valid next academic year option.",
+      });
       return;
     }
 
@@ -270,7 +360,7 @@ function OldEnrollmentInformation() {
                         Progressing from <span className="font-bold">{data?.levelApplied?.split("-")?.join(" ")}</span>
                         {" to "}
                         <span className="font-bold">
-                          {getNextGradeLevel(data?.levelApplied)?.split("-")?.join(" ")}
+                          {nextGradeLevels.map((level) => level.split("-").join(" ")).join(" or ")}
                         </span>
                       </>
                     )}
@@ -303,19 +393,22 @@ function OldEnrollmentInformation() {
                             field.onChange(value);
                             setSelectedLevel(value);
                           }}
-                          defaultValue={getNextGradeLevel(data?.levelApplied) ?? field.value}>
+                          defaultValue={field.value || nextGradeLevels[0] || ""}>
                           <FormControl>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className="min-w-0 w-full">
                               <SelectValue placeholder="Select a class level" />
                             </SelectTrigger>
                           </FormControl>
+
                           <SelectContent>
                             <ScrollArea className="h-52">
-                              {classLevels.map((level) => (
-                                <SelectItem key={level.value} value={level.value}>
-                                  {level.label}
-                                </SelectItem>
-                              ))}
+                              {classLevels
+                                .filter((level) => nextGradeLevels.includes(level.value))
+                                .map((level) => (
+                                  <SelectItem key={level.value} value={level.value}>
+                                    {level.label}
+                                  </SelectItem>
+                                ))}
                             </ScrollArea>
                           </SelectContent>
                         </Select>
@@ -341,30 +434,31 @@ function OldEnrollmentInformation() {
                           </FormControl>
                           <SelectContent>
                             {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Enrichment Class"}>Enrichment Class</SelectItem>
-                            ) : CAMBRIDGE_YEAR_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>
-                            ) : CAMBRIDGE_CLASS_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value="Enrichment Class">Enrichment Class</SelectItem>
+                            ) : CAMBRIDGE_ONLY_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value="Global Class (CAMBRIDGE)">Global Class (CAMBRIDGE)</SelectItem>
+                            ) : GLOBAL_LANGUAGE_LEVELS.includes(selectedLevel) ? (
                               <>
-                                <SelectItem value={"Global Class (CAMBRIDGE)"}>Global Class (CAMBRIDGE)</SelectItem>
-                                <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
-                                  Standard Class (ENGLISH + TAGALOG)
+                                <SelectItem value="Global Class 1 (ENGLISH + MANDARIN)">
+                                  Global Class (ENGLISH + MANDARIN)
+                                </SelectItem>
+
+                                <SelectItem value="Global Class 2 (ENGLISH + TAMIL)">
+                                  Global Class (ENGLISH + TAMIL)
+                                </SelectItem>
+
+                                <SelectItem value="Global Class 3 (ENGLISH + FRENCH)">
+                                  Global Class (ENGLISH + FRENCH)
                                 </SelectItem>
                               </>
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
+                              <SelectItem value="Standard Class (ENGLISH + TAGALOG)">
                                 Standard Class (ENGLISH + TAGALOG)
                               </SelectItem>
-                            ) : selectedLevel == "" ? (
-                              <SelectItem disabled value={"None"}>
+                            ) : (
+                              <SelectItem disabled value="None">
                                 Select a class level
                               </SelectItem>
-                            ) : (
-                              classTypes.slice(-4).map((type) => (
-                                <SelectItem key={type.value} value={type.value}>
-                                  {type.label}
-                                </SelectItem>
-                              ))
                             )}
                           </SelectContent>
                         </Select>
@@ -443,32 +537,7 @@ function OldEnrollmentInformation() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 lg:gap-6 w-full">
-                  <FormField
-                    control={form.control}
-                    name="availUniform"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          School Uniform <span className="text-xs text-muted-foreground">(includes all 3 sets)</span>
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Yes or No" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Yes">Yes</SelectItem>
-                            <SelectItem value="No">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>Will you avail a school uniform? </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+                <div className="grid lg:grid-cols-2 items-start gap-4 lg:gap-6 w-full">
                   <div className="flex flex-col w-full gap-6">
                     <FormField
                       control={form.control}
@@ -539,7 +608,47 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {campusDevelopmentFee.map((fee) => (
+                            {PRIMARY_CLASS_LEVELS.includes(form.watch("levelApplied")) ? (
+                              campusDevelopmentFeePrimary.map((fee) => (
+                                <SelectItem key={fee.value} value={fee.value}>
+                                  {fee.label}
+                                </SelectItem>
+                              ))
+                            ) : SECONDARY_SDF_CLASS_LEVELS.includes(form.watch("levelApplied")) ? (
+                              campusDevelopmentFeeSecondary.map((fee) => (
+                                <SelectItem key={fee.value} value={fee.value}>
+                                  {fee.label}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="Not Applicable">Not Applicable</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+
+                        <FormDescription>Select your preferred Student Development Fee.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="preferredPaymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preferred Payment Method</FormLabel>
+
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a payment option" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {preferredPaymentMethod.map((fee) => (
                               <SelectItem key={fee.value} value={fee.value}>
                                 {fee.label}
                               </SelectItem>
@@ -548,6 +657,34 @@ function OldEnrollmentInformation() {
                         </Select>
 
                         <FormDescription>Select your preferred payment method.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="preferredPaymentScheme"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preferred Payment Scheme</FormLabel>
+
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a payment option" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {preferredPaymentScheme.map((fee) => (
+                              <SelectItem key={fee.value} value={fee.value}>
+                                {fee.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <FormDescription>Select your preferred payment scheme.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

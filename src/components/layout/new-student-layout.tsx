@@ -5,6 +5,7 @@ import MaxWidthWrapper from "../max-width-wrapper";
 import NewStudentSteps from "../private/enrol-student/new-student-steps";
 import { buttonVariants } from "../ui/button";
 
+import { discardDraft } from "@/actions/discard-draft";
 import { submitEnrollment } from "@/actions/private";
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import {
@@ -29,10 +30,11 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { useResolveResumeDraft } from "@/hooks/use-resolve-resume-draft";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
+import { isExpired, listNewStudentDrafts } from "@/lib/draft-storage";
 import { getStepValidity } from "@/lib/step-validity";
-import { isExpired, listNewStudentDrafts, removeNewStudentDraft } from "@/lib/utils";
 import { EnrolNewStudentDraftStore } from "@/zustand-store";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -151,17 +153,20 @@ function AutoResumeDraft() {
   const { setFormState, setActiveTab, setCurrentTab, setCompletedTabs } = useEnrolNewStudentContext();
   const hasRun = useRef(false);
 
+  // Falls back to a server lookup when there's no local match — e.g. the draft was started on
+  // a different browser/device (src/actions/resolve-draft.ts).
+  const { data: match, isSuccess } = useResolveResumeDraft(resumeDraftId, "hfse-is");
+
   useEffect(() => {
-    if (!resumeDraftId || hasRun.current) return;
+    if (!isSuccess || hasRun.current) return;
     hasRun.current = true;
 
-    const allDrafts = listNewStudentDrafts("hfse-is");
-    const match = allDrafts.find(
-      (d: { state: EnrolNewStudentDraftStore }) => d.state?.draftId === resumeDraftId,
-    );
-    if (!match) return;
+    if (!match) {
+      navigate("/admission/drafts", { replace: true });
+      return;
+    }
 
-    const state = match.state as EnrolNewStudentDraftStore;
+    const state = match.state as unknown as EnrolNewStudentDraftStore;
 
     if (isExpired(state.expiresAt)) {
       navigate("/admission/drafts", { replace: true });
@@ -174,7 +179,8 @@ function AutoResumeDraft() {
     setFormState({ ...state.formState, draftId: state.draftId } as EnrolNewStudentFormState);
 
     navigate(`${state.activeTab}?academicYear=${state.academicYear}`, { replace: true });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, match]);
 
   return null;
 }
@@ -233,7 +239,7 @@ function SubmitApplicationDialog() {
       return { ...result, draftId };
     },
     onSuccess(data) {
-      removeNewStudentDraft(data.draftId, "hfse-is");
+      discardDraft(data.draftId, "hfse-is");
       navigate("/application-submitted", {
         state: {
           academicYear,

@@ -33,6 +33,7 @@ import useSession from "@/hooks/use-session";
 import { OpenHouseFormState } from "@/types";
 import {
   useEnrolNewStudentTabStateStore,
+  useOpenHouseCredentialsStore,
   usePassTypeStore,
   usePreCourseAcknowledgementStore,
   useSelectAcademicYear,
@@ -113,10 +114,12 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
   const preCourseAnswer = usePreCourseAcknowledgementStore((state) => state.preCourseAnswer) as string;
   const preCourseDate = usePreCourseAcknowledgementStore((state) => state.preCourseDate) as Date;
+  const clearCredentials = useOpenHouseCredentialsStore((state) => state.clearState);
   const { formState } = useOpenHouseContext();
   const { mutate, isPending } = useMutation({
     mutationFn: async (enrollmentDetails: OpenHouseFormState) => {
-      const { email, firstName, lastName, password, relationship, confirmPassword } = enrollmentDetails.accountInfo;
+      const { email, firstName, lastName, relationship } = enrollmentDetails.accountInfo;
+      const { password, confirmPassword } = useOpenHouseCredentialsStore.getState();
 
       try {
         await userRegister({
@@ -162,6 +165,7 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
         queryKey: ["student-enrollments-list", session?.user.email],
       });
       clearEnrolNewStudentTabState();
+      clearCredentials();
       sessionStorage.clear();
     },
     onError() {
@@ -258,6 +262,7 @@ function ExitApplicationDialog() {
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const clearInstitution = useSelectOpenHouseInstitution((state) => state.clearState);
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
+  const clearCredentials = useOpenHouseCredentialsStore((state) => state.clearState);
 
   const isDesktop = useMediaQuery({
     query: "(min-width: 786px)",
@@ -268,6 +273,7 @@ function ExitApplicationDialog() {
     clearAcademicYearState();
     clearEnrolNewStudentTabState();
     clearPassType();
+    clearCredentials();
     clearPreCourse();
     clearInstitution();
     sessionStorage.clear();

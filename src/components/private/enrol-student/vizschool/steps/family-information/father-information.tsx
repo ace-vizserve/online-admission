@@ -13,10 +13,10 @@ import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { VizSchoolEnrolNewStudentFormState } from "@/types";
 import {
-  fatherInformationSchema,
   ParentGuardianUploadRequirementsSchema,
   StudentUploadRequirementsSchema,
   VizSchoolFatherInformationSchema,
+  vizSchoolFatherInformationSchema,
 } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,7 +59,7 @@ function FatherInformation() {
   });
 
   const form = useForm<VizSchoolFatherInformationSchema>({
-    resolver: zodResolver(fatherInformationSchema),
+    resolver: zodResolver(vizSchoolFatherInformationSchema),
     defaultValues: {
       ...formState.familyInfo?.fatherInfo,
       noFatherInfo: formState.familyInfo?.fatherInfo?.noFatherInfo ?? false,
@@ -114,6 +114,7 @@ function FatherInformation() {
       });
       const familyInfo = queryClient.getQueryData([
         "new-learner-family-information",
+        session?.user.email,
       ]) as VizSchoolEnrolNewStudentFormState["familyInfo"];
       form.reset({ ...(familyInfo?.fatherInfo ?? {}), noFatherInfo: false });
       setFormState({
@@ -193,7 +194,7 @@ function FatherInformation() {
       },
     });
 
-    if (!formState.familyInfo?.motherInfo.isValid) {
+    if (!formState.familyInfo?.motherInfo?.isValid) {
       toast.info("Father's information confirmed!", {
         description: "Please proceed in confirming the Mother's information",
       });

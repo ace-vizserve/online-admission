@@ -14,11 +14,42 @@ import {
   useRef,
   useState,
 } from "react";
-import { DropzoneOptions, DropzoneState, FileRejection, useDropzone } from "react-dropzone";
+import { Accept, DropzoneOptions, DropzoneState, FileRejection, useDropzone } from "react-dropzone";
 import { FieldValues, UseFormSetValue } from "react-hook-form";
 import { toast } from "sonner";
 
 type DirectionOptions = "rtl" | "ltr" | undefined;
+
+/**
+ * Maps a react-dropzone rejection to a curated, user-facing message instead of the raw
+ * dropzone/browser string (which reads like "File type must be application/pdf" and doesn't
+ * tell the user what to do instead).
+ */
+export function friendlyRejectionMessage(
+  rejection: FileRejection,
+  maxSize: number,
+  maxFiles: number,
+  accept: Accept,
+): string {
+  const code = rejection.errors[0]?.code;
+
+  if (code === "file-too-large") {
+    return `File is too large. Max size is ${maxSize / 1024 / 1024}MB.`;
+  }
+
+  if (code === "file-invalid-type") {
+    const allowedExtensions = Object.values(accept).flat();
+    return allowedExtensions.length > 0
+      ? `This file type isn't supported. Please upload a ${allowedExtensions.join(", ")} file.`
+      : "This file type isn't supported.";
+  }
+
+  if (code === "too-many-files") {
+    return `You can only upload up to ${maxFiles} file${maxFiles === 1 ? "" : "s"} here.`;
+  }
+
+  return rejection.errors[0]?.message || "This file couldn't be uploaded. Please try a different file.";
+}
 
 type FileUploaderContextType = {
   dropzoneState: DropzoneState;
@@ -84,9 +115,6 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
 
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
         if (!value) return;
 
         const moveNext = () => {
@@ -102,6 +130,16 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
         const prevKey = orientation === "horizontal" ? (direction === "ltr" ? "ArrowLeft" : "ArrowRight") : "ArrowUp";
 
         const nextKey = orientation === "horizontal" ? (direction === "ltr" ? "ArrowRight" : "ArrowLeft") : "ArrowDown";
+
+        // Only intercept the keys this component actually handles, letting every other key
+        // (notably Tab) pass through untouched. This previously called preventDefault/
+        // stopPropagation unconditionally for every keypress, which blocked keyboard users from
+        // tabbing out of the uploader.
+        const handledKeys = [prevKey, nextKey, "Enter", "Space", "Delete", "Backspace", "Escape"];
+        if (!handledKeys.includes(e.key)) return;
+
+        e.preventDefault();
+        e.stopPropagation();
 
         if (e.key === nextKey) {
           moveNext();
@@ -130,20 +168,13 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
 
     const onDrop = useCallback(
       (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
-        const files = acceptedFiles;
-
-        if (!files) {
-          toast.error("file error , probably too big");
-          return;
-        }
-
         const newValues: File[] = value ? [...value] : [];
 
         if (reSelectAll) {
           newValues.splice(0, newValues.length);
         }
 
-        files.forEach((file) => {
+        acceptedFiles.forEach((file) => {
           if (newValues.length < maxFiles) {
             newValues.push(file);
           }
@@ -152,16 +183,7 @@ export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React
         onValueChange(newValues);
 
         if (rejectedFiles.length > 0) {
-          for (let i = 0; i < rejectedFiles.length; i++) {
-            if (rejectedFiles[i].errors[0]?.code === "file-too-large") {
-              toast.error(`File is too large. Max size is ${maxSize / 1024 / 1024}MB`);
-              break;
-            }
-            if (rejectedFiles[i].errors[0]?.message) {
-              toast.error(rejectedFiles[i].errors[0].message);
-              break;
-            }
-          }
+          toast.error(friendlyRejectionMessage(rejectedFiles[0], maxSize, maxFiles, accept));
         }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps
