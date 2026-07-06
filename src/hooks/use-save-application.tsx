@@ -2,6 +2,7 @@ import { saveDraftRemote } from "@/actions/drafts";
 import { createNewStudentDraft, DRAFT_EXPIRY_DAYS } from "@/lib/draft-storage";
 import { wait } from "@/lib/utils";
 import { createNewStudentDraftStore } from "@/zustand-store";
+import { useQueryClient } from "@tanstack/react-query";
 import { addDays } from "date-fns";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
@@ -27,6 +28,7 @@ export function useSaveApplication({
   type,
 }: Props) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
   const saveApplication = useCallback(
@@ -62,6 +64,10 @@ export function useSaveApplication({
         if (willExit) {
           try {
             await saveDraftRemote(draftRecord);
+            // The sidebar badge and dashboard count are database-backed (useDraftRows) and
+            // don't remount on this navigation, so they need an explicit invalidation to
+            // pick up a newly-created or newly-synced draft.
+            queryClient.invalidateQueries({ queryKey: ["drafts"] });
           } catch {
             // Offline-first: the local save above already succeeded. Remote sync is
             // best-effort and will retry on the next Save & exit.
@@ -81,7 +87,7 @@ export function useSaveApplication({
         setIsLoading(false);
       }
     },
-    [academicYear, activeTab, completedTabs, currentTab, formState, navigate, setFormState, type],
+    [academicYear, activeTab, completedTabs, currentTab, formState, navigate, queryClient, setFormState, type],
   );
 
   return {

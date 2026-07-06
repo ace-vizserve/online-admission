@@ -4,20 +4,22 @@ import PageMetaData from "@/components/page-metadata";
 import type { DraftRow } from "@/components/private/drafts/draft-ticket";
 import { DraftTicket } from "@/components/private/drafts/draft-ticket";
 import { buttonVariants } from "@/components/ui/button";
-import { useMergedDraftRows } from "@/hooks/use-merged-draft-rows";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDraftRows } from "@/hooks/use-draft-rows";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, FilePen, PlusCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 
-const MERGED_DRAFT_ROWS_KEY = ["drafts", "merged-rows"];
+const DRAFT_ROWS_KEY = ["drafts", "remote-rows"];
 
 export default function Drafts() {
   const navigate = useNavigate();
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
   const queryClient = useQueryClient();
 
-  const { data: rows } = useMergedDraftRows();
+  const { data, isPending } = useDraftRows();
+  const rows = data ?? [];
 
   function handleContinue(row: DraftRow) {
     const { state, flowType } = row;
@@ -36,7 +38,7 @@ export default function Drafts() {
 
   function handleDiscard(draftId: string, flowType: "hfse-is" | "viz-school") {
     discardDraft(draftId, flowType);
-    queryClient.setQueryData<DraftRow[]>(MERGED_DRAFT_ROWS_KEY, (prev) =>
+    queryClient.setQueryData<DraftRow[]>(DRAFT_ROWS_KEY, (prev) =>
       (prev ?? []).filter((r) => r.state.draftId !== draftId),
     );
   }
@@ -72,7 +74,9 @@ export default function Drafts() {
           )}
         </div>
 
-        {rows.length === 0 ? (
+        {isPending ? (
+          <DraftsLoader />
+        ) : rows.length === 0 ? (
           <EmptyState />
         ) : (
           <div className="space-y-3">
@@ -83,6 +87,16 @@ export default function Drafts() {
         )}
       </MaxWidthWrapper>
     </>
+  );
+}
+
+function DraftsLoader() {
+  return (
+    <div className="space-y-3">
+      {[0, 1, 2].map((i) => (
+        <Skeleton key={i} className="h-[124px] w-full rounded-xl" />
+      ))}
+    </div>
   );
 }
 

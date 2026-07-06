@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/actions/drafts", () => ({ listDraftsRemote: vi.fn() }));
 
-const { syncDraftsForType, getMergedDraftRows } = await import("./sync-drafts");
+const { syncDraftsForType, getRemoteDraftRows } = await import("./sync-drafts");
 const { listDraftsRemote } = await import("@/actions/drafts");
 
 function seedLocalDraft(draftId: string, type: "hfse-is" | "viz-school", overrides: Record<string, unknown> = {}) {
@@ -134,16 +134,20 @@ describe("syncDraftsForType", () => {
 });
 
 // ---------------------------------------------------------------------------
-// getMergedDraftRows
+// getRemoteDraftRows
 // ---------------------------------------------------------------------------
 
-describe("getMergedDraftRows", () => {
-  it("merges both flow types, tags each row with its flowType, and sorts by lastUpdated desc", async () => {
-    seedLocalDraft("hfse-draft", "hfse-is", { lastSavedAt: new Date("2024-01-01").toISOString() });
-    seedLocalDraft("viz-draft", "viz-school", { lastSavedAt: new Date("2024-06-01").toISOString() });
-    vi.mocked(listDraftsRemote).mockResolvedValue([]);
+describe("getRemoteDraftRows", () => {
+  it("merges both flow types from the server, tags each row with its flowType, and sorts by lastUpdated desc", async () => {
+    vi.mocked(listDraftsRemote).mockImplementation(async (type) => [
+      remoteEntry(
+        type === "hfse-is" ? "hfse-draft" : "viz-draft",
+        type,
+        { lastSavedAt: type === "hfse-is" ? new Date("2024-01-01").toISOString() : new Date("2024-06-01").toISOString() },
+      ),
+    ]);
 
-    const rows = await getMergedDraftRows();
+    const rows = await getRemoteDraftRows();
 
     expect(rows).toEqual([
       expect.objectContaining({ flowType: "viz-school", state: expect.objectContaining({ draftId: "viz-draft" }) }),
@@ -152,23 +156,41 @@ describe("getMergedDraftRows", () => {
   });
 
   it("filters out expired drafts", async () => {
-    seedLocalDraft("expired", "hfse-is", { expiresAt: new Date("2020-01-01").toISOString() });
-    seedLocalDraft("valid", "hfse-is", { expiresAt: new Date("2099-01-01").toISOString() });
-    vi.mocked(listDraftsRemote).mockResolvedValue([]);
+    vi.mocked(listDraftsRemote).mockImplementation(async (type) =>
+      type === "hfse-is"
+        ? [
+            remoteEntry("expired", "hfse-is", { expiresAt: new Date("2020-01-01").toISOString() }),
+            remoteEntry("valid", "hfse-is", { expiresAt: new Date("2099-01-01").toISOString() }),
+          ]
+        : [],
+    );
 
-    const rows = await getMergedDraftRows();
+    const rows = await getRemoteDraftRows();
 
     expect(rows).toHaveLength(1);
     expect(rows[0].state.draftId).toBe("valid");
   });
 
-  it("includes remote-only drafts from either flow", async () => {
-    vi.mocked(listDraftsRemote).mockImplementation(async (type) => [
-      remoteEntry(type === "hfse-is" ? "remote-hfse" : "remote-viz", type),
-    ]);
+  it("does not read from or fall back to localStorage — a local-only draft is not included", async () => {
+    seedLocalDraft("local-only", "hfse-is");
+    vi.mocked(listDraftsRemote).mockResolvedValue([]);
 
-    const rows = await getMergedDraftRows();
+    const rows = await getRemoteDraftRows();
 
-    expect(rows.map((r) => r.state.draftId).sort()).toEqual(["remote-hfse", "remote-viz"]);
+    expect(rows).toEqual([]);
+  });
+
+  it("does not hydrate the local cache as a side effect", async () => {
+    vi.mocked(listDraftsRemote).mockResolvedValue([remoteEntry("remote-only", "hfse-is")]);
+
+    await getRemoteDraftRows();
+
+    expect(localStorage.getItem("enrolNewStudent:draft:remote-only:hfse-is")).toBeNull();
+  });
+
+  it("propagates a remote fetch failure instead of falling back to local data", async () => {
+    vi.mocked(listDraftsRemote).mockRejectedValue(new Error("network down"));
+
+    await expect(getRemoteDraftRows()).rejects.toThrow("network down");
   });
 });

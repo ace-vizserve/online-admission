@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -11,7 +12,12 @@ const { saveDraftRemote } = await import("@/actions/drafts");
 const { toast } = await import("sonner");
 
 function wrapper({ children }: { children: React.ReactNode }) {
-  return <MemoryRouter initialEntries={["/enrol-student/new/student-info"]}>{children}</MemoryRouter>;
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return (
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={["/enrol-student/new/student-info"]}>{children}</MemoryRouter>
+    </QueryClientProvider>
+  );
 }
 
 function baseProps(overrides: Partial<Parameters<typeof useSaveApplication>[0]> = {}) {
@@ -119,6 +125,31 @@ describe("useSaveApplication", () => {
     );
 
     await waitFor(() => expect(result.current.location.pathname).toBe("/admission/dashboard"));
+  });
+
+  it("invalidates the drafts query after a successful remote save, so the sidebar/dashboard counts refresh", async () => {
+    const invalidateSpy = vi.spyOn(QueryClient.prototype, "invalidateQueries");
+
+    const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: true });
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["drafts"] });
+  });
+
+  it("does not invalidate the drafts query when the remote save fails", async () => {
+    vi.mocked(saveDraftRemote).mockRejectedValueOnce(new Error("network down"));
+    const invalidateSpy = vi.spyOn(QueryClient.prototype, "invalidateQueries");
+
+    const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: true });
+    });
+
+    expect(invalidateSpy).not.toHaveBeenCalled();
   });
 
   it("swallows a saveDraftRemote failure: local save, soft toast, and navigation still occur", async () => {

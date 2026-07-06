@@ -1,10 +1,10 @@
 import { getSectionCardsDetails } from "@/actions/private";
-import { getDraftRows } from "@/components/private/drafts/draft-ticket";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
+import { useDraftRows } from "@/hooks/use-draft-rows";
 import useSession from "@/hooks/use-session";
 import { cn, getCurrentDayState } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -84,7 +84,8 @@ export function SectionCards() {
 }
 
 function DashboardCards({ currentEnrolledStudents, pendingTasks, totalEnrollments }: DashboardCardsProps) {
-  const draftCount = getDraftRows().length;
+  const { data: draftRows } = useDraftRows();
+  const draftCount = draftRows?.length ?? 0;
 
   return (
     <div className="flex flex-col gap-4 w-full">
