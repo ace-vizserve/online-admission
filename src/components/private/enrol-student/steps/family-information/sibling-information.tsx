@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
+import { isFatherInfoSatisfied } from "@/lib/step-validity";
 import { cn } from "@/lib/utils";
 import { siblingInformationSchema, SiblingInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
@@ -79,7 +80,7 @@ function SiblingInformation() {
       return;
     }
 
-    if (!formState.familyInfo?.fatherInfo?.isValid) {
+    if (!isFatherInfoSatisfied(formState.familyInfo?.fatherInfo)) {
       toast.warning("Father's information not confirmed!", {
         description: "Please review and confirm all required fields before proceeding",
       });
@@ -190,7 +191,7 @@ function SiblingInformation() {
                 </span>
               </div>
             </Alert>
-            {(!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid) && (
+            {(!isFatherInfoSatisfied(formState.familyInfo?.fatherInfo) || !formState.familyInfo?.motherInfo?.isValid) && (
               <>
                 <div className="w-full max-w-md mx-auto">
                   <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">

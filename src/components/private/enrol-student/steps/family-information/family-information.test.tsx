@@ -11,7 +11,8 @@ import MotherInformation from "./mother-information";
 import GuardianInformation from "./guardian-information";
 import SiblingInformation from "./sibling-information";
 import { renderForm, resetEnrolmentStores, seedFormState } from "@/test/render-form";
-import { useEnrolNewStudentStore } from "@/zustand-store";
+import { useEnrolNewStudentStore, useEnrolNewStudentTabStateStore } from "@/zustand-store";
+import { toast } from "sonner";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 
@@ -98,6 +99,45 @@ describe("mother-information.tsx", () => {
     await new Promise((resolve) => setTimeout(resolve, 250));
 
     expect(setFormStateSpy).not.toHaveBeenCalled();
+  });
+
+  it("advances to the next step when the father is marked not applicable, without needing a separate father confirmation (regression test for optional-tab gating bug)", async () => {
+    seedFormState("hfse-new", {
+      familyInfo: { motherInfo: BASE_MOTHER, fatherInfo: { noFatherInfo: true } },
+    });
+    const user = userEvent.setup();
+
+    renderForm(<MotherInformation />, { flow: "hfse-new" });
+
+    const [submitButton] = screen.getAllByRole("button", { name: /confirm details/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(useEnrolNewStudentTabStateStore.getState().completedTabs).toContain("/enrol-student/new/family-info");
+    });
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it("still blocks advancing when the father is neither confirmed nor marked not applicable", async () => {
+    seedFormState("hfse-new", {
+      familyInfo: { motherInfo: BASE_MOTHER, fatherInfo: {} },
+    });
+    const user = userEvent.setup();
+
+    renderForm(<MotherInformation />, { flow: "hfse-new" });
+
+    const [submitButton] = screen.getAllByRole("button", { name: /confirm details/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(toast.info).toHaveBeenCalledWith(
+        "Mother's information confirmed!",
+        expect.objectContaining({ description: expect.stringContaining("Father") }),
+      );
+    });
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).not.toContain(
+      "/enrol-student/new/family-info",
+    );
   });
 });
 

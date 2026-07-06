@@ -55,6 +55,7 @@ export default defineConfig({
         "src/actions/merge-parent-guardian-documents.ts",
         "src/pages/private/drafts.tsx",
         "src/components/private/navbar/sidebar.tsx",
+        "src/lib/step-validity.ts",
       ],
       thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },

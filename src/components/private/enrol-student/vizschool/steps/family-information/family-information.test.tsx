@@ -3,7 +3,8 @@
  * Re-verifies father/mother/guardian/sibling-information.tsx fresh against the plan's explicit
  * schema-identity concern for this tree, rather than trusting Phase 0/2's summaries.
  */
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import FatherInformation from "./father-information";
@@ -11,7 +12,8 @@ import MotherInformation from "./mother-information";
 import GuardianInformation from "./guardian-information";
 import SiblingInformation from "./sibling-information";
 import { renderForm, resetEnrolmentStores, seedFormState } from "@/test/render-form";
-import { useVizSchoolEnrolNewStudentStore } from "@/zustand-store";
+import { useEnrolNewStudentTabStateStore, useVizSchoolEnrolNewStudentStore } from "@/zustand-store";
+import { toast } from "sonner";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 
@@ -47,7 +49,6 @@ describe("father-information.tsx (VizSchool new)", () => {
   });
 
   it("submits successfully without an NRIC (VizSchool's father schema makes it optional, unlike HFSE's)", async () => {
-    const userEvent = (await import("@testing-library/user-event")).default;
     seedFormState("vizschool-new", { familyInfo: { fatherInfo: BASE_FATHER, motherInfo: { isValid: true } } });
 
     const user = userEvent.setup();
@@ -102,6 +103,47 @@ describe("mother-information.tsx (VizSchool new)", () => {
     await new Promise((resolve) => setTimeout(resolve, 250));
 
     expect(setFormStateSpy).not.toHaveBeenCalled();
+  });
+
+  it("advances to the next step when the father is marked not applicable, without needing a separate father confirmation (regression test for optional-tab gating bug)", async () => {
+    seedFormState("vizschool-new", {
+      familyInfo: { motherInfo: BASE_MOTHER, fatherInfo: { noFatherInfo: true } },
+    });
+    const user = userEvent.setup();
+
+    renderForm(<MotherInformation />, { flow: "vizschool-new" });
+
+    const [submitButton] = screen.getAllByRole("button", { name: /confirm details|confirm & proceed/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(useEnrolNewStudentTabStateStore.getState().completedTabs).toContain(
+        "/vizschool/enrol-student/new/family-info",
+      );
+    });
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it("still blocks advancing when the father is neither confirmed nor marked not applicable", async () => {
+    seedFormState("vizschool-new", {
+      familyInfo: { motherInfo: BASE_MOTHER, fatherInfo: {} },
+    });
+    const user = userEvent.setup();
+
+    renderForm(<MotherInformation />, { flow: "vizschool-new" });
+
+    const [submitButton] = screen.getAllByRole("button", { name: /confirm details|confirm & proceed/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(toast.info).toHaveBeenCalledWith(
+        "Mother's information confirmed!",
+        expect.objectContaining({ description: expect.stringContaining("Father") }),
+      );
+    });
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).not.toContain(
+      "/vizschool/enrol-student/new/family-info",
+    );
   });
 });
 

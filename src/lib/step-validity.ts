@@ -15,6 +15,16 @@ export function stepKeyFromUrl(url: string): StepKey | null {
 }
 
 /**
+ * A father slice is "satisfied" either by an explicit confirmed submission (isValid) or by
+ * being marked not-applicable (noFatherInfo) — the single source of truth for this rule, reused
+ * everywhere else in the Family Information step (per-tab advance gates, badges) that needs to
+ * know whether the father requirement is met, so they can't drift out of sync with getStepValidity.
+ */
+export function isFatherInfoSatisfied(fatherInfo?: { isValid?: boolean; noFatherInfo?: boolean }): boolean {
+  return fatherInfo?.noFatherInfo === true || fatherInfo?.isValid === true;
+}
+
+/**
  * Derives per-step validity from the stored per-slice isValid flags in formState.
  * All values default to false when the slice or flag is absent, ensuring an
  * incomplete or corrupted draft never shows a false-green state.
@@ -39,8 +49,7 @@ export function getStepValidity(formState: any, flow: WizardFlow): Record<StepKe
     flow === "viz-school" ? true : studentInfo?.medicalInformation?.isValid === true;
 
   const motherValid: boolean = familyInfo?.motherInfo?.isValid === true;
-  const fatherNoInfo: boolean = familyInfo?.fatherInfo?.noFatherInfo === true;
-  const fatherValid: boolean = fatherNoInfo || familyInfo?.fatherInfo?.isValid === true;
+  const fatherValid: boolean = isFatherInfoSatisfied(familyInfo?.fatherInfo);
 
   return {
     studentInfo: studentDetailsValid && addressContactValid && medicalValid,
