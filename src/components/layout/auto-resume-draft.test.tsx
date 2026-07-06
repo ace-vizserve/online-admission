@@ -19,6 +19,11 @@
  * 5. Expired guard (local match) — expired draft → navigate to /admission/drafts, no restore
  * 6. Ordering guard — hasRun.current prevents double-fire on StrictMode remount
  * 7. Cross-draft contamination — after loading draft A, loading draft B replaces A's data
+ * 8. Outlet gate — the layout must not mount the step page (Outlet) until the resume
+ *    finishes, otherwise React Hook Form captures empty defaultValues before the store is
+ *    populated (the "Continue from Saved Drafts opens a blank form" bug). Gate is driven by
+ *    `isResumingFromDashboard` (location.state?.resumeDraftId), which AutoResumeDraft clears
+ *    by navigating with no state once the resume completes.
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, waitFor } from "@testing-library/react";
@@ -169,6 +174,48 @@ function renderHarness(resumeDraftId: string | undefined, type: "hfse-is" | "viz
 
 function pathnameOf(utils: ReturnType<typeof renderHarness>) {
   return utils.getByTestId("pathname").textContent;
+}
+
+/**
+ * Reproduces the layout's Outlet gate (new-student-layout.tsx / new-learner-layout.tsx):
+ * `isResumingFromDashboard` is derived straight from location.state?.resumeDraftId, so it's
+ * true from first render and only clears when AutoResumeDraft's navigate() drops the state —
+ * independent of whether useResolveResumeDraft has resolved yet.
+ */
+function LayoutGateHarness({ type }: { type: "hfse-is" | "viz-school" }) {
+  const location = useLocation();
+  const isResumingFromDashboard = Boolean(location.state?.resumeDraftId);
+  const cbs = useRef({
+    setFormState: vi.fn(),
+    setActiveTab: vi.fn(),
+    setCurrentTab: vi.fn(),
+    setCompletedTabs: vi.fn(),
+  }).current;
+
+  return (
+    <>
+      <AutoResumeDraftHarness type={type} callbacks={cbs} />
+      {isResumingFromDashboard ? <div data-testid="loader" /> : <div data-testid="outlet" />}
+    </>
+  );
+}
+
+function renderGateHarness(resumeDraftId: string | undefined, type: "hfse-is" | "viz-school") {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: "/enrol-student/new/student-info",
+            state: resumeDraftId ? { resumeDraftId } : undefined,
+          },
+        ]}>
+        <LayoutGateHarness type={type} />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -362,5 +409,64 @@ describe("AutoResumeDraft — viz-school flow", () => {
 
     expect(utils.cbs.setFormState).not.toHaveBeenCalled();
     expect(loadDraftRemote).toHaveBeenCalledWith("hfse-only-draft");
+  });
+});
+
+describe("AutoResumeDraft — Outlet gate (mount-timing fix)", () => {
+  it("keeps the loader up (Outlet not mounted) while a local draft resolve is still in flight", () => {
+    seedDraft("draft-abc", "hfse-is");
+
+    const utils = renderGateHarness("draft-abc", "hfse-is");
+
+    // Synchronously after render, the query hasn't resolved yet (it resolves on a microtask),
+    // so location.state?.resumeDraftId is still set and the gate must show the loader.
+    expect(utils.queryByTestId("loader")).not.toBeNull();
+    expect(utils.queryByTestId("outlet")).toBeNull();
+  });
+
+  it("swaps to the Outlet only once the resolve completes and the resume navigate clears the state", async () => {
+    seedDraft("draft-abc", "hfse-is");
+
+    const utils = renderGateHarness("draft-abc", "hfse-is");
+
+    await waitFor(() => expect(utils.queryByTestId("outlet")).not.toBeNull());
+    expect(utils.queryByTestId("loader")).toBeNull();
+  });
+
+  it("keeps the loader up for the whole remote fallback lookup, not just the local check", async () => {
+    let resolveRemote!: (value: ReturnType<typeof remoteDraft> | null) => void;
+    vi.mocked(loadDraftRemote).mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRemote = resolve;
+      }),
+    );
+
+    const utils = renderGateHarness("remote-draft-1", "hfse-is");
+
+    expect(utils.queryByTestId("loader")).not.toBeNull();
+    expect(utils.queryByTestId("outlet")).toBeNull();
+
+    resolveRemote(remoteDraft("remote-draft-1", "hfse-is"));
+
+    await waitFor(() => expect(utils.queryByTestId("outlet")).not.toBeNull());
+  });
+
+  it("renders the Outlet immediately when there is no resumeDraftId (normal, non-resume navigation)", () => {
+    const utils = renderGateHarness(undefined, "hfse-is");
+
+    expect(utils.queryByTestId("outlet")).not.toBeNull();
+    expect(utils.queryByTestId("loader")).toBeNull();
+  });
+
+  it("applies the same gate for the viz-school flow", async () => {
+    seedDraft("viz-draft-1", "viz-school", {
+      activeTab: "/vizschool/enrol-student/new/student-info",
+      currentTab: "/vizschool/enrol-student/new/student-info",
+    } as Partial<EnrolNewStudentDraftStore>);
+
+    const utils = renderGateHarness("viz-draft-1", "viz-school");
+
+    expect(utils.queryByTestId("loader")).not.toBeNull();
+    await waitFor(() => expect(utils.queryByTestId("outlet")).not.toBeNull());
   });
 });
