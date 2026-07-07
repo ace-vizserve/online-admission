@@ -1,5 +1,5 @@
-import { getCurrentStudentDiscounts } from "@/actions/private";
 import { getReEnrollmentData } from "@/actions/get-reenrollment-data";
+import { getCurrentStudentDiscounts } from "@/actions/private";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
 import AdditionalLearningNeedsComboBox from "@/components/ui/additional-learning-needs-combo-box";
@@ -117,7 +117,7 @@ function OldEnrollmentInformation() {
   const { formState, setFormState } = useEnrolOldStudentContext();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const { session } = useSession();
-  const [selectedLevel, setSelectedLevel] = useState<string>("");
+  const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
     formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false,
   );
@@ -145,16 +145,6 @@ function OldEnrollmentInformation() {
   });
 
   const nextGradeLevels = data?.levelApplied ? getNextGradeLevels(data.levelApplied) : [];
-
-  useEffect(() => {
-    if (!isSuccess || !data) return;
-
-    const allowedNextLevels = getNextGradeLevels(data.levelApplied);
-    const defaultNextLevel = allowedNextLevels[0] ?? "";
-
-    setSelectedLevel(defaultNextLevel);
-    form.setValue("levelApplied", defaultNextLevel);
-  }, [data, form, isSuccess]);
 
   useEffect(() => {
     const triggerForm = location.state?.triggerForm as boolean | undefined;

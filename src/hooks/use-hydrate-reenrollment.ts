@@ -1,4 +1,5 @@
 import { getReEnrollmentData, ReEnrollmentData } from "@/actions/get-reenrollment-data";
+import { getNextGradeLevels } from "@/lib/utils";
 import { useEnrolOldStudentStore } from "@/zustand-store";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -35,6 +36,17 @@ export function useHydrateReEnrollment(enroleeNumber: string | undefined) {
 
     if (!hasStudentInfo) seed.studentInfo = data.studentInfo;
     if (!hasFamilyInfo) seed.familyInfo = data.familyInfo;
+
+    const hasLevelApplied = Boolean(formState.enrollmentInfo?.levelApplied);
+
+    if (!hasLevelApplied) {
+      const allowedNextLevels = getNextGradeLevels(data.levelApplied);
+
+      seed.enrollmentInfo = {
+        ...formState.enrollmentInfo,
+        levelApplied: allowedNextLevels[0] ?? "",
+      };
+    }
 
     if (!hasStudentUploadReq || !hasParentGuardianUploadReq) {
       seed.uploadRequirements = {
