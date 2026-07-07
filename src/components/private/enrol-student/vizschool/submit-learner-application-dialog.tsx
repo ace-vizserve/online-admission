@@ -19,6 +19,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CheckCircle2, Send } from "lucide-react";
+import { useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -30,6 +31,10 @@ function SubmitLearnerApplicationDialog() {
   const { session } = useSession();
   const queryClient = useQueryClient();
   const { formState, clearState } = useEnrolCurrentLearnerContext();
+  // Hard re-entrancy guard: `isPending` only flips after a re-render, so a same-tick double
+  // click on "Continue" could otherwise fire the mutation (and its insert) twice before the
+  // button disables. This ref is checked-and-set synchronously, closing that window.
+  const submitInFlight = useRef(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       return await submitVizSchoolEnrollment(
@@ -38,6 +43,9 @@ function SubmitLearnerApplicationDialog() {
         schoolFee,
         "VizSchool Current",
       );
+    },
+    onSettled() {
+      submitInFlight.current = false;
     },
     onSuccess() {
       navigate("/application-submitted", {
@@ -275,6 +283,8 @@ function SubmitLearnerApplicationDialog() {
         }
       }
 
+      if (submitInFlight.current) return;
+      submitInFlight.current = true;
       mutate();
     } catch (error) {
       const err = error as Error;
@@ -316,6 +326,7 @@ function SubmitLearnerApplicationDialog() {
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
           <AlertDialogAction
+            disabled={isPending}
             className="!bg-green-600 hover:!bg-green-500 font-bold"
             onClick={() => verifyEnrollmentDetails()}>
             Continue

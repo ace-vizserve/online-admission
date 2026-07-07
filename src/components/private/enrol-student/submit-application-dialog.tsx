@@ -20,6 +20,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
 import { CheckCircle2, Send } from "lucide-react";
+import { useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -32,6 +33,10 @@ function SubmitApplicationDialog() {
   const { formState, clearState } = useEnrolOldStudentContext();
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+  // Hard re-entrancy guard: `isPending` only flips after a re-render, so a same-tick double
+  // click on "Continue" could otherwise fire the mutation (and its insert) twice before the
+  // button disables. This ref is checked-and-set synchronously, closing that window.
+  const submitInFlight = useRef(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const oldFormState = { ...(formState as EnrolOldStudentFormState), stpApplicationType };
@@ -40,6 +45,9 @@ function SubmitApplicationDialog() {
         preCourseDate: oldFormState.preCourseDate,
         preCourseAcknowledgedAt: new Date(),
       });
+    },
+    onSettled() {
+      submitInFlight.current = false;
     },
     onSuccess(enroleeNumber) {
       navigate("/application-submitted", {
@@ -309,6 +317,8 @@ function SubmitApplicationDialog() {
       //   delete formState.draftId;
       // }
 
+      if (submitInFlight.current) return;
+      submitInFlight.current = true;
       mutate();
     } catch (error) {
       const err = error as Error;
@@ -350,6 +360,7 @@ function SubmitApplicationDialog() {
         <AlertDialogFooter className="mt-2 sm:justify-center">
           <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
           <AlertDialogAction
+            disabled={isPending}
             className="!bg-green-600 hover:!bg-green-500 font-bold"
             onClick={() => verifyEnrollmentDetails()}>
             Continue

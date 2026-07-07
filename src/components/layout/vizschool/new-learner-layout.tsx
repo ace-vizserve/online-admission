@@ -228,10 +228,17 @@ function SubmitApplicationDialog() {
   const { session } = useSession();
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
   const { formState } = useEnrolNewLearnerContext();
+  // Hard re-entrancy guard: `isPending` only flips after a re-render, so a same-tick double
+  // click on "Continue" could otherwise fire the mutation (and its insert) twice before the
+  // button disables. This ref is checked-and-set synchronously, closing that window.
+  const submitInFlight = useRef(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async ({ enrollmentDetails, draftId }: { enrollmentDetails: VizSchoolEnrolNewStudentFormState; draftId: string | undefined }) => {
       const result = await submitVizSchoolEnrollment(enrollmentDetails, academicYear, schoolFee, "VizSchool New");
       return { ...result, draftId };
+    },
+    onSettled() {
+      submitInFlight.current = false;
     },
     onSuccess(data) {
       discardDraft(data.draftId, "viz-school");
@@ -299,6 +306,8 @@ function SubmitApplicationDialog() {
       delete formState.draftId;
     }
 
+    if (submitInFlight.current) return;
+    submitInFlight.current = true;
     mutate({ enrollmentDetails: formState as VizSchoolEnrolNewStudentFormState, draftId });
   }
 

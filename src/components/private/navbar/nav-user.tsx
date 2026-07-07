@@ -33,7 +33,7 @@ export function NavUser() {
               size="lg"
               className={cn(
                 "border border-transparent transition-all duration-200 py-6 cursor-pointer",
-                "data-[state=open]:bg-white data-[state=open]:border-slate-200 data-[state=open]:shadow-sm"
+                "data-[state=open]:bg-white data-[state=open]:border-slate-200 data-[state=open]:shadow-sm",
               )}>
               {/* Avatar Replacement/Icon */}
               <div className="flex aspect-square size-9 items-center justify-center rounded-lg bg-primary text-white shadow-inner">
@@ -49,7 +49,7 @@ export function NavUser() {
 
               <div className="relative flex items-center">
                 {showWarning && (
-                  <span className="absolute -left-2 top-1/2 -translate-y-1/2 flex h-2 w-2">
+                  <span className="absolute left-1 -top-1.5 -translate-y-1/2 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
                   </span>
@@ -84,21 +84,21 @@ export function NavUser() {
               <DropdownMenuItem
                 className={cn(
                   "cursor-pointer flex items-center justify-between p-2.5 rounded-lg transition-colors",
-                  showWarning ? "bg-red-50 text-red-900 hover:bg-red-100 hover:text-red-900" : "hover:bg-slate-100"
+                  showWarning ? "bg-red-50 text-red-900 hover:bg-red-100 hover:text-red-900" : "hover:bg-slate-100",
                 )}
                 onClick={() => navigate("/admission/account-settings")}>
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
                       "p-1.5 rounded-md",
-                      showWarning ? "bg-red-200 text-red-700" : "bg-slate-100 text-slate-500"
+                      showWarning ? "bg-red-200 text-red-700" : "bg-slate-100 text-slate-500",
                     )}>
                     {showWarning ? <ShieldAlert className="size-4" /> : <Settings className="size-4" />}
                   </div>
                   <span className="font-semibold text-sm">Account Settings</span>
                 </div>
                 {showWarning && (
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-red-600 text-white px-1.5 py-0.5 rounded">
+                  <span className="text-[8.5px] font-bold uppercase tracking-widest bg-red-600 text-white px-1.5 py-0.5 rounded">
                     Action Required
                   </span>
                 )}

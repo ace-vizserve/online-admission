@@ -79,6 +79,16 @@ export function useSaveApplication({
           setFormState({ draftId });
         }
 
+        // The resume flow never carries createdAt into formState (only the draft store's
+        // top-level field), so formState?.createdAt is effectively always undefined for a
+        // resumed draft. Falling back straight to `new Date()` would re-stamp created_at on
+        // every save. Read the store's already-rehydrated value instead - it's the true creation
+        // time (restored from the database on resume, see resolve-draft.ts). The store's own
+        // initializer always sets createdAt (to `new Date()` for a genuinely brand-new draft, see
+        // zustand-store.ts), so this is never undefined - no further fallback is needed.
+        const draftStore = createNewStudentDraftStore(type, draftId);
+        const existingCreatedAt = draftStore.getState().createdAt;
+
         const draftRecord = {
           draftId,
           type,
@@ -91,11 +101,11 @@ export function useSaveApplication({
             draftId,
           },
           lastSavedAt: new Date(),
-          createdAt: formState?.createdAt ?? new Date(),
+          createdAt: formState?.createdAt ?? existingCreatedAt,
           expiresAt: addDays(new Date(), DRAFT_EXPIRY_DAYS),
         };
 
-        createNewStudentDraftStore(type, draftId).setState(draftRecord);
+        draftStore.setState(draftRecord);
 
         if (willExit) {
           cancelPendingRemoteSync();
@@ -119,7 +129,8 @@ export function useSaveApplication({
             description: "Your progress is saved. You may leave this page and resume later from Drafts.",
           });
           await wait(500);
-          navigate("/admission/dashboard");
+
+          navigate("/admission/dashboard", { state: { justSaved: true } });
         } else {
           scheduleRemoteSync(draftRecord);
         }
