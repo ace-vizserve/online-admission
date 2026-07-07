@@ -83,6 +83,28 @@ describe("useHydrateReEnrollment", () => {
       expect(formState.uploadRequirements?.parentGuardianUploadRequirements).toEqual(
         FIXTURE.parentGuardianUploadRequirements,
       );
+      // FIXTURE.levelApplied is the student's *current* level ("Primary One") — the seeded
+      // value must be the next grade level in the progression, not that same value.
+      expect(formState.enrollmentInfo?.levelApplied).toEqual("Primary Two");
+    });
+  });
+
+  it("does not clobber an already-saved levelApplied, but still seeds its siblings", async () => {
+    seedStore({
+      enrollmentInfo: { levelApplied: "HFSE Global Education Programme - Primary 2", classType: "Enrichment Class" },
+    });
+    vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+    renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+    await waitFor(() => {
+      const { formState } = useEnrolOldStudentStore.getState();
+      expect(formState.studentInfo).toEqual(FIXTURE.studentInfo);
+    });
+
+    expect(useEnrolOldStudentStore.getState().formState.enrollmentInfo).toEqual({
+      levelApplied: "HFSE Global Education Programme - Primary 2",
+      classType: "Enrichment Class",
     });
   });
 
@@ -151,6 +173,7 @@ describe("useHydrateReEnrollment", () => {
     const fullyPopulatedFormState = {
       studentInfo: { studentDetails: { firstName: "LocalEdit", isValid: true } },
       familyInfo: { motherInfo: { motherFirstName: "LocalMother" } },
+      enrollmentInfo: { levelApplied: "Primary Two" },
       uploadRequirements: {
         studentUploadRequirements: { birthCert: "already-saved-url", isValid: true },
         parentGuardianUploadRequirements: { motherPassport: "already-saved-url", isValid: true },
