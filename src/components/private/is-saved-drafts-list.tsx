@@ -75,7 +75,7 @@ export default function ISSavedDraftsDialog() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExiting, setIsExiting] = useState<boolean>(false);
   const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
-  const { data: drafts } = useDraftsList("hfse-is", isOpen);
+  const { data, isPending: isDraftsPending } = useDraftsList("hfse-is", isOpen);
   const [sortBy, setSortBy] = useState<DraftSort>("lastUpdated");
   const isDesktop = useMediaQuery({
     query: "(min-width: 786px)",
@@ -86,8 +86,10 @@ export default function ISSavedDraftsDialog() {
   }, []);
 
   const sortedDrafts = useMemo(() => {
-    return sortDrafts(drafts, sortBy);
-  }, [drafts, sortBy]);
+    return sortDrafts(data ?? [], sortBy);
+  }, [data, sortBy]);
+
+  const drafts = data ?? [];
 
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
@@ -101,7 +103,7 @@ export default function ISSavedDraftsDialog() {
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const isEmpty = drafts.length === 0;
+  const isEmpty = !isDraftsPending && drafts.length === 0;
 
   function handleDelete(id: string, type: "hfse-is" | "viz-school") {
     setDeletingId(id);
@@ -110,6 +112,7 @@ export default function ISSavedDraftsDialog() {
       queryClient.setQueryData<RemoteDraftEntry[]>(["drafts", "hfse-is"], (prev) =>
         (prev ?? []).filter((d) => d.state.draftId !== id),
       );
+      queryClient.invalidateQueries({ queryKey: ["drafts", "remote-rows"] });
       setDeletingId(null);
     }, 200);
   }
@@ -153,7 +156,7 @@ export default function ISSavedDraftsDialog() {
     return (
       <Drawer dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent className="bg-[#F2F2F7] p-0 overflow-hidden">
-          {isLoading ? (
+          {isLoading || isDraftsPending ? (
             <SavedDraftsLoader />
           ) : (
             <>
@@ -411,7 +414,7 @@ export default function ISSavedDraftsDialog() {
           isLoading && "!max-w-sm",
           isEmpty && "sm:max-w-2xl md:max-w-4xl",
         )}>
-        {isLoading ? (
+        {isLoading || isDraftsPending ? (
           <SavedDraftsLoader />
         ) : (
           <>

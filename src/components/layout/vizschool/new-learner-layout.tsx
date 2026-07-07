@@ -118,7 +118,7 @@ function NewLearnerLayout() {
                 <NewLearnerSteps />
               </div>
               <div className="w-full">
-                {isPending ? (
+                {isPending || isResumingFromDashboard ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-50 animate-in fade-in duration-300">
                     <div className="flex flex-col items-center gap-4">
                       <div className="relative flex items-center justify-center">

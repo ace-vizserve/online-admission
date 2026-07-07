@@ -10,7 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { isExpired, isExpiringSoon, listNewStudentDrafts, sortDrafts } from "@/lib/draft-storage";
+import { isExpiringSoon } from "@/lib/draft-storage";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState, VizSchoolEnrolNewStudentFormState } from "@/types";
 import { EnrolNewStudentDraftStore } from "@/zustand-store";
@@ -44,21 +44,6 @@ export function getDraftName(state: EnrolNewStudentDraftStore, flowType: "hfse-i
     if (first || last) return `${first ?? ""} ${last ?? ""}`.trim();
   }
   return "New Application";
-}
-
-export function getDraftRows(): DraftRow[] {
-  const hfse = (listNewStudentDrafts("hfse-is") || []).map((d) => ({
-    state: d.state as EnrolNewStudentDraftStore,
-    flowType: "hfse-is" as const,
-  }));
-  const viz = (listNewStudentDrafts("viz-school") || []).map((d) => ({
-    state: d.state as EnrolNewStudentDraftStore,
-    flowType: "viz-school" as const,
-  }));
-  return sortDrafts(
-    [...hfse, ...viz].filter((r) => !isExpired(r.state.expiresAt)),
-    "lastUpdated",
-  ) as DraftRow[];
 }
 
 // ─── DraftTicket ─────────────────────────────────────────────────────────────

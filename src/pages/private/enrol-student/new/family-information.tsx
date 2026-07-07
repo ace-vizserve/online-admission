@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
+import { isFatherInfoSatisfied } from "@/lib/step-validity";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -65,7 +66,7 @@ function FamilyInformationTabs() {
   }
 
   const motherInfoSaved = formState.familyInfo.motherInfo?.isValid === true;
-  const fatherInfoSaved = formState.familyInfo.fatherInfo?.isValid === true;
+  const fatherInfoSaved = isFatherInfoSatisfied(formState.familyInfo.fatherInfo);
 
   const tabs = [
     {

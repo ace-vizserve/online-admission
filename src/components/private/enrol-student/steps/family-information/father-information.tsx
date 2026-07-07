@@ -12,6 +12,7 @@ import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
+import { isFatherInfoSatisfied } from "@/lib/step-validity";
 import { cn } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -286,7 +287,7 @@ function FatherInformation() {
             </span>
           </div>
         </Alert>
-        {(!formState.familyInfo?.fatherInfo?.isValid || !formState.familyInfo?.motherInfo?.isValid) && (
+        {(!isFatherInfoSatisfied(formState.familyInfo?.fatherInfo) || !formState.familyInfo?.motherInfo?.isValid) && (
           <>
             <div className="w-full max-w-md mx-auto">
               <Alert className="border-amber-500/50 text-amber-500 dark:border-amber-500 [&>svg]:text-amber-500">

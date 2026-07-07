@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getStepValidity, stepKeyFromUrl } from "./step-validity";
+import { getStepValidity, isFatherInfoSatisfied, stepKeyFromUrl } from "./step-validity";
 
 // ---------------------------------------------------------------------------
 // stepKeyFromUrl
@@ -23,6 +23,36 @@ describe("stepKeyFromUrl", () => {
     "",
   ])("returns null for unknown route: %s", (url) => {
     expect(stepKeyFromUrl(url)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isFatherInfoSatisfied
+// ---------------------------------------------------------------------------
+
+describe("isFatherInfoSatisfied", () => {
+  it("is satisfied when isValid is true", () => {
+    expect(isFatherInfoSatisfied({ isValid: true })).toBe(true);
+  });
+
+  it("is satisfied when noFatherInfo is true, even without isValid", () => {
+    expect(isFatherInfoSatisfied({ noFatherInfo: true })).toBe(true);
+  });
+
+  it("is satisfied when both isValid and noFatherInfo are true", () => {
+    expect(isFatherInfoSatisfied({ isValid: true, noFatherInfo: true })).toBe(true);
+  });
+
+  it("is not satisfied when neither flag is set", () => {
+    expect(isFatherInfoSatisfied({})).toBe(false);
+  });
+
+  it("is not satisfied when isValid is false and noFatherInfo is unset", () => {
+    expect(isFatherInfoSatisfied({ isValid: false })).toBe(false);
+  });
+
+  it("is not satisfied for undefined fatherInfo (no false-green)", () => {
+    expect(isFatherInfoSatisfied(undefined)).toBe(false);
   });
 });
 
