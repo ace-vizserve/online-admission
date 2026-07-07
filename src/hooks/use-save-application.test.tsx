@@ -213,4 +213,107 @@ describe("useSaveApplication", () => {
     const store = createNewStudentDraftStore("hfse-is", "local-draft");
     expect(new Date(store.getState().createdAt).toISOString()).toBe(existingCreatedAt.toISOString());
   });
+
+  describe("debounced remote sync (willExit: false)", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("does not call saveDraftRemote before the debounce delay elapses", async () => {
+      const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+      await act(async () => {
+        await result.current.saveApplication({ willExit: false });
+      });
+
+      expect(saveDraftRemote).not.toHaveBeenCalled();
+    });
+
+    it("calls saveDraftRemote with the latest snapshot once the debounce delay elapses", async () => {
+      const { result } = renderSaveApplication({
+        formState: { draftId: "local-draft" },
+        currentTab: "/enrol-student/new/family-info",
+      });
+
+      await act(async () => {
+        await result.current.saveApplication({ willExit: false });
+      });
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1500);
+      });
+
+      expect(saveDraftRemote).toHaveBeenCalledTimes(1);
+      expect(saveDraftRemote).toHaveBeenCalledWith(
+        expect.objectContaining({ draftId: "local-draft", currentTab: "/enrol-student/new/family-info" }),
+      );
+    });
+
+    it("coalesces rapid successive step submits into a single remote write", async () => {
+      const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+      await act(async () => {
+        await result.current.saveApplication({ willExit: false });
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000); // less than the debounce delay
+      });
+      await act(async () => {
+        await result.current.saveApplication({ willExit: false }); // resets the pending timer
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1500);
+      });
+
+      expect(saveDraftRemote).toHaveBeenCalledTimes(1);
+    });
+
+    it("a willExit: true save cancels a pending debounced sync instead of double-writing", async () => {
+      const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+      await act(async () => {
+        await result.current.saveApplication({ willExit: false });
+      });
+
+      // willExit: true internally awaits real-time `wait()` calls (toast/navigate delays), so
+      // kick it off without awaiting inline and drain both the debounce and those waits together.
+      let exitSavePromise!: Promise<void>;
+      act(() => {
+        exitSavePromise = result.current.saveApplication({ willExit: true });
+      });
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1500);
+        await exitSavePromise;
+      });
+
+      expect(saveDraftRemote).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1500);
+      });
+
+      expect(saveDraftRemote).toHaveBeenCalledTimes(1);
+    });
+
+    it("cancels a pending debounced sync on unmount", async () => {
+      const { result, unmount } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+      await act(async () => {
+        await result.current.saveApplication({ willExit: false });
+      });
+
+      unmount();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1500);
+      });
+
+      expect(saveDraftRemote).not.toHaveBeenCalled();
+    });
+  });
 });

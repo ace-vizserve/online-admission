@@ -3,18 +3,16 @@ import { listNewStudentDrafts } from "@/lib/draft-storage";
 import { createNewStudentDraftStore } from "@/zustand-store";
 
 /**
- * Resolves a draft to resume by draftId: checks the local cache first (instant, offline-safe),
- * and falls back to a server lookup when there's no local match (e.g. the draft was started on
- * a different browser/device). A remote hit is written into the local cache before returning so
- * subsequent resumes/lists on this device are instant too. Returns null if the draft isn't found
- * anywhere, or if the remote lookup fails (offline / not authenticated).
+ * Resolves a draft to resume by draftId: the database is checked first, so a Continue always
+ * restores the latest saved state (see src/actions/sync-drafts.ts for the DB-only philosophy
+ * this mirrors). A remote hit is written into the local cache before returning so a later
+ * offline resume of this same draft still works. The local cache is only consulted as a
+ * fallback when the remote lookup fails (offline / not authenticated) — it is never preferred
+ * over a successful database read, so a stale local copy can't shadow a newer server save.
+ * Returns null if the draft isn't found anywhere (including a clean remote "not found", which
+ * is treated as deleted rather than falling back to a stale local copy).
  */
 export async function resolveResumeDraft(draftId: string, type: DraftFlowType): Promise<RemoteDraftEntry | null> {
-  const localDrafts = listNewStudentDrafts(type) as RemoteDraftEntry[];
-  const localMatch = localDrafts.find((entry) => entry.state?.draftId === draftId);
-
-  if (localMatch) return localMatch;
-
   try {
     const remoteEntry = await loadDraftRemote(draftId);
     if (!remoteEntry) return null;
@@ -34,6 +32,9 @@ export async function resolveResumeDraft(draftId: string, type: DraftFlowType): 
 
     return remoteEntry;
   } catch {
-    return null;
+    // Remote lookup failed (offline / not authenticated) — fall back to the local cache so an
+    // offline resume of a previously-synced draft still works.
+    const localDrafts = listNewStudentDrafts(type) as RemoteDraftEntry[];
+    return localDrafts.find((entry) => entry.state?.draftId === draftId) ?? null;
   }
 }

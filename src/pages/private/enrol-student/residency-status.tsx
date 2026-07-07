@@ -126,8 +126,11 @@ export default function StudentResidencyPage() {
   const [isLoading, setTransition] = useTransition();
 
   const selectedOption = residencyOptions.find((option) => option.id === selectedId) ?? null;
-  // A New enrolee must pick the specific pass; a Current enrolee's pass is taken from their record.
-  const needsPassChoice = Boolean(selectedOption?.passOptions) && enroleeType === "New";
+  // Current enrolees with a pass on file inherit it; New enrolees and no-pass Current
+  // enrolees must actively choose one.
+  const inheritsPassOnFile = enroleeType === "Current" && Boolean(currentPass);
+  const mustChoosePass = !inheritsPassOnFile;
+  const needsPassChoice = Boolean(selectedOption?.passOptions) && mustChoosePass;
   const disableContinue = !selectedId || (needsPassChoice && !passType);
 
   // Which cards a Current enrolee may pick, based on the pass already on file.
@@ -148,8 +151,8 @@ export default function StudentResidencyPage() {
     setStpApplicationType(option.store.stpApplicationType);
 
     if (option.passOptions) {
-      // Current: auto-apply the pass on file. New: clear until the parent chooses below.
-      setPassType(enroleeType === "Current" ? currentPass : "");
+      // Inherits a pass on file: auto-apply it. Otherwise clear until the parent chooses below.
+      setPassType(inheritsPassOnFile ? currentPass : "");
     } else {
       setPassType(option.store.passType);
     }
@@ -281,7 +284,7 @@ export default function StudentResidencyPage() {
                       <div
                         className="mt-4 pt-4 border-t border-primary/30 animate-in fade-in slide-in-from-bottom-1 duration-200"
                         onClick={(e) => e.stopPropagation()}>
-                        {enroleeType === "New" ? (
+                        {mustChoosePass ? (
                           <div className="space-y-2">
                             <p
                               className={cn(

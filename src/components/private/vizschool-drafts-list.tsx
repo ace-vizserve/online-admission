@@ -83,7 +83,7 @@ export default function VizSchoolSavedDraftsDialog() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExiting, setIsExiting] = useState<boolean>(false);
   const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
-  const { data: drafts } = useDraftsList("viz-school", isOpen);
+  const { data, isPending: isDraftsPending } = useDraftsList("viz-school", isOpen);
   const [sortBy, setSortBy] = useState<DraftSort>("lastUpdated");
   const isDesktop = useMediaQuery({
     query: "(min-width: 768px)",
@@ -94,8 +94,10 @@ export default function VizSchoolSavedDraftsDialog() {
   }, []);
 
   const sortedDrafts = useMemo(() => {
-    return sortDrafts(drafts, sortBy);
-  }, [drafts, sortBy]);
+    return sortDrafts(data ?? [], sortBy);
+  }, [data, sortBy]);
+
+  const drafts = data ?? [];
 
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
@@ -109,7 +111,7 @@ export default function VizSchoolSavedDraftsDialog() {
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const isEmpty = drafts.length === 0;
+  const isEmpty = !isDraftsPending && drafts.length === 0;
 
   function handleDelete(id: string, type: "hfse-is" | "viz-school") {
     setDeletingId(id);
@@ -118,6 +120,7 @@ export default function VizSchoolSavedDraftsDialog() {
       queryClient.setQueryData<RemoteDraftEntry[]>(["drafts", "viz-school"], (prev) =>
         (prev ?? []).filter((d) => d.state.draftId !== id),
       );
+      queryClient.invalidateQueries({ queryKey: ["drafts", "remote-rows"] });
       setDeletingId(null);
     }, 200);
   }
@@ -161,7 +164,7 @@ export default function VizSchoolSavedDraftsDialog() {
     return (
       <Drawer dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent className="bg-[#F2F2F7] p-0 overflow-hidden">
-          {isLoading ? (
+          {isLoading || isDraftsPending ? (
             <SavedDraftsLoader />
           ) : (
             <>
@@ -421,7 +424,7 @@ export default function VizSchoolSavedDraftsDialog() {
           isLoading && "!max-w-sm",
           isEmpty && "sm:max-w-2xl md:max-w-4xl",
         )}>
-        {isLoading ? (
+        {isLoading || isDraftsPending ? (
           <SavedDraftsLoader />
         ) : (
           <>

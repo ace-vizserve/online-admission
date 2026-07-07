@@ -117,4 +117,36 @@ describe("StudentResidencyPage", () => {
       state: { enroleeType: "New", isOpenHouseRegistration: true },
     });
   });
+
+  it("shows a read-only pass-on-file box and enables Continue immediately for a Current enrolee with a pass", async () => {
+    const user = userEvent.setup();
+    renderPage({ enroleeType: "Current", enroleeNumber: "E6", currentPass: "Student Pass" });
+
+    await user.click(screen.getByRole("radio", { name: /Valid Student's Pass/ }));
+
+    expect(screen.getByRole("button", { name: /Continue to Application/ })).toBeEnabled();
+    // No Select is rendered for this card ("stp" has no passOptions), confirming no dropdown path.
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+  });
+
+  it("requires an explicit pass choice for a Current enrolee with no pass on file", async () => {
+    const user = userEvent.setup();
+    renderPage({ enroleeType: "Current", enroleeNumber: "E7", currentPass: "" });
+
+    // With no pass on file, every is* check is false, so isEligible falls through to true —
+    // all rendered cards remain selectable.
+    await user.click(screen.getByRole("radio", { name: /Singapore Citizen or PR/ }));
+
+    // The dropdown (not the read-only "pass on file" box) should render for this enrolee.
+    expect(screen.getByRole("combobox")).toBeInTheDocument();
+    expect(screen.queryByText(/Using the pass on file/)).not.toBeInTheDocument();
+
+    const continueButton = screen.getByRole("button", { name: /Continue to Application/ });
+    expect(continueButton).toBeDisabled();
+
+    act(() => {
+      usePassTypeStore.getState().setPassType("Singaporean");
+    });
+    expect(continueButton).toBeEnabled();
+  });
 });
