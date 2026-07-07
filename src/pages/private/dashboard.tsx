@@ -2,15 +2,25 @@ import PageMetaData from "@/components/page-metadata";
 import { SectionCards } from "@/components/private/dashboard/section-cards";
 import StudentsList from "@/components/private/dashboard/students-list";
 import { useEffect } from "react";
+import { useLocation } from "react-router";
 
 function Dashboard() {
+  const location = useLocation();
+
   useEffect(() => {
     if (!sessionStorage.length) return;
-    const enrollmentKeys = Object.keys(sessionStorage).filter((k) =>
-      k.includes("enrol") || k.includes("Enrol") || k.includes("FormState") || k.includes("TabState"),
+    const enrollmentKeys = Object.keys(sessionStorage).filter(
+      (k) => k.includes("enrol") || k.includes("Enrol") || k.includes("FormState") || k.includes("TabState"),
     );
     enrollmentKeys.forEach((k) => sessionStorage.removeItem(k));
   }, []);
+
+  useEffect(() => {
+    if (!location.state?.justSaved) return;
+
+    window.history.replaceState({}, "");
+    window.location.reload();
+  }, [location.state]);
 
   return (
     <>

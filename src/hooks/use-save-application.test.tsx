@@ -214,6 +214,46 @@ describe("useSaveApplication", () => {
     expect(new Date(store.getState().createdAt).toISOString()).toBe(existingCreatedAt.toISOString());
   });
 
+  it("preserves the store's persisted createdAt across saves when a resumed draft's formState omits it", async () => {
+    // Mirrors the real resume flow: new-student-layout.tsx copies state.formState + draftId into
+    // form state on resume, but never createdAt, so formState.createdAt is undefined even though
+    // the draft has a real creation time already persisted (restored by resolve-draft.ts).
+    const seededCreatedAt = new Date("2024-01-01T00:00:00.000Z");
+    createNewStudentDraftStore("hfse-is", "resumed-draft").setState({ createdAt: seededCreatedAt });
+
+    const { result } = renderSaveApplication({ formState: { draftId: "resumed-draft" } });
+
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+
+    let store = createNewStudentDraftStore("hfse-is", "resumed-draft");
+    expect(new Date(store.getState().createdAt).toISOString()).toBe(seededCreatedAt.toISOString());
+
+    // A second save (e.g. the next step submit) must not re-stamp createdAt to "now".
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+
+    store = createNewStudentDraftStore("hfse-is", "resumed-draft");
+    expect(new Date(store.getState().createdAt).toISOString()).toBe(seededCreatedAt.toISOString());
+  });
+
+  it("mints a new createdAt for a brand-new draft with no prior store state and no formState value", async () => {
+    const { result } = renderSaveApplication({ formState: { draftId: "brand-new-draft" } });
+
+    const before = Date.now();
+    await act(async () => {
+      await result.current.saveApplication({ willExit: false });
+    });
+    const after = Date.now();
+
+    const store = createNewStudentDraftStore("hfse-is", "brand-new-draft");
+    const createdAtMs = new Date(store.getState().createdAt).getTime();
+    expect(createdAtMs).toBeGreaterThanOrEqual(before);
+    expect(createdAtMs).toBeLessThanOrEqual(after);
+  });
+
   describe("debounced remote sync (willExit: false)", () => {
     beforeEach(() => {
       vi.useFakeTimers();
@@ -231,6 +271,28 @@ describe("useSaveApplication", () => {
       });
 
       expect(saveDraftRemote).not.toHaveBeenCalled();
+    });
+
+    it("silently swallows a saveDraftRemote failure on the debounced path (best-effort; the next submit retries)", async () => {
+      vi.mocked(saveDraftRemote).mockRejectedValueOnce(new Error("network down"));
+      const invalidateSpy = vi.spyOn(QueryClient.prototype, "invalidateQueries");
+
+      const { result } = renderSaveApplication({ formState: { draftId: "local-draft" } });
+
+      await act(async () => {
+        await result.current.saveApplication({ willExit: false });
+      });
+
+      // Advancing past the debounce must not throw or reject, even though saveDraftRemote fails -
+      // unlike the willExit:true path, there's no toast here: this sync is silent/best-effort.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1500);
+      });
+
+      expect(saveDraftRemote).toHaveBeenCalledTimes(1);
+      expect(invalidateSpy).not.toHaveBeenCalled();
+      expect(toast.info).not.toHaveBeenCalled();
+      expect(toast.error).not.toHaveBeenCalled();
     });
 
     it("calls saveDraftRemote with the latest snapshot once the debounce delay elapses", async () => {

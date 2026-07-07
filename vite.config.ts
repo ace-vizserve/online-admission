@@ -56,6 +56,8 @@ export default defineConfig({
         "src/pages/private/drafts.tsx",
         "src/components/private/navbar/sidebar.tsx",
         "src/lib/step-validity.ts",
+        "src/components/private/enrol-student/submit-application-dialog.tsx",
+        "src/components/private/enrol-student/vizschool/submit-learner-application-dialog.tsx",
       ],
       thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },

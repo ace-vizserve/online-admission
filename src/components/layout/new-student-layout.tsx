@@ -229,6 +229,10 @@ function SubmitApplicationDialog() {
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const { formState } = useEnrolNewStudentContext();
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
+  // Hard re-entrancy guard: `isPending` only flips after a re-render, so a same-tick double
+  // click on "Continue" could otherwise fire the mutation (and its insert) twice before the
+  // button disables. This ref is checked-and-set synchronously, closing that window.
+  const submitInFlight = useRef(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async ({ enrollmentDetails, draftId }: { enrollmentDetails: EnrolNewStudentFormState; draftId: string | undefined }) => {
       const result = await submitEnrollment(enrollmentDetails, academicYear, {
@@ -237,6 +241,9 @@ function SubmitApplicationDialog() {
         preCourseDate: enrollmentDetails.preCourseDate,
       });
       return { ...result, draftId };
+    },
+    onSettled() {
+      submitInFlight.current = false;
     },
     onSuccess(data) {
       discardDraft(data.draftId, "hfse-is");
@@ -310,6 +317,8 @@ function SubmitApplicationDialog() {
       delete uploadReqs.showVaccinationInformation;
     }
 
+    if (submitInFlight.current) return;
+    submitInFlight.current = true;
     mutate({ enrollmentDetails: { ...(formState as EnrolNewStudentFormState), stpApplicationType }, draftId });
   }
 
