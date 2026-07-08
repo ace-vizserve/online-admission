@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toUTCDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
 type CalendarProps = {
@@ -37,7 +38,7 @@ const AdvancedCalendarSelection = ({ disablePastDates, date = new Date(), setDat
         selected={date}
         onSelect={(date) => {
           if (date) {
-            setDate(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+            setDate(toUTCDateOnly(date));
           } else {
             setDate(date);
           }

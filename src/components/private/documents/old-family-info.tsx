@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/ui/location-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useSession from "@/hooks/use-session";
+import { toUTCDateOnly } from "@/lib/dates";
 import { cn, extractSiblings, getChangedKeys, removeEmptyKeys } from "@/lib/utils";
 import { FamilyInfo } from "@/types";
 import { familyInformationSchema, FamilyInformationSchema } from "@/zod-schema";
@@ -273,7 +274,11 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date) => field.onChange(date ? toUTCDateOnly(date) : date)}
+                          />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -488,7 +493,11 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date) => field.onChange(date ? toUTCDateOnly(date) : date)}
+                          />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -703,7 +712,11 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date) => field.onChange(date ? toUTCDateOnly(date) : date)}
+                          />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -905,7 +918,12 @@ function EditFamilyInformation({ familyInformation }: { familyInformation: Famil
                                 </FormControl>
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={(date) => field.onChange(date ? toUTCDateOnly(date) : date)}
+                                  initialFocus
+                                />
                               </PopoverContent>
                             </Popover>
 

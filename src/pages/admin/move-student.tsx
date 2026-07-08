@@ -1,4 +1,4 @@
-import { AdminStudent, BulkMoveRowResult, listStudentsInAY, moveStudentsBulkAY } from "@/actions/admin";
+import { BulkMoveRowResult, listStudentsInAY, moveStudentsBulkAY } from "@/actions/admin";
 import PageMetaData from "@/components/page-metadata";
 import {
   AlertDialog,
@@ -26,16 +26,12 @@ import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { SortCol, distinctLevels, filterAndSortStudents, studentDisplayName } from "./move-student-helpers";
+
 const AY_OPTIONS = BACKEND_ACADEMIC_YEARS.map((ay) => ({
   value: ay,
   label: `AY ${ay.slice(2)}`,
 }));
-
-type SortCol = "name" | "level" | "enroleeNumber";
-
-function studentDisplayName(s: AdminStudent) {
-  return `${s.lastName}, ${s.firstName}${s.middleName ? ` ${s.middleName}` : ""}`;
-}
 
 function ayLabel(ay: string) {
   return AY_OPTIONS.find((o) => o.value === ay)?.label ?? ay;
@@ -93,24 +89,12 @@ export default function MoveStudent() {
     },
   });
 
-  const levels = useMemo(() => [...new Set(students.map((s) => s.levelApplied))].sort(), [students]);
+  const levels = useMemo(() => distinctLevels(students), [students]);
 
-  const filteredStudents = useMemo(() => {
-    let result = levelFilter === "all" ? students : students.filter((s) => s.levelApplied === levelFilter);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      result = result.filter(
-        (s) => studentDisplayName(s).toLowerCase().includes(q) || s.enroleeNumber.toLowerCase().includes(q),
-      );
-    }
-    return [...result].sort((a, b) => {
-      const va =
-        sortCol === "level" ? a.levelApplied : sortCol === "enroleeNumber" ? a.enroleeNumber : studentDisplayName(a);
-      const vb =
-        sortCol === "level" ? b.levelApplied : sortCol === "enroleeNumber" ? b.enroleeNumber : studentDisplayName(b);
-      return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
-    });
-  }, [students, levelFilter, search, sortCol, sortDir]);
+  const filteredStudents = useMemo(
+    () => filterAndSortStudents(students, { levelFilter, search, sortCol, sortDir }),
+    [students, levelFilter, search, sortCol, sortDir],
+  );
 
   const filteredIds = useMemo(() => new Set(filteredStudents.map((s) => s.enroleeNumber)), [filteredStudents]);
 

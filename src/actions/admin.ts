@@ -18,13 +18,15 @@ export async function adminLogin({ email, password }: LoginSchema) {
 
 const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/move-student-ay`;
 
+// Wire format of list-students: any column except enroleeNumber (filtered server-side)
+// can be null on incomplete rows.
 export type AdminStudent = {
   enroleeNumber: string;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   middleName: string | null;
-  levelApplied: string;
-  studentNumber: string;
+  levelApplied: string | null;
+  studentNumber: string | null;
 };
 
 export type MoveStudentResult = {
@@ -106,4 +108,48 @@ export async function adminSetPassword(
   params: { email: string; password: string },
 ): Promise<void> {
   await callFunction(SET_PASSWORD_FUNCTION_URL, session, { action: "set-password", ...params });
+}
+
+export type ExistingParentAccount = Omit<AdminAccount, "id"> & { createdAt: string | null };
+
+export type CreatedParentAccount = {
+  email: string;
+  fullName: string;
+  relationship: string;
+};
+
+// Duplicate-email creation is rejected with the existing account's details so the
+// page can render them instead of a bare error string.
+export class ExistingParentAccountError extends Error {
+  existing: ExistingParentAccount;
+
+  constructor(message: string, existing: ExistingParentAccount) {
+    super(message);
+    this.name = "ExistingParentAccountError";
+    this.existing = existing;
+  }
+}
+
+export async function adminCreateParentAccount(
+  session: Session,
+  params: { firstName: string; lastName: string; relationship: "mother" | "father"; email: string; password: string },
+): Promise<CreatedParentAccount> {
+  const res = await fetch(SET_PASSWORD_FUNCTION_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ action: "create-account", ...params, email: params.email.toLowerCase() }),
+  });
+  const data = (await res.json()) as {
+    error?: string;
+    existing?: ExistingParentAccount;
+    account?: CreatedParentAccount;
+  };
+  if (res.status === 409 && data.existing) {
+    throw new ExistingParentAccountError(data.error ?? "An account with this email already exists", data.existing);
+  }
+  if (!res.ok || !data.account) throw new Error(data.error ?? "Request failed");
+  return data.account;
 }

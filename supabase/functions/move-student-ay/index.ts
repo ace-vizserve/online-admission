@@ -67,13 +67,6 @@ function stripAutoFields(record: Record<string, any>): Record<string, any> {
   return Object.fromEntries(Object.entries(record).filter(([k]) => !STRIP_FIELDS.has(k)));
 }
 
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...CORS, "Content-Type": "application/json" },
-  });
-}
-
 // ── moveOne ───────────────────────────────────────────────────────────────────
 // Moves a single student from sourceAY to targetAY. Returns ok:true with new
 // numbers on success, ok:false with an error string on failure.
@@ -195,10 +188,19 @@ async function moveOne(
 }
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin") ?? "";
+
   const CORS = {
     "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "https://enrol.hfse.edu.sg",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
+
+  const json = (data: unknown, status = 200) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: { ...CORS, "Content-Type": "application/json" },
+    });
 
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: CORS });
@@ -231,6 +233,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabaseAdmin
         .from(`${sourceAY}_enrolment_applications`)
         .select("enroleeNumber, firstName, lastName, middleName, levelApplied, studentNumber")
+        .not("enroleeNumber", "is", null)
         .order("lastName", { ascending: true });
       if (error) return json({ error: error.message }, 500);
       return json({ students: data });

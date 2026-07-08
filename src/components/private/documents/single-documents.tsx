@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { applicationTypes, maritalStatuses, religions } from "@/data";
 import useSession from "@/hooks/use-session";
+import { toUTCDateOnly } from "@/lib/dates";
 import { cn, getChangedKeys } from "@/lib/utils";
 import { Student } from "@/types";
 import { studentAddressContactAndInformationSchema, StudentAddressContactAndInformationSchema } from "@/zod-schema";
@@ -266,7 +267,7 @@ function EditStudentInformation({ studentInformation }: { studentInformation: St
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => field.onChange(date ? toUTCDateOnly(date) : date)}
                         captionLayout="dropdown"
                       />
                     </PopoverContent>

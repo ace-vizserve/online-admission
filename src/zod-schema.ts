@@ -49,6 +49,24 @@ export const registrationSchema = z
     message: "Passwords do not match",
   });
 
+// Admin-created parent accounts: same shape as self-registration, but guardian is
+// deliberately excluded — admins only provision mother/father accounts.
+export const adminCreateParentSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required").transform(capitalizeWords),
+    lastName: z.string().min(1, "Last name is required").transform(capitalizeWords),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+    relationship: z.enum(["mother", "father"], {
+      message: "Please select a valid role",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
 export const studentDetailsSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
@@ -90,7 +108,7 @@ export const studentDetailsSchema = z
     religionOther: z.string().optional().nullable(),
     nric: z.string().optional(),
     dietaryRestrictions: z.string().optional(),
-    stpApplicationType: z.string().optional(),
+    stpApplicationType: z.string().optional().nullable(),
   })
   .superRefine((schema, ctx) => {
     if (schema.stpApplicationType === "New Student Pass Application") {
@@ -274,7 +292,7 @@ export const studentAddressContactSchema = z
         }),
       )
       .optional(),
-    stpApplicationType: z.string().optional(),
+    stpApplicationType: z.string().optional().nullable(),
   })
   .superRefine((schema, ctx) => {
     if (
@@ -1329,6 +1347,7 @@ export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequir
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type MedicalChecklistFormValues = z.infer<typeof medicalChecklistSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
+export type AdminCreateParentSchema = z.infer<typeof adminCreateParentSchema>;
 
 export type VizSchoolStudentDetailsSchema = z.infer<typeof vizSchoolStudentDetailsSchema>;
 export type VizSchoolEnrollmentInformationSchema = z.infer<typeof vizSchoolEnrollmentInformationSchema>;

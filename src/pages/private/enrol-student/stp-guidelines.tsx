@@ -4,6 +4,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar as PreCourseCalendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { toUTCDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import {
   useEnrolNewStudentStore,
@@ -349,7 +350,7 @@ function STPGuidelines() {
                           }}
                           selected={preCourseDate}
                           onSelect={(d) => {
-                            setPreCourseDate(d);
+                            setPreCourseDate(d ? toUTCDateOnly(d) : d);
                             setOpen(false);
                           }}
                         />

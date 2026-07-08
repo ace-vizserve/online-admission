@@ -4,6 +4,7 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { PassportInput } from "@/components/ui/passport-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toUTCDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -42,7 +43,16 @@ export function PassFields<TFieldValues extends FieldValues>({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Pass Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            {/* Controlled (`value`, not `defaultValue`): the field is cleared/hydrated
+             * programmatically (to-follow toggle, draft resume resets), and an uncontrolled
+             * Radix Select keeps displaying its stale choice — the form then rejects a
+             * "filled" dropdown with "Pass type is required". */}
+            <Select
+              onValueChange={(value) => {
+                field.onChange(value);
+                form.trigger();
+              }}
+              value={field.value ?? ""}>
               <FormControl>
                 <SelectTrigger disabled={disabled} className="w-full">
                   <SelectValue placeholder="Select a pass type" />
@@ -83,7 +93,7 @@ export function PassFields<TFieldValues extends FieldValues>({
                 <AdvancedCalendarSelection
                   setDate={(date) => {
                     if (date) {
-                      const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                      const fixedDate = toUTCDateOnly(date);
                       field.onChange(fixedDate);
                       updateUploadRequirementsSlice(formState, setUploadRequirements, cfg.group, {
                         [expiry]: fixedDate,
@@ -158,7 +168,7 @@ export function PassportFields<TFieldValues extends FieldValues>({
                 <AdvancedCalendarSelection
                   setDate={(date) => {
                     if (date) {
-                      const fixedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                      const fixedDate = toUTCDateOnly(date);
                       field.onChange(fixedDate);
                       updateUploadRequirementsSlice(formState, setUploadRequirements, cfg.group, {
                         [expiry]: fixedDate,
