@@ -66,12 +66,6 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
 
   "HFSE Global Education Programme – Year 1 (equivalent to K2)",
   "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
-
-  "HFSE Global Education Programme - Primary 2",
-  "HFSE Global Education Programme - Primary 3",
-  "HFSE Global Education Programme - Primary 4",
-  "HFSE Global Education Programme - Primary 5",
-  "HFSE Global Education Programme - Primary 6",
 ];
 
 const WHOLE_DAY_CLASS_LEVEL = [
@@ -90,13 +84,7 @@ const CAMBRIDGE_ONLY_LEVELS = [
   "HFSE Global Education Programme – Year 10",
 ];
 
-const GLOBAL_LANGUAGE_LEVELS = [
-  "HFSE Global Education Programme - Primary 2",
-  "HFSE Global Education Programme - Primary 3",
-  "HFSE Global Education Programme - Primary 4",
-  "HFSE Global Education Programme - Primary 5",
-  "HFSE Global Education Programme - Primary 6",
-];
+const GLOBAL_LANGUAGE_LEVELS = ["Primary Two", "Primary Three", "Primary Four", "Primary Five", "Primary Six"];
 
 const STANDARD_CLASS_LEVELS = [
   "Primary One",
@@ -226,34 +214,23 @@ function OpenHouseEnrollmentInformation() {
     }
 
     if (
-      GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied) &&
-      ![
-        "Global Class 1 (ENGLISH + MANDARIN)",
-        "Global Class 2 (ENGLISH + TAMIL)",
-        "Global Class 3 (ENGLISH + FRENCH)",
-      ].includes(values.classType)
-    ) {
-      toast.warning("Class Type Mismatch!", {
-        description: "Please select one of the available Global Class language tracks.",
-      });
-
-      form.setError("classType", {
-        message: "Please select a valid Global Class option.",
-      });
-
-      return;
-    }
-
-    if (
       STANDARD_CLASS_LEVELS.includes(values.levelApplied) &&
-      values.classType !== "Standard Class (ENGLISH + TAGALOG)"
+      values.classType !== "Standard Class (ENGLISH + TAGALOG)" &&
+      !(
+        GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied) &&
+        ["GLOBAL (ENGLISH + MANDARIN)", "GLOBAL (ENGLISH + FRENCH)", "GLOBAL (ENGLISH + TAMIL)"].includes(
+          values.classType,
+        )
+      )
     ) {
       toast.warning("Class Type Mismatch!", {
-        description: "Only 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
+        description: GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied)
+          ? "Please select 'Standard Class (ENGLISH + TAGALOG)' or a GLOBAL language track."
+          : "Only 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
       });
 
       form.setError("classType", {
-        message: "Please select 'Standard Class (ENGLISH + TAGALOG)'.",
+        message: "Please select a valid class type for this grade level.",
       });
 
       return;
@@ -389,24 +366,26 @@ function OpenHouseEnrollmentInformation() {
                               <SelectItem value="Enrichment Class">Enrichment Class</SelectItem>
                             ) : CAMBRIDGE_ONLY_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value="Global Class (CAMBRIDGE)">Global Class (CAMBRIDGE)</SelectItem>
-                            ) : GLOBAL_LANGUAGE_LEVELS.includes(selectedLevel) ? (
-                              <>
-                                <SelectItem value="Global Class 1 (ENGLISH + MANDARIN)">
-                                  Global Class (ENGLISH + MANDARIN)
-                                </SelectItem>
-
-                                <SelectItem value="Global Class 2 (ENGLISH + TAMIL)">
-                                  Global Class (ENGLISH + TAMIL)
-                                </SelectItem>
-
-                                <SelectItem value="Global Class 3 (ENGLISH + FRENCH)">
-                                  Global Class (ENGLISH + FRENCH)
-                                </SelectItem>
-                              </>
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value="Standard Class (ENGLISH + TAGALOG)">
-                                Standard Class (ENGLISH + TAGALOG)
-                              </SelectItem>
+                              <>
+                                <SelectItem value="Standard Class (ENGLISH + TAGALOG)">
+                                  Standard Class (ENGLISH + TAGALOG)
+                                </SelectItem>
+
+                                {GLOBAL_LANGUAGE_LEVELS.includes(selectedLevel) && (
+                                  <>
+                                    <SelectItem value="GLOBAL (ENGLISH + MANDARIN)">
+                                      GLOBAL (ENGLISH + MANDARIN)
+                                    </SelectItem>
+
+                                    <SelectItem value="GLOBAL (ENGLISH + FRENCH)">
+                                      GLOBAL (ENGLISH + FRENCH)
+                                    </SelectItem>
+
+                                    <SelectItem value="GLOBAL (ENGLISH + TAMIL)">GLOBAL (ENGLISH + TAMIL)</SelectItem>
+                                  </>
+                                )}
+                              </>
                             ) : (
                               <SelectItem disabled value="None">
                                 Select a class level

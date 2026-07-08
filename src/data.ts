@@ -208,26 +208,6 @@ export const classLevels = [
     value: "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
   },
   {
-    label: "HFSE Global Education Programme - Primary 2",
-    value: "HFSE Global Education Programme - Primary 2",
-  },
-  {
-    label: "HFSE Global Education Programme - Primary 3",
-    value: "HFSE Global Education Programme - Primary 3",
-  },
-  {
-    label: "HFSE Global Education Programme - Primary 4",
-    value: "HFSE Global Education Programme - Primary 4",
-  },
-  {
-    label: "HFSE Global Education Programme - Primary 5",
-    value: "HFSE Global Education Programme - Primary 5",
-  },
-  {
-    label: "HFSE Global Education Programme - Primary 6",
-    value: "HFSE Global Education Programme - Primary 6",
-  },
-  {
     label: "HFSE Global Education Programme – Year 8",
     value: "HFSE Global Education Programme – Year 8",
   },
@@ -271,11 +251,6 @@ export const PRIMARY_CLASS_LEVELS = [
   "Primary Five",
   "Primary Six",
   "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
-  "HFSE Global Education Programme - Primary 2",
-  "HFSE Global Education Programme - Primary 3",
-  "HFSE Global Education Programme - Primary 4",
-  "HFSE Global Education Programme - Primary 5",
-  "HFSE Global Education Programme - Primary 6",
 ];
 
 export const SECONDARY_SDF_CLASS_LEVELS = [
