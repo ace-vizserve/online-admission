@@ -15,6 +15,7 @@ import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
+import CreateParent from "@/pages/admin/create-parent";
 import AdminLogin from "@/pages/admin/login";
 import MoveStudent from "@/pages/admin/move-student";
 import ResetPassword from "@/pages/admin/reset-password";
@@ -536,6 +537,14 @@ function AppRoutes() {
             element={
               <AdminGuard>
                 <ResetPassword />
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="create-parent"
+            element={
+              <AdminGuard>
+                <CreateParent />
               </AdminGuard>
             }
           />

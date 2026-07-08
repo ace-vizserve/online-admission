@@ -10,6 +10,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
 import { isFatherInfoSatisfied } from "@/lib/step-validity";
+import { toUTCDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { vizSchoolMotherInformationSchema, VizSchoolMotherInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
@@ -268,7 +269,7 @@ function MotherInformation() {
                         selected={field.value}
                         onSelect={(date) => {
                           if (date) {
-                            field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            field.onChange(toUTCDateOnly(date));
                           } else {
                             field.onChange(date);
                           }

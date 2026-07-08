@@ -1,4 +1,3 @@
-/// <reference types="vitest/config" />
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -42,6 +41,7 @@ export default defineConfig({
       include: [
         "src/actions/get-reenrollment-data.ts",
         "src/hooks/use-hydrate-reenrollment.ts",
+        "src/lib/dates.ts",
         "src/lib/draft-storage.ts",
         "src/actions/drafts.ts",
         "src/actions/discard-draft.ts",

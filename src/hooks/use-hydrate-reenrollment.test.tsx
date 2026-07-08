@@ -89,6 +89,19 @@ describe("useHydrateReEnrollment", () => {
     });
   });
 
+  it("seeds an empty levelApplied when the current level has no mapped next grade", async () => {
+    vi.mocked(getReEnrollmentData).mockResolvedValue({ ...FIXTURE, levelApplied: "Unmapped Legacy Level" } as never);
+
+    renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+    await waitFor(() => {
+      const { formState } = useEnrolOldStudentStore.getState();
+      // No progression entry → getNextGradeLevels returns [] → the seed falls back to "" so
+      // the enrollment-information step forces an explicit choice instead of a stale level.
+      expect(formState.enrollmentInfo?.levelApplied).toEqual("");
+    });
+  });
+
   it("does not clobber an already-saved levelApplied, but still seeds its siblings", async () => {
     seedStore({
       enrollmentInfo: { levelApplied: "HFSE Global Education Programme - Primary 2", classType: "Enrichment Class" },

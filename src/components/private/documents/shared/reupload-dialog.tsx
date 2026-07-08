@@ -101,7 +101,7 @@ export function ReuploadDialog({
 
           {siblingFieldNames.type && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <Select onValueChange={setTypeValue} defaultValue={typeValue}>
+              <Select onValueChange={setTypeValue} value={typeValue}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a pass type" />
                 </SelectTrigger>

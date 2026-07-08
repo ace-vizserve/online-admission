@@ -10,6 +10,7 @@ import { NavLink, Outlet } from "react-router";
 const ADMIN_NAV = [
   { to: "/admin/move-student", label: "Transfer Records" },
   { to: "/admin/reset-password", label: "Reset Password" },
+  { to: "/admin/create-parent", label: "Create Account" },
 ];
 
 export default function AdminLayout() {

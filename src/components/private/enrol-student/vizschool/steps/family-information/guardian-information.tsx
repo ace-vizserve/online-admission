@@ -12,6 +12,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
 import { isFatherInfoSatisfied } from "@/lib/step-validity";
+import { toUTCDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { VizSchoolEnrolNewStudentFormState } from "@/types";
 import {
@@ -371,7 +372,7 @@ function GuardianInformation() {
                         selected={field.value}
                         onSelect={(date) => {
                           if (date) {
-                            field.onChange(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+                            field.onChange(toUTCDateOnly(date));
                           } else {
                             field.onChange(date);
                           }

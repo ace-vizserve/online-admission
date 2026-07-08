@@ -88,6 +88,29 @@ describe("STPGuidelines", () => {
     expect(screen.queryByRole("button", { name: /Pick a date/ })).not.toBeInTheDocument();
   });
 
+  it("stores the picked pre-course date as UTC midnight of the selected calendar day", async () => {
+    const user = userEvent.setup();
+    renderPage({ enroleeType: "New", isOpenHouseRegistration: false, isSTP: false });
+
+    await user.click(screen.getByRole("radio", { name: /have completed Pre-Course Counselling/ }));
+    await user.click(screen.getByRole("button", { name: /Pick a date/ }));
+
+    // Day 1 of the current month is never blocked by the picker's `after: new Date()` rule.
+    // Day buttons carry `data-day={date.toLocaleDateString()}` (see calendar.tsx).
+    const today = new Date();
+    const target = new Date(today.getFullYear(), today.getMonth(), 1);
+    const dayButton = document.querySelector(`[data-day="${target.toLocaleDateString()}"]`);
+    expect(dayButton).not.toBeNull();
+    await user.click(dayButton as HTMLElement);
+
+    // The stored Date must serialize (postgrest saves via toISOString) to the SAME calendar
+    // day that was clicked — a local-midnight Date would roll back a day in UTC+ timezones.
+    const stored = usePreCourseAcknowledgementStore.getState().preCourseDate;
+    expect(stored).toBeInstanceOf(Date);
+    const expectedDay = `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, "0")}-01`;
+    expect(stored!.toISOString()).toBe(`${expectedDay}T00:00:00.000Z`);
+  });
+
   it("auto-acknowledges pre-course counselling for open house registrants and redirects there", async () => {
     const user = userEvent.setup();
     renderPage({ enroleeType: "New", isOpenHouseRegistration: true, isSTP: false });
