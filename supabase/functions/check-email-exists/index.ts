@@ -17,7 +17,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+    // SUPABASE_SECRET_KEYS is a JSON object keyed by API-key name
+    const secretKey = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")!)["default"];
+    const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, secretKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
