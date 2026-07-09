@@ -1,4 +1,5 @@
 import { VIZSCHOOL_ACADEMIC_YEARS } from "@/config/academic-years";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import CurrentLearnerSteps from "@/components/private/enrol-student/vizschool/current-learner-steps";
 import SubmitLearnerApplicationDialog from "@/components/private/enrol-student/vizschool/submit-learner-application-dialog";
@@ -113,7 +114,7 @@ function ExitApplicationDialog() {
     clearSchoolFeeState();
     clearState();
     clearAcademicYearState();
-    sessionStorage.clear();
+    safeSessionStorage.clear();
   }
 
   if (!isDesktop) {

@@ -8,6 +8,7 @@ import { buttonVariants } from "../ui/button";
 import { discardDraft } from "@/actions/discard-draft";
 import { submitEnrollment } from "@/actions/private";
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -264,7 +265,7 @@ function SubmitApplicationDialog() {
       });
       clearEnrolNewStudentTabState();
       clearPreCourse();
-      sessionStorage.clear();
+      safeSessionStorage.clear();
     },
     onError() {
       toast.error("Uh oh! Something went wrong", {
@@ -386,7 +387,7 @@ function ExitApplicationDialog() {
     clearEnrolNewStudentTabState();
     clearPassType();
     clearPreCourse();
-    sessionStorage.clear();
+    safeSessionStorage.clear();
   }
 
   if (!isDesktop) {

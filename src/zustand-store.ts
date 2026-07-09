@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { safeLocalStorage, safeSessionStorage } from "@/lib/safe-storage";
 import {
   EnrolNewStudentFormState,
   EnrolOldStudentFormState,
@@ -138,7 +139,7 @@ export const useEnrolNewStudentTabStateStore = create<EnrolNewStudentTabStateSto
     }),
     {
       name: "enrolNewStudentTabState",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -156,6 +157,7 @@ export const usePasswordResetStore = create<PasswordResetStore>()(
     }),
     {
       name: "password-recovery",
+      storage: createJSONStorage(() => safeLocalStorage),
     },
   ),
 );
@@ -177,7 +179,7 @@ export const useOpenHouseStore = create<OpenHouseStore>()(
     }),
     {
       name: "openHouseFormState",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -217,7 +219,7 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
     }),
     {
       name: "enrolNewStudentFormState",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -239,7 +241,7 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
     }),
     {
       name: "enrolOldStudentFormState",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -262,7 +264,7 @@ export const useVizSchoolEnrolNewStudentStore = create<VizSchoolEnrolNewStudentS
     }),
     {
       name: "vizSchoolEnrolNewStudentFormState",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -284,7 +286,7 @@ export const useVizSchoolEnrolOldStudentStore = create<VizSchoolEnrolOldStudentS
     }),
     {
       name: "vizSchoolEnrolOldStudentFormState",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -300,7 +302,7 @@ export const useSelectAcademicYear = create<AcademicYearStore>()(
     }),
     {
       name: "academicYear",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -316,7 +318,7 @@ export const useSelectOpenHouseInstitution = create<OpenHouseInstitutionStore>()
     }),
     {
       name: "openHouseInstitution",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -332,7 +334,7 @@ export const useSelectSchoolFee = create<SchoolFeeStore>()(
     }),
     {
       name: "schoolFee",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -350,7 +352,7 @@ export const usePassTypeStore = create<PassTypeStore>()(
     }),
     {
       name: "pass-type",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -368,7 +370,7 @@ export const usePreCourseAcknowledgementStore = create<PreCourseAcknowledgementS
     }),
     {
       name: "pre-course-acknowledgement",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => safeSessionStorage),
     },
   ),
 );
@@ -400,6 +402,7 @@ export const createNewStudentDraftStore = (type: "viz-school" | "hfse-is", draft
           type == "hfse-is"
             ? `enrolNewStudent:draft:${draftId}:hfse-is`
             : `enrolNewStudent:draft:${draftId}:viz-school`,
+        storage: createJSONStorage(() => safeLocalStorage),
       },
     ),
   );

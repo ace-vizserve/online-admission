@@ -5,6 +5,7 @@ import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerT
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
 import { useDraftsList } from "@/hooks/use-drafts-list";
 import { DraftSort, isExpired, isExpiringSoon, sortDrafts } from "@/lib/draft-storage";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { cn, wait } from "@/lib/utils";
 import { EnrolNewStudentFormState } from "@/types";
 import {
@@ -153,7 +154,7 @@ export default function VizSchoolSavedDraftsDialog() {
     clearEnrolNewStudentTabState();
     clearPassType();
     clearPreCourse();
-    sessionStorage.clear();
+    safeSessionStorage.clear();
 
     await wait(500);
     setIsExiting(false);

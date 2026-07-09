@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useEnrolCurrentLearnerContext } from "@/context/vizschool/enrol-current-learner-context";
 import useSession from "@/hooks/use-session";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { VizSchoolEnrolOldStudentFormState } from "@/types";
 import { useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -64,7 +65,7 @@ function SubmitLearnerApplicationDialog() {
         queryKey: ["student-enrollments-list", session?.user.email],
       });
       clearState();
-      sessionStorage.clear();
+      safeSessionStorage.clear();
     },
     onError() {
       toast.error("Uh oh! Something went wrong", {

@@ -1,6 +1,7 @@
 import PageMetaData from "@/components/page-metadata";
 import { SectionCards } from "@/components/private/dashboard/section-cards";
 import StudentsList from "@/components/private/dashboard/students-list";
+import { safeSessionStorage, safeStorageKeys } from "@/lib/safe-storage";
 import { useEffect } from "react";
 import { useLocation } from "react-router";
 
@@ -8,11 +9,10 @@ function Dashboard() {
   const location = useLocation();
 
   useEffect(() => {
-    if (!sessionStorage.length) return;
-    const enrollmentKeys = Object.keys(sessionStorage).filter(
+    const enrollmentKeys = safeStorageKeys(safeSessionStorage).filter(
       (k) => k.includes("enrol") || k.includes("Enrol") || k.includes("FormState") || k.includes("TabState"),
     );
-    enrollmentKeys.forEach((k) => sessionStorage.removeItem(k));
+    enrollmentKeys.forEach((k) => safeSessionStorage.removeItem(k));
   }, []);
 
   useEffect(() => {

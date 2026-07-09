@@ -3,6 +3,7 @@ import PageMetaData from "@/components/page-metadata";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { applicationTypes, studentPassTypes } from "@/data";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { cn } from "@/lib/utils";
 import { usePassTypeStore, useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
 import { Description, Field, Label, Radio, RadioGroup } from "@headlessui/react";
@@ -162,7 +163,7 @@ export default function StudentResidencyPage() {
     setTransition(() => {
       clearState();
       clearSchoolFeeState();
-      sessionStorage.clear();
+      safeSessionStorage.clear();
     });
   }
 

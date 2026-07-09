@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes } from "@/data";
 import useSession from "@/hooks/use-session";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { EnrolOldStudentFormState } from "@/types";
 import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -67,7 +68,7 @@ function SubmitApplicationDialog() {
       });
       clearState();
       clearPreCourse();
-      sessionStorage.clear();
+      safeSessionStorage.clear();
     },
     onError(error) {
       console.log(error);
