@@ -1,6 +1,7 @@
 import students from "@/assets/students.webp";
 import { PARENT_FACING_ACADEMIC_YEARS } from "@/config/academic-years";
 import { Button } from "@/components/ui/button";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { cn } from "@/lib/utils";
 import SEO, { BASE_URL } from "@/pages/seo";
 import { useSelectAcademicYear, useSelectOpenHouseInstitution } from "@/zustand-store";
@@ -43,7 +44,7 @@ export default function OpenHouseLanding() {
 
   useEffect(() => {
     if (!sessionStorage.length) return;
-    sessionStorage.clear();
+    safeSessionStorage.clear();
     location.reload();
   }, []);
 

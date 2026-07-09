@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import VizSchoolLogo from "@/components/vizschool-logo";
 import { ENROL_NEW_STUDENT_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { canEnrollStudent, cn } from "@/lib/utils";
 import { EnrolledStudent } from "@/types";
 import { useSelectAcademicYear, useSelectSchoolFee } from "@/zustand-store";
@@ -62,7 +63,7 @@ function EnrolStudent() {
     setTransition(() => {
       clearState();
       clearSchoolFeeState();
-      sessionStorage.clear();
+      safeSessionStorage.clear();
     });
   }
 

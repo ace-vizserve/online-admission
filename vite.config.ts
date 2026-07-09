@@ -1,4 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
+import legacy from "@vitejs/plugin-legacy";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { defineConfig } from "vitest/config";
@@ -11,6 +12,10 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    // Reads the `browserslist` field in package.json. Emits a second, Babel + core-js polyfilled
+    // build alongside the modern one, with a `nomodule` fallback script — without this, a browser
+    // that can't load native ES modules gets a silent blank page (no error, nothing in `#root`).
+    legacy(),
     ViteSitemap({
       basePath: "",
       dynamicRoutes: routes,
@@ -58,6 +63,9 @@ export default defineConfig({
         "src/lib/step-validity.ts",
         "src/components/private/enrol-student/submit-application-dialog.tsx",
         "src/components/private/enrol-student/vizschool/submit-learner-application-dialog.tsx",
+        "src/lib/safe-storage.ts",
+        "src/lib/generate-id.ts",
+        "src/hooks/use-mobile.ts",
       ],
       thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },

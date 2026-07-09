@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/client";
+import { safeLocalStorage, safeSessionStorage } from "@/lib/safe-storage";
 import { checkEmailExists } from "@/lib/utils";
 import { LoginSchema, RegistrationSchema } from "@/zod-schema";
 import { AuthError } from "@supabase/supabase-js";
@@ -32,8 +33,8 @@ export async function userLogout() {
   } catch (error) {
     const err = error as AuthError;
     if (err.message === "Auth session missing!") {
-      localStorage.clear();
-      sessionStorage.clear();
+      safeLocalStorage.clear();
+      safeSessionStorage.clear();
       location.reload();
       return;
     }

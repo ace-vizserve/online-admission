@@ -4,6 +4,7 @@ import { Outlet, useNavigate, useSearchParams } from "react-router";
 import { discardDraft } from "@/actions/discard-draft";
 import { submitVizSchoolEnrollment } from "@/actions/private";
 import { VIZSCHOOL_ACADEMIC_YEARS } from "@/config/academic-years";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import NewLearnerSteps from "@/components/private/enrol-student/vizschool/new-learner-steps";
 import VizSchoolSavedDraftsDialog from "@/components/private/vizschool-drafts-list";
@@ -258,7 +259,7 @@ function SubmitApplicationDialog() {
         queryKey: ["student-enrollments-list", session?.user.email],
       });
       clearEnrolNewStudentTabState();
-      sessionStorage.clear();
+      safeSessionStorage.clear();
     },
     onError() {
       toast.error("Uh oh! Something went wrong", {
@@ -373,7 +374,7 @@ function ExitApplicationDialog() {
     clearState();
     clearAcademicYearState();
     clearEnrolNewStudentTabState();
-    sessionStorage.clear();
+    safeSessionStorage.clear();
   }
 
   if (!isDesktop) {

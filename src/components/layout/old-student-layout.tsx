@@ -1,6 +1,7 @@
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import EnrolOldStudentContextProvider, { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { useHydrateReEnrollment } from "@/hooks/use-hydrate-reenrollment";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { ArrowLeft, FolderOpen } from "lucide-react";
 import { Link, Outlet, useNavigate, useParams, useSearchParams } from "react-router";
 import MaxWidthWrapper from "../max-width-wrapper";
@@ -122,7 +123,7 @@ function ExitApplicationDialog() {
     clearPreCourse();
     clearState();
     clearAcademicYearState();
-    sessionStorage.clear();
+    safeSessionStorage.clear();
   }
 
   if (!isDesktop) {

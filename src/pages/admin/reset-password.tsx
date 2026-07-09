@@ -95,8 +95,20 @@ export default function ResetPassword() {
 
   async function copyPassword() {
     const password = form.getValues("password");
-    await navigator.clipboard.writeText(password);
-    toast.success("Password copied to clipboard.");
+
+    // Clipboard access requires a secure context and isn't implemented on every engine — guard
+    // rather than let an unhandled rejection/throw silently drop the click.
+    if (!navigator.clipboard?.writeText) {
+      toast.error("Clipboard access isn't available in this browser. Please copy the password manually.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(password);
+      toast.success("Password copied to clipboard.");
+    } catch {
+      toast.error("Couldn't copy to clipboard. Please copy the password manually.");
+    }
   }
 
   return (

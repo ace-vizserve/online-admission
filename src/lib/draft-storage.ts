@@ -1,3 +1,5 @@
+import { generateId } from "@/lib/generate-id";
+import { safeLocalStorage, safeStorageKeys } from "@/lib/safe-storage";
 import { EnrolNewStudentDraftStore } from "@/zustand-store";
 
 const NEW_STUDENT_DRAFT_PREFIX = "enrolNewStudent:draft:";
@@ -42,10 +44,10 @@ export function isExpiringSoon(expiresAt?: string | Date, days = 5) {
 }
 
 export function createNewStudentDraft() {
-  const draftKeys = Object.keys(localStorage).filter((k) => k.startsWith(NEW_STUDENT_DRAFT_PREFIX));
+  const draftKeys = safeStorageKeys(safeLocalStorage).filter((k) => k.startsWith(NEW_STUDENT_DRAFT_PREFIX));
 
   for (const key of draftKeys) {
-    const raw = localStorage.getItem(key);
+    const raw = safeLocalStorage.getItem(key);
     if (!raw) continue;
 
     let entry: PersistedDraftEntry;
@@ -58,20 +60,20 @@ export function createNewStudentDraft() {
     }
 
     if (isExpired(entry.state?.expiresAt)) {
-      localStorage.removeItem(key);
+      safeLocalStorage.removeItem(key);
     }
   }
 
-  const draftId = crypto.randomUUID();
+  const draftId = generateId();
 
   return draftId;
 }
 
 export function listNewStudentDrafts(type: "viz-school" | "hfse-is") {
-  return Object.keys(localStorage)
+  return safeStorageKeys(safeLocalStorage)
     .filter((k) => k.startsWith(`enrolNewStudent:draft:`) && k.endsWith(`:${type}`))
     .map((key) => {
-      const raw = localStorage.getItem(key);
+      const raw = safeLocalStorage.getItem(key);
       if (!raw) return null;
       try {
         return JSON.parse(raw);
@@ -85,7 +87,7 @@ export function listNewStudentDrafts(type: "viz-school" | "hfse-is") {
 
 export function removeNewStudentDraft(draftId: string | undefined, type: "viz-school" | "hfse-is") {
   if (!draftId) return;
-  localStorage.removeItem(`${NEW_STUDENT_DRAFT_PREFIX}${draftId}:${type}`);
+  safeLocalStorage.removeItem(`${NEW_STUDENT_DRAFT_PREFIX}${draftId}:${type}`);
   window.dispatchEvent(new Event("draft-list-changed"));
 }
 

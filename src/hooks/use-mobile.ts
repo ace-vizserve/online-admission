@@ -10,9 +10,22 @@ export function useIsMobile() {
     const onChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
-    mql.addEventListener("change", onChange)
+    // Safari < 14 only implements the legacy `addListener`/`removeListener` pair — without this
+    // fallback, live resize/orientation updates silently stop on those engines (the initial value
+    // set below still renders correctly either way).
+    if (mql.addEventListener) {
+      mql.addEventListener("change", onChange)
+    } else {
+      mql.addListener(onChange)
+    }
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    return () => {
+      if (mql.removeEventListener) {
+        mql.removeEventListener("change", onChange)
+      } else {
+        mql.removeListener(onChange)
+      }
+    }
   }, [])
 
   return !!isMobile

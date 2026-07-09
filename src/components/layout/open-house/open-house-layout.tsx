@@ -28,6 +28,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import OpenHouseContextProvider, { useOpenHouseContext } from "@/context/open-house/open-house-student-context";
+import { safeSessionStorage } from "@/lib/safe-storage";
 import { getStepValidity } from "@/lib/step-validity";
 import useSession from "@/hooks/use-session";
 import { OpenHouseFormState } from "@/types";
@@ -166,7 +167,7 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
       });
       clearEnrolNewStudentTabState();
       clearCredentials();
-      sessionStorage.clear();
+      safeSessionStorage.clear();
     },
     onError() {
       toast.error("Uh oh! Something went wrong", {
@@ -276,7 +277,7 @@ function ExitApplicationDialog() {
     clearCredentials();
     clearPreCourse();
     clearInstitution();
-    sessionStorage.clear();
+    safeSessionStorage.clear();
   }
 
   if (!isDesktop) {
