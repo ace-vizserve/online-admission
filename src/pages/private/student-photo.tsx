@@ -29,13 +29,25 @@ function StudentPhoto() {
       const response = await fetch(url);
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = `student-photo-${Date.now()}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
+
+      // iOS Safari ignores the `a[download]` attribute for blob URLs — the link just opens the
+      // image instead of saving it. Opening it in a new tab at least lets the user long-press to
+      // "Save Image" there, instead of the click silently doing nothing useful.
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        window.open(downloadUrl, "_blank");
+        // Give the new tab time to actually load the blob before revoking its URL.
+        setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 10000);
+      } else {
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = `student-photo-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(downloadUrl);
+      }
     } catch (error) {
       console.error("Download failed:", error);
     }
