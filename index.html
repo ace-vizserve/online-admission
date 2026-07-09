@@ -23,6 +23,37 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Tailwind CSS v4 (index.css) relies on `color-mix()`, `@property`, and cascade layers —
+      // Safari < 16.4 / Chrome < 111 / Firefox < 113 render those as invalid, silently losing
+      // every themed color with no error. There's no CSS-level fallback for that (autoprefixer
+      // can't backport unsupported functions), so detect it here instead and tell the visitor
+      // plainly, rather than let them see a colorless/broken-looking page with no explanation.
+      // Plain inline styles only — anything relying on index.css would be exactly what's broken.
+      (function () {
+        try {
+          var supportsModernCss =
+            window.CSS &&
+            typeof CSS.supports === "function" &&
+            CSS.supports("color", "color-mix(in oklab, red, blue)");
+
+          if (supportsModernCss) return;
+
+          var banner = document.createElement("div");
+          banner.setAttribute("role", "alert");
+          banner.style.cssText =
+            "position:fixed;top:0;left:0;right:0;z-index:2147483647;" +
+            "background:#7c2d12;color:#fff;font-family:Arial,Helvetica,sans-serif;" +
+            "font-size:14px;line-height:1.5;padding:12px 16px;text-align:center;";
+          banner.textContent =
+            "Your browser is out of date and this page may not display correctly. For the best " +
+            "experience, please update to the latest version of Chrome, Safari, Firefox, or Edge.";
+          document.body.insertBefore(banner, document.body.firstChild);
+        } catch (e) {
+          // If the detection itself fails, fail silently rather than block the page.
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
