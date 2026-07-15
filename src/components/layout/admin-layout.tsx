@@ -11,6 +11,7 @@ const ADMIN_NAV = [
   { to: "/admin/move-student", label: "Transfer Records" },
   { to: "/admin/reset-password", label: "Reset Password" },
   { to: "/admin/create-parent", label: "Create Account" },
+  { to: "/admin/recovery-link", label: "Recovery Link" },
 ];
 
 export default function AdminLayout() {

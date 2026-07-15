@@ -1347,7 +1347,44 @@ export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequir
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type MedicalChecklistFormValues = z.infer<typeof medicalChecklistSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
+export const adminRecoveryLookupSchema = z.object({
+  enroleeNumber: z
+    .string()
+    .min(1, "Enrolee number is required")
+    .transform((value) => value.trim().toUpperCase()),
+});
+
+/**
+ * The zero-login "complete my application" recovery form (src/pages/public/complete-enrolment.tsx).
+ * Composed directly from the same section schemas the authenticated wizard uses, so validation
+ * stays identical — deliberately a compact HFSE-IS-only subset (no VizSchool, no discounts/
+ * referrer/learning-needs, no PDF-merge uploads); see that page's file comment for the full
+ * scope rationale.
+ */
+export const recoveryFormSchema = z.object({
+  studentInfo: z.object({
+    studentDetails: studentDetailsSchema,
+    addressContact: studentAddressContactSchema,
+    medicalInformation: medicalChecklistSchema,
+  }),
+  familyInfo: z.object({
+    motherInfo: motherInformationSchema,
+    fatherInfo: fatherInformationSchema,
+    guardianInfo: guardianInformationSchema,
+    siblingsInfo: siblingInformationSchema,
+  }),
+  enrollmentInfo: enrollmentInformationSchema,
+  uploadRequirements: z.object({
+    studentUploadRequirements: studentUploadRequirementsSchema,
+    parentGuardianUploadRequirements: parentGuardianUploadRequirementsSchema,
+  }),
+});
+
+export type RecoveryFormInput = z.input<typeof recoveryFormSchema>;
+export type RecoveryFormOutput = z.output<typeof recoveryFormSchema>;
+
 export type AdminCreateParentSchema = z.infer<typeof adminCreateParentSchema>;
+export type AdminRecoveryLookupSchema = z.infer<typeof adminRecoveryLookupSchema>;
 
 export type VizSchoolStudentDetailsSchema = z.infer<typeof vizSchoolStudentDetailsSchema>;
 export type VizSchoolEnrollmentInformationSchema = z.infer<typeof vizSchoolEnrollmentInformationSchema>;
