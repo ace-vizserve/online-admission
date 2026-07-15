@@ -130,6 +130,56 @@ export class ExistingParentAccountError extends Error {
   }
 }
 
+const RECOVERY_LINK_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/recovery-link`;
+
+export type RecoverySection = "studentInfo" | "familyInfo" | "enrollmentInfo" | "uploads";
+
+export const RECOVERY_SECTION_LABEL: Record<RecoverySection, string> = {
+  studentInfo: "Student Info",
+  familyInfo: "Family Info",
+  enrollmentInfo: "Enrollment Info",
+  uploads: "Documents",
+};
+
+export type RecoveryCheckResult =
+  | { complete: true; academicYear: string; enroleeNumber: string }
+  | {
+      complete?: false;
+      academicYear: string;
+      enroleeNumber: string;
+      studentNumber: string | null;
+      category: string;
+      studentName: string | null;
+      present: { applications: boolean; documents: boolean; status: boolean };
+      // `present.applications === true` alongside this means the row exists but is missing
+      // required fields — the recovery link will UPDATE it, not INSERT a new one.
+      applicationsIncomplete: boolean;
+      missing: string[];
+      suggestedSections: RecoverySection[];
+    };
+
+export type RecoveryLinkResult = {
+  token: string;
+  url: string;
+  missing: string[];
+  sections: RecoverySection[];
+  studentName: string | null;
+  category: string;
+};
+
+export async function adminCheckRecovery(session: Session, params: { enroleeNumber: string }): Promise<RecoveryCheckResult> {
+  const data = await callFunction(RECOVERY_LINK_FUNCTION_URL, session, { action: "check", ...params });
+  return data as RecoveryCheckResult;
+}
+
+export async function adminGenerateRecoveryLink(
+  session: Session,
+  params: { enroleeNumber: string; sections?: RecoverySection[] },
+): Promise<RecoveryLinkResult> {
+  const data = await callFunction(RECOVERY_LINK_FUNCTION_URL, session, { action: "generate", ...params });
+  return data as RecoveryLinkResult;
+}
+
 export async function adminCreateParentAccount(
   session: Session,
   params: { firstName: string; lastName: string; relationship: "mother" | "father"; email: string; password: string },

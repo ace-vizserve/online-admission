@@ -18,6 +18,7 @@ import UpdatePassword from "@/pages/auth/update-password";
 import CreateParent from "@/pages/admin/create-parent";
 import AdminLogin from "@/pages/admin/login";
 import MoveStudent from "@/pages/admin/move-student";
+import RecoveryLink from "@/pages/admin/recovery-link";
 import ResetPassword from "@/pages/admin/reset-password";
 import NotFound from "@/pages/not-found";
 import AccountSettings from "@/pages/private/account-settings";
@@ -58,6 +59,7 @@ import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentPhoto from "@/pages/private/student-photo";
 import StudentProfile from "@/pages/private/student-profile";
 import Uploaded from "@/pages/private/uploaded";
+import CompleteEnrolment from "@/pages/public/complete-enrolment";
 import Homepage from "@/pages/public/home-page";
 import { ErrorBoundary } from "react-error-boundary";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
@@ -548,7 +550,25 @@ function AppRoutes() {
               </AdminGuard>
             }
           />
+          <Route
+            path="recovery-link"
+            element={
+              <AdminGuard>
+                <RecoveryLink />
+              </AdminGuard>
+            }
+          />
         </Route>
+
+        {/* Public — token-gated, no login required */}
+        <Route
+          path="/complete-enrolment/:token"
+          element={
+            <ErrorBoundary fallback={<ErrorPage />}>
+              <CompleteEnrolment />
+            </ErrorBoundary>
+          }
+        />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

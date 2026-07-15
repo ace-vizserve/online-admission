@@ -7,8 +7,8 @@
 import { Session } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ExistingParentAccountError, adminCreateParentAccount } from "./admin";
-import { adminCreateParentSchema } from "@/zod-schema";
+import { ExistingParentAccountError, adminCheckRecovery, adminCreateParentAccount, adminGenerateRecoveryLink } from "./admin";
+import { adminCreateParentSchema, adminRecoveryLookupSchema } from "@/zod-schema";
 
 const session = { access_token: "test-token" } as Session;
 
@@ -81,6 +81,91 @@ describe("adminCreateParentAccount", () => {
     mockFetchResponse(200, {});
 
     await expect(adminCreateParentAccount(session, params)).rejects.toThrow("Request failed");
+  });
+});
+
+describe("adminCheckRecovery", () => {
+  it("sends the check action with the bearer token and returns the result", async () => {
+    const result = {
+      academicYear: "ay2027",
+      enroleeNumber: "E270003",
+      studentNumber: "H270003",
+      category: "New",
+      studentName: "DOE, JANE",
+      present: { applications: false, documents: true, status: true },
+      applicationsIncomplete: false,
+      missing: ["applications"],
+      suggestedSections: ["studentInfo", "familyInfo", "enrollmentInfo", "uploads"],
+    };
+    const fetchMock = mockFetchResponse(200, result);
+
+    await expect(adminCheckRecovery(session, { enroleeNumber: "E270003" })).resolves.toEqual(result);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toContain("/functions/v1/recovery-link");
+    expect(init.headers.Authorization).toBe("Bearer test-token");
+    expect(JSON.parse(init.body)).toEqual({ action: "check", enroleeNumber: "E270003" });
+  });
+
+  it("throws the server's error message on failure", async () => {
+    mockFetchResponse(422, { error: "Could not determine the application category" });
+
+    await expect(adminCheckRecovery(session, { enroleeNumber: "E270003" })).rejects.toThrow(
+      "Could not determine the application category",
+    );
+  });
+});
+
+describe("adminGenerateRecoveryLink", () => {
+  it("sends the generate action and returns the token/url", async () => {
+    const result = {
+      token: "11111111-1111-1111-1111-111111111111",
+      url: "https://enrol.hfse.edu.sg/complete-enrolment/11111111-1111-1111-1111-111111111111",
+      missing: ["applications"],
+      sections: ["studentInfo", "familyInfo", "enrollmentInfo", "uploads"],
+      studentName: "DOE, JANE",
+      category: "New",
+    };
+    const fetchMock = mockFetchResponse(200, result);
+
+    await expect(adminGenerateRecoveryLink(session, { enroleeNumber: "E270003" })).resolves.toEqual(result);
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(JSON.parse(init.body)).toEqual({ action: "generate", enroleeNumber: "E270003" });
+  });
+
+  it("sends an explicit section selection when provided", async () => {
+    const fetchMock = mockFetchResponse(200, {
+      token: "t",
+      url: "https://enrol.hfse.edu.sg/complete-enrolment/t",
+      missing: ["applications"],
+      sections: ["familyInfo"],
+      studentName: "DOE, JANE",
+      category: "New",
+    });
+
+    await adminGenerateRecoveryLink(session, { enroleeNumber: "E270003", sections: ["familyInfo"] });
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(JSON.parse(init.body)).toEqual({ action: "generate", enroleeNumber: "E270003", sections: ["familyInfo"] });
+  });
+
+  it("throws when there's nothing to recover", async () => {
+    mockFetchResponse(409, { error: "Nothing to recover — all three tables already have a row." });
+
+    await expect(adminGenerateRecoveryLink(session, { enroleeNumber: "E270003" })).rejects.toThrow(
+      "Nothing to recover",
+    );
+  });
+});
+
+describe("adminRecoveryLookupSchema", () => {
+  it("trims and uppercases the enrolee number", () => {
+    expect(adminRecoveryLookupSchema.parse({ enroleeNumber: " e270003 " }).enroleeNumber).toBe("E270003");
+  });
+
+  it("rejects an empty enrolee number", () => {
+    expect(adminRecoveryLookupSchema.safeParse({ enroleeNumber: "" }).success).toBe(false);
   });
 });
 
