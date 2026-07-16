@@ -9,7 +9,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { adminCheckRecovery, adminGenerateRecoveryLink } from "@/actions/admin";
+import { adminCheckRecovery, adminGenerateRecoveryLink, adminListRecoveryLinks } from "@/actions/admin";
 
 import RecoveryLink from "./recovery-link";
 
@@ -20,11 +20,17 @@ vi.mock("@/hooks/use-session", () => ({
 }));
 vi.mock("@/actions/admin", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/actions/admin")>();
-  return { ...actual, adminCheckRecovery: vi.fn(), adminGenerateRecoveryLink: vi.fn() };
+  return {
+    ...actual,
+    adminCheckRecovery: vi.fn(),
+    adminGenerateRecoveryLink: vi.fn(),
+    adminListRecoveryLinks: vi.fn(),
+  };
 });
 
 const mockCheck = vi.mocked(adminCheckRecovery);
 const mockGenerate = vi.mocked(adminGenerateRecoveryLink);
+const mockList = vi.mocked(adminListRecoveryLinks);
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
@@ -61,6 +67,7 @@ async function runCheck(user: ReturnType<typeof userEvent.setup>) {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mockList.mockResolvedValue([]);
 });
 
 describe("recovery-link.tsx", () => {
@@ -141,5 +148,89 @@ describe("recovery-link.tsx", () => {
     await waitFor(() => expect(screen.getByText(/email not sent/i)).toBeInTheDocument());
     expect(screen.getByText(/Resend API returned 422/i)).toBeInTheDocument();
     expect(screen.getByText("https://enrol.hfse.edu.sg/complete-enrolment/t")).toBeInTheDocument();
+  });
+
+  it("shows the correct status for completed, pending, and expired links", async () => {
+    const now = Date.now();
+    mockList.mockResolvedValue([
+      {
+        token: "completed",
+        url: "https://enrol.hfse.edu.sg/complete-enrolment/completed",
+        academic_year: "ay2027",
+        enrolee_number: "E270001",
+        student_name: "DOE, JANE",
+        category: "New",
+        created_by: "admin@example.com",
+        created_at: new Date(now - 1000).toISOString(),
+        expires_at: new Date(now + 7 * 86400000).toISOString(),
+        used_at: new Date(now).toISOString(),
+        notified_email: "jane.parent@example.com",
+        notified_at: new Date(now - 1000).toISOString(),
+      },
+      {
+        token: "pending",
+        url: "https://enrol.hfse.edu.sg/complete-enrolment/pending",
+        academic_year: "ay2027",
+        enrolee_number: "E270002",
+        student_name: null,
+        category: "New",
+        created_by: "admin@example.com",
+        created_at: new Date(now - 1000).toISOString(),
+        expires_at: new Date(now + 7 * 86400000).toISOString(),
+        used_at: null,
+        notified_email: null,
+        notified_at: null,
+      },
+      {
+        token: "expired",
+        url: "https://enrol.hfse.edu.sg/complete-enrolment/expired",
+        academic_year: "ay2026",
+        enrolee_number: "E260099",
+        student_name: "SMITH, JOHN",
+        category: "Current",
+        created_by: "admin@example.com",
+        created_at: new Date(now - 10 * 86400000).toISOString(),
+        expires_at: new Date(now - 3 * 86400000).toISOString(),
+        used_at: null,
+        notified_email: "john.parent@example.com",
+        notified_at: new Date(now - 10 * 86400000).toISOString(),
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("Recent links")).toBeInTheDocument());
+    expect(screen.getByText("DOE, JANE")).toBeInTheDocument();
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+    // No student_name on the pending row — falls back to the enrolee number.
+    expect(screen.getByText("E270002")).toBeInTheDocument();
+    expect(screen.getByText("Pending")).toBeInTheDocument();
+    expect(screen.getByText("SMITH, JOHN")).toBeInTheDocument();
+    expect(screen.getByText("Expired")).toBeInTheDocument();
+    expect(screen.getByText("Not emailed")).toBeInTheDocument();
+    expect(screen.getByText(/Sent to jane\.parent@example\.com/)).toBeInTheDocument();
+  });
+
+  it("refetches the recent links list after a successful generate", async () => {
+    const user = userEvent.setup();
+    mockCheck.mockResolvedValue(incompleteResult);
+    mockGenerate.mockResolvedValue({
+      token: "t",
+      url: "https://enrol.hfse.edu.sg/complete-enrolment/t",
+      missing: ["applications"],
+      sections: ["studentInfo", "familyInfo", "enrollmentInfo", "uploads"],
+      studentName: "DOE, JANE",
+      category: "New",
+      emailSent: true,
+    });
+    renderPage();
+
+    await waitFor(() => expect(mockList).toHaveBeenCalledTimes(1));
+
+    await runCheck(user);
+    await user.type(screen.getByPlaceholderText(/mother@example.com/i), "parent@example.com");
+    await user.click(screen.getByRole("button", { name: /generate & send/i }));
+
+    await waitFor(() => expect(mockList).toHaveBeenCalledTimes(2));
   });
 });

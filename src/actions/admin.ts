@@ -186,6 +186,26 @@ export async function adminGenerateRecoveryLink(
   return data as RecoveryLinkResult;
 }
 
+export type RecoveryTokenSummary = {
+  token: string;
+  url: string;
+  academic_year: string;
+  enrolee_number: string;
+  student_name: string | null;
+  category: string;
+  created_by: string;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
+  notified_email: string | null;
+  notified_at: string | null;
+};
+
+export async function adminListRecoveryLinks(session: Session): Promise<RecoveryTokenSummary[]> {
+  const data = await callFunction(RECOVERY_LINK_FUNCTION_URL, session, { action: "list" });
+  return (data as { tokens: RecoveryTokenSummary[] }).tokens;
+}
+
 export async function adminCreateParentAccount(
   session: Session,
   params: { firstName: string; lastName: string; relationship: "mother" | "father"; email: string; password: string },

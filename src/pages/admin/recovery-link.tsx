@@ -3,8 +3,10 @@ import {
   RecoveryCheckResult,
   RecoveryLinkResult,
   RecoverySection,
+  RecoveryTokenSummary,
   adminCheckRecovery,
   adminGenerateRecoveryLink,
+  adminListRecoveryLinks,
 } from "@/actions/admin";
 import PageMetaData from "@/components/page-metadata";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +18,8 @@ import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { AdminRecoveryLookupSchema, adminRecoveryLookupSchema, recoveryRecipientEmailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { Check, CircleCheck, Copy, Mail, Search, TriangleAlert, X } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Check, CircleCheck, Clock, Copy, Mail, Search, TriangleAlert, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -45,6 +47,29 @@ function TableBadge({ label, present, sublabel }: { label: string; present: bool
   );
 }
 
+type TokenStatus = "Completed" | "Expired" | "Pending";
+
+function tokenStatus(t: RecoveryTokenSummary): TokenStatus {
+  if (t.used_at) return "Completed";
+  if (new Date(t.expires_at).getTime() < Date.now()) return "Expired";
+  return "Pending";
+}
+
+function StatusBadge({ status }: { status: TokenStatus }) {
+  const config: Record<TokenStatus, { variant: "outline" | "secondary"; icon: typeof Check; className: string }> = {
+    Completed: { variant: "outline", icon: CircleCheck, className: "text-primary border-primary/30" },
+    Pending: { variant: "outline", icon: Clock, className: "text-amber-700 border-amber-500/30" },
+    Expired: { variant: "secondary", icon: X, className: "text-muted-foreground" },
+  };
+  const { variant, icon: Icon, className } = config[status];
+  return (
+    <Badge variant={variant} className={cn("text-[10px] font-bold tracking-wider gap-1 shrink-0", className)}>
+      <Icon className="h-3 w-3" />
+      {status}
+    </Badge>
+  );
+}
+
 export default function RecoveryLink() {
   const { session } = useSession();
   const [checkResult, setCheckResult] = useState<RecoveryCheckResult | null>(null);
@@ -55,6 +80,12 @@ export default function RecoveryLink() {
   const form = useForm<AdminRecoveryLookupSchema>({
     resolver: zodResolver(adminRecoveryLookupSchema),
     defaultValues: { enroleeNumber: "" },
+  });
+
+  const { data: recentLinks, refetch: refetchRecentLinks } = useQuery({
+    queryKey: ["recovery-links"],
+    queryFn: () => adminListRecoveryLinks(session!),
+    enabled: Boolean(session),
   });
 
   const { mutate: check, isPending: isChecking } = useMutation({
@@ -94,6 +125,7 @@ export default function RecoveryLink() {
       }),
     onSuccess: (result) => {
       setLinkResult(result);
+      refetchRecentLinks();
       if (result.emailSent) {
         toast.success("Recovery link generated and emailed.");
       } else {
@@ -121,9 +153,8 @@ export default function RecoveryLink() {
     check(values);
   }
 
-  async function copyLink() {
-    if (!linkResult) return;
-    await navigator.clipboard.writeText(linkResult.url);
+  async function copyToClipboard(url: string) {
+    await navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard.");
   }
 
@@ -312,7 +343,12 @@ export default function RecoveryLink() {
                 <div className="px-5 py-4 space-y-3">
                   <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
                     <p className="text-[11px] font-mono text-foreground truncate flex-1">{linkResult.url}</p>
-                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={copyLink}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0"
+                      onClick={() => linkResult && copyToClipboard(linkResult.url)}>
                       <Copy className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -330,6 +366,48 @@ export default function RecoveryLink() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {recentLinks && recentLinks.length > 0 && (
+            <div className="space-y-3">
+              <p className={FIELD_LABEL}>Recent links</p>
+              <div className="space-y-2">
+                {recentLinks.map((t) => {
+                  const status = tokenStatus(t);
+                  return (
+                    <div
+                      key={t.token}
+                      className="rounded-lg border border-border bg-background px-3 py-2.5 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-foreground truncate">
+                            {t.student_name ?? t.enrolee_number}
+                          </p>
+                          <p className="text-[10px] font-mono text-muted-foreground truncate">
+                            {t.enrolee_number} · {t.category} · {new Date(t.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <StatusBadge status={status} />
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[10px] font-medium text-muted-foreground truncate">
+                          {t.notified_email ? `Sent to ${t.notified_email}` : "Not emailed"}
+                          {status === "Completed" && t.used_at && ` · Completed ${new Date(t.used_at).toLocaleDateString()}`}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 shrink-0"
+                          onClick={() => copyToClipboard(t.url)}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>
