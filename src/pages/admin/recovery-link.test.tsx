@@ -208,7 +208,7 @@ describe("recovery-link.tsx", () => {
     expect(screen.getByText("SMITH, JOHN")).toBeInTheDocument();
     expect(screen.getByText("Expired")).toBeInTheDocument();
     expect(screen.getByText("Not emailed")).toBeInTheDocument();
-    expect(screen.getByText(/Sent to jane\.parent@example\.com/)).toBeInTheDocument();
+    expect(screen.getByText("jane.parent@example.com")).toBeInTheDocument();
   });
 
   it("refetches the recent links list after a successful generate", async () => {
