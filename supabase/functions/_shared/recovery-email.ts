@@ -46,8 +46,12 @@ export function buildRecoveryEmailHtml(url: string): string {
               Good day!
             </p>
 
+            <p style="font-size:16px;line-height:26px;margin-bottom:16px;">
+              We hope this message finds you well. We're reaching out regarding your child's enrollment application — due to a technical issue on our end, some of the enrollment details you previously submitted were not fully saved in our system.
+            </p>
+
             <p style="font-size:16px;line-height:26px;margin-bottom:30px;">
-              As part of completing your child's enrollment, we kindly ask you to complete the remaining Enrollment Information details using the link below:
+              We sincerely apologize for the inconvenience this may cause. To ensure your child's enrollment record is complete and accurate, we kindly ask you to re-enter the affected information using the link below:
             </p>
 
             <!-- Call-to-action button -->
@@ -77,7 +81,7 @@ export function buildRecoveryEmailHtml(url: string): string {
             </p>
 
             <p style="font-size:16px;line-height:26px;margin-top:16px;margin-bottom:16px;">
-              Thank you for your cooperation.
+              Thank you for your understanding and cooperation.
             </p>
 
             <!-- Footer -->
