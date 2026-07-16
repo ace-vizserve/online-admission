@@ -8,7 +8,7 @@ import { Session } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ExistingParentAccountError, adminCheckRecovery, adminCreateParentAccount, adminGenerateRecoveryLink } from "./admin";
-import { adminCreateParentSchema, adminRecoveryLookupSchema } from "@/zod-schema";
+import { adminCreateParentSchema, adminRecoveryLookupSchema, recoveryRecipientEmailsSchema } from "@/zod-schema";
 
 const session = { access_token: "test-token" } as Session;
 
@@ -96,6 +96,7 @@ describe("adminCheckRecovery", () => {
       applicationsIncomplete: false,
       missing: ["applications"],
       suggestedSections: ["studentInfo", "familyInfo", "enrollmentInfo", "uploads"],
+      knownEmails: null,
     };
     const fetchMock = mockFetchResponse(200, result);
 
@@ -125,6 +126,7 @@ describe("adminGenerateRecoveryLink", () => {
       sections: ["studentInfo", "familyInfo", "enrollmentInfo", "uploads"],
       studentName: "DOE, JANE",
       category: "New",
+      emailSent: false,
     };
     const fetchMock = mockFetchResponse(200, result);
 
@@ -142,12 +144,60 @@ describe("adminGenerateRecoveryLink", () => {
       sections: ["familyInfo"],
       studentName: "DOE, JANE",
       category: "New",
+      emailSent: false,
     });
 
     await adminGenerateRecoveryLink(session, { enroleeNumber: "E270003", sections: ["familyInfo"] });
 
     const [, init] = fetchMock.mock.calls[0];
     expect(JSON.parse(init.body)).toEqual({ action: "generate", enroleeNumber: "E270003", sections: ["familyInfo"] });
+  });
+
+  it("sends recipientEmails and reports emailSent on success", async () => {
+    const fetchMock = mockFetchResponse(200, {
+      token: "t",
+      url: "https://enrol.hfse.edu.sg/complete-enrolment/t",
+      missing: ["applications"],
+      sections: ["studentInfo", "familyInfo", "enrollmentInfo", "uploads"],
+      studentName: "DOE, JANE",
+      category: "New",
+      emailSent: true,
+    });
+
+    const result = await adminGenerateRecoveryLink(session, {
+      enroleeNumber: "E270003",
+      recipientEmails: "jane@example.com, john@example.com",
+    });
+
+    expect(result.emailSent).toBe(true);
+    const [, init] = fetchMock.mock.calls[0];
+    expect(JSON.parse(init.body)).toEqual({
+      action: "generate",
+      enroleeNumber: "E270003",
+      recipientEmails: "jane@example.com, john@example.com",
+    });
+  });
+
+  it("surfaces emailError without throwing when the link was created but the email failed", async () => {
+    mockFetchResponse(200, {
+      token: "t",
+      url: "https://enrol.hfse.edu.sg/complete-enrolment/t",
+      missing: ["applications"],
+      sections: ["studentInfo", "familyInfo", "enrollmentInfo", "uploads"],
+      studentName: "DOE, JANE",
+      category: "New",
+      emailSent: false,
+      emailError: "Resend API returned 422: invalid recipient",
+    });
+
+    const result = await adminGenerateRecoveryLink(session, {
+      enroleeNumber: "E270003",
+      recipientEmails: "not-a-real-address",
+    });
+
+    expect(result.emailSent).toBe(false);
+    expect(result.emailError).toContain("Resend API returned 422");
+    expect(result.token).toBe("t");
   });
 
   it("throws when there's nothing to recover", async () => {
@@ -166,6 +216,26 @@ describe("adminRecoveryLookupSchema", () => {
 
   it("rejects an empty enrolee number", () => {
     expect(adminRecoveryLookupSchema.safeParse({ enroleeNumber: "" }).success).toBe(false);
+  });
+});
+
+describe("recoveryRecipientEmailsSchema", () => {
+  it("rejects an empty string without throwing", () => {
+    // Regression: chaining .refine() after .transform() when the raw string is empty must not
+    // hand the untransformed string to a refine expecting an array (TypeError: .every is not
+    // a function) — see the schema's own comment for why `.min(1)` was removed.
+    const result = recoveryRecipientEmailsSchema.safeParse({ recipientEmails: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("splits, trims, and accepts multiple comma-separated addresses", () => {
+    const result = recoveryRecipientEmailsSchema.parse({ recipientEmails: " jane@example.com , john@example.com " });
+    expect(result.recipientEmails).toEqual(["jane@example.com", "john@example.com"]);
+  });
+
+  it("rejects when any entry isn't a valid email", () => {
+    const result = recoveryRecipientEmailsSchema.safeParse({ recipientEmails: "jane@example.com, not-an-email" });
+    expect(result.success).toBe(false);
   });
 });
 

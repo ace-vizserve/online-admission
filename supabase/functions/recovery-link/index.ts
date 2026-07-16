@@ -10,6 +10,44 @@ import {
   mapApplicationToFormState,
   processParentGuardian,
 } from "../_shared/enrolment-payload.ts";
+import { buildRecoveryEmailHtml } from "../_shared/recovery-email.ts";
+
+const RESEND_FROM = "team@enrol.hfse.edu.sg";
+const RESEND_SUBJECT = "Action Required: Complete Your Enrollment Information";
+
+/**
+ * Sends the recovery link email via Resend's HTTP API directly — the existing `resend-email`
+ * edge function's source isn't in this repo (deployed some other way), so this sends
+ * independently rather than extending a template system we can't see. Never throws — a failed
+ * send shouldn't fail link generation, since the token is already created and usable; the
+ * caller surfaces the failure to the admin instead so they can copy/send the link manually.
+ */
+async function sendRecoveryEmail(to: string[], url: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const apiKey = Deno.env.get("RESEND_API_KEY");
+  if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not configured" };
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: RESEND_FROM,
+        to,
+        subject: RESEND_SUBJECT,
+        html: buildRecoveryEmailHtml(url),
+      }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      return { ok: false, error: `Resend API returned ${res.status}: ${body}` };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: (error as Error).message };
+  }
+}
 
 const ADMIN_EMAILS = ["amier.vizbytes@vizserve.hfse.edu.sg", "ace.guevarra@vizserve.hfse.edu.sg"];
 const allowedOrigins = ["https://enrol.hfse.edu.sg", "http://localhost:5173"];
@@ -92,6 +130,51 @@ function deriveStudentName(state: TableState): string | null {
 
 function deriveStudentNumber(state: TableState): string | null {
   return state.applications?.studentNumber ?? state.documents?.studentNumber ?? null;
+}
+
+function emailsFromRow(row: Record<string, any> | null | undefined): string | null {
+  if (!row) return null;
+  const emails = [row.fatherEmail, row.motherEmail, row.guardianEmail].filter(
+    (email): email is string => typeof email === "string" && email.trim().length > 0,
+  );
+  return emails.length ? emails.join(", ") : null;
+}
+
+/**
+ * Whichever parent emails are already on file for this student, for the admin page to prefill
+ * its recipient field with — never sent anywhere without the admin seeing/confirming it first.
+ * Tries the current year's applications row first; when that doesn't exist (the case a
+ * recovery link is usually needed for), falls back to searching every other configured
+ * academic year's applications table by `studentNumber` (stable across years, unlike
+ * `enroleeNumber`) for the same student's most recently on-file email — a "Current" (re-
+ * enrolling) student almost always has one. Returns `null` only when no email can be found
+ * anywhere, at which point the admin types it in manually.
+ */
+async function findKnownEmails(supabaseAdmin: any, state: TableState, currentAcademicYear: string): Promise<string | null> {
+  const currentEmails = emailsFromRow(state.applications);
+  if (currentEmails) return currentEmails;
+
+  const studentNumber = deriveStudentNumber(state);
+  if (!studentNumber) return null;
+
+  for (const ay of BACKEND_ACADEMIC_YEARS) {
+    if (ay === currentAcademicYear) continue;
+
+    const { data, error } = await supabaseAdmin
+      .from(`${ay}_enrolment_applications`)
+      .select("fatherEmail, motherEmail, guardianEmail")
+      .eq("studentNumber", studentNumber)
+      .maybeSingle();
+
+    // Best-effort: a lookup failure on one year (e.g. the table doesn't exist for a very old
+    // year) shouldn't fail the whole check — just try the next year.
+    if (error) continue;
+
+    const emails = emailsFromRow(data);
+    if (emails) return emails;
+  }
+
+  return null;
 }
 
 function sanitizeFilename(filename: string): string {
@@ -182,15 +265,27 @@ Deno.serve(async (req) => {
         // Suggested tab selection for the "generate" step — the admin can override before
         // sending the link.
         suggestedSections: defaultSections(state),
+        // Prefill for the admin's recipient-email field on the "generate" step — never sent
+        // anywhere without the admin seeing/confirming it. Falls back to a cross-year lookup
+        // by studentNumber when the current year's applications row has no email on file.
+        knownEmails: await findKnownEmails(supabaseAdmin, state, academicYear),
       });
     }
 
     // ── generate ───────────────────────────────────────────────────────────────
     if (action === "generate") {
-      const { enroleeNumber, sections } = body;
+      const { enroleeNumber, sections, recipientEmails } = body;
       if (!enroleeNumber || typeof enroleeNumber !== "string") {
         return json({ error: "enroleeNumber is required" }, 400);
       }
+
+      const recipients: string[] =
+        typeof recipientEmails === "string"
+          ? recipientEmails
+              .split(",")
+              .map((e: string) => e.trim())
+              .filter((e: string) => e.length > 0)
+          : [];
 
       if (sections !== undefined) {
         if (!Array.isArray(sections) || sections.length === 0 || !sections.every((s) => VALID_SECTIONS.includes(s))) {
@@ -247,6 +342,24 @@ Deno.serve(async (req) => {
       const baseUrl = allowedOrigins.includes(origin) ? origin : "https://enrol.hfse.edu.sg";
       const url = `${baseUrl}/complete-enrolment/${tokenRow.token}`;
 
+      let emailSent = false;
+      let emailError: string | undefined;
+
+      if (recipients.length > 0) {
+        const sendResult = await sendRecoveryEmail(recipients, url);
+        if (sendResult.ok) {
+          emailSent = true;
+          await supabaseAdmin
+            .from("enrolment_recovery_tokens")
+            .update({ notified_email: recipients.join(", "), notified_at: new Date().toISOString() })
+            .eq("token", tokenRow.token);
+        } else {
+          // The token is already created and usable — a failed send shouldn't block that.
+          // The admin sees emailError and can copy the link to send manually.
+          emailError = sendResult.error;
+        }
+      }
+
       return json({
         token: tokenRow.token,
         url,
@@ -254,6 +367,8 @@ Deno.serve(async (req) => {
         sections: selectedSections,
         studentName: deriveStudentName(state),
         category,
+        emailSent,
+        ...(emailError ? { emailError } : {}),
       });
     }
 

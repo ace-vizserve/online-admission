@@ -156,6 +156,10 @@ export type RecoveryCheckResult =
       applicationsIncomplete: boolean;
       missing: string[];
       suggestedSections: RecoverySection[];
+      // Prefill for the recipient-email field — whatever's already on the applications row,
+      // or null when that row doesn't exist. Always shown to the admin to confirm/edit, never
+      // sent anywhere silently.
+      knownEmails: string | null;
     };
 
 export type RecoveryLinkResult = {
@@ -165,6 +169,8 @@ export type RecoveryLinkResult = {
   sections: RecoverySection[];
   studentName: string | null;
   category: string;
+  emailSent: boolean;
+  emailError?: string;
 };
 
 export async function adminCheckRecovery(session: Session, params: { enroleeNumber: string }): Promise<RecoveryCheckResult> {
@@ -174,7 +180,7 @@ export async function adminCheckRecovery(session: Session, params: { enroleeNumb
 
 export async function adminGenerateRecoveryLink(
   session: Session,
-  params: { enroleeNumber: string; sections?: RecoverySection[] },
+  params: { enroleeNumber: string; sections?: RecoverySection[]; recipientEmails?: string },
 ): Promise<RecoveryLinkResult> {
   const data = await callFunction(RECOVERY_LINK_FUNCTION_URL, session, { action: "generate", ...params });
   return data as RecoveryLinkResult;
