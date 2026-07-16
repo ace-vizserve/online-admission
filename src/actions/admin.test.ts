@@ -7,7 +7,13 @@
 import { Session } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ExistingParentAccountError, adminCheckRecovery, adminCreateParentAccount, adminGenerateRecoveryLink } from "./admin";
+import {
+  ExistingParentAccountError,
+  adminCheckRecovery,
+  adminCreateParentAccount,
+  adminGenerateRecoveryLink,
+  adminListRecoveryLinks,
+} from "./admin";
 import { adminCreateParentSchema, adminRecoveryLookupSchema, recoveryRecipientEmailsSchema } from "@/zod-schema";
 
 const session = { access_token: "test-token" } as Session;
@@ -206,6 +212,40 @@ describe("adminGenerateRecoveryLink", () => {
     await expect(adminGenerateRecoveryLink(session, { enroleeNumber: "E270003" })).rejects.toThrow(
       "Nothing to recover",
     );
+  });
+});
+
+describe("adminListRecoveryLinks", () => {
+  it("sends the list action and returns the tokens array", async () => {
+    const tokens = [
+      {
+        token: "t1",
+        url: "https://enrol.hfse.edu.sg/complete-enrolment/t1",
+        academic_year: "ay2027",
+        enrolee_number: "E270003",
+        student_name: "DOE, JANE",
+        category: "New",
+        created_by: "admin@example.com",
+        created_at: "2026-07-16T00:00:00.000Z",
+        expires_at: "2026-07-23T00:00:00.000Z",
+        used_at: null,
+        notified_email: "parent@example.com",
+        notified_at: "2026-07-16T00:00:00.000Z",
+      },
+    ];
+    const fetchMock = mockFetchResponse(200, { tokens });
+
+    await expect(adminListRecoveryLinks(session)).resolves.toEqual(tokens);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toContain("/functions/v1/recovery-link");
+    expect(JSON.parse(init.body)).toEqual({ action: "list" });
+  });
+
+  it("throws the server's error message on failure", async () => {
+    mockFetchResponse(500, { error: "Something went wrong" });
+
+    await expect(adminListRecoveryLinks(session)).rejects.toThrow("Something went wrong");
   });
 });
 

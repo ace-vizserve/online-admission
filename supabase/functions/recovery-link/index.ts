@@ -328,6 +328,7 @@ Deno.serve(async (req) => {
           academic_year: academicYear,
           enrolee_number: enroleeNumber,
           student_number: deriveStudentNumber(state),
+          student_name: deriveStudentName(state),
           category,
           missing_tables: missing,
           sections: selectedSections,
@@ -370,6 +371,27 @@ Deno.serve(async (req) => {
         emailSent,
         ...(emailError ? { emailError } : {}),
       });
+    }
+
+    // ── list ───────────────────────────────────────────────────────────────────
+    if (action === "list") {
+      const { data, error } = await supabaseAdmin
+        .from("enrolment_recovery_tokens")
+        .select(
+          "token, academic_year, enrolee_number, student_name, category, created_by, created_at, expires_at, used_at, notified_email, notified_at",
+        )
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) return json({ error: error.message }, 500);
+
+      const baseUrl = allowedOrigins.includes(origin) ? origin : "https://enrol.hfse.edu.sg";
+      const tokens = (data ?? []).map((row: any) => ({
+        ...row,
+        url: `${baseUrl}/complete-enrolment/${row.token}`,
+      }));
+
+      return json({ tokens });
     }
 
     // ── token validation shared by the public actions ───────────────────────────
