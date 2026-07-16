@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { AdminRecoveryLookupSchema, adminRecoveryLookupSchema, recoveryRecipientEmailsSchema } from "@/zod-schema";
@@ -168,7 +169,7 @@ export default function RecoveryLink() {
         description="Generate a shareable link for a parent to complete a partial enrolment record."
       />
 
-      <div className="animate-in fade-in duration-300 min-h-[calc(100vh-3rem)] flex items-start justify-center py-12 px-6">
+      <div className="animate-in fade-in duration-300 min-h-[calc(100vh-3rem)] flex flex-col items-center py-12 px-6">
         <div className="w-full max-w-lg space-y-8">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2">
@@ -367,48 +368,67 @@ export default function RecoveryLink() {
             )}
           </AnimatePresence>
 
-          {recentLinks && recentLinks.length > 0 && (
-            <div className="space-y-3">
-              <p className={FIELD_LABEL}>Recent links</p>
-              <div className="space-y-2">
-                {recentLinks.map((t) => {
-                  const status = tokenStatus(t);
-                  return (
-                    <div
-                      key={t.token}
-                      className="rounded-lg border border-border bg-background px-3 py-2.5 space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-foreground truncate">
-                            {t.student_name ?? t.enrolee_number}
-                          </p>
-                          <p className="text-[10px] font-mono text-muted-foreground truncate">
-                            {t.enrolee_number} · {t.category} · {new Date(t.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <StatusBadge status={status} />
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-[10px] font-medium text-muted-foreground truncate">
-                          {t.notified_email ? `Sent to ${t.notified_email}` : "Not emailed"}
-                          {status === "Completed" && t.used_at && ` · Completed ${new Date(t.used_at).toLocaleDateString()}`}
-                        </p>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 shrink-0"
-                          onClick={() => copyToClipboard(t.url)}>
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
+
+        {recentLinks && recentLinks.length > 0 && (
+          <div className="w-full max-w-3xl mt-10 space-y-3">
+            <p className={FIELD_LABEL}>Recent links</p>
+            <div className="rounded-xl border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Sent to</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Link</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentLinks.map((t) => {
+                    const status = tokenStatus(t);
+                    return (
+                      <TableRow key={t.token}>
+                        <TableCell>
+                          <p className="text-xs font-bold text-foreground">{t.student_name ?? t.enrolee_number}</p>
+                          {t.student_name && (
+                            <p className="text-[10px] font-mono text-muted-foreground">{t.enrolee_number}</p>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs font-medium text-muted-foreground">{t.category}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={status} />
+                        </TableCell>
+                        <TableCell className="text-xs font-medium text-muted-foreground max-w-[200px] truncate">
+                          {t.notified_email ?? "Not emailed"}
+                          {status === "Completed" && t.used_at && (
+                            <span className="block text-[10px]">
+                              Completed {new Date(t.used_at).toLocaleDateString()}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs font-medium text-muted-foreground">
+                          {new Date(t.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copyToClipboard(t.url)}>
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
