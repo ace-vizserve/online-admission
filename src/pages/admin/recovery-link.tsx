@@ -13,10 +13,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import useSession from "@/hooks/use-session";
-import { AdminRecoveryLookupSchema, adminRecoveryLookupSchema } from "@/zod-schema";
+import { cn } from "@/lib/utils";
+import { AdminRecoveryLookupSchema, adminRecoveryLookupSchema, recoveryRecipientEmailsSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { Check, CircleCheck, Copy, Link2, Search, TriangleAlert, X } from "lucide-react";
+import { Check, CircleCheck, Copy, Mail, Search, TriangleAlert, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -49,6 +50,7 @@ export default function RecoveryLink() {
   const [checkResult, setCheckResult] = useState<RecoveryCheckResult | null>(null);
   const [linkResult, setLinkResult] = useState<RecoveryLinkResult | null>(null);
   const [selectedSections, setSelectedSections] = useState<Set<RecoverySection>>(new Set(RECOVERY_SECTIONS));
+  const [recipientEmails, setRecipientEmails] = useState("");
 
   const form = useForm<AdminRecoveryLookupSchema>({
     resolver: zodResolver(adminRecoveryLookupSchema),
@@ -65,12 +67,17 @@ export default function RecoveryLink() {
   });
 
   // Pre-check whichever tabs the server determined are actually incomplete once a check
-  // resolves — the admin can still narrow further before generating the link.
+  // resolves — the admin can still narrow further before generating the link. Also prefill
+  // the recipient field from whatever's already on the applications row, if it exists — the
+  // admin still sees and can edit this before anything is actually sent.
   useEffect(() => {
     if (checkResult && !("complete" in checkResult && checkResult.complete)) {
       setSelectedSections(new Set(checkResult.suggestedSections));
+      setRecipientEmails(checkResult.knownEmails ?? "");
     }
   }, [checkResult]);
+
+  const recipientEmailsValid = recoveryRecipientEmailsSchema.safeParse({ recipientEmails }).success;
 
   // The record can only be scoped to a subset of tabs once _applications actually exists —
   // otherwise the link has to insert a full row (mirrors the same guard in the edge function).
@@ -83,10 +90,17 @@ export default function RecoveryLink() {
       adminGenerateRecoveryLink(session!, {
         enroleeNumber: form.getValues("enroleeNumber"),
         sections: applicationsExist ? Array.from(selectedSections) : undefined,
+        recipientEmails,
       }),
     onSuccess: (result) => {
       setLinkResult(result);
-      toast.success("Recovery link generated.");
+      if (result.emailSent) {
+        toast.success("Recovery link generated and emailed.");
+      } else {
+        toast.warning("Recovery link generated, but the email didn't send.", {
+          description: result.emailError ?? "Copy the link below and send it manually.",
+        });
+      }
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -103,6 +117,7 @@ export default function RecoveryLink() {
   function onSubmit(values: AdminRecoveryLookupSchema) {
     setCheckResult(null);
     setLinkResult(null);
+    setRecipientEmails("");
     check(values);
   }
 
@@ -235,15 +250,34 @@ export default function RecoveryLink() {
                     )}
                   </div>
 
+                  <div className="space-y-2">
+                    <label className={FIELD_LABEL} htmlFor="recipientEmails">
+                      Send to (comma-separated for multiple)
+                    </label>
+                    <Input
+                      id="recipientEmails"
+                      placeholder="mother@example.com, father@example.com"
+                      value={recipientEmails}
+                      onChange={(e) => setRecipientEmails(e.target.value)}
+                    />
+                    {recipientEmails.length > 0 && !recipientEmailsValid && (
+                      <p className="text-[11px] font-medium text-destructive">
+                        Enter a valid email address for every recipient.
+                      </p>
+                    )}
+                  </div>
+
                   <Button
                     type="button"
                     variant="cta"
                     size="lg"
-                    disabled={isGenerating || (applicationsExist && selectedSections.size === 0)}
+                    disabled={
+                      isGenerating || (applicationsExist && selectedSections.size === 0) || !recipientEmailsValid
+                    }
                     onClick={() => generate()}
                     className="w-full uppercase tracking-wider">
-                    <Link2 className="h-4 w-4 mr-2" />
-                    {isGenerating ? "Generating…" : "Generate link"}
+                    <Mail className="h-4 w-4 mr-2" />
+                    {isGenerating ? "Generating…" : "Generate & send"}
                   </Button>
                 </div>
               </motion.div>
@@ -257,10 +291,23 @@ export default function RecoveryLink() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
-                className="rounded-xl border border-border bg-muted/40 overflow-hidden">
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
-                  <CircleCheck className="h-4 w-4 text-primary shrink-0" />
-                  <p className="text-sm font-black text-foreground">Link ready — expires in 7 days</p>
+                className={cn(
+                  "rounded-xl border overflow-hidden",
+                  linkResult.emailSent ? "border-border bg-muted/40" : "border-amber-500/30 bg-amber-500/5",
+                )}>
+                <div
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-3 border-b",
+                    linkResult.emailSent ? "border-border" : "border-amber-500/20",
+                  )}>
+                  {linkResult.emailSent ? (
+                    <CircleCheck className="h-4 w-4 text-primary shrink-0" />
+                  ) : (
+                    <TriangleAlert className="h-4 w-4 text-amber-600 shrink-0" />
+                  )}
+                  <p className="text-sm font-black text-foreground">
+                    {linkResult.emailSent ? "Link ready and emailed — expires in 7 days" : "Link ready — email not sent"}
+                  </p>
                 </div>
                 <div className="px-5 py-4 space-y-3">
                   <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
@@ -269,10 +316,16 @@ export default function RecoveryLink() {
                       <Copy className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                  <p className="text-[11px] font-medium text-muted-foreground">
-                    Send this to the parent. Tabs shown on the link:{" "}
-                    {linkResult.sections.map((s) => RECOVERY_SECTION_LABEL[s]).join(", ")}.
-                  </p>
+                  {linkResult.emailSent ? (
+                    <p className="text-[11px] font-medium text-muted-foreground">
+                      Emailed to {recipientEmails}. Tabs shown on the link:{" "}
+                      {linkResult.sections.map((s) => RECOVERY_SECTION_LABEL[s]).join(", ")}.
+                    </p>
+                  ) : (
+                    <p className="text-[11px] font-medium text-amber-700">
+                      {linkResult.emailError ?? "The email failed to send."} Copy the link above and send it manually.
+                    </p>
+                  )}
                 </div>
               </motion.div>
             )}

@@ -1355,6 +1355,32 @@ export const adminRecoveryLookupSchema = z.object({
 });
 
 /**
+ * The recovery-link admin page's recipient field: one free-text input, comma-separated for
+ * multiple addresses (e.g. both parents). Validates each non-empty entry is a plausible email
+ * — Resend itself is the final authority on deliverability, this just catches obvious typos
+ * before a send attempt.
+ */
+export const recoveryRecipientEmailsSchema = z.object({
+  // Deliberately no `.min(1)` on the raw string before `.transform()` — Zod still invokes
+  // downstream `.refine()`s with the untransformed string when a preceding check on the base
+  // schema fails, so an empty-string refine here would receive a string instead of the
+  // transformed array. The `emails.length > 0` refine below already covers emptiness.
+  recipientEmails: z
+    .string()
+    .transform((value) =>
+      value
+        .split(",")
+        .map((email) => email.trim())
+        .filter((email) => email.length > 0),
+    )
+    .refine((emails) => emails.length > 0, "At least one recipient email is required")
+    .refine(
+      (emails) => emails.every((email) => z.string().email().safeParse(email).success),
+      "Enter a valid email address for every recipient",
+    ),
+});
+
+/**
  * The zero-login "complete my application" recovery form (src/pages/public/complete-enrolment.tsx).
  * Composed directly from the same section schemas the authenticated wizard uses, so validation
  * stays identical — deliberately a compact HFSE-IS-only subset (no VizSchool, no discounts/
