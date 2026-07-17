@@ -133,10 +133,15 @@ const GRADE_PROGRESSIONS: Record<GradeLevel, GradeLevel[]> = {
   "YoungStarter Little Star": ["YoungStarter Junior Star"],
 
   "Youngstarters | Junior Stars": [
+    "HFSE Global Education Programme – Year 1 (equivalent to K2)",
     "Primary One",
     "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
   ],
-  "YoungStarter Junior Star": ["Primary One", "HFSE Global Education Programme – Year 2 (equivalent to Primary One)"],
+  "YoungStarter Junior Star": [
+    "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+    "Primary One",
+    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  ],
   Youngstarters: ["Primary One", "HFSE Global Education Programme – Year 2 (equivalent to Primary One)"],
   "Primary One": ["Primary Two", "HFSE Global Education Programme - Primary 2"],
   "Primary Two": ["Primary Three", "HFSE Global Education Programme - Primary 3"],
