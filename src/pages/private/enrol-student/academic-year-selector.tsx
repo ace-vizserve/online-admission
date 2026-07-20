@@ -38,7 +38,7 @@ const academicYears = [
     value: "ay2027",
     name: "AY 2027",
     label: "Academic Year 2027",
-    description: "Early registration for AY 2027 starts July 2027.",
+    description: "Early registration for AY 2027 starts July 2026.",
     details: ["Secure a slot early", "Registration opens 1 July 2026", "Classes begin January 2027"],
     buttonText: "Enrol for AY 2027",
     logo: Logo,
@@ -64,11 +64,15 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
         {academicYears.map((year) => (
           <div
             key={year.name}
-            className={cn("relative bg-card transition-all duration-300 border border-border rounded-xl p-8 flex flex-col", {
-              "border-2 border-secondary shadow-md lg:py-12 order-first lg:order-none": year.isPopular && !year.isClosed,
-              "hover:shadow-md": !year.isClosed,
-              "bg-muted/20 border-border opacity-75 grayscale-[0.5] cursor-not-allowed select-none": year.isClosed,
-            })}>
+            className={cn(
+              "relative bg-card transition-all duration-300 border border-border rounded-xl p-8 flex flex-col",
+              {
+                "border-2 border-secondary shadow-md lg:py-12 order-first lg:order-none":
+                  year.isPopular && !year.isClosed,
+                "hover:shadow-md": !year.isClosed,
+                "bg-muted/20 border-border opacity-75 grayscale-[0.5] cursor-not-allowed select-none": year.isClosed,
+              },
+            )}>
             {year.isClosed ? (
               <Badge className="absolute font-bold uppercase tracking-widest text-[10px] top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-muted-foreground text-background border-none px-4 py-1.5 shadow-sm">
                 Applications Closed
