@@ -94,21 +94,26 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
   "Secondary Two",
   "Secondary Three",
   "Secondary Four",
-  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
-  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE International Education Programme – Year 1 (equivalent to K2)",
+  "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
 ];
 const WHOLE_DAY_CLASS_LEVEL = [
-  "HFSE Global Education Programme – Year 8",
-  "HFSE Global Education Programme – Year 9",
-  "HFSE Global Education Programme – Year 10",
+  "HFSE International Education Programme – Year 8",
+  "HFSE International Education Programme – Year 9",
+  "HFSE International Education Programme – Year 10",
 ];
 const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
-const CAMBRIDGE_ONLY_LEVELS = [
-  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
-  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
-  "HFSE Global Education Programme – Year 8",
-  "HFSE Global Education Programme – Year 9",
-  "HFSE Global Education Programme – Year 10",
+const CAMBRIDGE_YEAR_1_LEVELS = ["HFSE International Education Programme – Year 1 (equivalent to K2)"];
+const CAMBRIDGE_YEAR_2_LEVELS = ["HFSE International Education Programme – Year 2 (equivalent to Primary One)"];
+const CAMBRIDGE_SECONDARY_LEVELS = [
+  "HFSE International Education Programme – Year 8",
+  "HFSE International Education Programme – Year 9",
+  "HFSE International Education Programme – Year 10",
+];
+const CAMBRIDGE_YEAR_2_CLASS_TYPES = [
+  "Global Class-Cambridge (ENGLISH+FILIPINO)",
+  "Global Class-Cambridge (ENGLISH+MANDARIN)",
+  "Global Class-Cambridge (ENGLISH+FRENCH)",
 ];
 const GLOBAL_LANGUAGE_LEVELS = ["Primary Two", "Primary Three", "Primary Four", "Primary Five", "Primary Six"];
 const STANDARD_CLASS_LEVELS = [
@@ -126,7 +131,13 @@ const STANDARD_CLASS_LEVELS = [
 
 export function classTypeOptionsForLevel(level: string): { label: string; value: string }[] {
   if (ENRICHMENT_CLASS_LEVELS.includes(level)) return [{ label: "Enrichment Class", value: "Enrichment Class" }];
-  if (CAMBRIDGE_ONLY_LEVELS.includes(level)) {
+  if (CAMBRIDGE_YEAR_2_LEVELS.includes(level)) {
+    return CAMBRIDGE_YEAR_2_CLASS_TYPES.map((type) => ({ label: type, value: type }));
+  }
+  if (CAMBRIDGE_YEAR_1_LEVELS.includes(level)) {
+    return [{ label: "Global Class-Cambridge", value: "Global Class-Cambridge" }];
+  }
+  if (CAMBRIDGE_SECONDARY_LEVELS.includes(level)) {
     return [{ label: "Global Class (CAMBRIDGE)", value: "Global Class (CAMBRIDGE)" }];
   }
   if (STANDARD_CLASS_LEVELS.includes(level)) {
@@ -846,7 +857,21 @@ function RecoveryForm({
         setActiveTab("enrollmentInfo");
         return;
       }
-      if (CAMBRIDGE_ONLY_LEVELS.includes(levelApplied) && classType !== "Global Class (CAMBRIDGE)") {
+      if (CAMBRIDGE_YEAR_2_LEVELS.includes(levelApplied) && !CAMBRIDGE_YEAR_2_CLASS_TYPES.includes(classType)) {
+        toast.warning("Class type mismatch!", {
+          description: "Please select a 'Global Class-Cambridge' language track for this level.",
+        });
+        form.setError("enrollmentInfo.classType", { message: "Please select a 'Global Class-Cambridge' language track." });
+        setActiveTab("enrollmentInfo");
+        return;
+      }
+      if (CAMBRIDGE_YEAR_1_LEVELS.includes(levelApplied) && classType !== "Global Class-Cambridge") {
+        toast.warning("Class type mismatch!", { description: "Only 'Global Class-Cambridge' is available for this level." });
+        form.setError("enrollmentInfo.classType", { message: "Please select 'Global Class-Cambridge'." });
+        setActiveTab("enrollmentInfo");
+        return;
+      }
+      if (CAMBRIDGE_SECONDARY_LEVELS.includes(levelApplied) && classType !== "Global Class (CAMBRIDGE)") {
         toast.warning("Class type mismatch!", { description: "Only 'Global Class (CAMBRIDGE)' is available for this level." });
         form.setError("enrollmentInfo.classType", { message: "Please select 'Global Class (CAMBRIDGE)'." });
         setActiveTab("enrollmentInfo");

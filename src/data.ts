@@ -200,24 +200,24 @@ export const classLevels = [
   { label: "Secondary Four", value: "Secondary Four" },
 
   {
-    label: "HFSE Global Education Programme – Year 1 (equivalent to K2)",
-    value: "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+    label: "HFSE International Education Programme – Year 1 (equivalent to K2)",
+    value: "HFSE International Education Programme – Year 1 (equivalent to K2)",
   },
   {
-    label: "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
-    value: "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    label: "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
+    value: "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
   },
   {
-    label: "HFSE Global Education Programme – Year 8",
-    value: "HFSE Global Education Programme – Year 8",
+    label: "HFSE International Education Programme – Year 8",
+    value: "HFSE International Education Programme – Year 8",
   },
   {
-    label: "HFSE Global Education Programme – Year 9",
-    value: "HFSE Global Education Programme – Year 9",
+    label: "HFSE International Education Programme – Year 9",
+    value: "HFSE International Education Programme – Year 9",
   },
   {
-    label: "HFSE Global Education Programme – Year 10",
-    value: "HFSE Global Education Programme – Year 10",
+    label: "HFSE International Education Programme – Year 10",
+    value: "HFSE International Education Programme – Year 10",
   },
 ] as const;
 
@@ -250,7 +250,7 @@ export const PRIMARY_CLASS_LEVELS = [
   "Primary Four",
   "Primary Five",
   "Primary Six",
-  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
 ];
 
 export const SECONDARY_SDF_CLASS_LEVELS = [
@@ -258,9 +258,9 @@ export const SECONDARY_SDF_CLASS_LEVELS = [
   "Secondary Two",
   "Secondary Three",
   "Secondary Four",
-  "HFSE Global Education Programme – Year 8",
-  "HFSE Global Education Programme – Year 9",
-  "HFSE Global Education Programme – Year 10",
+  "HFSE International Education Programme – Year 8",
+  "HFSE International Education Programme – Year 9",
+  "HFSE International Education Programme – Year 10",
 ];
 
 export const campusDevelopmentFee = [

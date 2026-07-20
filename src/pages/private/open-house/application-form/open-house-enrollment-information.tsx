@@ -64,24 +64,29 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
   "Secondary Three",
   "Secondary Four",
 
-  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
-  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+  "HFSE International Education Programme – Year 1 (equivalent to K2)",
+  "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
 ];
 
 const WHOLE_DAY_CLASS_LEVEL = [
-  "HFSE Global Education Programme – Year 8",
-  "HFSE Global Education Programme – Year 9",
-  "HFSE Global Education Programme – Year 10",
+  "HFSE International Education Programme – Year 8",
+  "HFSE International Education Programme – Year 9",
+  "HFSE International Education Programme – Year 10",
 ];
 
 const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
 
-const CAMBRIDGE_ONLY_LEVELS = [
-  "HFSE Global Education Programme – Year 1 (equivalent to K2)",
-  "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
-  "HFSE Global Education Programme – Year 8",
-  "HFSE Global Education Programme – Year 9",
-  "HFSE Global Education Programme – Year 10",
+const CAMBRIDGE_YEAR_1_LEVELS = ["HFSE International Education Programme – Year 1 (equivalent to K2)"];
+const CAMBRIDGE_YEAR_2_LEVELS = ["HFSE International Education Programme – Year 2 (equivalent to Primary One)"];
+const CAMBRIDGE_SECONDARY_LEVELS = [
+  "HFSE International Education Programme – Year 8",
+  "HFSE International Education Programme – Year 9",
+  "HFSE International Education Programme – Year 10",
+];
+const CAMBRIDGE_YEAR_2_CLASS_TYPES = [
+  "Global Class-Cambridge (ENGLISH+FILIPINO)",
+  "Global Class-Cambridge (ENGLISH+MANDARIN)",
+  "Global Class-Cambridge (ENGLISH+FRENCH)",
 ];
 
 const GLOBAL_LANGUAGE_LEVELS = ["Primary Two", "Primary Three", "Primary Four", "Primary Five", "Primary Six"];
@@ -201,7 +206,31 @@ function OpenHouseEnrollmentInformation() {
       return;
     }
 
-    if (CAMBRIDGE_ONLY_LEVELS.includes(values.levelApplied) && values.classType !== "Global Class (CAMBRIDGE)") {
+    if (CAMBRIDGE_YEAR_2_LEVELS.includes(values.levelApplied) && !CAMBRIDGE_YEAR_2_CLASS_TYPES.includes(values.classType)) {
+      toast.warning("Class Type Mismatch!", {
+        description: "Please select a 'Global Class-Cambridge' language track for this grade level.",
+      });
+
+      form.setError("classType", {
+        message: "Please select a 'Global Class-Cambridge' language track.",
+      });
+
+      return;
+    }
+
+    if (CAMBRIDGE_YEAR_1_LEVELS.includes(values.levelApplied) && values.classType !== "Global Class-Cambridge") {
+      toast.warning("Class Type Mismatch!", {
+        description: "Only 'Global Class-Cambridge' is available for this grade level.",
+      });
+
+      form.setError("classType", {
+        message: "Please select 'Global Class-Cambridge'.",
+      });
+
+      return;
+    }
+
+    if (CAMBRIDGE_SECONDARY_LEVELS.includes(values.levelApplied) && values.classType !== "Global Class (CAMBRIDGE)") {
       toast.warning("Class Type Mismatch!", {
         description: "Only 'Global Class (CAMBRIDGE)' is available for this grade level.",
       });
@@ -364,7 +393,21 @@ function OpenHouseEnrollmentInformation() {
                           <SelectContent>
                             {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value="Enrichment Class">Enrichment Class</SelectItem>
-                            ) : CAMBRIDGE_ONLY_LEVELS.includes(selectedLevel) ? (
+                            ) : CAMBRIDGE_YEAR_2_LEVELS.includes(selectedLevel) ? (
+                              <>
+                                <SelectItem value="Global Class-Cambridge (ENGLISH+FILIPINO)">
+                                  Global Class-Cambridge (ENGLISH+FILIPINO)
+                                </SelectItem>
+                                <SelectItem value="Global Class-Cambridge (ENGLISH+MANDARIN)">
+                                  Global Class-Cambridge (ENGLISH+MANDARIN)
+                                </SelectItem>
+                                <SelectItem value="Global Class-Cambridge (ENGLISH+FRENCH)">
+                                  Global Class-Cambridge (ENGLISH+FRENCH)
+                                </SelectItem>
+                              </>
+                            ) : CAMBRIDGE_YEAR_1_LEVELS.includes(selectedLevel) ? (
+                              <SelectItem value="Global Class-Cambridge">Global Class-Cambridge</SelectItem>
+                            ) : CAMBRIDGE_SECONDARY_LEVELS.includes(selectedLevel) ? (
                               <SelectItem value="Global Class (CAMBRIDGE)">Global Class (CAMBRIDGE)</SelectItem>
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <>
