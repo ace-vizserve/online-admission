@@ -133,37 +133,54 @@ const GRADE_PROGRESSIONS: Record<GradeLevel, GradeLevel[]> = {
   "YoungStarter Little Star": ["YoungStarter Junior Star"],
 
   "Youngstarters | Junior Stars": [
-    "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+    "HFSE International Education Programme – Year 1 (equivalent to K2)",
     "Primary One",
-    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
   ],
   "YoungStarter Junior Star": [
-    "HFSE Global Education Programme – Year 1 (equivalent to K2)",
+    "HFSE International Education Programme – Year 1 (equivalent to K2)",
     "Primary One",
-    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
   ],
   "Youngstarters | Senior Stars": [
     "Primary One",
-    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
   ],
-  Youngstarters: ["Primary One", "HFSE Global Education Programme – Year 2 (equivalent to Primary One)"],
+  Youngstarters: ["Primary One", "HFSE International Education Programme – Year 2 (equivalent to Primary One)"],
   "Primary One": ["Primary Two", "HFSE Global Education Programme - Primary 2"],
   "Primary Two": ["Primary Three", "HFSE Global Education Programme - Primary 3"],
   "Primary Three": ["Primary Four", "HFSE Global Education Programme - Primary 4"],
   "Primary Four": ["Primary Five", "HFSE Global Education Programme - Primary 5"],
   "Primary Five": ["Primary Six", "HFSE Global Education Programme - Primary 6"],
-  "Primary Six": ["Secondary One", "HFSE Global Education Programme – Year 8"],
+  "Primary Six": ["Secondary One", "HFSE International Education Programme – Year 8"],
 
-  "Secondary One": ["Secondary Two", "HFSE Global Education Programme – Year 9"],
-  "Secondary Two": ["Secondary Three", "HFSE Global Education Programme – Year 10"],
+  "Secondary One": ["Secondary Two", "HFSE International Education Programme – Year 9"],
+  "Secondary Two": ["Secondary Three", "HFSE International Education Programme – Year 10"],
   "Secondary Three": ["Secondary Four"],
   "Secondary Four": ["Secondary Four"],
 
+  // Old-named keys kept so re-enrollment progression still resolves for students whose prior
+  // application stored the pre-rename "Global Education Programme" level string.
   "HFSE Global Education Programme – Year 1 (equivalent to K2)": [
-    "HFSE Global Education Programme – Year 2 (equivalent to Primary One)",
+    "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
     "Primary One",
   ],
   "HFSE Global Education Programme – Year 2 (equivalent to Primary One)": [
+    "HFSE Global Education Programme - Primary 2",
+    "Primary Two",
+  ],
+  "HFSE Global Education Programme – Year 8": ["HFSE International Education Programme – Year 9", "Secondary Two"],
+  "HFSE Global Education Programme – Year 9": ["HFSE International Education Programme – Year 10", "Secondary Three"],
+  "HFSE Global Education Programme – Year 10": [
+    "HFSE International Education Programme – Year 10",
+    "Secondary Four",
+  ],
+
+  "HFSE International Education Programme – Year 1 (equivalent to K2)": [
+    "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
+    "Primary One",
+  ],
+  "HFSE International Education Programme – Year 2 (equivalent to Primary One)": [
     "HFSE Global Education Programme - Primary 2",
     "Primary Two",
   ],
@@ -171,10 +188,22 @@ const GRADE_PROGRESSIONS: Record<GradeLevel, GradeLevel[]> = {
   "HFSE Global Education Programme - Primary 3": ["HFSE Global Education Programme - Primary 4", "Primary Four"],
   "HFSE Global Education Programme - Primary 4": ["HFSE Global Education Programme - Primary 5", "Primary Five"],
   "HFSE Global Education Programme - Primary 5": ["HFSE Global Education Programme - Primary 6", "Primary Six"],
-  "HFSE Global Education Programme - Primary 6": ["HFSE Global Education Programme – Year 8", "Secondary One"],
-  "HFSE Global Education Programme – Year 8": ["HFSE Global Education Programme – Year 9", "Secondary Two"],
-  "HFSE Global Education Programme – Year 9": ["HFSE Global Education Programme – Year 10", "Secondary Three"],
-  "HFSE Global Education Programme – Year 10": ["HFSE Global Education Programme – Year 10", "Secondary Four"],
+  "HFSE Global Education Programme - Primary 6": [
+    "HFSE International Education Programme – Year 8",
+    "Secondary One",
+  ],
+  "HFSE International Education Programme – Year 8": [
+    "HFSE International Education Programme – Year 9",
+    "Secondary Two",
+  ],
+  "HFSE International Education Programme – Year 9": [
+    "HFSE International Education Programme – Year 10",
+    "Secondary Three",
+  ],
+  "HFSE International Education Programme – Year 10": [
+    "HFSE International Education Programme – Year 10",
+    "Secondary Four",
+  ],
 };
 
 export function getNextGradeLevels(currentValue: string): string[] {

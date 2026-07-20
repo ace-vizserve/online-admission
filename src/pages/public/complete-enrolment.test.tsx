@@ -267,9 +267,26 @@ describe("classTypeOptionsForLevel", () => {
     ]);
   });
 
-  it("limits GEP levels to Global Class (CAMBRIDGE)", () => {
-    expect(classTypeOptionsForLevel("HFSE Global Education Programme – Year 8")).toEqual([
+  it("limits GEP Year 8-10 levels to Global Class (CAMBRIDGE)", () => {
+    expect(classTypeOptionsForLevel("HFSE International Education Programme – Year 8")).toEqual([
       { label: "Global Class (CAMBRIDGE)", value: "Global Class (CAMBRIDGE)" },
+    ]);
+  });
+
+  it("limits GEP Year 1 to Global Class-Cambridge", () => {
+    expect(classTypeOptionsForLevel("HFSE International Education Programme – Year 1 (equivalent to K2)")).toEqual([
+      { label: "Global Class-Cambridge", value: "Global Class-Cambridge" },
+    ]);
+  });
+
+  it("offers the three language tracks for GEP Year 2", () => {
+    const options = classTypeOptionsForLevel(
+      "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
+    ).map((o) => o.value);
+    expect(options).toEqual([
+      "Global Class-Cambridge (ENGLISH+FILIPINO)",
+      "Global Class-Cambridge (ENGLISH+MANDARIN)",
+      "Global Class-Cambridge (ENGLISH+FRENCH)",
     ]);
   });
 
@@ -296,7 +313,7 @@ describe("classTypeOptionsForLevel", () => {
 
 describe("scheduleOptionsForLevel", () => {
   it("offers only Whole Day for GEP Year 8-10", () => {
-    expect(scheduleOptionsForLevel("HFSE Global Education Programme – Year 9")).toEqual(["Whole Day"]);
+    expect(scheduleOptionsForLevel("HFSE International Education Programme – Year 9")).toEqual(["Whole Day"]);
   });
 
   it("offers Morning/Afternoon for standard levels", () => {
