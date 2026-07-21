@@ -1,12 +1,12 @@
 import { getSectionCardsDetails } from "@/actions/private";
-import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { buttonVariants } from "@/components/ui/button";
+import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
-import { ArrowLeft, ArrowUpRight, CheckCircle2, Info } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Info } from "lucide-react";
 import { Link } from "react-router";
 
 function PendingTasks() {
@@ -31,9 +31,9 @@ function PendingTasks() {
           <ArrowLeft className="size-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-black tracking-tight text-primary">Pending Actions</h1>
+        <h1 className="text-3xl font-black tracking-tight text-primary">Document Requirements</h1>
         <p className="text-slate-500 mt-2">
-          Please complete the following document requirements to finalize your children's enrolment.
+          Outstanding document requirements for enrolment applications already submitted for your children.
         </p>
       </div>
 
@@ -44,7 +44,7 @@ function PendingTasks() {
           </div>
           <h2 className="text-xl font-bold text-primary">All caught up!</h2>
           <p className="text-center text-balance text-sm font-medium text-slate-500 max-w-[380px] leading-snug">
-            There are no pending actions for your children's enrolment at this time.
+            There are no outstanding document requirements for your children's enrolment at this time.
           </p>
         </div>
       ) : (
@@ -69,7 +69,9 @@ function PendingTasks() {
                             className="font-bold text-primary underline underline-offset-2">
                             #{task.enroleeNumber}
                           </Link>{" "}
-                          requires attention for the following:
+                          &mdash; their existing{" "}
+                          <span className="font-bold">{academicYear ? `AY ${academicYear.slice(2)}` : ""}</span>{" "}
+                          application requires the following documents:
                         </p>
 
                         <div className="flex flex-wrap gap-2 mt-2">
@@ -125,7 +127,7 @@ function PendingTasks() {
                       className={buttonVariants({
                         className: "text-xs !font-bold",
                       })}>
-                      Review <ArrowUpRight className="size-4" />
+                      Upload Documents
                     </Link>
                   </div>
                 </div>
