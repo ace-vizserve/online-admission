@@ -114,7 +114,7 @@ function DashboardCards({ currentEnrolledStudents, pendingTasks, totalEnrollment
 
       <StatCard
         icon={<FileClock className="stroke-white size-5" />}
-        label="Your Pending Actions"
+        label="Document Requirements"
         value={pendingTasks}
       />
     </div>
@@ -188,7 +188,7 @@ function StatCard({
                   size: "sm",
                   className: "!font-bold text-[0.7rem] lg:text-xs",
                 })}>
-                See all actions <ArrowUpRight className="-ml-1 size-3 lg:size-4" />
+                See all requirements <ArrowUpRight className="-ml-1 size-3 lg:size-4" />
               </Link>
             )}
           </div>
@@ -200,7 +200,7 @@ function StatCard({
           <CardTitle className="text-5xl font-black tabular-nums text-black">{count}</CardTitle>
           {isPendingTasks && (
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              {count > 1 ? "Actions" : "Action"} Required
+              {count > 1 ? "Documents" : "Document"} Needed
             </span>
           )}
 
@@ -233,7 +233,11 @@ function StatCard({
                             className="font-bold text-primary underline underline-offset-2">
                             #{pendingTask.enroleeNumber}
                           </Link>{" "}
-                          has pending actions for:
+                          has outstanding document requirements on their existing{" "}
+                          <span className="font-bold text-black">
+                            {academicYear ? `AY ${academicYear.slice(2)}` : ""}
+                          </span>{" "}
+                          application:
                           {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && (
                             <span className="ml-1">
                               <span className="font-bold text-black italic">Student Documents</span> (
@@ -283,7 +287,8 @@ function StatCard({
                               )
                             </span>
                           )}
-                          . Review these items to finalize enrolment.
+                          . This is separate from the "Enrol Student" action — uploading these documents only
+                          updates that existing application and does not create a new enrollment or re-enrollment.
                         </p>
                       </div>
                     </div>
@@ -298,7 +303,7 @@ function StatCard({
                       className={buttonVariants({
                         className: "!text-[0.7rem] !font-bold",
                       })}>
-                      Review <ArrowUpRight className="size-3" />
+                      Upload Documents
                     </Link>
                   </div>
                 );
@@ -318,7 +323,7 @@ function StatCard({
             <div className="space-y-1">
               <p className="text-sm font-bold text-primary">All caught up!</p>
               <p className="text-[12px] font-medium text-slate-500 max-w-[180px] leading-snug">
-                There are no pending actions for your children's enrolment at this time.
+                There are no outstanding document requirements for your children's enrolment at this time.
               </p>
             </div>
           </CardContent>
