@@ -1,3 +1,4 @@
+import { deleteReenrolDraftRemote } from "@/actions/drafts";
 import { submitExistingEnrollment } from "@/actions/private";
 import {
   AlertDialog,
@@ -14,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { applicationTypes } from "@/data";
 import useSession from "@/hooks/use-session";
-import { safeSessionStorage } from "@/lib/safe-storage";
 import { EnrolOldStudentFormState } from "@/types";
 import { usePassTypeStore, usePreCourseAcknowledgementStore, useSelectAcademicYear } from "@/zustand-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -66,9 +66,14 @@ function SubmitApplicationDialog() {
       queryClient.invalidateQueries({
         queryKey: ["student-enrollments-list", session?.user.email],
       });
+      // Clears the re-enrollment draft (now localStorage-backed, see zustand-store.ts) so a
+      // submitted application can't resurface stale edits if this enrolee link is opened again.
       clearState();
       clearPreCourse();
-      safeSessionStorage.clear();
+      // Best-effort: the local draft is already cleared above regardless of whether this
+      // reaches the server; a leftover DB row would otherwise let a stale draft resurrect
+      // itself into a freshly-submitted (or later re-enrolled) application.
+      if (params.id) deleteReenrolDraftRemote(params.id).catch(() => {});
     },
     onError(error) {
       console.log(error);

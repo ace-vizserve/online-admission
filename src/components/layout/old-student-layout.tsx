@@ -1,7 +1,8 @@
+import { deleteReenrolDraftRemote } from "@/actions/drafts";
 import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import EnrolOldStudentContextProvider, { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { useHydrateReEnrollment } from "@/hooks/use-hydrate-reenrollment";
-import { safeSessionStorage } from "@/lib/safe-storage";
+import { useSyncReenrolDraft } from "@/hooks/use-sync-reenrol-draft";
 import { ArrowLeft, FolderOpen } from "lucide-react";
 import { Link, Outlet, useNavigate, useParams, useSearchParams } from "react-router";
 import MaxWidthWrapper from "../max-width-wrapper";
@@ -46,6 +47,7 @@ function OldStudentLayout() {
   const academicYearParams = searchParams.get("academicYear");
   const [isPending, setIsPending] = useState<boolean>(false);
   const { isPending: isHydratingReEnrollment, isNotFound: reEnrollmentNotFound } = useHydrateReEnrollment(params.id);
+  useSyncReenrolDraft(params.id, academicYear);
 
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
@@ -109,6 +111,7 @@ function OldStudentLayout() {
 }
 
 function ExitApplicationDialog() {
+  const params = useParams();
   const { clearState } = useEnrolOldStudentContext();
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
   const clearPreCourse = usePreCourseAcknowledgementStore((state) => state.clearState);
@@ -121,9 +124,17 @@ function ExitApplicationDialog() {
   function exitApplication() {
     clearPassType();
     clearPreCourse();
+    // Clears the re-enrollment draft (now localStorage-backed, see zustand-store.ts) so
+    // canceling actually discards it rather than leaving it to resurface on the next visit.
     clearState();
     clearAcademicYearState();
-    safeSessionStorage.clear();
+
+    if (params.id) {
+      // Best-effort: the local draft above is already gone regardless of whether this reaches
+      // the server, and the debounced sync (use-sync-reenrol-draft.ts) would otherwise recreate
+      // this row from a save made moments before Exit was clicked.
+      deleteReenrolDraftRemote(params.id).catch(() => {});
+    }
   }
 
   if (!isDesktop) {
