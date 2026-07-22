@@ -1,12 +1,14 @@
 import { getSectionCardsDetails } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { buttonVariants } from "@/components/ui/button";
-import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BACKEND_ACADEMIC_YEARS, tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import useSession from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import { ArrowLeft, CheckCircle2, Info } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 
 function PendingTasks() {
@@ -18,9 +20,27 @@ function PendingTasks() {
     enabled: session != null,
   });
 
-  if (isPending) return <PendingTasksLoader />;
-
   const tasks = data?.pendingTasks.pendingTasks ?? [];
+
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("all");
+
+  // Only years that actually have a pending task for this parent — never the full system list
+  // of academic years (BACKEND_ACADEMIC_YEARS is used only to order these, not to seed them).
+  const availableAcademicYears = useMemo(() => {
+    const years = new Set<string>();
+    tasks.forEach((task) => {
+      const ay = tryAcademicYearFromEnroleeNumber(task.enroleeNumber);
+      if (ay) years.add(ay);
+    });
+    return BACKEND_ACADEMIC_YEARS.filter((ay) => years.has(ay));
+  }, [tasks]);
+
+  const filteredTasks = useMemo(() => {
+    if (selectedAcademicYear === "all") return tasks;
+    return tasks.filter((task) => tryAcademicYearFromEnroleeNumber(task.enroleeNumber) === selectedAcademicYear);
+  }, [tasks, selectedAcademicYear]);
+
+  if (isPending) return <PendingTasksLoader />;
 
   return (
     <MaxWidthWrapper className="animate-in fade-in slide-in-from-bottom-2 duration-500 w-full max-w-6xl mx-auto py-10">
@@ -31,10 +51,31 @@ function PendingTasks() {
           <ArrowLeft className="size-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-black tracking-tight text-primary">Document Requirements</h1>
-        <p className="text-slate-500 mt-2">
-          Outstanding document requirements for enrolment applications already submitted for your children.
-        </p>
+
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-primary">Document Requirements</h1>
+            <p className="text-slate-500 mt-2">
+              Outstanding document requirements for enrolment applications already submitted for your children.
+            </p>
+          </div>
+
+          {availableAcademicYears.length >= 2 && (
+            <Select value={selectedAcademicYear} onValueChange={setSelectedAcademicYear}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue placeholder="All Years" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Years</SelectItem>
+                {availableAcademicYears.map((ay) => (
+                  <SelectItem key={ay} value={ay}>
+                    {`AY ${ay.slice(2)}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
       {tasks.length === 0 ? (
@@ -50,7 +91,7 @@ function PendingTasks() {
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <div className="divide-y divide-slate-100">
-            {tasks.map((task) => {
+            {filteredTasks.map((task) => {
               const academicYear = tryAcademicYearFromEnroleeNumber(task.enroleeNumber) ?? "";
 
               return (
