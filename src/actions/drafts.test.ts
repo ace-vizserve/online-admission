@@ -101,7 +101,15 @@ const mockState = vi.hoisted(() => ({
 
 vi.mock("@/lib/client", () => ({ supabase: mockState }));
 
-const { saveDraftRemote, listDraftsRemote, loadDraftRemote, deleteDraftRemote } = await import("./drafts");
+const {
+  saveDraftRemote,
+  listDraftsRemote,
+  loadDraftRemote,
+  deleteDraftRemote,
+  saveReenrolDraftRemote,
+  loadReenrolDraftRemote,
+  deleteReenrolDraftRemote,
+} = await import("./drafts");
 
 function baseDraft(overrides: Partial<Parameters<typeof saveDraftRemote>[0]> = {}) {
   return {
@@ -357,5 +365,188 @@ describe("deleteDraftRemote", () => {
     mockState.auth.getSession = harness.supabase.auth.getSession;
 
     await expect(deleteDraftRemote("draft-abc")).rejects.toThrow("delete failed");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Re-enrollment drafts (saveReenrolDraftRemote / loadReenrolDraftRemote / deleteReenrolDraftRemote)
+// ---------------------------------------------------------------------------
+
+function baseReenrolDraft(overrides: Partial<Parameters<typeof saveReenrolDraftRemote>[0]> = {}) {
+  return {
+    enroleeNumber: "E260050",
+    academicYear: "2026-2027",
+    formState: { studentInfo: { studentDetails: { firstName: "Juan" } } },
+    createdAt: new Date("2026-07-01T00:00:00Z"),
+    lastSavedAt: new Date("2026-07-10T00:00:00Z"),
+    expiresAt: new Date("2026-08-01T00:00:00Z"),
+    ...overrides,
+  };
+}
+
+function baseReenrolDraftRow(overrides: Record<string, unknown> = {}) {
+  return {
+    draft_id: "draft-reenrol-abc",
+    user_id: "user-1",
+    type: "hfse-is-reenrol",
+    enrolee_number: "E260050",
+    academic_year: "2026-2027",
+    form_state: { studentInfo: { studentDetails: { firstName: "Juan" } } },
+    created_at: "2026-07-01T00:00:00.000Z",
+    last_saved_at: "2026-07-10T00:00:00.000Z",
+    expires_at: "2026-08-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+describe("saveReenrolDraftRemote", () => {
+  it("throws when there is no authenticated session", async () => {
+    const harness = createDraftsSupabaseMock({ session: null });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await expect(saveReenrolDraftRemote(baseReenrolDraft())).rejects.toThrow("Not authenticated");
+  });
+
+  it("upserts on (user_id, enrolee_number), not draft_id, scoped to the session user", async () => {
+    const harness = createDraftsSupabaseMock();
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await saveReenrolDraftRemote(baseReenrolDraft());
+
+    expect(harness.calls).toHaveLength(1);
+    const call = harness.calls[0];
+    expect(call.table).toBe("application_drafts");
+    expect(call.op).toBe("upsert");
+    expect(call.onConflict).toBe("user_id,enrolee_number");
+    expect(call.payload).toMatchObject({
+      user_id: "user-1",
+      type: "hfse-is-reenrol",
+      enrolee_number: "E260050",
+      academic_year: "2026-2027",
+      form_state: { studentInfo: { studentDetails: { firstName: "Juan" } } },
+      created_at: "2026-07-01T00:00:00.000Z",
+      last_saved_at: "2026-07-10T00:00:00.000Z",
+      expires_at: "2026-08-01T00:00:00.000Z",
+    });
+  });
+
+  it("generates a fresh draft_id on every save (not looked up or reused — see the drafts.ts comment)", async () => {
+    const harness = createDraftsSupabaseMock();
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await saveReenrolDraftRemote(baseReenrolDraft());
+    await saveReenrolDraftRemote(baseReenrolDraft());
+
+    const [firstCall, secondCall] = harness.calls;
+    const firstDraftId = (firstCall.payload as { draft_id: string }).draft_id;
+    const secondDraftId = (secondCall.payload as { draft_id: string }).draft_id;
+
+    expect(firstDraftId).toBeTruthy();
+    expect(secondDraftId).toBeTruthy();
+    expect(firstDraftId).not.toBe(secondDraftId);
+  });
+
+  it("propagates the Supabase error message on failure", async () => {
+    const harness = createDraftsSupabaseMock({ upsertResult: { error: { message: "upsert failed" } } });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await expect(saveReenrolDraftRemote(baseReenrolDraft())).rejects.toThrow("upsert failed");
+  });
+});
+
+describe("loadReenrolDraftRemote", () => {
+  it("throws when there is no authenticated session", async () => {
+    const harness = createDraftsSupabaseMock({ session: null });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await expect(loadReenrolDraftRemote("E260050")).rejects.toThrow("Not authenticated");
+  });
+
+  it("scopes by user_id + enrolee_number + type, and maps the row", async () => {
+    const harness = createDraftsSupabaseMock({ selectResult: { data: baseReenrolDraftRow(), error: null } });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    const result = await loadReenrolDraftRemote("E260050");
+
+    const call = harness.calls[0];
+    expect(call.table).toBe("application_drafts");
+    expect(call.filters).toEqual({ user_id: "user-1", enrolee_number: "E260050", type: "hfse-is-reenrol" });
+    expect(call.calledVia).toBe("maybeSingle");
+
+    expect(result).toEqual({
+      state: {
+        enroleeNumber: "E260050",
+        academicYear: "2026-2027",
+        formState: { studentInfo: { studentDetails: { firstName: "Juan" } } },
+        createdAt: "2026-07-01T00:00:00.000Z",
+        lastSavedAt: "2026-07-10T00:00:00.000Z",
+        expiresAt: "2026-08-01T00:00:00.000Z",
+      },
+    });
+  });
+
+  it("falls back to an empty string for a null academic_year", async () => {
+    const harness = createDraftsSupabaseMock({
+      selectResult: { data: baseReenrolDraftRow({ academic_year: null }), error: null },
+    });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    const result = await loadReenrolDraftRemote("E260050");
+
+    expect(result?.state.academicYear).toBe("");
+  });
+
+  it("returns null when no draft matches", async () => {
+    const harness = createDraftsSupabaseMock({ selectResult: { data: null, error: null } });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    expect(await loadReenrolDraftRemote("E999999")).toBeNull();
+  });
+
+  it("propagates the Supabase error message on failure", async () => {
+    const harness = createDraftsSupabaseMock({ selectResult: { data: null, error: { message: "load failed" } } });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await expect(loadReenrolDraftRemote("E260050")).rejects.toThrow("load failed");
+  });
+});
+
+describe("deleteReenrolDraftRemote", () => {
+  it("throws when there is no authenticated session", async () => {
+    const harness = createDraftsSupabaseMock({ session: null });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await expect(deleteReenrolDraftRemote("E260050")).rejects.toThrow("Not authenticated");
+  });
+
+  it("deletes scoped to user_id + enrolee_number", async () => {
+    const harness = createDraftsSupabaseMock();
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await deleteReenrolDraftRemote("E260050");
+
+    const call = harness.calls[0];
+    expect(call.table).toBe("application_drafts");
+    expect(call.op).toBe("delete");
+    expect(call.filters).toEqual({ user_id: "user-1", enrolee_number: "E260050" });
+  });
+
+  it("propagates the Supabase error message on failure", async () => {
+    const harness = createDraftsSupabaseMock({ deleteResult: { error: { message: "delete failed" } } });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    await expect(deleteReenrolDraftRemote("E260050")).rejects.toThrow("delete failed");
   });
 });

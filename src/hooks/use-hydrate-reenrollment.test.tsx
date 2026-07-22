@@ -8,8 +8,13 @@ vi.mock("@/actions/get-reenrollment-data", () => ({
   getReEnrollmentData: vi.fn(),
 }));
 
+vi.mock("@/actions/drafts", () => ({
+  loadReenrolDraftRemote: vi.fn(),
+}));
+
 const { useHydrateReEnrollment } = await import("./use-hydrate-reenrollment");
 const { getReEnrollmentData } = await import("@/actions/get-reenrollment-data");
+const { loadReenrolDraftRemote } = await import("@/actions/drafts");
 
 const FIXTURE = {
   studentInfo: { studentDetails: { firstName: "Juan" } },
@@ -34,9 +39,20 @@ function seedStore(formState: Record<string, unknown>) {
   setState({ formState });
 }
 
+// Seeds the store's top-level draft metadata directly (bypassing setEnroleeNumber/setFormState)
+// so a test can simulate "this is what was already in localStorage before the hook ran",
+// independent of whatever the hook itself would stamp.
+function seedDraftMeta(meta: { enroleeNumber?: string; expiresAt?: string }) {
+  const setState = useEnrolOldStudentStore.setState as (partial: typeof meta) => void;
+  setState(meta);
+}
+
 beforeEach(() => {
   useEnrolOldStudentStore.getState().clearState();
   vi.clearAllMocks();
+  // Most tests aren't exercising the remote-draft fallback — default to "no remote draft" so
+  // they don't have to opt out of it individually.
+  vi.mocked(loadReenrolDraftRemote).mockResolvedValue(null);
 });
 
 describe("useHydrateReEnrollment", () => {
@@ -212,5 +228,195 @@ describe("useHydrateReEnrollment", () => {
     expect(result.current.isPending).toBe(false);
     expect(result.current.isNotFound).toBe(false);
     expect(getReEnrollmentData).not.toHaveBeenCalled();
+  });
+
+  it("stamps the store's enroleeNumber after seeding a fresh draft", async () => {
+    vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+    renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+    await waitFor(() => {
+      expect(useEnrolOldStudentStore.getState().enroleeNumber).toBe("E260050");
+    });
+  });
+
+  describe("draft reconciliation (localStorage persistence means a stale draft can outlive its tab)", () => {
+    it("discards a draft left over from a different enrolee before seeding, instead of showing their data", async () => {
+      // Simulates: the parent previously edited (and saved-per-tab) student E999999's
+      // re-enrollment in this browser, then — without exiting — opened E260050's link.
+      seedStore({ studentInfo: { studentDetails: { firstName: "StaleOtherStudent" } } });
+      seedDraftMeta({ enroleeNumber: "E999999" });
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        const { formState, enroleeNumber } = useEnrolOldStudentStore.getState();
+        // Re-seeded from the server for the *current* enrolee, not left as E999999's stale data.
+        expect(formState.studentInfo).toEqual(FIXTURE.studentInfo);
+        expect(enroleeNumber).toBe("E260050");
+      });
+    });
+
+    it("keeps a saved draft for the same enrolee (does not treat it as stale)", async () => {
+      seedStore({ studentInfo: { studentDetails: { firstName: "LocalEdit", isValid: true } } });
+      seedDraftMeta({ enroleeNumber: "E260050", expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString() });
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.familyInfo).toEqual(FIXTURE.familyInfo);
+      });
+
+      // The parent's saved edit survives — this is the fix: it must NOT revert to the server
+      // original just because the page was reopened.
+      expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual({
+        studentDetails: { firstName: "LocalEdit", isValid: true },
+      });
+    });
+
+    it("discards an expired draft (past the 30-day window) and reseeds from the server", async () => {
+      seedStore({ studentInfo: { studentDetails: { firstName: "AncientEdit" } } });
+      seedDraftMeta({
+        enroleeNumber: "E260050",
+        expiresAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour in the past
+      });
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual(FIXTURE.studentInfo);
+      });
+    });
+
+    it("does not discard a draft with no recorded expiresAt (pre-fix / freshly seeded drafts)", async () => {
+      seedStore({ studentInfo: { studentDetails: { firstName: "LocalEdit", isValid: true } } });
+      seedDraftMeta({ enroleeNumber: "E260050" });
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.familyInfo).toEqual(FIXTURE.familyInfo);
+      });
+
+      expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual({
+        studentDetails: { firstName: "LocalEdit", isValid: true },
+      });
+    });
+  });
+
+  describe("remote-draft fallback (Phase 2: cache cleared / new device / in-app browser lost the local draft)", () => {
+    const REMOTE_DRAFT = {
+      state: {
+        enroleeNumber: "E260050",
+        academicYear: "2026-2027",
+        formState: { studentInfo: { studentDetails: { firstName: "RemoteEdit", isValid: true } } },
+        createdAt: "2026-07-01T00:00:00.000Z",
+        lastSavedAt: "2026-07-10T00:00:00.000Z",
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      },
+    };
+
+    it("adopts a valid remote draft when there is no local one, instead of falling straight to server data", async () => {
+      vi.mocked(loadReenrolDraftRemote).mockResolvedValue(REMOTE_DRAFT);
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.familyInfo).toEqual(FIXTURE.familyInfo);
+      });
+
+      // The remote draft's edit survives — not the server original.
+      expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual(
+        REMOTE_DRAFT.state.formState.studentInfo,
+      );
+      expect(useEnrolOldStudentStore.getState().enroleeNumber).toBe("E260050");
+    });
+
+    it("prefers a valid local draft over a remote one (local is always at least as fresh, see the hook's doc comment)", async () => {
+      seedStore({ studentInfo: { studentDetails: { firstName: "LocalEdit", isValid: true } } });
+      seedDraftMeta({ enroleeNumber: "E260050", expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString() });
+      vi.mocked(loadReenrolDraftRemote).mockResolvedValue(REMOTE_DRAFT);
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.familyInfo).toEqual(FIXTURE.familyInfo);
+      });
+
+      expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual({
+        studentDetails: { firstName: "LocalEdit", isValid: true },
+      });
+    });
+
+    it("ignores an expired remote draft and falls back to server data", async () => {
+      vi.mocked(loadReenrolDraftRemote).mockResolvedValue({
+        state: { ...REMOTE_DRAFT.state, expiresAt: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
+      });
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual(FIXTURE.studentInfo);
+      });
+    });
+
+    it("adopts the remote draft after a different-enrolee local draft is discarded", async () => {
+      seedStore({ studentInfo: { studentDetails: { firstName: "StaleOtherStudent" } } });
+      seedDraftMeta({ enroleeNumber: "E999999" });
+      vi.mocked(loadReenrolDraftRemote).mockResolvedValue(REMOTE_DRAFT);
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual(
+          REMOTE_DRAFT.state.formState.studentInfo,
+        );
+      });
+      expect(useEnrolOldStudentStore.getState().enroleeNumber).toBe("E260050");
+    });
+
+    it("falls back to server data when there is neither a local nor a remote draft", async () => {
+      vi.mocked(loadReenrolDraftRemote).mockResolvedValue(null);
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual(FIXTURE.studentInfo);
+      });
+    });
+
+    it("waits for the remote-draft lookup to resolve before seeding, so a slow request can't lose to server data", async () => {
+      let resolveRemoteDraft!: (value: unknown) => void;
+      vi.mocked(loadReenrolDraftRemote).mockReturnValue(
+        new Promise((resolve) => {
+          resolveRemoteDraft = resolve;
+        }) as never,
+      );
+      vi.mocked(getReEnrollmentData).mockResolvedValue(FIXTURE as never);
+
+      renderHook(() => useHydrateReEnrollment("E260050"), { wrapper });
+
+      // The server query has already resolved, but the store must stay untouched until the
+      // remote-draft query resolves too.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(useEnrolOldStudentStore.getState().formState.studentInfo).toBeUndefined();
+
+      resolveRemoteDraft(REMOTE_DRAFT);
+
+      await waitFor(() => {
+        expect(useEnrolOldStudentStore.getState().formState.studentInfo).toEqual(
+          REMOTE_DRAFT.state.formState.studentInfo,
+        );
+      });
+    });
   });
 });

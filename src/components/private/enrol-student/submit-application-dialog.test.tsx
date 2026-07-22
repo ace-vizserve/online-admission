@@ -25,9 +25,14 @@ vi.mock("sonner", () => ({
   toast: { warning: vi.fn(), info: vi.fn(), error: vi.fn(), success: vi.fn() },
 }));
 vi.mock("@/actions/private", () => ({ submitExistingEnrollment: vi.fn() }));
+// Real drafts.ts would reach the real Supabase client (untouched by the mocks above) the moment
+// onSuccess fires — mocked here purely to keep these tests from making a real network call, same
+// as use-hydrate-reenrollment.test.tsx / use-sync-reenrol-draft.test.tsx do.
+vi.mock("@/actions/drafts", () => ({ deleteReenrolDraftRemote: vi.fn() }));
 
 const SubmitApplicationDialog = (await import("./submit-application-dialog")).default;
 const { submitExistingEnrollment } = await import("@/actions/private");
+const { deleteReenrolDraftRemote } = await import("@/actions/drafts");
 const { toast } = await import("sonner");
 
 function buildValidFormState(overrides: Record<string, unknown> = {}) {
@@ -118,6 +123,7 @@ function runLastToastAction(toastFn: (typeof toast)["warning"] | (typeof toast)[
 beforeEach(() => {
   vi.clearAllMocks();
   resetEnrolmentStores();
+  vi.mocked(deleteReenrolDraftRemote).mockResolvedValue(undefined);
 });
 
 describe("SubmitApplicationDialog — validation branches (no submission)", () => {
@@ -428,6 +434,23 @@ describe("SubmitApplicationDialog — happy path & family info branch coverage",
 
     await waitFor(() => expect(locationText()).toContain("/application-submitted"));
     expect(locationText()).toContain(`"enroleeNumber":"E00001"`);
+    // The remote re-enrollment draft (Phase 2, application_drafts) must not survive a successful
+    // submit — otherwise reopening this enrolee's link later could resurrect stale pre-submit
+    // edits instead of the just-submitted application.
+    await waitFor(() => expect(deleteReenrolDraftRemote).toHaveBeenCalledWith("enrolee-1"));
+  });
+
+  it("does not block navigation or throw when deleting the remote draft fails (best-effort cleanup)", async () => {
+    vi.mocked(submitExistingEnrollment).mockResolvedValueOnce("E00005");
+    vi.mocked(deleteReenrolDraftRemote).mockRejectedValueOnce(new Error("network down"));
+
+    renderDialog({ formState: buildValidFormState() });
+    const continueButton = await openDialog();
+
+    fireEvent.click(continueButton);
+
+    await waitFor(() => expect(locationText()).toContain("/application-submitted"));
+    await waitFor(() => expect(deleteReenrolDraftRemote).toHaveBeenCalledWith("enrolee-1"));
   });
 
   it("submits when guardian & father info are present with valid mobiles", async () => {

@@ -94,6 +94,13 @@ export type EnrolOldStudentStore = {
   formState: Partial<EnrolOldStudentFormState> | Record<string, null>;
   setFormState: (data: Partial<EnrolOldStudentFormState>) => void;
   clearState: () => void;
+  // Scopes the persisted draft to one enrolee and lets a returning parent's local edits
+  // outlive the tab (see use-hydrate-reenrollment.ts, which stamps enroleeNumber on seed
+  // and clears this store when it detects a different enrolee or an expired draft).
+  enroleeNumber?: string;
+  lastSavedAt?: string;
+  expiresAt?: string;
+  setEnroleeNumber: (enroleeNumber: string) => void;
 };
 
 export type VizSchoolEnrolNewStudentStore = {
@@ -224,10 +231,18 @@ export const useEnrolNewStudentStore = create<EnrolNewStudentStore>()(
   ),
 );
 
+// Kept in sync by hand with DRAFT_EXPIRY_DAYS (src/lib/draft-storage.ts) — not imported
+// directly, since that module imports EnrolNewStudentDraftStore from this file and importing
+// back would create a cycle.
+const REENROL_DRAFT_EXPIRY_DAYS = 30;
+
 export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
   persist(
     (set, _, store) => ({
       formState: {},
+      enroleeNumber: undefined,
+      lastSavedAt: undefined,
+      expiresAt: undefined,
       clearState: () => {
         set(store.getInitialState());
       },
@@ -237,11 +252,17 @@ export const useEnrolOldStudentStore = create<EnrolOldStudentStore>()(
             ...state.formState,
             ...data,
           },
+          lastSavedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + REENROL_DRAFT_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString(),
         })),
+      setEnroleeNumber: (enroleeNumber: string) => set({ enroleeNumber }),
     }),
     {
-      name: "enrolOldStudentFormState",
-      storage: createJSONStorage(() => safeSessionStorage),
+      // Renamed from "enrolOldStudentFormState": that key lived in sessionStorage and is
+      // intentionally abandoned rather than migrated, so a stale sessionStorage entry never
+      // gets read as if it were a durable draft.
+      name: "enrolOldStudentDraft",
+      storage: createJSONStorage(() => safeLocalStorage),
     },
   ),
 );

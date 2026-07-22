@@ -1,7 +1,11 @@
 import { EnrolOldStudentStore, useEnrolOldStudentStore } from "@/zustand-store";
 import { createContext, ReactNode, useContext } from "react";
 
-type EnrolOldStudentContextProps = EnrolOldStudentStore;
+// Deliberately narrower than the full EnrolOldStudentStore: `enroleeNumber`/`setEnroleeNumber`
+// (added for the localStorage draft-reconciliation fix, see use-hydrate-reenrollment.ts) are
+// stamped directly on the store by that hook and aren't needed by anything consuming this
+// context — form/tab components only ever read/write `formState` or `clearState()`.
+type EnrolOldStudentContextProps = Pick<EnrolOldStudentStore, "formState" | "setFormState" | "clearState">;
 
 const EnrolOldStudentContext = createContext<EnrolOldStudentContextProps | null>(null);
 
