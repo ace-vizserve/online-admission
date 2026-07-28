@@ -110,13 +110,13 @@ function CurrentEnrollmentInformation() {
   function onSubmit(values: VizSchoolEnrollmentInformationSchema) {
     if (
       STANDARD_CLASS_LEVELS.includes(values.levelApplied) &&
-      values.classType !== "Standard Class (ENGLISH + TAGALOG)"
+      values.classType !== "Standard Class (ENGLISH + FILIPINO)"
     ) {
       toast.warning("Class Type Mismatch!", {
-        description: "Only 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
+        description: "Only 'Standard Class (ENGLISH + FILIPINO)' is available for this grade level.",
       });
       form.setError("classType", {
-        message: "Please select 'Standard Class (ENGLISH + TAGALOG)' for this level.",
+        message: "Please select 'Standard Class (ENGLISH + FILIPINO)' for this level.",
       });
       return;
     }
@@ -215,8 +215,8 @@ function CurrentEnrollmentInformation() {
                           </FormControl>
                           <SelectContent>
                             {STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value={"Standard Class (ENGLISH + TAGALOG)"}>
-                                Standard Class (ENGLISH + TAGALOG)
+                              <SelectItem value={"Standard Class (ENGLISH + FILIPINO)"}>
+                                Standard Class (ENGLISH + FILIPINO)
                               </SelectItem>
                             ) : selectedLevel == "" ? (
                               <SelectItem disabled value={"None"}>
