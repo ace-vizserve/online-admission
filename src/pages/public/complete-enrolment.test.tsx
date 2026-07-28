@@ -292,14 +292,14 @@ describe("classTypeOptionsForLevel", () => {
 
   it("offers only Standard Class for Secondary levels (no GLOBAL language track)", () => {
     expect(classTypeOptionsForLevel("Secondary One")).toEqual([
-      { label: "Standard Class (ENGLISH + TAGALOG)", value: "Standard Class (ENGLISH + TAGALOG)" },
+      { label: "Standard Class (ENGLISH + FILIPINO)", value: "Standard Class (ENGLISH + FILIPINO)" },
     ]);
   });
 
   it("adds GLOBAL language options for Primary Two–Six", () => {
     const options = classTypeOptionsForLevel("Primary Three").map((o) => o.value);
     expect(options).toEqual([
-      "Standard Class (ENGLISH + TAGALOG)",
+      "Standard Class (ENGLISH + FILIPINO)",
       "GLOBAL (ENGLISH + MANDARIN)",
       "GLOBAL (ENGLISH + FRENCH)",
       "GLOBAL (ENGLISH + TAMIL)",

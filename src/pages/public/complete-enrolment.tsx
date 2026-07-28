@@ -142,7 +142,7 @@ export function classTypeOptionsForLevel(level: string): { label: string; value:
   }
   if (STANDARD_CLASS_LEVELS.includes(level)) {
     const options = [
-      { label: "Standard Class (ENGLISH + TAGALOG)", value: "Standard Class (ENGLISH + TAGALOG)" },
+      { label: "Standard Class (ENGLISH + FILIPINO)", value: "Standard Class (ENGLISH + FILIPINO)" },
     ];
     if (GLOBAL_LANGUAGE_LEVELS.includes(level)) {
       options.push(
@@ -879,7 +879,7 @@ function RecoveryForm({
       }
       if (
         STANDARD_CLASS_LEVELS.includes(levelApplied) &&
-        classType !== "Standard Class (ENGLISH + TAGALOG)" &&
+        classType !== "Standard Class (ENGLISH + FILIPINO)" &&
         !(
           GLOBAL_LANGUAGE_LEVELS.includes(levelApplied) &&
           ["GLOBAL (ENGLISH + MANDARIN)", "GLOBAL (ENGLISH + FRENCH)", "GLOBAL (ENGLISH + TAMIL)"].includes(classType)

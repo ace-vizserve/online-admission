@@ -275,7 +275,7 @@ function EnrollmentInformation() {
 
     if (
       STANDARD_CLASS_LEVELS.includes(values.levelApplied) &&
-      values.classType !== "Standard Class (ENGLISH + TAGALOG)" &&
+      values.classType !== "Standard Class (ENGLISH + FILIPINO)" &&
       !(
         GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied) &&
         ["GLOBAL (ENGLISH + MANDARIN)", "GLOBAL (ENGLISH + FRENCH)", "GLOBAL (ENGLISH + TAMIL)"].includes(
@@ -285,8 +285,8 @@ function EnrollmentInformation() {
     ) {
       toast.warning("Class Type Mismatch!", {
         description: GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied)
-          ? "Please select 'Standard Class (ENGLISH + TAGALOG)' or a GLOBAL language track."
-          : "Only 'Standard Class (ENGLISH + TAGALOG)' is available for this grade level.",
+          ? "Please select 'Standard Class (ENGLISH + FILIPINO)' or a GLOBAL language track."
+          : "Only 'Standard Class (ENGLISH + FILIPINO)' is available for this grade level.",
       });
 
       form.setError("classType", {
@@ -440,8 +440,8 @@ function EnrollmentInformation() {
                               <SelectItem value="Global Class (CAMBRIDGE)">Global Class (CAMBRIDGE)</SelectItem>
                             ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
                               <>
-                                <SelectItem value="Standard Class (ENGLISH + TAGALOG)">
-                                  Standard Class (ENGLISH + TAGALOG)
+                                <SelectItem value="Standard Class (ENGLISH + FILIPINO)">
+                                  Standard Class (ENGLISH + FILIPINO)
                                 </SelectItem>
 
                                 {GLOBAL_LANGUAGE_LEVELS.includes(selectedLevel) && (
