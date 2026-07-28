@@ -301,6 +301,6 @@ export const preferredPaymentScheme = [
 
 export const preferredPaymentMethod = [
   { label: "Bank Transfer", value: "Bank Transfer" },
-  { label: "GIRO", value: "GIRO" },
+  { label: "GIRO (Not applicable to Enrolment Fees)", value: "GIRO" },
   { label: "Credit/Debit Card ( 3% platform fee)", value: "Credit/Debit Card Payment" },
 ] as const;

@@ -275,7 +275,7 @@ function CurrentEnrollmentInformation() {
                     render={({ field }) => (
                       <FormItem>
                         <div className="relative flex justify-between items-center">
-                          <FormLabel>Student Development Fees</FormLabel>
+                          <FormLabel>Student Development Fees Payment Option</FormLabel>
 
                           <CDFDetailsDialog />
                         </div>
@@ -479,7 +479,7 @@ function CDFDetailsDialog() {
 
       <DialogContent className="!max-w-4xl">
         <DialogHeader className="text-start">
-          <DialogTitle className="!font-black text-2xl"> Student Development Fees</DialogTitle>
+          <DialogTitle className="!font-black text-2xl"> Student Development Fees Payment Option</DialogTitle>
           <DialogDescription className="font-semibold">
             Kindly choose your preferred payment option below.
           </DialogDescription>
