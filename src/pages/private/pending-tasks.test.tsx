@@ -22,8 +22,18 @@ const { default: PendingTasks } = await import("./pending-tasks");
 
 // "E27####" / "E26####" — the "E" + 2-digit-year-suffix format tryAcademicYearFromEnroleeNumber
 // parses (src/config/academic-years.ts), matching BACKEND_ACADEMIC_YEARS's "ay2027"/"ay2026".
-const TASK_AY2027 = { enroleeNumber: "E270001", studentDocs: [{ birthCert: "To follow" }] };
-const TASK_AY2026 = { enroleeNumber: "E260002", parentGuardianDocs: [{ motherPassport: "Expired" }] };
+const TASK_AY2027 = {
+  enroleeNumber: "E270001",
+  studentName: "Dela Cruz, Juan",
+  levelApplied: "Primary Two",
+  studentDocs: [{ birthCert: "To follow" }],
+};
+const TASK_AY2026 = {
+  enroleeNumber: "E260002",
+  studentName: "Dela Cruz, Maria",
+  levelApplied: "Grade 4",
+  parentGuardianDocs: [{ motherPassport: "Expired" }],
+};
 
 function mockPendingTasks(pendingTasks: Record<string, unknown>[]) {
   vi.mocked(getSectionCardsDetails).mockResolvedValue({
@@ -63,8 +73,8 @@ describe("PendingTasks — academic year filter", () => {
 
     renderPendingTasks();
 
-    expect(await screen.findByText("#E270001")).toBeInTheDocument();
-    expect(screen.getByText("#E270099")).toBeInTheDocument();
+    expect(await screen.findByText("Enrollee #E270001")).toBeInTheDocument();
+    expect(screen.getByText("Enrollee #E270099")).toBeInTheDocument();
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });
 
@@ -73,8 +83,8 @@ describe("PendingTasks — academic year filter", () => {
 
     renderPendingTasks();
 
-    expect(await screen.findByText("#E270001")).toBeInTheDocument();
-    expect(screen.getByText("#E260002")).toBeInTheDocument();
+    expect(await screen.findByText("Enrollee #E270001")).toBeInTheDocument();
+    expect(screen.getByText("Enrollee #E260002")).toBeInTheDocument();
     expect(screen.getByRole("combobox")).toHaveTextContent("All Years");
   });
 
@@ -83,13 +93,13 @@ describe("PendingTasks — academic year filter", () => {
     const user = userEvent.setup();
 
     renderPendingTasks();
-    await screen.findByText("#E270001");
+    await screen.findByText("Enrollee #E270001");
 
     await user.click(screen.getByRole("combobox"));
     await user.click(await screen.findByRole("option", { name: "AY 2027" }));
 
-    expect(screen.getByText("#E270001")).toBeInTheDocument();
-    expect(screen.queryByText("#E260002")).not.toBeInTheDocument();
+    expect(screen.getByText("Enrollee #E270001")).toBeInTheDocument();
+    expect(screen.queryByText("Enrollee #E260002")).not.toBeInTheDocument();
   });
 
   it("restores the full list when All Years is selected again", async () => {
@@ -97,17 +107,17 @@ describe("PendingTasks — academic year filter", () => {
     const user = userEvent.setup();
 
     renderPendingTasks();
-    await screen.findByText("#E270001");
+    await screen.findByText("Enrollee #E270001");
 
     await user.click(screen.getByRole("combobox"));
     await user.click(await screen.findByRole("option", { name: "AY 2027" }));
-    expect(screen.queryByText("#E260002")).not.toBeInTheDocument();
+    expect(screen.queryByText("Enrollee #E260002")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("combobox"));
     await user.click(await screen.findByRole("option", { name: "All Years" }));
 
-    expect(screen.getByText("#E270001")).toBeInTheDocument();
-    expect(screen.getByText("#E260002")).toBeInTheDocument();
+    expect(screen.getByText("Enrollee #E270001")).toBeInTheDocument();
+    expect(screen.getByText("Enrollee #E260002")).toBeInTheDocument();
   });
 
   it("lists filter options newest-year-first", async () => {
@@ -117,11 +127,35 @@ describe("PendingTasks — academic year filter", () => {
     const user = userEvent.setup();
 
     renderPendingTasks();
-    await screen.findByText("#E270001");
+    await screen.findByText("Enrollee #E270001");
 
     await user.click(screen.getByRole("combobox"));
     const options = await screen.findAllByRole("option");
 
     expect(options.map((o) => o.textContent?.trim())).toEqual(["All Years", "AY 2027", "AY 2026"]);
+  });
+});
+
+describe("PendingTasks — student identity header", () => {
+  it("leads each row with the student's name and level, keeping the enrolee number as a reference", async () => {
+    mockPendingTasks([TASK_AY2027]);
+
+    renderPendingTasks();
+
+    expect(await screen.findByText("Dela Cruz, Juan")).toBeInTheDocument();
+    expect(screen.getByText(/Primary Two/)).toBeInTheDocument();
+    expect(screen.getByText("Enrollee #E270001")).toHaveAttribute(
+      "href",
+      "/admission/enrolments/application/E270001?academicYear=ay2027",
+    );
+  });
+
+  it("falls back to the enrolee number as the heading when the student name is missing", async () => {
+    mockPendingTasks([{ ...TASK_AY2027, studentName: "", levelApplied: "" }]);
+
+    renderPendingTasks();
+
+    expect(await screen.findByText("Enrollee #E270001", { selector: "p" })).toBeInTheDocument();
+    expect(screen.queryByText(/Primary Two/)).not.toBeInTheDocument();
   });
 });

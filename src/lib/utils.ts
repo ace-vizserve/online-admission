@@ -449,7 +449,9 @@ export async function getStudentsList(parentEmail: string) {
       BACKEND_ACADEMIC_YEARS.map(async (academicYear) => {
         const { data, error } = await supabase
           .from(`${academicYear}_enrolment_applications`)
-          .select("enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber")
+          .select(
+            "enroleeFullName, birthDay, enroleeNumber, fatherFullName, motherFullName, studentNumber, levelApplied",
+          )
           .or(`fatherEmail.eq.${parentEmail}, motherEmail.eq.${parentEmail}`)
           .eq("applicationStatus", "Registered")
           .order("enroleeNumber", { ascending: false });
@@ -468,6 +470,7 @@ export async function getStudentsList(parentEmail: string) {
             .map((info) => ({
               enroleeNumber: info.enroleeNumber,
               studentName: info.enroleeFullName,
+              levelApplied: info.levelApplied,
               age: differenceInYears(new Date(), parseISO(info.birthDay)),
               mothersName: info.motherFullName ?? "--",
               fathersName: info.fatherFullName ?? "--",
