@@ -29,7 +29,24 @@ export type AttendanceRecord = {
   days_late: number | null;
 };
 
-export type CommentRecord = { term_id: string; comment: string | null };
+export type CommentRecord = { term_id: string; comment: string | null; submitted?: boolean };
+
+/**
+ * A submitted adviser comment from a term EARLIER than the one being viewed. Kept in its own
+ * payload field — never merged into `comments` — because the card reads `comments[0]`/`terms[0]`
+ * and would otherwise render an earlier term's comment under the viewed term's heading.
+ *
+ * Each entry carries its own label and virtue theme: `payload.terms` only holds the viewed term,
+ * so these cannot be looked up. Server-side guarantees: trimmed, never empty, never a draft,
+ * never an unreleased or future term, never the viewed term, and always empty when termNumber is 4.
+ */
+export type EarlierComment = {
+  term_id: string;
+  term_number: number;
+  term_label: string;
+  virtue_theme: string | null;
+  comment: string;
+};
 
 export type ReportCardPayload = {
   ay: { id: string; label: string };
@@ -48,6 +65,8 @@ export type ReportCardPayload = {
   subjects: SubjectRow[];
   attendance: AttendanceRecord[];
   comments: CommentRecord[];
+  /** Earlier terms' submitted comments, ascending by term_number. Empty on the Term 4 card. */
+  earlierComments: EarlierComment[];
 };
 
 type State =
