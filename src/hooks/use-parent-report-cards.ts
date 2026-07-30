@@ -1,8 +1,6 @@
 import { supabase } from "@/lib/client";
+import { SIS_BASE } from "@/lib/sis";
 import { useEffect, useState } from "react";
-
-const SIS_BASE =
-  (import.meta.env.PROD ? import.meta.env.VITE_SIS_URL : "http://localhost:3000/").replace(/\/$/, "") + "/";
 
 export type Publication = {
   term_id: string;
