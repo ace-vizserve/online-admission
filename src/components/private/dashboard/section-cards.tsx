@@ -1,4 +1,3 @@
-import { getSectionCardsDetails } from "@/actions/private";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,19 +5,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ViewReportCardButton } from "@/components/view-report-card";
 import { tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
 import { useDraftRows } from "@/hooks/use-draft-rows";
+import { usePendingTasks } from "@/hooks/use-pending-tasks";
 import useSession from "@/hooks/use-session";
 import { cn, getCurrentDayState } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, CheckCircle2, FileClock, FilePen, GraduationCap, Info, UserPlus, Users } from "lucide-react";
 import { Link } from "react-router";
 
 export function SectionCards() {
   const { session } = useSession();
-  const { data, isPending } = useQuery({
-    queryKey: ["section-cards", session?.user.email],
-    queryFn: getSectionCardsDetails,
-    enabled: session != null,
-  });
+  const { data, isPending } = usePendingTasks();
 
   const nameParts = session?.user.user_metadata.fullName.replace(/,/g, "").split(" ");
 
