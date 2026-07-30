@@ -81,3 +81,46 @@ describe("SectionCards — Saved Drafts count widget", () => {
     expect(screen.queryByText("Saved Drafts")).not.toBeInTheDocument();
   });
 });
+
+describe("SectionCards — Document Requirements student identity", () => {
+  const PENDING_TASK = {
+    enroleeNumber: "E270001",
+    studentName: "Dela Cruz, Juan",
+    levelApplied: "Primary Two",
+    studentDocs: [{ birthCert: "To follow" }],
+  };
+
+  function mockPendingTasks(pendingTasks: Record<string, unknown>[]) {
+    vi.mocked(getSectionCardsDetails).mockReset().mockResolvedValue({
+      totalEnrollments: 5,
+      pendingTasks: { pendingTasks },
+      currentEnrolledStudents: [{ id: 1 }],
+    } as never);
+  }
+
+  beforeEach(() => {
+    vi.mocked(useDraftRows).mockReturnValue({ data: [], isPending: false } as never);
+  });
+
+  it("leads each requirement with the student's name and level, keeping the enrolee number as a reference", async () => {
+    mockPendingTasks([PENDING_TASK]);
+
+    renderSectionCards();
+
+    expect(await screen.findByText("Dela Cruz, Juan")).toBeInTheDocument();
+    expect(screen.getByText(/Primary Two/)).toBeInTheDocument();
+    expect(screen.getByText("Enrollee #E270001")).toHaveAttribute(
+      "href",
+      "/admission/enrolments/application/E270001?academicYear=ay2027",
+    );
+  });
+
+  it("falls back to the enrolee number as the heading when the student name is missing", async () => {
+    mockPendingTasks([{ ...PENDING_TASK, studentName: "", levelApplied: "" }]);
+
+    renderSectionCards();
+
+    expect(await screen.findByText("Enrollee #E270001", { selector: "p" })).toBeInTheDocument();
+    expect(screen.queryByText(/Primary Two/)).not.toBeInTheDocument();
+  });
+});

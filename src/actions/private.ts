@@ -77,9 +77,11 @@ async function getEnrollmentPendingDocuments() {
     }
 
     const studentsList = await getStudentsList(session.user.email);
-    const enroleeNumbers = studentsList?.map((s) => s.enroleeNumber).filter(Boolean) ?? [];
+    // Carry the student's name and level alongside the enrolee number — parents recognise
+    // their child by name, not by enrolee number.
+    const students = studentsList?.filter((student) => Boolean(student.enroleeNumber)) ?? [];
 
-    if (!enroleeNumbers.length) {
+    if (!students.length) {
       return { totalPendingTasks: 0, pendingTasks: [] };
     }
 
@@ -96,7 +98,7 @@ async function getEnrollmentPendingDocuments() {
       }, {});
 
     const pendingTasks = await Promise.all(
-      enroleeNumbers.map(async (enroleeNumber) => {
+      students.map(async ({ enroleeNumber, studentName, levelApplied }) => {
         const details = await getStudentDetails({ enroleeNumber });
 
         const studentDocsThatExpire =
@@ -115,19 +117,20 @@ async function getEnrollmentPendingDocuments() {
           .filter(([, status]) => status && status !== "Valid")
           .map(([key, status]) => ({ [key]: status }));
 
-        return Object.fromEntries(
-          Object.entries({
-            enroleeNumber,
-            studentDocs,
-            parentGuardianDocs,
-          }).filter(([, value]) => {
-            return !Array.isArray(value) || value.length > 0;
-          }),
-        );
+        return {
+          enroleeNumber,
+          studentName: studentName ?? "",
+          levelApplied: levelApplied ?? "",
+          studentDocs,
+          parentGuardianDocs,
+        };
       }),
     );
 
-    const filteredPendingTasks = pendingTasks.filter((task) => Object.keys(task).length > 1);
+    // Keep only students that actually have an outstanding document.
+    const filteredPendingTasks = pendingTasks.filter(
+      (task) => task.studentDocs.length > 0 || task.parentGuardianDocs.length > 0,
+    );
 
     return {
       totalPendingTasks: filteredPendingTasks.length,

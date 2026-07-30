@@ -103,14 +103,21 @@ function PendingTasks() {
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-sm leading-relaxed text-slate-600">
-                          Enrollee{" "}
+                        <p className="text-base font-bold capitalize text-primary leading-tight">
+                          {task.studentName || `Enrollee #${task.enroleeNumber}`}
+                        </p>
+
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {task.levelApplied && <span>{task.levelApplied} &middot; </span>}
                           <Link
                             to={`/admission/enrolments/application/${task.enroleeNumber}?academicYear=${academicYear}`}
                             className="font-bold text-primary underline underline-offset-2">
-                            #{task.enroleeNumber}
-                          </Link>{" "}
-                          &mdash; their existing{" "}
+                            Enrollee #{task.enroleeNumber}
+                          </Link>
+                        </p>
+
+                        <p className="text-sm leading-relaxed text-slate-600 pt-1">
+                          Their existing{" "}
                           <span className="font-bold">{academicYear ? `AY ${academicYear.slice(2)}` : ""}</span>{" "}
                           application requires the following documents:
                         </p>

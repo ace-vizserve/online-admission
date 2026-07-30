@@ -226,19 +226,26 @@ function StatCard({
                         <Info className="size-4 text-amber-600" />
                       </div>
 
-                      <div className="flex-1">
-                        <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-3">
-                          Enrollee{" "}
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-bold capitalize text-black leading-tight">
+                          {pendingTask.studentName || `Enrollee #${pendingTask.enroleeNumber}`}
+                        </p>
+
+                        <p className="text-[11px] font-medium text-muted-foreground">
+                          {pendingTask.levelApplied && <span>{pendingTask.levelApplied} &middot; </span>}
                           <Link
                             to={`/admission/enrolments/application/${pendingTask.enroleeNumber}?academicYear=${academicYear}`}
                             className="font-bold text-primary underline underline-offset-2">
-                            #{pendingTask.enroleeNumber}
-                          </Link>{" "}
-                          has outstanding document requirements on their existing{" "}
+                            Enrollee #{pendingTask.enroleeNumber}
+                          </Link>
+                        </p>
+
+                        <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-3">
+                          Their existing{" "}
                           <span className="font-bold text-black">
                             {academicYear ? `AY ${academicYear.slice(2)}` : ""}
                           </span>{" "}
-                          application:
+                          application has outstanding document requirements:
                           {pendingTask.studentDocs && pendingTask.studentDocs.length > 0 && (
                             <span className="ml-1">
                               <span className="font-bold text-black italic">Student Documents</span> (
@@ -357,6 +364,8 @@ type DashboardCardsProps = {
 
 type PendingTasks = {
   enroleeNumber?: string;
+  studentName?: string;
+  levelApplied?: string;
   studentDocs?: {
     [k: string]: string;
   }[];
