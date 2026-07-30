@@ -32,7 +32,7 @@ export const PARENT_FACING_ACADEMIC_YEARS: ParentFacingAcademicYear[] = [
 ];
 
 /** Every recognized academic year (incl. historical), newest first. */
-export const BACKEND_ACADEMIC_YEARS: string[] = ["ay9999", "ay2027", "ay2026", "ay2025"];
+export const BACKEND_ACADEMIC_YEARS: string[] = ["ay2027", "ay2026", "ay2025"];
 
 /** VizSchool mirrors the same years behind a `vizschool-` prefix. */
 export const VIZSCHOOL_ACADEMIC_YEARS: string[] = BACKEND_ACADEMIC_YEARS.map((ay) => `vizschool-${ay}`);
@@ -49,7 +49,7 @@ export const CURRENT_ACADEMIC_YEAR: string =
  * (e.g. "E26####"), because they're generated as `E${academicYear.slice(-2)}…`.
  * We match that suffix back against BACKEND_ACADEMIC_YEARS — the true inverse of
  * generation — instead of assuming the century is "20". That keeps it correct for
- * any year in the config (e.g. a test "ay9999" resolves from "E99####", not "ay2099").
+ * any year in the config, whatever that century turns out to be.
  */
 export function tryAcademicYearFromEnroleeNumber(enroleeNumber: string | null | undefined): string | null {
   if (!enroleeNumber) return null;

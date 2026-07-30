@@ -34,9 +34,8 @@ const AY2026_APPLICATIONS = "ay2026_enrolment_applications";
 const AY2026_DOCUMENTS = "ay2026_enrolment_documents";
 const AY2025_APPLICATIONS = "ay2025_enrolment_applications";
 const AY2025_DOCUMENTS = "ay2025_enrolment_documents";
-// BACKEND_ACADEMIC_YEARS = ["ay9999", "ay2027", "ay2026", "ay2025"] — ay9999 is tried first, so
+// BACKEND_ACADEMIC_YEARS = ["ay2027", "ay2026", "ay2025"] — ay2027 is tried first, so
 // getFamilyInformation's own (unchanged, not-pinned) year-cascade lands here by default.
-const AY9999_APPLICATIONS = "ay9999_enrolment_applications";
 
 function appRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -225,8 +224,8 @@ describe("getPreviousParentGuardianDocuments — new enrollment (no enroleeNumbe
         [AY2027_APPLICATIONS]: [appRow({ enroleeNumber: "E270001" })], // no docs seeded — nothing to merge
       },
       singleRows: {
-        // getFamilyInformation's own (untouched) year-cascade lands on ay9999 first by default.
-        [AY9999_APPLICATIONS]: {
+        // getFamilyInformation's own (untouched) year-cascade lands on ay2027 first by default.
+        [AY2027_APPLICATIONS]: {
           data: appRow({ enroleeNumber: "E270001", fatherFirstName: "Jose", fatherLastName: "Cruz" }),
         },
       },
@@ -326,12 +325,12 @@ describe("getPreviousParentGuardianDocuments — re-enrollment (enroleeNumber pi
 describe("getFamilyInformation", () => {
   it("filters by father/mother/guardian email (guardianEmail now included)", async () => {
     const harness = harnessWith({
-      singleRows: { [AY9999_APPLICATIONS]: { data: appRow({ enroleeNumber: "E270001", fatherFirstName: "Jose" }) } },
+      singleRows: { [AY2027_APPLICATIONS]: { data: appRow({ enroleeNumber: "E270001", fatherFirstName: "Jose" }) } },
     });
 
     await getFamilyInformation();
 
-    const applicationsCall = harness.calls.find((c) => c.table === AY9999_APPLICATIONS);
+    const applicationsCall = harness.calls.find((c) => c.table === AY2027_APPLICATIONS);
     expect(applicationsCall?.filters.or).toBe(
       `fatherEmail.eq.${SESSION_EMAIL},motherEmail.eq.${SESSION_EMAIL},guardianEmail.eq.${SESSION_EMAIL}`,
     );
@@ -340,7 +339,7 @@ describe("getFamilyInformation", () => {
   it("finds a guardian-only login's family info (previously locked out by the father/mother-only filter)", async () => {
     harnessWith({
       singleRows: {
-        [AY9999_APPLICATIONS]: {
+        [AY2027_APPLICATIONS]: {
           data: appRow({
             enroleeNumber: "E270001",
             guardianFirstName: "Ana",

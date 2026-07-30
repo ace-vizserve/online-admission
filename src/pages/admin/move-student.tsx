@@ -28,7 +28,7 @@ import { toast } from "sonner";
 
 import { SortCol, distinctLevels, filterAndSortStudents, studentDisplayName } from "./move-student-helpers";
 
-const AY_OPTIONS = BACKEND_ACADEMIC_YEARS.filter((ay) => ay !== "ay9999").map((ay) => ({
+const AY_OPTIONS = BACKEND_ACADEMIC_YEARS.map((ay) => ({
   value: ay,
   label: `AY ${ay.slice(2)}`,
 }));
