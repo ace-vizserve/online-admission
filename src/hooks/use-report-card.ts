@@ -1,7 +1,6 @@
 import { supabase } from "@/lib/client";
+import { SIS_BASE } from "@/lib/sis";
 import { useEffect, useState } from "react";
-
-const SIS_BASE = (import.meta.env.VITE_SIS_URL as string).replace(/\/$/, "") + "/";
 
 export type Cell = { quarterly: number | null; letter: string | null; is_na: boolean };
 
