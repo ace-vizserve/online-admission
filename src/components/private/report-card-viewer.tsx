@@ -83,6 +83,7 @@ function ReportCardDocument({
   schoolConfig: SchoolConfig | null;
 }) {
   const { ay, terms, student, section, level, subjects, attendance, comments } = payload;
+  const earlierComments = payload.earlierComments ?? [];
 
   const isFinal = viewingTermNumber === 4;
 
@@ -104,7 +105,7 @@ function ReportCardDocument({
       <div className="space-y-8 px-4 py-6 sm:px-8 sm:py-8 lg:px-10 print:px-8 print:py-6">
         <header className="flex flex-col items-center gap-1 border-b border-border pb-5 text-center">
           <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Academic year {ay.label}
+            {ay.label}
           </p>
           <h1 className="font-serif text-[26px] font-semibold leading-tight tracking-tight text-foreground">
             Student Progress Report
@@ -270,42 +271,54 @@ function ReportCardDocument({
           </div>
         </section>
 
-        {/* Form Class Adviser's Comments — cumulative: one box per term 1..N (capped
-            at 3); T4 final has no FCA block. Terms without a comment are omitted. */}
+        {/* Form Class Adviser's Comments — cumulative: earlier terms from `earlierComments`
+            (each carrying its own label and virtue theme, since `terms` holds only the viewed
+            term), then the viewed term's own comment last. Terms without a submitted comment are
+            omitted — a mid-year joiner legitimately has fewer. T4 final has no FCA block. */}
         {!isFinal &&
           (() => {
-            const cap = Math.min(viewingTermNumber, 3);
-            const commentTerms = terms
-              .filter((t) => t.term_number >= 1 && t.term_number <= cap)
-              .map((t) => ({
-                term: t,
-                comment: comments.find((c: CommentRecord) => c.term_id === t.id)?.comment?.trim() || null,
-              }))
-              .filter((entry) => entry.comment != null);
+            const boxes = earlierComments.map((c) => ({
+              key: c.term_id,
+              label: c.term_label,
+              virtue: c.virtue_theme?.trim() || null,
+              comment: c.comment,
+            }));
 
-            if (commentTerms.length === 0) return null;
+            // The viewed term still arrives in `terms`/`comments`, not in `earlierComments`.
+            const viewedTerm = terms.find((t) => t.term_number === viewingTermNumber);
+            const viewedComment =
+              comments.find((c: CommentRecord) => c.term_id === viewedTerm?.id)?.comment?.trim() || null;
+            if (viewedTerm && viewedComment) {
+              boxes.push({
+                key: viewedTerm.id,
+                label: viewedTerm.label,
+                virtue: viewedTerm.virtue_theme?.trim() || null,
+                comment: viewedComment,
+              });
+            }
+
+            if (boxes.length === 0) return null;
 
             return (
               <section className="space-y-3">
                 <SectionHeading>Form Class Adviser&apos;s Comments</SectionHeading>
                 <div className="space-y-2.5">
-                  {commentTerms.map(({ term: t, comment }) => {
-                    const virtue = t.virtue_theme?.trim() || null;
-                    return (
-                      <div key={t.id} className="rounded-xl border border-border p-4 print:break-inside-avoid">
-                        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          {t.label}
-                          {virtue ? (
-                            <span className="font-sans normal-case tracking-normal text-muted-foreground">
-                              {" "}
-                              (HFSE Virtues: {virtue})
-                            </span>
-                          ) : null}
-                        </p>
-                        <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-foreground">{comment}</p>
-                      </div>
-                    );
-                  })}
+                  {boxes.map((box) => (
+                    <div key={box.key} className="rounded-xl border border-border p-4 print:break-inside-avoid">
+                      <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        {box.label}
+                        {box.virtue ? (
+                          <span className="font-sans normal-case tracking-normal text-muted-foreground">
+                            {" "}
+                            (HFSE Virtues: {box.virtue})
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                        {box.comment}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </section>
             );
