@@ -1,24 +1,16 @@
-import { getSectionCardsDetails } from "@/actions/private";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BACKEND_ACADEMIC_YEARS, tryAcademicYearFromEnroleeNumber } from "@/config/academic-years";
-import useSession from "@/hooks/use-session";
+import { usePendingTasks } from "@/hooks/use-pending-tasks";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
 import { Tailspin } from "ldrs/react";
 import { ArrowLeft, CheckCircle2, Info } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
 
 function PendingTasks() {
-  const { session } = useSession();
-
-  const { data, isPending } = useQuery({
-    queryKey: ["pending-tasks", session?.user.email],
-    queryFn: getSectionCardsDetails,
-    enabled: session != null,
-  });
+  const { data, isPending } = usePendingTasks();
 
   const tasks = data?.pendingTasks.pendingTasks ?? [];
 

@@ -9,7 +9,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useDraftRows } from "@/hooks/use-draft-rows";
-import { BookOpenText, ClipboardList, FilePen, LayoutDashboardIcon } from "lucide-react";
+import { usePendingTasks } from "@/hooks/use-pending-tasks";
+import { BookOpenText, ClipboardList, FileClock, FilePen, LayoutDashboardIcon } from "lucide-react";
 import * as React from "react";
 import Logo from "../../logo";
 import { NavMain } from "./nav-main";
@@ -17,6 +18,12 @@ import { NavUser } from "./nav-user";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: rows } = useDraftRows();
+  const { data: pendingTasksDetails } = usePendingTasks();
+
+  // Children with at least one outstanding document — the same count the dashboard's "Document
+  // Requirements" stat card shows. `data` is optional because getSectionCardsDetails swallows
+  // its own errors and resolves undefined.
+  const pendingTasksCount = pendingTasksDetails?.pendingTasks.pendingTasks.length ?? 0;
 
   const navGroups = [
     {
@@ -27,6 +34,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       items: [
         { title: "My Enrolments", url: "/admission/enrolments", icon: ClipboardList },
         { title: "Saved Drafts", url: "/admission/drafts", icon: FilePen, badge: rows?.length ?? 0 },
+        {
+          title: "Document Requirements",
+          url: "/admission/pending-tasks",
+          icon: FileClock,
+          badge: pendingTasksCount,
+        },
       ],
     },
     {
