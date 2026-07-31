@@ -1,7 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const ADMIN_EMAILS = ["amier.vizbytes@vizserve.hfse.edu.sg", "ace.guevarra@vizserve.hfse.edu.sg"];
+const ADMIN_EMAILS = [
+  "amier.vizbytes@vizserve.hfse.edu.sg",
+  "ace.guevarra@vizserve.hfse.edu.sg",
+  "admin@parent.portal.com",
+];
 
 const allowedOrigins = ["https://enrol.hfse.edu.sg", "http://localhost:5173"];
 
