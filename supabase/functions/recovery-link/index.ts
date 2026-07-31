@@ -49,11 +49,7 @@ async function sendRecoveryEmail(to: string[], url: string): Promise<{ ok: true 
   }
 }
 
-const ADMIN_EMAILS = [
-  "amier.vizbytes@vizserve.hfse.edu.sg",
-  "ace.guevarra@vizserve.hfse.edu.sg",
-  "admin@parent.portal.com",
-];
+const ADMIN_EMAILS = ["admin@parent.portal.com"];
 const allowedOrigins = ["https://enrol.hfse.edu.sg", "http://localhost:5173"];
 
 // Mirrors src/config/academic-years.ts — edge functions can't import from `src/`.
