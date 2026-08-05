@@ -1,5 +1,5 @@
 import { userLogin } from "@/actions/auth";
-import students from "@/assets/students.webp";
+import students from "@/assets/student-images/2.png";
 import Logo from "@/components/logo";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import { Button } from "@/components/ui/button";
