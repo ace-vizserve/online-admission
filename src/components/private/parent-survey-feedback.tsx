@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { howDidYouKnowAboutUs } from "@/data";
 
 import { useMutation } from "@tanstack/react-query";
 import { DotPulse } from "ldrs/react";
@@ -96,19 +97,14 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
     },
   });
 
-  const handleSkip = () => {
-    setOpen(false);
+  // Step 1 is the only hard requirement — the marketing source is what the school actually needs,
+  // and it used to arrive blank on ~99% of applications because this dialog was skippable.
+  const canLeaveStepOne =
+    Boolean(howDidYouKnowAboutHFSEIS) &&
+    !(howDidYouKnowAboutHFSEIS === "Referral" && !referrerName.trim()) &&
+    !(howDidYouKnowAboutHFSEIS === "Other" && !otherSource.trim());
 
-    if (redirectTo) {
-      navigate("/login");
-    } else {
-      navigate("/admission/dashboard");
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const submitFeedback = () => {
     mutate({
       academicYear,
       enroleeNumber,
@@ -118,6 +114,11 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
       howDidYouKnowAboutHFSEIS: howDidYouKnowAboutHFSEIS === "Other" ? otherSource.trim() : howDidYouKnowAboutHFSEIS,
       marketingReferrerName: howDidYouKnowAboutHFSEIS === "Referral" ? referrerName.trim() : undefined,
     });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitFeedback();
   };
 
   return (
@@ -133,7 +134,17 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:!max-w-xl">
+      {/*
+        No close affordance and no dismiss-on-escape/outside-click: the marketing source is
+        required, and this dialog sits on the natural exit from the submitted page ("Go to
+        Dashboard"). A parent can still close the tab — nothing client-side prevents that — but
+        every in-app route out of here now goes through answering the question.
+      */}
+      <DialogContent
+        className="sm:!max-w-xl"
+        showCloseButton={false}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}>
         {/* Step 1 — How did you hear about HFSE */}
         {step === 1 && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -162,20 +173,7 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
 
             <div className="space-y-3 pt-5">
               <div className="flex flex-wrap gap-2">
-                {[
-                  "Google / Search Engine",
-                  "Facebook",
-                  "Instagram",
-                  "Word of Mouth (Friend / Colleague)",
-                  "Current / Former HFSE Parent",
-                  "Sibling Enrolled at HFSE",
-                  "Referral",
-                  "Walk-in / Open House",
-                  "Education Fair",
-                  "Education Agent / Consultant",
-                  "Other (Please specify)",
-                ].map((option) => {
-                  const value = option === "Other (Please specify)" ? "Other" : option;
+                {howDidYouKnowAboutUs.map(({ label: option, value }) => {
                   const isSelected = howDidYouKnowAboutHFSEIS === value;
 
                   return (
@@ -229,21 +227,14 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
             </div>
 
             <div className="flex items-center justify-between gap-3 pt-6">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleSkip}
-                className="px-6 py-5 rounded-xl font-semibold text-muted-foreground">
-                Skip for now
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                {canLeaveStepOne ? "Thanks — one more quick question." : "Please pick an option to continue."}
+              </p>
 
               <Button
                 type="button"
                 onClick={() => setStep(2)}
-                disabled={
-                  (howDidYouKnowAboutHFSEIS === "Referral" && !referrerName.trim()) ||
-                  (howDidYouKnowAboutHFSEIS === "Other" && !otherSource.trim())
-                }
+                disabled={!canLeaveStepOne}
                 className="px-8 py-5 rounded-xl font-bold shadow-lg shadow-primary/20 gap-2">
                 Next
                 <ArrowRight className="w-4 h-4" />
@@ -374,6 +365,21 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
               </Button>
 
               <div className="flex items-center gap-2">
+                {/*
+                  The rating stays optional — only the step 1 source is required. Without this the
+                  removal of "Skip for now" would have silently made rating mandatory too, trapping
+                  a parent who answered the source but doesn't want to rate. This still submits, so
+                  the source is persisted either way.
+                */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={submitFeedback}
+                  disabled={isPending}
+                  className="px-4 py-5 rounded-xl font-semibold text-muted-foreground">
+                  Skip feedback
+                </Button>
+
                 <Button
                   disabled={isPending || !selectedRating}
                   className="px-8 py-5 rounded-xl font-bold shadow-lg shadow-primary/20">
