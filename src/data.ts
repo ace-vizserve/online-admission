@@ -304,3 +304,23 @@ export const preferredPaymentMethod = [
   { label: "GIRO (Not applicable to Enrolment Fees)", value: "GIRO" },
   { label: "Credit/Debit Card ( 3% platform fee)", value: "Credit/Debit Card Payment" },
 ] as const;
+
+/**
+ * Marketing-attribution sources for the Enrollment Information step. The labels are the eleven the
+ * post-submission feedback survey used verbatim, before that question moved into the wizard where it
+ * can actually be enforced. "Other (Please specify)" carries the value "Other" so the free-text
+ * answer can be collapsed into howDidYouKnowAboutHFSEIS at submit — see buildEnrolmentApplicationPayload.
+ */
+export const howDidYouKnowAboutUs = [
+  { label: "Google / Search Engine", value: "Google / Search Engine" },
+  { label: "Facebook", value: "Facebook" },
+  { label: "Instagram", value: "Instagram" },
+  { label: "Word of Mouth (Friend / Colleague)", value: "Word of Mouth (Friend / Colleague)" },
+  { label: "Current / Former HFSE Parent", value: "Current / Former HFSE Parent" },
+  { label: "Sibling Enrolled at HFSE", value: "Sibling Enrolled at HFSE" },
+  { label: "Referral", value: "Referral" },
+  { label: "Walk-in / Open House", value: "Walk-in / Open House" },
+  { label: "Education Fair", value: "Education Fair" },
+  { label: "Education Agent / Consultant", value: "Education Agent / Consultant" },
+  { label: "Other (Please specify)", value: "Other" },
+] as const;

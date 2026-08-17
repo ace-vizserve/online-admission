@@ -1708,9 +1708,7 @@ export async function submitParentFeedback({
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    console.log(enroleeNumber, academicYear);
-
-    const { data, error, count } = await supabase
+    const { error } = await supabase
       .from(`${academicYear}_enrolment_applications`)
       .update({
         howDidYouKnowAboutHFSEIS,
@@ -1723,8 +1721,6 @@ export async function submitParentFeedback({
       .eq("enroleeNumber", enroleeNumber)
       .select();
 
-    console.log({ data, count, error });
-
     if (error) {
       throw new Error(error.message);
     }
@@ -1735,5 +1731,11 @@ export async function submitParentFeedback({
   } catch (error) {
     const err = error as AuthError;
     toast.error(err.message);
+    // Re-thrown deliberately (mirrors `updateEnrolmentApplication` above): the caller's
+    // `useMutation` must see this as a failure. howDidYouKnowAboutHFSEIS is a required answer, and
+    // this dialog navigates away in `onSuccess` — swallowing the error would send the parent to the
+    // dashboard having recorded nothing, which is the exact blank-source case this dialog exists to
+    // prevent. Failing keeps the dialog open so they can retry.
+    throw err;
   }
 }
