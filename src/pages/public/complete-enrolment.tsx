@@ -90,14 +90,14 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
   "Primary Four",
   "Primary Five",
   "Primary Six",
-  "Secondary One",
-  "Secondary Two",
-  "Secondary Three",
-  "Secondary Four",
   "HFSE International Education Programme – Year 1 (equivalent to K2)",
   "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
 ];
 const WHOLE_DAY_CLASS_LEVEL = [
+  "Secondary One",
+  "Secondary Two",
+  "Secondary Three",
+  "Secondary Four",
   "HFSE International Education Programme – Year 8",
   "HFSE International Education Programme – Year 9",
   "HFSE International Education Programme – Year 10",
@@ -852,7 +852,9 @@ function RecoveryForm({
         return;
       }
       if (MORNING_AFTERNOON_CLASS_LEVEL.includes(levelApplied) && preferredSchedule === "Whole Day") {
-        toast.warning("Schedule not available!", { description: "'Whole Day' is only available for secondary students." });
+        toast.warning("Schedule not available!", {
+          description: "'Whole Day' is not available for the selected grade level.",
+        });
         form.setError("enrollmentInfo.preferredSchedule", { message: "Please select your preferred schedule." });
         setActiveTab("enrollmentInfo");
         return;

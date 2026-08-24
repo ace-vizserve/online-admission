@@ -59,16 +59,16 @@ const MORNING_AFTERNOON_CLASS_LEVEL = [
   "Primary Five",
   "Primary Six",
 
-  "Secondary One",
-  "Secondary Two",
-  "Secondary Three",
-  "Secondary Four",
-
   "HFSE International Education Programme – Year 1 (equivalent to K2)",
   "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
 ];
 
 const WHOLE_DAY_CLASS_LEVEL = [
+  "Secondary One",
+  "Secondary Two",
+  "Secondary Three",
+  "Secondary Four",
+
   "HFSE International Education Programme – Year 8",
   "HFSE International Education Programme – Year 9",
   "HFSE International Education Programme – Year 10",
@@ -200,7 +200,7 @@ function OpenHouseEnrollmentInformation() {
 
     if (MORNING_AFTERNOON_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule === "Whole Day") {
       toast.warning("Schedule Not Available!", {
-        description: "'Whole Day' is only available for secondary students.",
+        description: "'Whole Day' is not available for the selected grade level.",
       });
       form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
       return;

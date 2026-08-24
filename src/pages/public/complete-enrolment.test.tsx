@@ -316,8 +316,16 @@ describe("scheduleOptionsForLevel", () => {
     expect(scheduleOptionsForLevel("HFSE International Education Programme – Year 9")).toEqual(["Whole Day"]);
   });
 
-  it("offers Morning/Afternoon for standard levels", () => {
+  it("offers only Whole Day for Secondary One to Four", () => {
+    expect(scheduleOptionsForLevel("Secondary One")).toEqual(["Whole Day"]);
+    expect(scheduleOptionsForLevel("Secondary Two")).toEqual(["Whole Day"]);
+    expect(scheduleOptionsForLevel("Secondary Three")).toEqual(["Whole Day"]);
+    expect(scheduleOptionsForLevel("Secondary Four")).toEqual(["Whole Day"]);
+  });
+
+  it("offers Morning/Afternoon for primary and younger levels", () => {
     expect(scheduleOptionsForLevel("Primary One")).toEqual(["Morning", "Afternoon"]);
+    expect(scheduleOptionsForLevel("YoungStarter Little Star")).toEqual(["Morning", "Afternoon"]);
   });
 });
 
