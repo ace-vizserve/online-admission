@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/lib/client";
+import { scheduleOptionsForLevel } from "@/lib/schedule-rules";
 import { cn } from "@/lib/utils";
 import {
   campusDevelopmentFeePrimary,
@@ -43,9 +44,10 @@ import { z } from "zod";
  * `recoveryFormSchema` in zod-schema.ts) and a fresh, compact set of fields — see that
  * schema's comment for the scope this deliberately leaves out (VizSchool categories,
  * discounts, referrer, learning needs, PDF-merge uploads). The level↔classType↔schedule↔fee
- * business rules ARE ported (see classTypeOptionsForLevel/scheduleOptionsForLevel/
- * feeOptionsForLevel/contractSignatoryOptions below and the guard-rails in onSubmit),
- * mirroring src/pages/private/enrol-student/new/enrollment-information.tsx exactly. The
+ * business rules ARE ported (see classTypeOptionsForLevel/feeOptionsForLevel/
+ * contractSignatoryOptions below and the guard-rails in onSubmit), mirroring
+ * src/pages/private/enrol-student/new/enrollment-information.tsx exactly; the schedule
+ * rules are shared outright via scheduleOptionsForLevel in src/lib/schedule-rules.ts. The
  * visual language (numbered stepper, plain uppercase FormLabels, no per-field Card boxing,
  * soft-tint Alert banner) mirrors that same wizard + new-student-steps.tsx, rather than the
  * more compact admin-tool style used elsewhere in this app — this page is parent-facing.
@@ -78,30 +80,10 @@ const SECTION_LABEL: Record<RecoverySection, string> = {
   uploads: "Documents",
 };
 
-// Class-level → classType/schedule/fee business rules, ported verbatim from the authenticated
-// wizard's enrollment-info step (src/pages/private/enrol-student/new/enrollment-information.tsx)
-// so a level applied here maps to the exact same allowed class types, schedules, and fees.
-const MORNING_AFTERNOON_CLASS_LEVEL = [
-  "YoungStarter Little Star",
-  "YoungStarter Junior Star",
-  "Primary One",
-  "Primary Two",
-  "Primary Three",
-  "Primary Four",
-  "Primary Five",
-  "Primary Six",
-  "HFSE International Education Programme – Year 1 (equivalent to K2)",
-  "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
-];
-const WHOLE_DAY_CLASS_LEVEL = [
-  "Secondary One",
-  "Secondary Two",
-  "Secondary Three",
-  "Secondary Four",
-  "HFSE International Education Programme – Year 8",
-  "HFSE International Education Programme – Year 9",
-  "HFSE International Education Programme – Year 10",
-];
+// Class-level → classType/fee business rules, ported verbatim from the authenticated wizard's
+// enrollment-info step (src/pages/private/enrol-student/new/enrollment-information.tsx) so a level
+// applied here maps to the exact same allowed class types and fees. The schedule rules come from
+// @/lib/schedule-rules, which that wizard uses too.
 const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
 const CAMBRIDGE_YEAR_1_LEVELS = ["HFSE International Education Programme – Year 1 (equivalent to K2)"];
 const CAMBRIDGE_YEAR_2_LEVELS = ["HFSE International Education Programme – Year 2 (equivalent to Primary One)"];
@@ -153,12 +135,6 @@ export function classTypeOptionsForLevel(level: string): { label: string; value:
     }
     return options;
   }
-  return [];
-}
-
-export function scheduleOptionsForLevel(level: string): string[] {
-  if (WHOLE_DAY_CLASS_LEVEL.includes(level)) return ["Whole Day"];
-  if (MORNING_AFTERNOON_CLASS_LEVEL.includes(level)) return ["Morning", "Afternoon"];
   return [];
 }
 
@@ -843,17 +819,11 @@ function RecoveryForm({
         setActiveTab("enrollmentInfo");
         return;
       }
-      if (WHOLE_DAY_CLASS_LEVEL.includes(levelApplied) && preferredSchedule !== "Whole Day") {
-        toast.warning("Schedule mismatch!", {
-          description: "Only 'Whole Day' schedule is available for the selected grade level.",
-        });
-        form.setError("enrollmentInfo.preferredSchedule", { message: "Please select your preferred schedule." });
-        setActiveTab("enrollmentInfo");
-        return;
-      }
-      if (MORNING_AFTERNOON_CLASS_LEVEL.includes(levelApplied) && preferredSchedule === "Whole Day") {
+      const allowedSchedules = scheduleOptionsForLevel(levelApplied);
+      if (allowedSchedules.length > 0 && !allowedSchedules.includes(preferredSchedule)) {
+        const allowed = allowedSchedules.map((schedule) => `'${schedule}'`).join(" or ");
         toast.warning("Schedule not available!", {
-          description: "'Whole Day' is not available for the selected grade level.",
+          description: `Only ${allowed} is available for the selected grade level.`,
         });
         form.setError("enrollmentInfo.preferredSchedule", { message: "Please select your preferred schedule." });
         setActiveTab("enrollmentInfo");

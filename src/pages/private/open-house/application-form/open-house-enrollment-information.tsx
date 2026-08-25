@@ -35,6 +35,7 @@ import {
 } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
+import { scheduleOptionsForLevel } from "@/lib/schedule-rules";
 import { cn } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
@@ -47,32 +48,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
-
-const MORNING_AFTERNOON_CLASS_LEVEL = [
-  "YoungStarter Little Star",
-  "YoungStarter Junior Star",
-
-  "Primary One",
-  "Primary Two",
-  "Primary Three",
-  "Primary Four",
-  "Primary Five",
-  "Primary Six",
-
-  "HFSE International Education Programme – Year 1 (equivalent to K2)",
-  "HFSE International Education Programme – Year 2 (equivalent to Primary One)",
-];
-
-const WHOLE_DAY_CLASS_LEVEL = [
-  "Secondary One",
-  "Secondary Two",
-  "Secondary Three",
-  "Secondary Four",
-
-  "HFSE International Education Programme – Year 8",
-  "HFSE International Education Programme – Year 9",
-  "HFSE International Education Programme – Year 10",
-];
 
 const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
 
@@ -190,17 +165,13 @@ function OpenHouseEnrollmentInformation() {
       return;
     }
 
-    if (WHOLE_DAY_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule !== "Whole Day") {
-      toast.warning("Schedule Mismatch!", {
-        description: "Only 'Whole Day' schedule is available for the selected grade level.",
-      });
-      form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
-      return;
-    }
+    const allowedSchedules = scheduleOptionsForLevel(values.levelApplied);
 
-    if (MORNING_AFTERNOON_CLASS_LEVEL.includes(values.levelApplied) && values.preferredSchedule === "Whole Day") {
+    if (allowedSchedules.length > 0 && !allowedSchedules.includes(values.preferredSchedule)) {
+      const allowed = allowedSchedules.map((schedule) => `'${schedule}'`).join(" or ");
+
       toast.warning("Schedule Not Available!", {
-        description: "'Whole Day' is not available for the selected grade level.",
+        description: `Only ${allowed} is available for the selected grade level.`,
       });
       form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
       return;
@@ -459,17 +430,11 @@ function OpenHouseEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {MORNING_AFTERNOON_CLASS_LEVEL.includes(selectedLevel) && (
-                              <>
-                                <SelectItem value={"Morning"}>Morning</SelectItem>
-
-                                <SelectItem value={"Afternoon"}>Afternoon</SelectItem>
-                              </>
-                            )}
-
-                            {WHOLE_DAY_CLASS_LEVEL.includes(selectedLevel) && (
-                              <SelectItem value={"Whole Day"}>Whole Day</SelectItem>
-                            )}
+                            {scheduleOptionsForLevel(selectedLevel).map((schedule) => (
+                              <SelectItem key={schedule} value={schedule}>
+                                {schedule}
+                              </SelectItem>
+                            ))}
 
                             {selectedLevel == "" && (
                               <SelectItem disabled value={"None"}>

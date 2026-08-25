@@ -15,7 +15,6 @@ import CompleteEnrolment, {
   classTypeOptionsForLevel,
   contractSignatoryOptions,
   feeOptionsForLevel,
-  scheduleOptionsForLevel,
 } from "./complete-enrolment";
 import { getRecoveryToken } from "@/actions/recovery";
 import { recoveryFormSchema } from "@/zod-schema";
@@ -308,24 +307,6 @@ describe("classTypeOptionsForLevel", () => {
 
   it("returns nothing before a level is chosen", () => {
     expect(classTypeOptionsForLevel("")).toEqual([]);
-  });
-});
-
-describe("scheduleOptionsForLevel", () => {
-  it("offers only Whole Day for GEP Year 8-10", () => {
-    expect(scheduleOptionsForLevel("HFSE International Education Programme – Year 9")).toEqual(["Whole Day"]);
-  });
-
-  it("offers only Whole Day for Secondary One to Four", () => {
-    expect(scheduleOptionsForLevel("Secondary One")).toEqual(["Whole Day"]);
-    expect(scheduleOptionsForLevel("Secondary Two")).toEqual(["Whole Day"]);
-    expect(scheduleOptionsForLevel("Secondary Three")).toEqual(["Whole Day"]);
-    expect(scheduleOptionsForLevel("Secondary Four")).toEqual(["Whole Day"]);
-  });
-
-  it("offers Morning/Afternoon for primary and younger levels", () => {
-    expect(scheduleOptionsForLevel("Primary One")).toEqual(["Morning", "Afternoon"]);
-    expect(scheduleOptionsForLevel("YoungStarter Little Star")).toEqual(["Morning", "Afternoon"]);
   });
 });
 
