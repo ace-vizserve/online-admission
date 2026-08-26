@@ -819,11 +819,11 @@ function RecoveryForm({
         setActiveTab("enrollmentInfo");
         return;
       }
-      const allowedSchedules = scheduleOptionsForLevel(levelApplied);
+      const allowedSchedules = scheduleOptionsForLevel(levelApplied, classType);
       if (allowedSchedules.length > 0 && !allowedSchedules.includes(preferredSchedule)) {
         const allowed = allowedSchedules.map((schedule) => `'${schedule}'`).join(" or ");
         toast.warning("Schedule not available!", {
-          description: `Only ${allowed} is available for the selected grade level.`,
+          description: `Only ${allowed} is available for the selected grade level and class type.`,
         });
         form.setError("enrollmentInfo.preferredSchedule", { message: "Please select your preferred schedule." });
         setActiveTab("enrollmentInfo");
@@ -915,6 +915,7 @@ function RecoveryForm({
   const medicalChecklist = form.watch("studentInfo.medicalInformation.medicalChecklist");
   const religion = form.watch("studentInfo.studentDetails.religion");
   const levelApplied = form.watch("enrollmentInfo.levelApplied");
+  const selectedClassType = form.watch("enrollmentInfo.classType");
   const availStudentCare = form.watch("enrollmentInfo.availStudentCare");
   const noFatherInfo = form.watch("familyInfo.fatherInfo.noFatherInfo");
   const noGuardianInfo = form.watch("familyInfo.guardianInfo.noGuardianInfo");
@@ -1374,7 +1375,7 @@ function RecoveryForm({
                         control={form.control}
                         name="enrollmentInfo.preferredSchedule"
                         label="Preferred schedule"
-                        options={scheduleOptionsForLevel(levelApplied)}
+                        options={scheduleOptionsForLevel(levelApplied, selectedClassType)}
                         placeholder={levelApplied ? "Select a schedule" : "Select a class level first"}
                       />
                     </div>
