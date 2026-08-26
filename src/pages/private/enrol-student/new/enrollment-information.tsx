@@ -196,13 +196,13 @@ function EnrollmentInformation() {
       return;
     }
 
-    const allowedSchedules = scheduleOptionsForLevel(values.levelApplied);
+    const allowedSchedules = scheduleOptionsForLevel(values.levelApplied, values.classType);
 
     if (allowedSchedules.length > 0 && !allowedSchedules.includes(values.preferredSchedule)) {
       const allowed = allowedSchedules.map((schedule) => `'${schedule}'`).join(" or ");
 
       toast.warning("Schedule Not Available!", {
-        description: `Only ${allowed} is available for the selected grade level.`,
+        description: `Only ${allowed} is available for the selected grade level and class type.`,
       });
       form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
       return;
@@ -459,7 +459,7 @@ function EnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {scheduleOptionsForLevel(selectedLevel).map((schedule) => (
+                            {scheduleOptionsForLevel(selectedLevel, form.watch("classType")).map((schedule) => (
                               <SelectItem key={schedule} value={schedule}>
                                 {schedule}
                               </SelectItem>
