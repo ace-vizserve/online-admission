@@ -351,3 +351,46 @@ describe("mutation success — only runs the success side-effects when the actio
     expect(result.current.isOpen).toBe(false);
   });
 });
+
+describe("canSave — the Save changes gate", () => {
+  // Parents kept reading "file selected" as "file uploaded" and clicking the big Save button while
+  // the dropzone's Upload button was still pending, landing on a validation toast that pointed at a
+  // file they could plainly see. `canSave` is what lets the dialog disable Save instead.
+  function renderIdPictureDialog() {
+    return renderHook(
+      () =>
+        useReuploadDialog({
+          cfg: idPictureCfg,
+          academicYear: "ay2026",
+          enroleeNumber: "E260050",
+          queryKeysToInvalidate: [],
+          emailSection: "Student Documents",
+        }),
+      { wrapper },
+    );
+  }
+
+  it("is false while a file has been selected but not yet uploaded", () => {
+    const { result } = renderIdPictureDialog();
+    expect(result.current.canSave).toBe(false);
+  });
+
+  it("is true once the upload has succeeded", async () => {
+    uploadIsSuccess = true;
+    uploadSuccesses = ["http://example.com/id.png"];
+
+    const { result } = renderIdPictureDialog();
+
+    await waitFor(() => expect(result.current.canSave).toBe(true));
+  });
+
+  it("stays in lockstep with what submitReupload actually accepts", () => {
+    // The gate would be worse than useless if it disagreed with the validation behind it — a
+    // disabled button on a submittable form, or an enabled one that still toasts.
+    const { result } = renderIdPictureDialog();
+
+    expect(result.current.canSave).toBe(false);
+    act(() => result.current.submitReupload(fakeEvent()));
+    expect(studentReuploadDocuments).not.toHaveBeenCalled();
+  });
+});

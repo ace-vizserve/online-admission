@@ -57,7 +57,7 @@ export function ReuploadDialog({
   emailSection,
 }: ReuploadDialogProps) {
   const dialog = useReuploadDialog({ cfg, academicYear, enroleeNumber, existingFileUrl, queryKeysToInvalidate, emailSection });
-  const { isOpen, setIsOpen, uploadProps, typeValue, setTypeValue, numberValue, setNumberValue, expiryValue, setExpiryValue, submitReupload, isPending, siblingFieldNames } = dialog;
+  const { isOpen, setIsOpen, uploadProps, typeValue, setTypeValue, numberValue, setNumberValue, expiryValue, setExpiryValue, submitReupload, isPending, canSave, siblingFieldNames } = dialog;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -157,8 +157,17 @@ export function ReuploadDialog({
             </div>
           )}
 
+          {/* A disabled Save button with no explanation is its own dead end: parents read "file
+              selected" as "file uploaded", so the reason has to name the button they still owe us. */}
+          {!canSave && (
+            <p className="text-center text-xs font-medium text-muted-foreground">
+              Click <strong>Upload files</strong> above to finish uploading your document.
+            </p>
+          )}
+
           <DialogFooter>
             <Button
+              disabled={!canSave || isPending}
               className="w-full py-6 rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 text-base font-bold"
               type="submit">
               {isPending ? (

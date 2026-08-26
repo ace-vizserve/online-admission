@@ -155,6 +155,11 @@ export function useReuploadDialog({
     mutate(payload);
   }
 
+  // `mainValue` is only ever set by the `isSuccess` effect above, so it is exactly "the file has
+  // finished uploading to storage" — the same condition `submitReupload` bails on. Exposed so the
+  // dialog can disable Save changes instead of letting parents click it into a validation toast.
+  const canSave = Boolean(mainValue);
+
   return {
     isOpen,
     setIsOpen,
@@ -167,6 +172,7 @@ export function useReuploadDialog({
     setExpiryValue,
     submitReupload,
     isPending,
+    canSave,
     siblingFieldNames: { type, number, expiry },
   };
 }
