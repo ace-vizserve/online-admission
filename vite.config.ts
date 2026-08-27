@@ -81,6 +81,7 @@ export default defineConfig({
         "src/components/private/navbar/nav-main.tsx",
         "src/lib/declaration-rules.ts",
         "src/lib/declaration-steps.ts",
+        "src/lib/declaration-submit-failure.ts",
         "src/actions/declaration-payload.ts",
       ],
       thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },

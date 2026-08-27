@@ -15,17 +15,20 @@ import { MemoryRouter, Route, Routes } from "react-router";
 import { addDays, format, startOfMonth, subMonths } from "date-fns";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { useEnrolledStudents, fileDeclaration, uploadEvidence } = vi.hoisted(() => ({
+const { useEnrolledStudents, fileDeclaration, uploadEvidence, toastError, toastWarning } = vi.hoisted(() => ({
   useEnrolledStudents: vi.fn(),
   fileDeclaration: vi.fn(),
   uploadEvidence: vi.fn(),
+  toastError: vi.fn(),
+  toastWarning: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-enrolled-students", () => ({ useEnrolledStudents }));
+vi.mock("sonner", () => ({ toast: { error: toastError, warning: toastWarning, success: vi.fn(), info: vi.fn() } }));
 vi.mock("@/actions/declarations", () => ({
   fileDeclaration,
   uploadEvidence,
-  EVIDENCE_MIME_TYPES: ["application/pdf"],
+  EVIDENCE_ACCEPT: { "application/pdf": [".pdf"] },
   MAX_EVIDENCE_BYTES: 10 * 1024 * 1024,
 }));
 
@@ -106,6 +109,8 @@ beforeEach(() => {
   useEnrolledStudents.mockReset().mockReturnValue({ data: [ANA], isPending: false, error: null });
   fileDeclaration.mockReset().mockResolvedValue({ filingGroupId: "9e7c", declarations: [] });
   uploadEvidence.mockReset();
+  toastError.mockReset();
+  toastWarning.mockReset();
 });
 
 describe("FileDeclaration — who", () => {
@@ -309,7 +314,10 @@ describe("FileDeclaration — the certificate", () => {
     uploadEvidence.mockResolvedValue("declarations/8f2a/c41b.pdf");
     await reachAttach();
 
-    await userEvent.upload(screen.getByLabelText(/upload/i), certificate);
+    // FileUploader keeps its input hidden behind the drop zone, so it is reached the same way
+    // file-input.test.tsx reaches it.
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await userEvent.upload(input, certificate);
 
     expect(await screen.findByText(/certificate attached/i)).toBeInTheDocument();
     await next();
@@ -390,5 +398,75 @@ describe("FileDeclaration — the accepted date window", () => {
     await userEvent.click(previousMonth);
 
     expect(screen.getByRole("button", { name: dayLabel(LONG_AGO) })).toBeDisabled();
+  });
+});
+
+describe("FileDeclaration — how a failed submit is shown", () => {
+  /** Drives a one-day absence to the review step and submits it. */
+  async function submitOnce() {
+    renderWizard();
+    await next();
+    await next();
+    await pickDay(TODAY);
+    await next();
+    await next();
+    await next();
+    await userEvent.click(screen.getByRole("button", { name: /submit/i }));
+  }
+
+  it("does not dress an already-filed clash as a breakage", async () => {
+    const sentence = "Ana Reyes has already been filed for on 2026-08-28 to 2026-08-31.";
+    fileDeclaration.mockRejectedValue(new SisError(sentence, 409));
+
+    await submitOnce();
+
+    expect(await screen.findByText(sentence)).toBeInTheDocument();
+    // A clash is not the parent's mistake, so it warns rather than erroring.
+    await waitFor(() => expect(toastWarning).toHaveBeenCalled());
+    expect(toastError).not.toHaveBeenCalled();
+  });
+
+  it("offers a way to the existing filing, since that is what the parent needs to see", async () => {
+    fileDeclaration.mockRejectedValue(new SisError("Already filed for those days.", 409));
+
+    await submitOnce();
+
+    expect(await screen.findByRole("link", { name: /my declarations/i })).toHaveAttribute(
+      "href",
+      "/admission/services/declarations",
+    );
+  });
+
+  it("offers a retry when the school's system faulted, because retrying may work", async () => {
+    fileDeclaration.mockRejectedValue(new SisError("Could not save that. Please try again.", 500));
+
+    await submitOnce();
+
+    expect(await screen.findByRole("button", { name: /try again/i })).toBeInTheDocument();
+    await waitFor(() => expect(toastError).toHaveBeenCalled());
+  });
+
+  it("does not offer a retry for a child the school will not accept", async () => {
+    fileDeclaration.mockRejectedValue(
+      new SisError("One of the children selected is not on your account.", 403),
+    );
+
+    await submitOnce();
+
+    expect(await screen.findByText(/not on your account/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /try again/i })).not.toBeInTheDocument();
+  });
+
+  it("announces a form error too, so it is obvious the submit did not go through", async () => {
+    fileDeclaration.mockRejectedValue(
+      new SisError("Please check the form.", 400, [
+        { path: "endDate", message: "The last day cannot be before the first day." },
+      ]),
+    );
+
+    await submitOnce();
+
+    expect(await screen.findByText("The last day cannot be before the first day.")).toBeInTheDocument();
+    await waitFor(() => expect(toastError).toHaveBeenCalled());
   });
 });

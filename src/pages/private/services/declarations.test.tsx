@@ -179,3 +179,69 @@ describe("Declarations — filing a new one", () => {
     expect(screen.getByRole("link", { name: /file a declaration/i })).toBeInTheDocument();
   });
 });
+
+/**
+ * Declarations are records, not a feed: a parent scans them looking up whether a particular
+ * child's days were already told to the school. That is a table's job — one row each, aligned
+ * columns, sortable — rather than a stack of cards.
+ */
+describe("Declarations — the table", () => {
+  it("lays the filings out as rows under column headers", () => {
+    useDeclarations.mockReturnValue({ data: [declaration()], isPending: false, error: null });
+
+    renderPage();
+
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /child/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /when/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /status/i })).toBeInTheDocument();
+    // One header row plus one filing.
+    expect(screen.getAllByRole("row")).toHaveLength(2);
+  });
+
+  it("gives each filing its own row", () => {
+    useDeclarations.mockReturnValue({
+      data: [declaration({ id: "a" }), declaration({ id: "b", studentName: "Leo Reyes" })],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.getAllByRole("row")).toHaveLength(3);
+  });
+
+  it("narrows to one status, so a parent can see just what is still with the school", async () => {
+    const user = (await import("@testing-library/user-event")).default;
+    useDeclarations.mockReturnValue({
+      data: [
+        declaration({ id: "a", studentName: "Ana Reyes", status: "pending", statusLabel: "With the school" }),
+        declaration({ id: "b", studentName: "Leo Reyes", status: "approved", statusLabel: "Approved" }),
+      ],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+    await user.click(screen.getByRole("combobox", { name: /status/i }));
+    await user.click(await screen.findByRole("option", { name: /^Approved$/ }));
+
+    expect(screen.getByText("Leo Reyes")).toBeInTheDocument();
+    expect(screen.queryByText("Ana Reyes")).not.toBeInTheDocument();
+  });
+
+  it("says so when a filter hides everything, rather than showing a bare table", async () => {
+    const user = (await import("@testing-library/user-event")).default;
+    useDeclarations.mockReturnValue({
+      data: [declaration({ status: "approved", statusLabel: "Approved" })],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+    await user.click(screen.getByRole("combobox", { name: /status/i }));
+    await user.click(await screen.findByRole("option", { name: /not approved/i }));
+
+    expect(await screen.findByText(/no declarations match/i)).toBeInTheDocument();
+  });
+});

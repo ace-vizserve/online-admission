@@ -51,8 +51,17 @@ export async function listDeclarations(filters: DeclarationFilters = {}): Promis
   return payload.declarations ?? [];
 }
 
-/** What the SIS accepts as a certificate, mirrored into the file picker's `accept`. */
-export const EVIDENCE_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+/**
+ * What the SIS accepts as a certificate, in react-dropzone's shape so it can be handed straight
+ * to `FileUploader`. Extensions matter as well as MIME types: some phones hand over a photo with
+ * an empty or wrong type, and the extension is then the only thing to match on.
+ */
+export const EVIDENCE_ACCEPT: Record<string, string[]> = {
+  "application/pdf": [".pdf"],
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/webp": [".webp"],
+};
 /** The SIS's own ceiling. Deliberately NOT the portal's 4 MB `MAX_UPLOAD_FILE_SIZE`. */
 export const MAX_EVIDENCE_BYTES = 10 * 1024 * 1024;
 

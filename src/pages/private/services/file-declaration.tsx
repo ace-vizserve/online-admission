@@ -1,15 +1,11 @@
-import {
-  EVIDENCE_MIME_TYPES,
-  MAX_EVIDENCE_BYTES,
-  fileDeclaration,
-  uploadEvidence,
-} from "@/actions/declarations";
+import { EVIDENCE_ACCEPT, MAX_EVIDENCE_BYTES, fileDeclaration, uploadEvidence } from "@/actions/declarations";
 import { toDeclarationPayload, type DeclarationFormValues } from "@/actions/declaration-payload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
 import { CountryDropdown } from "@/components/ui/country-dropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,13 +16,26 @@ import { useEnrolledStudents } from "@/hooks/use-enrolled-students";
 import { formatDeclarationDateRange } from "@/lib/declaration-dates";
 import { MAX_DAYS_AHEAD, MAX_DAYS_IN_PAST, MAX_NOTE_LENGTH } from "@/lib/declaration-rules";
 import { fieldsForStep, visibleSteps } from "@/lib/declaration-steps";
-import { SisError } from "@/lib/sis";
+import { classifySubmitFailure, type SubmitFailure } from "@/lib/declaration-submit-failure";
 import { cn } from "@/lib/utils";
 import { declarationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addDays, format, startOfToday, subDays } from "date-fns";
-import { ArrowLeft, ArrowRight, CalendarOff, CheckCircle2, Loader2, Paperclip, Plane } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  CalendarClock,
+  CalendarOff,
+  CheckCircle2,
+  CloudUpload,
+  ListChecks,
+  Loader2,
+  Paperclip,
+  Plane,
+  RotateCcw,
+} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
@@ -68,8 +77,9 @@ export default function FileDeclaration() {
 
   const [stepIndex, setStepIndex] = useState(0);
   const [filed, setFiled] = useState<{ alreadyFiled: boolean } | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [failure, setFailure] = useState<SubmitFailure | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [certificate, setCertificate] = useState<File[] | null>(null);
 
   // `isPending` only flips after a re-render, so a same-tick double click could otherwise fire
   // the mutation twice. The SIS de-duplicates, but this keeps the second request from happening.
@@ -107,15 +117,13 @@ export default function FileDeclaration() {
       setFiled({ alreadyFiled: response.alreadyFiled === true });
     },
     onError: (error) => {
-      if (!(error instanceof SisError)) {
-        setSubmitError("Something went wrong. Please try again.");
-        return;
-      }
+      const next = classifySubmitFailure(error);
+      setFailure(next);
 
-      if (error.status === 400 && error.issues?.length) {
+      if (next.kind === "fields") {
         // The SIS writes these for parents and maintains them — shown verbatim, never rewritten.
         let firstStep: number | null = null;
-        for (const issue of error.issues) {
+        for (const issue of next.issues) {
           const field = ISSUE_FIELD[issue.path];
           if (!field) continue;
           form.setError(field, { message: issue.message });
@@ -125,19 +133,22 @@ export default function FileDeclaration() {
         }
         // Without this the parent sits on the review step and never sees the message.
         if (firstStep !== null) setStepIndex(firstStep);
-        setSubmitError(error.message);
+        toast.error("Check the highlighted answer");
         return;
       }
 
-      if (error.status === 429) {
-        const wait = error.retryAfterSeconds;
-        setSubmitError(
-          wait ? `Too many attempts. Please try again in ${wait} seconds.` : "Too many attempts. Please try again shortly.",
-        );
+      // A clash is not the parent's mistake — the school simply already has those days.
+      if (next.kind === "conflict") {
+        toast.warning("Already told the school about those days");
         return;
       }
 
-      setSubmitError(error.message);
+      if (next.kind === "rateLimited") {
+        toast.warning(next.message);
+        return;
+      }
+
+      toast.error(next.kind === "forbidden" ? "That child cannot be filed for" : "Could not send this");
     },
   });
 
@@ -149,19 +160,28 @@ export default function FileDeclaration() {
   }
 
   function goBack() {
-    setSubmitError(null);
+    setFailure(null);
     setStepIndex((i) => Math.max(i - 1, 0));
   }
 
-  async function onPickCertificate(file: File | null) {
-    if (!file) return;
+  async function onPickCertificate(files: File[] | null) {
+    setCertificate(files);
+    const file = files?.[0];
+
+    // Clearing the file must clear the path too, or a removed certificate would still be filed.
+    if (!file) {
+      form.setValue("evidencePath", "", { shouldValidate: form.formState.isSubmitted });
+      return;
+    }
+
     setUploading(true);
     try {
       const path = await uploadEvidence(file);
       form.setValue("evidencePath", path, { shouldValidate: true });
     } catch (error) {
-      // The SIS's size/type sentences are already written for a parent.
+      // The SIS's size and type sentences are already written for a parent.
       toast.error(error instanceof Error ? error.message : "That file could not be uploaded.");
+      setCertificate(null);
     } finally {
       setUploading(false);
     }
@@ -200,7 +220,13 @@ export default function FileDeclaration() {
           {step === "when" && <StepWhen form={form} values={values} />}
           {step === "certificate" && <StepCertificate form={form} value={values.withMedical} />}
           {step === "attach" && (
-            <StepAttach form={form} values={values} uploading={uploading} onPickFile={onPickCertificate} />
+            <StepAttach
+              form={form}
+              values={values}
+              uploading={uploading}
+              certificate={certificate}
+              onPickFiles={onPickCertificate}
+            />
           )}
           {step === "destination" && <StepDestination form={form} values={values} />}
           {step === "note" && <StepNote form={form} value={values.parentNote} />}
@@ -208,13 +234,7 @@ export default function FileDeclaration() {
         </CardContent>
       </Card>
 
-      {submitError && (
-        <Card className="border-destructive/30 bg-destructive/5 shadow-sm">
-          <CardContent className="p-4">
-            <p className="text-sm text-destructive font-medium">{submitError}</p>
-          </CardContent>
-        </Card>
-      )}
+      {failure && <SubmitNotice failure={failure} onRetry={() => submit()} busy={submitting} />}
 
       <div className="flex items-center justify-between gap-3">
         {stepIndex > 0 ? (
@@ -236,7 +256,7 @@ export default function FileDeclaration() {
             disabled={submitting || uploading}
             onClick={() => {
               if (submitInFlight.current) return;
-              setSubmitError(null);
+              setFailure(null);
               submit();
             }}>
             {submitting && <Loader2 className="size-4 animate-spin" />}
@@ -246,6 +266,71 @@ export default function FileDeclaration() {
           <Button type="button" className="gap-2 font-bold" disabled={uploading} onClick={goNext}>
             Continue <ArrowRight className="size-4" />
           </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * What went wrong, told at the weight it deserves.
+ *
+ * A clash with an existing filing is the common case and is NOT a breakage — the school simply
+ * already has those days — so it reads as a caution pointing at the status list, not as a fault.
+ * Destructive styling is reserved for a refusal or a fault, and a retry is offered only where
+ * pressing submit again could plausibly work.
+ */
+function SubmitNotice({
+  failure,
+  onRetry,
+  busy,
+}: {
+  failure: SubmitFailure;
+  onRetry: () => void;
+  busy: boolean;
+}) {
+  const isCaution = failure.kind === "conflict" || failure.kind === "rateLimited";
+
+  const HEADINGS: Record<SubmitFailure["kind"], string> = {
+    fields: "Check the highlighted answer",
+    conflict: "Already sent to the school",
+    rateLimited: "Sent too many just now",
+    forbidden: "That child cannot be filed for",
+    failed: "Could not send this",
+  };
+
+  const Icon = failure.kind === "conflict" ? CalendarClock : AlertTriangle;
+
+  return (
+    <div
+      role="alert"
+      className={cn(
+        "flex gap-3 rounded-xl border p-4",
+        isCaution ? "border-amber-500/30 bg-amber-500/5" : "border-destructive/30 bg-destructive/5",
+      )}>
+      <Icon className={cn("size-5 shrink-0", isCaution ? "text-amber-600" : "text-destructive")} />
+
+      <div className="min-w-0 flex-1 space-y-2">
+        <p className={cn("text-sm font-bold tracking-tight", isCaution ? "text-amber-700" : "text-destructive")}>
+          {HEADINGS[failure.kind]}
+        </p>
+        <p className="text-sm leading-relaxed text-muted-foreground">{failure.message}</p>
+
+        {(failure.showsStatusList || failure.retryable) && (
+          <div className="flex flex-wrap gap-2 pt-0.5">
+            {failure.showsStatusList && (
+              <Button asChild size="sm" variant="outline" className="gap-1.5 font-semibold">
+                <Link to="/admission/services/declarations">
+                  <ListChecks className="size-3.5" /> My declarations
+                </Link>
+              </Button>
+            )}
+            {failure.retryable && (
+              <Button size="sm" variant="outline" disabled={busy} onClick={onRetry} className="gap-1.5 font-semibold">
+                <RotateCcw className="size-3.5" /> Try again
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -438,36 +523,61 @@ function StepAttach({
   form,
   values,
   uploading,
-  onPickFile,
+  certificate,
+  onPickFiles,
 }: {
   form: FormApi;
   values: DeclarationFormValues;
   uploading: boolean;
-  onPickFile: (file: File | null) => void;
+  certificate: File[] | null;
+  onPickFiles: (files: File[] | null) => void;
 }) {
   return (
     <Question
       title="Attach the certificate"
-      hint="A photo or PDF, a link, or both. Singapore's digital MCs come as an mc.gov.sg link.">
+      hint="A photo or a PDF, a link, or both. Singapore's digital MCs come as an mc.gov.sg link.">
       <div className="space-y-2">
-        <Label htmlFor="certificate-file">Upload</Label>
-        <Input
-          id="certificate-file"
-          type="file"
-          accept={EVIDENCE_MIME_TYPES.join(",")}
-          disabled={uploading}
-          onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-        />
-        <p className="text-xs text-muted-foreground">
-          PDF, JPG, PNG or WEBP, up to {Math.round(MAX_EVIDENCE_BYTES / (1024 * 1024))} MB.
-        </p>
+        {/* The app's own uploader, so this drops, previews and rejects files exactly the way the
+            enrolment document uploads do — including its friendly size and type messages. */}
+        <FileUploader
+          value={certificate}
+          onValueChange={onPickFiles}
+          dropzoneOptions={{
+            accept: EVIDENCE_ACCEPT,
+            maxFiles: 1,
+            maxSize: MAX_EVIDENCE_BYTES,
+            multiple: false,
+          }}
+          className="relative rounded-lg bg-background">
+          <FileInput className="border-2 border-dashed bg-muted">
+            <div className="flex w-full flex-col items-center justify-center p-8">
+              <CloudUpload className="size-8 text-muted-foreground" />
+              <p className="mt-2 text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">Choose a file</span> or drag it here
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                PDF, JPG, PNG or WEBP, up to {Math.round(MAX_EVIDENCE_BYTES / (1024 * 1024))} MB
+              </p>
+            </div>
+          </FileInput>
+
+          <FileUploaderContent>
+            {certificate?.map((file, index) => (
+              <FileUploaderItem key={file.name} index={index}>
+                <Paperclip className="size-4 shrink-0" />
+                <span className="truncate">{file.name}</span>
+              </FileUploaderItem>
+            ))}
+          </FileUploaderContent>
+        </FileUploader>
+
         {uploading && (
-          <p className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-            <Loader2 className="size-3 animate-spin" /> Uploading…
+          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Loader2 className="size-3 animate-spin" /> Sending it to the school…
           </p>
         )}
         {values.evidencePath && !uploading && (
-          <p className="text-xs text-emerald-600 font-medium inline-flex items-center gap-1.5">
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
             <Paperclip className="size-3" /> Certificate attached
           </p>
         )}
