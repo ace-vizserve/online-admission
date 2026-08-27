@@ -1,3 +1,10 @@
+import {
+  MAX_NOTE_LENGTH,
+  MAX_RANGE_DAYS,
+  MAX_STUDENTS,
+  filingWindowError,
+  rangeLengthDays,
+} from "@/lib/declaration-rules";
 import { isBefore } from "date-fns";
 import { z } from "zod";
 import { applicationTypes } from "./data";
@@ -1419,3 +1426,103 @@ export type VizSchoolMotherInformationSchema = z.infer<typeof vizSchoolMotherInf
 export type VizSchoolGuardianInformationSchema = z.infer<typeof vizSchoolGuardianInformationSchema>;
 
 export type OpenHouseAccountInformationSchema = z.infer<typeof registrationSchema>;
+
+/**
+ * Student absence & travel declaration (Services).
+ *
+ * One flat schema with `.superRefine()` rather than a discriminated union: the parent can go
+ * back and switch between absence and travel, and a union whose discriminant changes mid-wizard
+ * would invalidate fields that are simply not being asked about yet.
+ *
+ * Every rule here is also enforced by the SIS. Duplicating them is not about trust — it is so a
+ * parent hears "that is more than 60 days" while they can still fix it. On a 400 the SIS's own
+ * wording wins, because it is written for parents and maintained by the SIS team.
+ */
+export const declarationSchema = z
+  .object({
+    declarationType: z.enum(["absence", "travel"]),
+    studentNumbers: z.array(z.string()).min(1, { message: "Choose at least one child." }),
+    startDate: z.string().min(1, { message: "Choose the first day." }),
+    endDate: z.string().min(1, { message: "Choose the last day." }),
+    withMedical: z.boolean(),
+    evidencePath: z.string(),
+    evidenceUrl: z.string(),
+    destinationCountry: z.string(),
+    destinationCity: z.string(),
+    parentNote: z.string().max(MAX_NOTE_LENGTH, {
+      message: `Please keep this under ${MAX_NOTE_LENGTH} characters.`,
+    }),
+  })
+  .superRefine((schema, ctx) => {
+    if (schema.studentNumbers.length > MAX_STUDENTS) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `You can include up to ${MAX_STUDENTS} children on one declaration.`,
+        path: ["studentNumbers"],
+      });
+    }
+
+    if (new Set(schema.studentNumbers).size !== schema.studentNumbers.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "That child is already on this declaration.",
+        path: ["studentNumbers"],
+      });
+    }
+
+    if (schema.startDate && schema.endDate) {
+      const length = rangeLengthDays(schema.startDate, schema.endDate);
+
+      if (length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "The last day cannot be before the first day.",
+          path: ["endDate"],
+        });
+      } else if (length > MAX_RANGE_DAYS) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `A declaration can cover at most ${MAX_RANGE_DAYS} days.`,
+          path: ["endDate"],
+        });
+      }
+    }
+
+    if (schema.startDate) {
+      // Read at validation time, not at module load: a tab left open overnight would otherwise
+      // keep validating against yesterday.
+      const windowError = filingWindowError(schema.startDate, new Date());
+      if (windowError) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: windowError, path: ["startDate"] });
+      }
+    }
+
+    if (schema.declarationType === "travel") {
+      if (!schema.destinationCountry.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please tell us which country.",
+          path: ["destinationCountry"],
+        });
+      }
+      // Nothing about certificates on the travel branch — those fields may still hold values
+      // from an absence the parent switched away from, and are dropped by toDeclarationPayload.
+      return;
+    }
+
+    if (schema.withMedical && !schema.evidencePath.trim() && !schema.evidenceUrl.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Attach the certificate, or paste its link.",
+        path: ["evidenceUrl"],
+      });
+    }
+
+    if (schema.evidenceUrl.trim() && !schema.evidenceUrl.trim().startsWith("https://")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "That link must start with https://",
+        path: ["evidenceUrl"],
+      });
+    }
+  });

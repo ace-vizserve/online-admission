@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useDraftRows } from "@/hooks/use-draft-rows";
 import { usePendingTasks } from "@/hooks/use-pending-tasks";
-import { BookOpenText, ClipboardList, FileClock, FilePen, FileText, LayoutDashboardIcon } from "lucide-react";
+import { BookOpenText, CalendarOff, ClipboardList, FileClock, FilePen, FileText, LayoutDashboardIcon } from "lucide-react";
 import * as React from "react";
 import Logo from "../../logo";
 import { NavMain } from "./nav-main";
@@ -40,6 +40,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           icon: FileClock,
           badge: pendingTasksCount,
         },
+      ],
+    },
+    {
+      // A section rather than a set of peer destinations, so it folds. The school calendar
+      // joins it once its data source is settled.
+      label: "Services",
+      collapsible: true,
+      items: [
+        { title: "Absence & Travel", url: "/admission/services/declarations", icon: CalendarOff },
       ],
     },
     {

@@ -55,6 +55,8 @@ import OpenHouseLanding from "@/pages/private/open-house/open-house-landing";
 import RegistrationSubmitted from "@/pages/private/open-house/registration-submitted";
 import PendingTasks from "@/pages/private/pending-tasks";
 import { ReportCards } from "@/pages/private/report-cards";
+import Declarations from "@/pages/private/services/declarations";
+import FileDeclaration from "@/pages/private/services/file-declaration";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentPhoto from "@/pages/private/student-photo";
 import StudentProfile from "@/pages/private/student-profile";
@@ -248,6 +250,30 @@ function AppRoutes() {
             element={
               <AuthGuard>
                 <Drafts />
+              </AuthGuard>
+            }
+          />
+
+          {/* Services. First /admission/* route to talk to a third-party origin, hence the
+              boundary — a SIS outage should not blank the whole shell. */}
+          <Route
+            path="services/declarations"
+            element={
+              <AuthGuard>
+                <ErrorBoundary fallback={<ErrorPage />}>
+                  <Declarations />
+                </ErrorBoundary>
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="services/declarations/new"
+            element={
+              <AuthGuard>
+                <ErrorBoundary fallback={<ErrorPage />}>
+                  <FileDeclaration />
+                </ErrorBoundary>
               </AuthGuard>
             }
           />

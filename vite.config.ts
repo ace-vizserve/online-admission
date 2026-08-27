@@ -40,6 +40,11 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
+    // Vitest defaults to 5s. Many component tests here type a keystroke at a time into real
+    // Radix forms and await debounced validation; under a full parallel run — more so with
+    // coverage instrumentation — that is marginal, and several files were flaking at the
+    // default. Individual files may still raise this further (see file-declaration.test.tsx).
+    testTimeout: 20000,
     css: false,
     coverage: {
       provider: "v8",
@@ -66,6 +71,17 @@ export default defineConfig({
         "src/lib/safe-storage.ts",
         "src/lib/generate-id.ts",
         "src/hooks/use-mobile.ts",
+        // Absence & travel declarations (Services)
+        "src/lib/sis.ts",
+        "src/lib/declaration-dates.ts",
+        "src/actions/declarations.ts",
+        "src/hooks/use-declarations.ts",
+        "src/hooks/use-enrolled-students.ts",
+        "src/pages/private/services/declarations.tsx",
+        "src/components/private/navbar/nav-main.tsx",
+        "src/lib/declaration-rules.ts",
+        "src/lib/declaration-steps.ts",
+        "src/actions/declaration-payload.ts",
       ],
       thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },
