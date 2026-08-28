@@ -31,7 +31,15 @@ type Feedback = {
   marketingReferrerName?: string;
 };
 
-const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
+const ParentFeedbackSurvey = ({
+  redirectTo,
+  academicYear: academicYearProp,
+  enroleeNumber: enroleeNumberProp,
+}: {
+  redirectTo?: string;
+  academicYear?: string;
+  enroleeNumber?: string;
+}) => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [referrerName, setReferrerName] = useState<string>("");
@@ -39,7 +47,14 @@ const ParentFeedbackSurvey = ({ redirectTo }: { redirectTo?: string }) => {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  const { academicYear, enroleeNumber } = state;
+  // Props are the supported path: the confirmation pages validate the router state before
+  // rendering this. The location fallback keeps other call sites working, and it is read
+  // defensively because `state` is null for any navigation that did not set it - the old
+  // direct destructure threw there, and the route error boundary turned that into a
+  // full-page error.
+  const submission = (state ?? null) as { academicYear?: string; enroleeNumber?: string } | null;
+  const academicYear = academicYearProp ?? submission?.academicYear ?? "";
+  const enroleeNumber = enroleeNumberProp ?? submission?.enroleeNumber ?? "";
 
   const [howDidYouKnowAboutHFSEIS, setHowDidYouKnowAboutHFSEIS] = useState("");
   const [otherSource, setOtherSource] = useState("");
