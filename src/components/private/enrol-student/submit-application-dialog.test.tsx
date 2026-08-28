@@ -509,11 +509,14 @@ describe("SubmitApplicationDialog — submit idempotency (hard re-entrancy guard
     const continueButton = await openDialog();
 
     fireEvent.click(continueButton);
+    // The failure is now a blocking dialog rather than a toast: a parent must not be able to
+    // miss that nothing was submitted.
+    const failureDialog = await screen.findByText(/your application was not submitted/i);
+    expect(failureDialog).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /back to my application/i }));
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        "Uh oh! Something went wrong",
-        expect.objectContaining({ description: expect.any(String) }),
-      ),
+      expect(screen.queryByText(/your application was not submitted/i)).not.toBeInTheDocument(),
     );
 
     // AlertDialogAction closes the dialog on click regardless of outcome, so the retry has to

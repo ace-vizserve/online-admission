@@ -1,3 +1,5 @@
+import { SubmitFailureDialog } from "@/components/private/enrol-student/submit-failure-dialog";
+import { useSubmitFailure } from "@/hooks/use-submit-failure";
 import { ArrowLeft, CheckCircle2, OctagonAlert, Send } from "lucide-react";
 import { Outlet, useNavigate } from "react-router";
 
@@ -117,35 +119,36 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
   const preCourseDate = usePreCourseAcknowledgementStore((state) => state.preCourseDate) as Date;
   const clearCredentials = useOpenHouseCredentialsStore((state) => state.clearState);
   const { formState } = useOpenHouseContext();
+  const { failure, reportFailure, dismissFailure } = useSubmitFailure();
+
   const { mutate, isPending } = useMutation({
     mutationFn: async (enrollmentDetails: OpenHouseFormState) => {
       const { email, firstName, lastName, relationship } = enrollmentDetails.accountInfo;
       const { password, confirmPassword } = useOpenHouseCredentialsStore.getState();
 
-      try {
-        await userRegister({
-          firstName,
-          lastName,
-          email,
-          password,
-          relationship,
-          confirmPassword,
-          isOpenHouseRegistration: true,
-        });
+      await userRegister({
+        firstName,
+        lastName,
+        email,
+        password,
+        relationship,
+        confirmPassword,
+        isOpenHouseRegistration: true,
+      });
 
-        if (institution === "vizschool") {
-          return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, "", "VizSchool New");
-        } else {
-          return await submitEnrollment(enrollmentDetails, academicYear, {
-            preCourseAnswer,
-            preCourseDate,
-            preCourseAcknowledgedAt: new Date(),
-          });
-        }
-      } catch (error) {
-        const err = error as Error;
-        toast.error(err.message);
+      // Deliberately unguarded: a throw here has to reach `onError`, which is the only place
+      // that tells the parent their application did not go through. This used to be wrapped in
+      // a try/catch that toasted and returned undefined, so a failed submit reached `onSuccess`
+      // with no data and was silently dropped.
+      if (institution === "vizschool") {
+        return await submitVizSchoolEnrollment(enrollmentDetails, academicYear, "", "VizSchool New");
       }
+
+      return await submitEnrollment(enrollmentDetails, academicYear, {
+        preCourseAnswer,
+        preCourseDate,
+        preCourseAcknowledgedAt: new Date(),
+      });
     },
     onSuccess(data) {
       if (!data?.generatedEnroleeNumber) return;
@@ -169,10 +172,8 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
       clearCredentials();
       safeSessionStorage.clear();
     },
-    onError() {
-      toast.error("Uh oh! Something went wrong", {
-        description: "An unknown error occurred. Please try again.",
-      });
+    onError(error) {
+      void reportFailure(error);
     },
   });
 
@@ -212,47 +213,50 @@ function SubmitApplicationDialog({ academicYear, institution }: { academicYear: 
   const allValid = v.studentInfo && v.familyInfo && v.enrollmentInfo && v.uploadRequirements;
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          disabled={!allValid || isPending}
-          className="gap-2 bg-green-600 hover:bg-green-500 font-bold">
-          {isPending ? (
-            <>
-              Sending
-              <DotPulse size="30" speed="1.3" color="white" />
-            </>
-          ) : (
-            <>
-              Send Registration <Send />
-            </>
-          )}
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader className="items-center">
-          <AlertDialogTitle className="font-black">
-            <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
-              <CheckCircle2 className="h-7 w-7 text-green-400" />
-            </div>
-            Are you absolutely sure?
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-xs md:text-sm text-center font-medium">
-            Please verify the details to ensure everything is correct before submitting. Inaccurate information may
-            cause delays.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="mt-2 sm:justify-center">
-          <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            disabled={isPending}
-            className="!bg-green-600 hover:!bg-green-500 font-bold"
-            onClick={submitApplication}>
-            Continue
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            disabled={!allValid || isPending}
+            className="gap-2 bg-green-600 hover:bg-green-500 font-bold">
+            {isPending ? (
+              <>
+                Sending
+                <DotPulse size="30" speed="1.3" color="white" />
+              </>
+            ) : (
+              <>
+                Send Registration <Send />
+              </>
+            )}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader className="items-center">
+            <AlertDialogTitle className="font-black">
+              <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
+                <CheckCircle2 className="h-7 w-7 text-green-400" />
+              </div>
+              Are you absolutely sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs md:text-sm text-center font-medium">
+              Please verify the details to ensure everything is correct before submitting. Inaccurate information may
+              cause delays.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2 sm:justify-center">
+            <AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isPending}
+              className="!bg-green-600 hover:!bg-green-500 font-bold"
+              onClick={submitApplication}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <SubmitFailureDialog failure={failure} onDismiss={dismissFailure} />
+    </>
   );
 }
 

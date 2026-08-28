@@ -2,10 +2,21 @@ import PageMetaData from "@/components/page-metadata";
 import ParentFeedbackSurvey from "@/components/private/parent-survey-feedback";
 import { Confetti } from "@/components/ui/confetti";
 import { APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION } from "@/data";
+import { useSubmissionState } from "@/hooks/use-submission-state";
 import { motion } from "motion/react";
+import { Navigate } from "react-router";
 
 function RegistrationSubmitted() {
   const { title, description } = APPLICATION_SUBMITTED_PAGE_TITLE_DESCRIPTION;
+  const submission = useSubmissionState();
+
+  // Reached without a submission behind it (back/forward into an older success, a bookmark,
+  // a hand-typed URL). Send them to the dashboard, where the real status of their
+  // applications is listed, rather than congratulating them for something that may not have
+  // happened.
+  if (!submission) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <>
@@ -46,7 +57,10 @@ function RegistrationSubmitted() {
             </div>
           </div>
 
-          <ParentFeedbackSurvey />
+          <ParentFeedbackSurvey
+            academicYear={submission.academicYear}
+            enroleeNumber={submission.enroleeNumber}
+          />
         </div>
       </div>
     </>

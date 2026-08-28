@@ -66,6 +66,13 @@ export default defineConfig({
         "src/lib/safe-storage.ts",
         "src/lib/generate-id.ts",
         "src/hooks/use-mobile.ts",
+        // Submit failure handling (corporate-network blocks, unverified confirmation pages)
+        "src/lib/submit-failure.ts",
+        "src/hooks/use-submit-failure.ts",
+        "src/hooks/use-submission-state.ts",
+        "src/components/private/enrol-student/submit-failure-dialog.tsx",
+        "src/pages/private/enrol-student/application-submitted.tsx",
+        "src/pages/private/open-house/registration-submitted.tsx",
       ],
       thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },
