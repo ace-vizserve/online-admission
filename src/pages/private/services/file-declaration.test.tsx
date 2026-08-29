@@ -66,6 +66,7 @@ function renderWizard() {
       <Routes>
         <Route path="/admission/services/declarations/new" element={<FileDeclaration />} />
         <Route path="/admission/services/declarations" element={<p>Status list</p>} />
+        <Route path="/login" element={<p>Sign in</p>} />
       </Routes>
     </MemoryRouter>,
     { wrapper },
@@ -468,5 +469,73 @@ describe("FileDeclaration — how a failed submit is shown", () => {
 
     expect(await screen.findByText("The last day cannot be before the first day.")).toBeInTheDocument();
     await waitFor(() => expect(toastError).toHaveBeenCalled());
+  });
+});
+
+/**
+ * The 29 Aug contract splits what used to be one flat refusal into three, each needing a
+ * different destination. Getting these confused sends a parent somewhere that cannot help.
+ */
+describe("FileDeclaration — where a refusal sends the parent", () => {
+  async function submitOnce() {
+    renderWizard();
+    await next();
+    await next();
+    await pickDay(TODAY);
+    await next();
+    await next();
+    await next();
+    await userEvent.click(screen.getByRole("button", { name: /submit/i }));
+  }
+
+  it("sends a shut-school refusal back to the dates, which are what must change", async () => {
+    fileDeclaration.mockRejectedValue(
+      new SisError("The school is closed for all of those dates. Please check the dates and try again.", 400),
+    );
+
+    await submitOnce();
+
+    expect(await screen.findByRole("heading", { name: /when\?/i })).toBeInTheDocument();
+    expect(screen.getByText(/school is closed for all of those dates/i)).toBeInTheDocument();
+    // The status list holds nothing that helps here.
+    expect(screen.queryByRole("link", { name: /my declarations/i })).not.toBeInTheDocument();
+  });
+
+  it("names every clashing sibling, not just the one the sentence mentions", async () => {
+    fileDeclaration.mockRejectedValue(
+      new SisError("Ana Reyes has already been approved as away on 2026-09-16 to 2026-09-18.", 409, undefined, undefined, {
+        overlapping: [
+          {
+            studentName: "Ana Reyes",
+            declarationType: "absence",
+            startDate: "2026-09-16",
+            endDate: "2026-09-18",
+            status: "approved",
+            isExactMatch: true,
+          },
+          {
+            studentName: "Leo Reyes",
+            declarationType: "absence",
+            startDate: "2026-09-16",
+            endDate: "2026-09-18",
+            status: "pending",
+            isExactMatch: true,
+          },
+        ],
+      }),
+    );
+
+    await submitOnce();
+
+    expect(await screen.findByText(/Leo Reyes/)).toBeInTheDocument();
+  });
+
+  it("sends an expired session to sign in without ever printing the token wording", async () => {
+    fileDeclaration.mockRejectedValue(new SisError("invalid or expired token", 401));
+
+    await submitOnce();
+
+    expect(await screen.findByText("Sign in")).toBeInTheDocument();
+    expect(screen.queryByText(/invalid or expired token/i)).not.toBeInTheDocument();
   });
 });

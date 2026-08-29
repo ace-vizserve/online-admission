@@ -49,13 +49,28 @@ export class SisError extends Error {
   readonly status: number;
   readonly issues?: SisIssue[];
   readonly retryAfterSeconds?: number;
+  /**
+   * The whole parsed failure body.
+   *
+   * Some responses carry more than a sentence — the 409 on a declaration lists every clashing
+   * filing — and teaching this transport layer those shapes would put domain knowledge in the
+   * wrong place. Callers narrow it themselves.
+   */
+  readonly payload?: unknown;
 
-  constructor(message: string, status: number, issues?: SisIssue[], retryAfterSeconds?: number) {
+  constructor(
+    message: string,
+    status: number,
+    issues?: SisIssue[],
+    retryAfterSeconds?: number,
+    payload?: unknown,
+  ) {
     super(message);
     this.name = "SisError";
     this.status = status;
     this.issues = issues;
     this.retryAfterSeconds = retryAfterSeconds;
+    this.payload = payload;
   }
 }
 
@@ -105,6 +120,7 @@ export async function sisFetch<T>(path: string, init: SisFetchInit = {}): Promis
       response.status,
       payload?.issues,
       Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
+      payload,
     );
   }
 

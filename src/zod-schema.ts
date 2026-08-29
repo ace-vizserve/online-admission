@@ -4,6 +4,7 @@ import {
   MAX_STUDENTS,
   filingWindowError,
   rangeLengthDays,
+  singaporeDate,
 } from "@/lib/declaration-rules";
 import { isBefore } from "date-fns";
 import { z } from "zod";
@@ -1490,8 +1491,9 @@ export const declarationSchema = z
 
     if (schema.startDate) {
       // Read at validation time, not at module load: a tab left open overnight would otherwise
-      // keep validating against yesterday.
-      const windowError = filingWindowError(schema.startDate, new Date());
+      // keep validating against yesterday. Singapore's day, not the device's — the SIS measures
+      // the window that way, and a parent filing from abroad would otherwise disagree with it.
+      const windowError = filingWindowError(schema.startDate, singaporeDate());
       if (windowError) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: windowError, path: ["startDate"] });
       }

@@ -118,6 +118,19 @@ describe("sisFetch — error contract", () => {
     });
   });
 
+  it("keeps the whole failure body, so callers can read fields sisFetch knows nothing about", async () => {
+    // The 409 carries an `overlapping` array. Teaching this transport layer about declaration
+    // shapes would be the wrong place for it, so it hands the parsed body on instead.
+    const body = {
+      error: "Ana Reyes has already been approved as away.",
+      alreadyFiled: true,
+      overlapping: [{ studentName: "Ana Reyes", startDate: "2026-09-16", endDate: "2026-09-18" }],
+    };
+    stubFetch({ ok: false, status: 409, json: async () => body });
+
+    await expect(sisFetch("api/parent/v2/declarations")).rejects.toMatchObject({ payload: body });
+  });
+
   it("reads Retry-After off a 429 so the wait can be quoted to the parent", async () => {
     stubFetch({
       ok: false,

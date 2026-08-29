@@ -142,8 +142,24 @@ const columns: ColumnDef<Declaration>[] = [
     header: ({ column }) => (
       <SortableHeader label="Status" onToggle={() => column.toggleSorting(column.getIsSorted() === "asc")} />
     ),
-    // statusLabel, never status — "With the school" rather than "Pending".
-    cell: ({ row }) => <StatusBadge status={row.original.statusLabel as StatusProps} />,
+    cell: ({ row }) => (
+      // statusLabel, never status — "With the school" rather than "Pending".
+      <div className="flex min-w-[220px] flex-col items-start gap-1.5">
+        <StatusBadge status={row.original.statusLabel as StatusProps} />
+
+        {/* Non-null only on a rejected filing. Shown verbatim — the SIS team writes it for the
+            parent, and "Not approved" on its own tells them nothing. Labelled by author so it
+            cannot be mistaken for the parent's own note, which sits in the What column. */}
+        {row.original.decisionReason && (
+          <div className="space-y-0.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">From the school</p>
+            <p className="line-clamp-3 text-[12px] leading-tight" title={row.original.decisionReason}>
+              {row.original.decisionReason}
+            </p>
+          </div>
+        )}
+      </div>
+    ),
   },
   {
     accessorKey: "filedAt",
@@ -270,9 +286,9 @@ export default function Declarations() {
                     <TableRow key={headerGroup.id} className="hover:bg-transparent">
                       {headerGroup.headers.map((header) => (
                         <TableHead key={header.id} className="py-4 text-[11px] font-bold uppercase text-slate-500">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
+                          {/* No isPlaceholder guard: that is only ever true for grouped column
+                              headers, and these columns are flat. */}
+                          {flexRender(header.column.columnDef.header, header.getContext())}
                         </TableHead>
                       ))}
                     </TableRow>

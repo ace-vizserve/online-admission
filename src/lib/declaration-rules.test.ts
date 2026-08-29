@@ -10,6 +10,7 @@ import {
   MAX_STUDENTS,
   filingWindowError,
   rangeLengthDays,
+  singaporeDate,
 } from "./declaration-rules";
 
 describe("rangeLengthDays", () => {
@@ -31,7 +32,7 @@ describe("rangeLengthDays", () => {
 });
 
 describe("filingWindowError", () => {
-  const today = new Date("2026-09-16T08:00:00+08:00");
+  const today = "2026-09-16";
 
   it("accepts today", () => {
     expect(filingWindowError("2026-09-16", today)).toBeNull();
@@ -64,5 +65,22 @@ describe("limits", () => {
     expect(MAX_STUDENTS).toBe(10);
     expect(MAX_RANGE_DAYS).toBe(60);
     expect(MAX_NOTE_LENGTH).toBe(300);
+  });
+});
+
+describe("singaporeDate", () => {
+  it("gives the calendar day in Singapore, not the device's", () => {
+    // 17:30 UTC is already the next morning in Singapore (UTC+8). A device in London filing at
+    // that moment would otherwise disagree with the server about which days are offerable —
+    // and this is the travel feature, so a parent abroad is the expected case.
+    expect(singaporeDate(new Date("2026-09-16T17:30:00Z"))).toBe("2026-09-17");
+  });
+
+  it("still gives the same day when the device is already on it", () => {
+    expect(singaporeDate(new Date("2026-09-16T02:00:00Z"))).toBe("2026-09-16");
+  });
+
+  it("formats as the YYYY-MM-DD the API compares as text", () => {
+    expect(singaporeDate(new Date("2026-01-05T00:00:00Z"))).toBe("2026-01-05");
   });
 });

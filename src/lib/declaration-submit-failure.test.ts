@@ -17,15 +17,71 @@ describe("classifySubmitFailure", () => {
     expect(failure).toMatchObject({ kind: "fields", issues });
   });
 
-  it("treats a 400 with no field issues as a conflict, not a form error", () => {
-    // The overlap rejection arrives this way: a real sentence, but nothing to highlight.
-    const failure = classifySubmitFailure(new SisError("Ana has already been filed for.", 400));
+  it("treats a 400 with no field issues as the school being shut, not a clash", () => {
+    // Since 29 Aug this is the "no selected child has a school day in the range" refusal.
+    // A clash now answers 409, so these two must not share a branch — they send the parent
+    // to different places.
+    const failure = classifySubmitFailure(
+      new SisError("The school is closed for all of those dates.", 400),
+    );
 
-    expect(failure.kind).toBe("conflict");
+    expect(failure.kind).toBe("datesClosed");
   });
 
-  it("treats a 409 as a conflict", () => {
+  it("sends a shut-school refusal back to the dates, not to the status list", () => {
+    const failure = classifySubmitFailure(new SisError("The school is closed.", 400));
+
+    expect(failure.showsStatusList).toBe(false);
+    expect(failure.returnsToDates).toBe(true);
+  });
+
+  it("treats a 409 as a clash with something already on record", () => {
     expect(classifySubmitFailure(new SisError("Already filed.", 409)).kind).toBe("conflict");
+  });
+
+  it("carries every clashing filing, since the sentence names only the first", () => {
+    const overlapping = [
+      {
+        studentName: "Ana Reyes",
+        declarationType: "absence",
+        startDate: "2026-09-16",
+        endDate: "2026-09-18",
+        status: "approved",
+        isExactMatch: true,
+      },
+      {
+        studentName: "Leo Reyes",
+        declarationType: "absence",
+        startDate: "2026-09-16",
+        endDate: "2026-09-18",
+        status: "pending",
+        isExactMatch: true,
+      },
+    ];
+    const error = new SisError("Ana Reyes has already been approved as away.", 409, undefined, undefined, {
+      overlapping,
+    });
+
+    expect(classifySubmitFailure(error).overlapping).toEqual(overlapping);
+  });
+
+  it("copes with a clash that arrives without the list", () => {
+    expect(classifySubmitFailure(new SisError("Already filed.", 409)).overlapping).toEqual([]);
+  });
+
+  it("ignores an overlapping field that is not a list of filings", () => {
+    const error = new SisError("Already filed.", 409, undefined, undefined, { overlapping: "nope" });
+
+    expect(classifySubmitFailure(error).overlapping).toEqual([]);
+  });
+
+  it("treats an expired session as a sign-in, never showing the token wording", () => {
+    // Both 401 bodies — "missing Bearer token" and "invalid or expired token" — are written
+    // for a developer, not a parent.
+    const failure = classifySubmitFailure(new SisError("invalid or expired token", 401));
+
+    expect(failure.kind).toBe("signedOut");
+    expect(failure.message).not.toMatch(/token/i);
   });
 
   it("keeps the SIS's own wording on a conflict, since it names the child and the dates", () => {

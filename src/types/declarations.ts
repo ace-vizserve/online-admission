@@ -35,7 +35,12 @@ export type Declaration = {
   startDate: string;
   /** `YYYY-MM-DD`, date-only. Equal to `startDate` for a single-day absence. */
   endDate: string;
-  withMedical: boolean;
+  /**
+   * `null` on travel, where the question was never asked. Check `declarationType` before
+   * rendering anything from this — a bare `!withMedical` would read as "no certificate" on
+   * every travel filing.
+   */
+  withMedical: boolean | null;
   evidenceUrl: string | null;
   hasUpload: boolean;
   /** Null on an absence. */
@@ -49,8 +54,33 @@ export type Declaration = {
    * Always render this, never `status`.
    */
   statusLabel: string;
+  /**
+   * The school's reason for turning a filing down. Non-null ONLY when `status` is `rejected`,
+   * and capped at 300 characters.
+   *
+   * The only staff-written text a parent ever sees, and the thing that makes "Not approved"
+   * mean something — the commonest real reason is "please attach the medical certificate and
+   * file again". Show it verbatim: no paraphrase, no summary, no apology wrapped round it.
+   */
+  decisionReason: string | null;
   /** Full ISO timestamp, unlike the date-only `startDate`/`endDate`. */
   filedAt: string;
+};
+
+/**
+ * One filing that clashes with a submission the SIS refused with a 409.
+ *
+ * The refusal's `error` sentence names only the FIRST clash, so a submission covering two
+ * siblings under-reports as one. This list carries them all.
+ */
+export type OverlappingFiling = {
+  studentName: string;
+  declarationType: DeclarationType;
+  startDate: string;
+  endDate: string;
+  status: DeclarationStatus;
+  /** Whether the clash covers exactly the dates that were submitted. */
+  isExactMatch: boolean;
 };
 
 /** The summary view returned for each child on a fresh 201 filing. */

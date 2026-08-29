@@ -14,14 +14,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useEnrolledStudents } from "@/hooks/use-enrolled-students";
 import { formatDeclarationDateRange } from "@/lib/declaration-dates";
-import { MAX_DAYS_AHEAD, MAX_DAYS_IN_PAST, MAX_NOTE_LENGTH } from "@/lib/declaration-rules";
+import { MAX_DAYS_AHEAD, MAX_DAYS_IN_PAST, MAX_NOTE_LENGTH, singaporeDate } from "@/lib/declaration-rules";
 import { fieldsForStep, visibleSteps } from "@/lib/declaration-steps";
 import { classifySubmitFailure, type SubmitFailure } from "@/lib/declaration-submit-failure";
 import { cn } from "@/lib/utils";
 import { declarationSchema } from "@/zod-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addDays, format, startOfToday, subDays } from "date-fns";
+import { addDays, format, parseISO, subDays } from "date-fns";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, Navigate } from "react-router";
 import type { DateRange } from "react-day-picker";
 import { toast } from "sonner";
 
@@ -137,11 +137,23 @@ export default function FileDeclaration() {
         return;
       }
 
+      // The dates are what must change, so put the parent back on them. Nothing in the status
+      // list helps here, unlike a clash.
+      if (next.kind === "datesClosed") {
+        const owning = steps.indexOf("when");
+        if (owning >= 0) setStepIndex(owning);
+        toast.warning("The school is closed for those dates");
+        return;
+      }
+
       // A clash is not the parent's mistake — the school simply already has those days.
       if (next.kind === "conflict") {
         toast.warning("Already told the school about those days");
         return;
       }
+
+      // Neither 401 body is written for a parent, so nothing from it reaches the screen.
+      if (next.kind === "signedOut") return;
 
       if (next.kind === "rateLimited") {
         toast.warning(next.message);
@@ -186,6 +198,8 @@ export default function FileDeclaration() {
       setUploading(false);
     }
   }
+
+  if (failure?.kind === "signedOut") return <Navigate to="/login" replace />;
 
   if (filed) return <Filed alreadyFiled={filed.alreadyFiled} />;
 
@@ -289,17 +303,20 @@ function SubmitNotice({
   onRetry: () => void;
   busy: boolean;
 }) {
-  const isCaution = failure.kind === "conflict" || failure.kind === "rateLimited";
+  const CAUTIONS: SubmitFailure["kind"][] = ["conflict", "rateLimited", "datesClosed"];
+  const isCaution = CAUTIONS.includes(failure.kind);
 
   const HEADINGS: Record<SubmitFailure["kind"], string> = {
     fields: "Check the highlighted answer",
+    datesClosed: "The school is closed for those dates",
     conflict: "Already sent to the school",
     rateLimited: "Sent too many just now",
     forbidden: "That child cannot be filed for",
+    signedOut: "Please sign in again",
     failed: "Could not send this",
   };
 
-  const Icon = failure.kind === "conflict" ? CalendarClock : AlertTriangle;
+  const Icon = failure.kind === "conflict" || failure.kind === "datesClosed" ? CalendarClock : AlertTriangle;
 
   return (
     <div
@@ -315,6 +332,22 @@ function SubmitNotice({
           {HEADINGS[failure.kind]}
         </p>
         <p className="text-sm leading-relaxed text-muted-foreground">{failure.message}</p>
+
+        {/* The SIS sentence names only the FIRST clash, so a submission covering siblings would
+            otherwise under-report as one child. */}
+        {failure.overlapping.length > 1 && (
+          <ul className="space-y-1 border-l-2 border-amber-500/30 pl-3">
+            {failure.overlapping.map((clash) => (
+              <li key={`${clash.studentName}-${clash.startDate}-${clash.endDate}`} className="text-sm">
+                <span className="font-semibold">{clash.studentName}</span>
+                <span className="text-muted-foreground">
+                  {" · "}
+                  {formatDeclarationDateRange(clash.startDate, clash.endDate)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {(failure.showsStatusList || failure.retryable) && (
           <div className="flex flex-wrap gap-2 pt-0.5">
@@ -451,6 +484,9 @@ function StepType({ form, value }: { form: FormApi; value: DeclarationFormValues
 }
 
 function StepWhen({ form, values }: { form: FormApi; values: DeclarationFormValues }) {
+  // Anchored to Singapore's day, matching the window the SIS enforces — a parent filing from
+  // another timezone would otherwise be offered a day the server then refuses.
+  const singaporeToday = parseISO(singaporeDate());
   const selected: DateRange | undefined = values.startDate
     ? { from: new Date(`${values.startDate}T00:00:00`), to: values.endDate ? new Date(`${values.endDate}T00:00:00`) : undefined }
     : undefined;
@@ -476,8 +512,8 @@ function StepWhen({ form, values }: { form: FormApi; values: DeclarationFormValu
           onSelect={onSelect}
           numberOfMonths={1}
           disabled={[
-            { before: subDays(startOfToday(), MAX_DAYS_IN_PAST) },
-            { after: addDays(startOfToday(), MAX_DAYS_AHEAD) },
+            { before: subDays(singaporeToday, MAX_DAYS_IN_PAST) },
+            { after: addDays(singaporeToday, MAX_DAYS_AHEAD) },
           ]}
         />
       </div>

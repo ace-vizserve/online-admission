@@ -33,6 +33,7 @@ function declaration(overrides: Partial<Declaration> = {}): Declaration {
     parentNote: "Fever since Monday.",
     status: "pending",
     statusLabel: "With the school",
+    decisionReason: null,
     filedAt: "2026-08-27T02:14:09.221Z",
     ...overrides,
   };
@@ -243,5 +244,221 @@ describe("Declarations — the table", () => {
     await user.click(await screen.findByRole("option", { name: /not approved/i }));
 
     expect(await screen.findByText(/no declarations match/i)).toBeInTheDocument();
+  });
+});
+
+/**
+ * `decisionReason` is the only staff-written text a parent ever sees, and the thing that makes
+ * "Not approved" mean anything. The commonest real reason is a request to attach the medical
+ * certificate and file again — before this field existed there was nowhere for that to go.
+ */
+describe("Declarations — the school's reason", () => {
+  const REASON = "Please attach the medical certificate and file again.";
+
+  it("shows the school's reason on a filing that was turned down", () => {
+    useDeclarations.mockReturnValue({
+      data: [declaration({ status: "rejected", statusLabel: "Not approved", decisionReason: REASON })],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.getByText(REASON)).toBeInTheDocument();
+  });
+
+  it("attributes it to the school, so it cannot be read as the parent's own note", () => {
+    useDeclarations.mockReturnValue({
+      data: [
+        declaration({
+          status: "rejected",
+          statusLabel: "Not approved",
+          decisionReason: REASON,
+          parentNote: "Fever since Monday.",
+        }),
+      ],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.getByText(/from the school/i)).toBeInTheDocument();
+  });
+
+  it("renders nothing at all when there is no reason", () => {
+    useDeclarations.mockReturnValue({
+      data: [declaration({ status: "approved", statusLabel: "Approved", decisionReason: null })],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.queryByText(/from the school/i)).not.toBeInTheDocument();
+  });
+});
+
+describe("Declarations — travel and the certificate question", () => {
+  it("says nothing about certificates on a travel filing, where the question was never asked", () => {
+    // withMedical is null on travel. A bare falsy check would read that as "no certificate"
+    // and print it on every trip.
+    useDeclarations.mockReturnValue({
+      data: [
+        declaration({
+          declarationType: "travel",
+          withMedical: null,
+          hasUpload: false,
+          evidenceUrl: null,
+          destinationCountry: "Malaysia",
+          destinationCity: "Penang",
+        }),
+      ],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.getByText(/Penang, Malaysia/)).toBeInTheDocument();
+    expect(screen.queryByText(/certificate/i)).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * A family accumulates filings over years, so the table has to stay usable when the list is
+ * long: narrow by child, reorder, and page through.
+ */
+describe("Declarations — finding one filing among many", () => {
+  const user = () => import("@testing-library/user-event").then((m) => m.default);
+
+  /** The child name in each body row, in the order the table renders them. */
+  function renderedChildren() {
+    return screen
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) => row.querySelector("td")?.textContent ?? "");
+  }
+
+  it("narrows to one child as the parent types their name", async () => {
+    useDeclarations.mockReturnValue({
+      data: [
+        declaration({ id: "a", studentName: "Ana Reyes" }),
+        declaration({ id: "b", studentName: "Leo Reyes", studentNumber: "H250124" }),
+      ],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+    await (await user()).type(screen.getByPlaceholderText(/filter by child/i), "Leo", { delay: null });
+
+    expect(screen.getByText("Leo Reyes")).toBeInTheDocument();
+    expect(screen.queryByText("Ana Reyes")).not.toBeInTheDocument();
+  });
+
+  it("reorders by child when that column is sorted", async () => {
+    useDeclarations.mockReturnValue({
+      data: [
+        declaration({ id: "a", studentName: "Zara Tan" }),
+        declaration({ id: "b", studentName: "Ana Reyes", studentNumber: "H250124" }),
+      ],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+    expect(renderedChildren()[0]).toContain("Zara Tan");
+
+    await (await user()).click(screen.getByRole("button", { name: /child/i }));
+
+    expect(renderedChildren()[0]).toContain("Ana Reyes");
+  });
+
+  it("pages through a long history rather than rendering all of it at once", async () => {
+    const many = Array.from({ length: 12 }, (_, i) =>
+      declaration({ id: `d${i}`, studentName: `Child ${String(i).padStart(2, "0")}`, studentNumber: `H2600${i}` }),
+    );
+    useDeclarations.mockReturnValue({ data: many, isPending: false, error: null });
+
+    renderPage();
+    expect(renderedChildren()).toHaveLength(10);
+    expect(screen.getByText(/showing 10 of 12/i)).toBeInTheDocument();
+
+    await (await user()).click(screen.getByRole("button", { name: /next/i }));
+
+    expect(renderedChildren()).toHaveLength(2);
+
+    await (await user()).click(screen.getByRole("button", { name: /previous/i }));
+
+    expect(renderedChildren()).toHaveLength(10);
+  });
+});
+
+describe("Declarations — every column sorts", () => {
+  /** Two filings where the second is earlier, settled, and filed sooner than the first. */
+  const LATER = declaration({
+    id: "later",
+    studentName: "Ana Reyes",
+    startDate: "2026-09-20",
+    endDate: "2026-09-20",
+    status: "pending",
+    statusLabel: "With the school",
+    filedAt: "2026-09-19T09:00:00.000Z",
+  });
+  const EARLIER = declaration({
+    id: "earlier",
+    studentName: "Zara Tan",
+    studentNumber: "H250124",
+    startDate: "2026-09-01",
+    endDate: "2026-09-01",
+    status: "approved",
+    statusLabel: "Approved",
+    filedAt: "2026-08-30T09:00:00.000Z",
+  });
+
+  function firstChild() {
+    return screen.getAllByRole("row")[1].querySelector("td")?.textContent ?? "";
+  }
+
+  it.each([["when"], ["status"], ["filed"]])("sorts by %s", async (column) => {
+    const user = (await import("@testing-library/user-event")).default;
+    useDeclarations.mockReturnValue({ data: [LATER, EARLIER], isPending: false, error: null });
+
+    renderPage();
+    expect(firstChild()).toContain("Ana Reyes");
+
+    await user.click(screen.getByRole("button", { name: new RegExp(column, "i") }));
+
+    // Ascending on any of the three puts the earlier / already-settled filing on top.
+    expect(firstChild()).toContain("Zara Tan");
+  });
+});
+
+describe("Declarations — how a certificate is shown", () => {
+  it("marks a pasted digital MC link as attached, with no file uploaded", () => {
+    useDeclarations.mockReturnValue({
+      data: [declaration({ withMedical: true, hasUpload: false, evidenceUrl: "https://mc.gov.sg/xxxx" })],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.getByText(/medical certificate/i)).toBeInTheDocument();
+    expect(screen.getByText(/attached/i)).toBeInTheDocument();
+  });
+
+  it("says nothing about certificates on an absence declared without one", () => {
+    useDeclarations.mockReturnValue({
+      data: [declaration({ withMedical: false, hasUpload: false, evidenceUrl: null })],
+      isPending: false,
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.queryByText(/certificate/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/attached/i)).not.toBeInTheDocument();
   });
 });
