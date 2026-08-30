@@ -352,6 +352,38 @@ export function extractFamilyInfo(studentInformation: FamilyInfo[]) {
   };
 }
 
+/**
+ * Puts a value into a single canonical shape so two representations of the SAME data compare
+ * equal. Without this, `getChangedKeys` reports a change on every save: react-hook-form submits
+ * a blank optional field as "" while its default was `undefined`, numeric columns come back as
+ * numbers but submit as strings, and object key order is not stable across the two sources.
+ *
+ * - `undefined` / `null` / "" all collapse to `null`, so "empty" has one representation
+ * - `Date` becomes its ISO string, matching a date that arrived from the DB as a string
+ * - numbers become strings, so 123456 and "123456" agree
+ * - object keys are sorted, and empty values dropped, so key order and absent-vs-blank agree
+ */
+function normalizeForCompare(value: unknown): unknown {
+  if (value === undefined || value === null || value === "") return null;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "number") return String(value);
+  if (Array.isArray(value)) return value.map(normalizeForCompare);
+
+  if (typeof value === "object") {
+    const source = value as Record<string, unknown>;
+    const result: Record<string, unknown> = {};
+
+    for (const key of Object.keys(source).sort()) {
+      const normalized = normalizeForCompare(source[key]);
+      if (normalized !== null) result[key] = normalized;
+    }
+
+    return result;
+  }
+
+  return value;
+}
+
 export const getChangedKeys = (defaultObject: Record<string, unknown>, newObject: Record<string, unknown>) => {
   const skippedKeys = ["id", "created_at", "studentNumber", "enroleePhoto", "noFatherInfo", "noGuardianInfo"];
 
@@ -359,7 +391,9 @@ export const getChangedKeys = (defaultObject: Record<string, unknown>, newObject
     if (skippedKeys.includes(key)) return false;
     if (key === "siblings" && Array.isArray(defaultObject[key]) && !defaultObject[key].length) return false;
     if (key === "siblings" && Array.isArray(newObject[key]) && !newObject[key].length) return false;
-    return JSON.stringify(defaultObject[key]) !== JSON.stringify(newObject[key]);
+    return (
+      JSON.stringify(normalizeForCompare(defaultObject[key])) !== JSON.stringify(normalizeForCompare(newObject[key]))
+    );
   });
 };
 
