@@ -320,7 +320,14 @@ describe("FileDeclaration — the certificate", () => {
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await userEvent.upload(input, certificate);
 
+    // Picking only stages the file — nothing has left the browser yet.
+    expect(uploadEvidence).not.toHaveBeenCalled();
+    expect(screen.queryByText(/certificate attached/i)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /upload file/i }));
+
     expect(await screen.findByText(/certificate attached/i)).toBeInTheDocument();
+    expect(uploadEvidence).toHaveBeenCalledWith(certificate);
     await next();
     await next();
     await userEvent.click(screen.getByRole("button", { name: /submit/i }));
@@ -330,6 +337,22 @@ describe("FileDeclaration — the certificate", () => {
       withMedical: true,
       evidencePath: "declarations/8f2a/c41b.pdf",
     });
+  });
+
+  it("removing the file after uploading re-locks it, so the old path can't be filed", async () => {
+    uploadEvidence.mockResolvedValue("declarations/8f2a/first.pdf");
+    await reachAttach();
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await userEvent.upload(input, certificate);
+    await userEvent.click(screen.getByRole("button", { name: /upload file/i }));
+    expect(await screen.findByText(/certificate attached/i)).toBeInTheDocument();
+
+    // Taking the file back out has to invalidate the upload — otherwise the declaration would
+    // still be filed against a path pointing at a certificate the parent has removed.
+    await userEvent.click(screen.getByRole("button", { name: /remove item 0/i }));
+
+    expect(screen.queryByText(/certificate attached/i)).not.toBeInTheDocument();
   });
 
   it("accepts a digital MC link with no upload at all", async () => {

@@ -35,6 +35,7 @@ import {
   Paperclip,
   Plane,
   RotateCcw,
+  Upload,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -176,15 +177,20 @@ export default function FileDeclaration() {
     setStepIndex((i) => Math.max(i - 1, 0));
   }
 
-  async function onPickCertificate(files: File[] | null) {
+  /** Staging only — picking a file no longer sends it. A medical certificate is health data
+   * leaving for the SIS, so it waits behind an explicit Upload the same way every other document
+   * in the app does; a mis-picked file can be removed before it ever leaves the browser. */
+  function onPickCertificate(files: File[] | null) {
     setCertificate(files);
-    const file = files?.[0];
 
-    // Clearing the file must clear the path too, or a removed certificate would still be filed.
-    if (!file) {
-      form.setValue("evidencePath", "", { shouldValidate: form.formState.isSubmitted });
-      return;
-    }
+    // Changing or clearing the selection invalidates whatever was uploaded before, or a swapped
+    // (or removed) certificate would still be filed under the previous file's path.
+    form.setValue("evidencePath", "", { shouldValidate: form.formState.isSubmitted });
+  }
+
+  async function onUploadCertificate() {
+    const file = certificate?.[0];
+    if (!file) return;
 
     setUploading(true);
     try {
@@ -240,6 +246,7 @@ export default function FileDeclaration() {
               uploading={uploading}
               certificate={certificate}
               onPickFiles={onPickCertificate}
+              onUpload={onUploadCertificate}
             />
           )}
           {step === "destination" && <StepDestination form={form} values={values} />}
@@ -561,12 +568,14 @@ function StepAttach({
   uploading,
   certificate,
   onPickFiles,
+  onUpload,
 }: {
   form: FormApi;
   values: DeclarationFormValues;
   uploading: boolean;
   certificate: File[] | null;
   onPickFiles: (files: File[] | null) => void;
+  onUpload: () => void;
 }) {
   return (
     <Question
@@ -606,6 +615,15 @@ function StepAttach({
             ))}
           </FileUploaderContent>
         </FileUploader>
+
+        {/* Staged and attached read differently on purpose: "I picked a file" is not "the school
+            has it", and the gap between them is where a parent would otherwise assume they were
+            done and leave without the certificate ever being sent. */}
+        {certificate?.length && !values.evidencePath && !uploading ? (
+          <Button type="button" onClick={onUpload} className="w-full gap-2 font-bold">
+            Upload file <Upload className="size-4" />
+          </Button>
+        ) : null}
 
         {uploading && (
           <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
