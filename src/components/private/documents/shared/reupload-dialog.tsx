@@ -1,5 +1,6 @@
 import { DocumentConfig } from "@/components/private/shared/upload-requirements/document-config";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
+import DocumentPreviewDialog from "@/components/document-preview-dialog";
+import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
 import AdvancedCalendarSelection from "@/components/ui/advanced-calendar-selection";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CalendarIcon, Download, RotateCcw, Save } from "lucide-react";
+import { CalendarIcon, CheckCircle2, CloudUpload, Download, Eye, Paperclip, RotateCcw, Save, Trash2, Upload } from "lucide-react";
 import { Link } from "react-router";
 
 import { useReuploadDialog } from "./use-reupload-dialog";
@@ -57,7 +58,7 @@ export function ReuploadDialog({
   emailSection,
 }: ReuploadDialogProps) {
   const dialog = useReuploadDialog({ cfg, academicYear, enroleeNumber, existingFileUrl, queryKeysToInvalidate, emailSection });
-  const { isOpen, setIsOpen, uploadProps, typeValue, setTypeValue, numberValue, setNumberValue, expiryValue, setExpiryValue, submitReupload, isPending, canSave, siblingFieldNames } = dialog;
+  const { isOpen, setIsOpen, stagedFiles, setStagedFiles, dropZoneConfig, uploadFile, isUploading, typeValue, setTypeValue, numberValue, setNumberValue, expiryValue, setExpiryValue, submitReupload, isPending, canSave, siblingFieldNames } = dialog;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -94,10 +95,89 @@ export function ReuploadDialog({
             </Link>
           )}
 
-          <Dropzone {...uploadProps}>
-            <DropzoneEmptyState />
-            <DropzoneContent />
-          </Dropzone>
+          <FileUploader
+            value={stagedFiles.length ? stagedFiles : null}
+            onValueChange={setStagedFiles}
+            dropzoneOptions={dropZoneConfig}
+            className="relative rounded-lg bg-background">
+            <FileInput className="border-2 border-dashed bg-muted">
+              <div className="flex w-full flex-col items-center justify-center p-8">
+                <CloudUpload className="h-10 w-10 text-gray-500" />
+                <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+              </div>
+            </FileInput>
+
+            <FileUploaderContent>
+              {stagedFiles.map((file, i) => (
+                <FileUploaderItem
+                  removeBtn={(onRemove) => (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onRemove();
+                      }}
+                      className="cursor-pointer rounded p-1 text-destructive hover:bg-destructive/10">
+                      <span className="sr-only">Remove {file.name}</span>
+                      <Trash2 className="!h-5 !w-5" />
+                    </button>
+                  )}
+                  key={i}
+                  index={i}>
+                  <DocumentPreviewDialog
+                    source={file}
+                    trigger={
+                      <button
+                        type="button"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1.5 truncate text-left hover:underline">
+                        <Paperclip className="h-4 w-4 shrink-0 stroke-current" />
+                        <span className="truncate">{file.name}</span>
+                        <Eye className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      </button>
+                    }
+                  />
+                </FileUploaderItem>
+              ))}
+            </FileUploaderContent>
+          </FileUploader>
+
+          {stagedFiles.length > 1 && !canSave && (
+            <p className="text-xs text-muted-foreground">
+              These {stagedFiles.length} files will be combined into one PDF, in the order shown above.
+            </p>
+          )}
+
+          {/* Staged and uploaded are deliberately different-looking: parents read "file selected"
+              as "file uploaded" and then can't tell why Save changes is disabled, so the pending
+              state names the button they still owe us and the uploaded state confirms it landed. */}
+          {stagedFiles.length > 0 && !canSave && (
+            <Button
+              type="button"
+              disabled={isUploading}
+              onClick={uploadFile}
+              className="w-full gap-2 font-bold">
+              {isUploading ? (
+                <>
+                  Uploading <DotPulse size="30" speed="1.3" color="white" />
+                </>
+              ) : (
+                <>
+                  Upload file <Upload />
+                </>
+              )}
+            </Button>
+          )}
+
+          {canSave && (
+            <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-green-600">
+              <CheckCircle2 className="h-4 w-4" />
+              Document uploaded — click Save changes to finish.
+            </p>
+          )}
 
           {siblingFieldNames.type && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
@@ -155,14 +235,6 @@ export function ReuploadDialog({
                 </PopoverContent>
               </Popover>
             </div>
-          )}
-
-          {/* A disabled Save button with no explanation is its own dead end: parents read "file
-              selected" as "file uploaded", so the reason has to name the button they still owe us. */}
-          {!canSave && (
-            <p className="text-center text-xs font-medium text-muted-foreground">
-              Click <strong>Upload files</strong> above to finish uploading your document.
-            </p>
           )}
 
           <DialogFooter>

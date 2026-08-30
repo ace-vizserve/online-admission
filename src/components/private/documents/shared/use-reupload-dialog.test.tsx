@@ -21,6 +21,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { deleteFile, parentGuardianReuploadDocuments, studentReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
+import { toast } from "sonner";
 import { PARENT_GUARDIAN_DOCUMENTS, STUDENT_DOCUMENTS } from "@/components/private/shared/upload-requirements/document-config";
 import { useReuploadDialog } from "./use-reupload-dialog";
 
@@ -38,8 +39,23 @@ vi.mock("@/hooks/use-session", () => ({ default: () => ({ session: mockSession }
 
 let uploadIsSuccess = false;
 let uploadSuccesses: string[] = [];
+let uploadErrors: { name: string; message: string }[] = [];
+let uploadFiles: File[] = [];
+let uploadLoading = false;
+const setFilesMock = vi.fn();
+const onUploadMock = vi.fn();
+// Mirrors the real hook's return shape — `useReuploadDialog` bridges `files`/`setFiles`/`errors`
+// through to `FileUploader`, so a mock missing any of them fails in a way the real hook never can.
 vi.mock("@/hooks/use-supabase-upload", () => ({
-  useSupabaseUpload: () => ({ isSuccess: uploadIsSuccess, successes: uploadSuccesses }),
+  useSupabaseUpload: () => ({
+    isSuccess: uploadIsSuccess,
+    successes: uploadSuccesses,
+    errors: uploadErrors,
+    files: uploadFiles,
+    setFiles: setFilesMock,
+    onUpload: onUploadMock,
+    loading: uploadLoading,
+  }),
 }));
 
 const idPictureCfg = STUDENT_DOCUMENTS.find((d) => d.name === "idPicture")!; // plain
@@ -59,6 +75,13 @@ function fakeEvent() {
 beforeEach(() => {
   uploadIsSuccess = false;
   uploadSuccesses = [];
+  uploadErrors = [];
+  uploadFiles = [];
+  uploadLoading = false;
+  setFilesMock.mockReset();
+  onUploadMock.mockReset();
+  vi.mocked(toast.error).mockReset();
+  vi.stubGlobal("URL", { ...URL, createObjectURL: () => "blob:mock", revokeObjectURL: () => {} });
   vi.mocked(studentReuploadDocuments).mockReset();
   vi.mocked(parentGuardianReuploadDocuments).mockReset();
   vi.mocked(deleteFile).mockReset();
@@ -392,5 +415,84 @@ describe("canSave — the Save changes gate", () => {
     expect(result.current.canSave).toBe(false);
     act(() => result.current.submitReupload(fakeEvent()));
     expect(studentReuploadDocuments).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The `FileUploader` bridge. `Dropzone` owned the drop area, the staged-file list AND the inline
+ * error display; `FileUploader` is controlled and reports rejections via toast, so the hook now
+ * has to expose the file list and surface upload errors itself.
+ */
+describe("FileUploader bridge", () => {
+  function renderIdPicture() {
+    return renderHook(
+      () =>
+        useReuploadDialog({
+          cfg: idPictureCfg,
+          academicYear: "AY2026",
+          enroleeNumber: "E-1",
+          queryKeysToInvalidate: [],
+          emailSection: "Student Documents",
+        }),
+      { wrapper },
+    );
+  }
+
+  it("exposes a dropzone config built from the document's own policy", () => {
+    const { result } = renderIdPicture();
+
+    expect(result.current.dropZoneConfig).toEqual({
+      accept: idPictureCfg.accept,
+      maxFiles: idPictureCfg.maxFiles,
+      maxSize: 4 * 1024 * 1024,
+      multiple: idPictureCfg.maxFiles > 1,
+    });
+  });
+
+  it("surfaces upload failures as toasts, since there is no inline error list any more", async () => {
+    uploadErrors = [{ name: "passport.pdf", message: "Network error" }];
+    renderIdPicture();
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("passport.pdf: Network error"));
+  });
+
+  it("does not toast when there are no upload errors", async () => {
+    renderIdPicture();
+
+    await waitFor(() => expect(toast.error).not.toHaveBeenCalled());
+  });
+
+  it("decorates staged files so the upload hook's own effects can read them", () => {
+    const { result } = renderIdPicture();
+    const picked = new File(["x"], "id.png", { type: "image/png" });
+
+    act(() => result.current.setStagedFiles([picked]));
+
+    const staged = setFilesMock.mock.calls[0][0] as (File & { preview?: string; errors?: unknown[] })[];
+    expect(staged).toHaveLength(1);
+    expect(staged[0].errors).toEqual([]);
+    expect(staged[0].preview).toBe("blob:mock");
+  });
+
+  it("clearing every staged file also clears the uploaded URL, so Save changes re-locks", async () => {
+    uploadIsSuccess = true;
+    uploadSuccesses = ["https://storage/id.png"];
+    const { result } = renderIdPicture();
+
+    await waitFor(() => expect(result.current.canSave).toBe(true));
+
+    act(() => result.current.setStagedFiles(null));
+
+    expect(result.current.canSave).toBe(false);
+    expect(setFilesMock).toHaveBeenCalledWith([]);
+  });
+
+  it("passes the upload trigger and in-flight flag straight through", () => {
+    uploadLoading = true;
+    const { result } = renderIdPicture();
+
+    expect(result.current.isUploading).toBe(true);
+    result.current.uploadFile();
+    expect(onUploadMock).toHaveBeenCalled();
   });
 });

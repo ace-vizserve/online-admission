@@ -66,6 +66,46 @@ export function useReuploadDialog({
     setMainValue(uploadProps.successes[0]);
   }, [uploadProps.isSuccess, uploadProps.successes]);
 
+  // `Dropzone` used to render `uploadProps.errors` inline beneath the drop area. `FileUploader`
+  // has no such surface — it reports rejections through toasts — so upload failures are toasted
+  // here instead. Without this they would fail completely silently.
+  useEffect(() => {
+    if (!uploadProps.errors.length) return;
+    uploadProps.errors.forEach((error) => toast.error(`${error.name}: ${error.message}`));
+  }, [uploadProps.errors]);
+
+  /** Files the parent has picked but not yet uploaded. `useSupabaseUpload` owns this list because
+   * its `onUpload` reads from it directly; `FileUploader` is controlled, so the two are bridged
+   * here rather than duplicating the list in local state and keeping them in sync by hand. */
+  const stagedFiles: File[] = uploadProps.files;
+
+  function setStagedFiles(files: File[] | null) {
+    const next = files ?? [];
+
+    // `useSupabaseUpload` decorates every file it accepts with `preview` and `errors`, and its
+    // own effects read `file.errors` unconditionally — a plain `File` from `FileUploader` would
+    // throw there. Decorate on the way in so both halves see the shape they expect.
+    const decorated = next.map((file) => {
+      const staged = file as File & { preview?: string; errors?: unknown[] };
+      if (!staged.preview) staged.preview = URL.createObjectURL(file);
+      if (!staged.errors) staged.errors = [];
+      return staged;
+    });
+
+    // Removing every staged file has to clear the uploaded URL too, otherwise `canSave` stays
+    // true and Save changes would commit the file the parent just took away.
+    if (!decorated.length) setMainValue("");
+
+    uploadProps.setFiles(decorated as never);
+  }
+
+  const dropZoneConfig = {
+    accept: cfg.accept,
+    maxFiles: cfg.maxFiles,
+    maxSize: MAX_UPLOAD_FILE_SIZE,
+    multiple: cfg.maxFiles > 1,
+  };
+
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
       if (cfg.group === "student") {
@@ -164,6 +204,11 @@ export function useReuploadDialog({
     isOpen,
     setIsOpen,
     uploadProps,
+    stagedFiles,
+    setStagedFiles,
+    dropZoneConfig,
+    uploadFile: uploadProps.onUpload,
+    isUploading: uploadProps.loading,
     typeValue,
     setTypeValue,
     numberValue,

@@ -140,9 +140,9 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
       // pipeline uploads straight to Supabase storage instead of going through that function, so it
       // needs its own check against the same ceiling rather than silently accepting an oversized file.
       if (mergedFile.size > MAX_UPLOAD_FILE_SIZE) {
-        // The per-file error list in `DropzoneContent` only matches errors against each SOURCE
-        // file's own name, so an error keyed by the merged file's name ("merged.pdf") would never
-        // render there — toast directly instead so the rejection is actually visible.
+        // Toasted directly rather than pushed to `errors` alone: this rejection is keyed by the
+        // merged file's name ("merged.pdf"), which matches none of the SOURCE files the callers
+        // list errors against, so it would otherwise never be shown to the user at all.
         const message = `The combined PDF is too large (max ${MAX_UPLOAD_FILE_SIZE / 1024 / 1024}MB). Please upload fewer or smaller pages.`;
         toast.error(message);
         responses.push({ name: mergedFile.name, message });
