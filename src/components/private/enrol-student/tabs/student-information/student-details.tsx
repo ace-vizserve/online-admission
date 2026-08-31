@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
-import { applicationTypes, religions } from "@/data";
+import { religions } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { studentDetailsSchema, StudentDetailsSchema } from "@/zod-schema";
@@ -314,9 +314,7 @@ function StudentDetails() {
               <FormItem>
                 <FormLabel>
                   NRIC / FIN{" "}
-                  {applicationTypes.includes(stpApplicationType) && (
-                    <span className="text-xs text-muted-foreground">(optional)</span>
-                  )}
+                  <span className="text-xs text-muted-foreground">(optional)</span>
                 </FormLabel>
                 <FormControl>
                   <Input {...field} />

@@ -54,7 +54,7 @@ describe("student-details.tsx (HFSE old)", () => {
     expect(setFormStateSpy).not.toHaveBeenCalled();
   });
 
-  it("requires NRIC when an STP application is in progress (fixed: stpApplicationType now reaches the schema)", async () => {
+  it("leaves NRIC optional even when an STP application is in progress", async () => {
     usePassTypeStore.setState({ stpApplicationType: "New Student Pass Application" });
     seedFormState("hfse-old", { studentInfo: { studentDetails: BASE_STUDENT_DETAILS } });
 
@@ -64,8 +64,9 @@ describe("student-details.tsx (HFSE old)", () => {
     const [submitButton] = screen.getAllByRole("button", { name: /save details/i });
     await user.click(submitButton);
 
+    // A new Student Pass applicant usually has no FIN yet, so this must not block the save.
     await waitFor(() => {
-      expect(screen.getByText(/NRIC\/FIN is required for this application type/i)).toBeInTheDocument();
+      expect(screen.queryByText(/NRIC\/FIN is required/i)).not.toBeInTheDocument();
     });
   });
 
