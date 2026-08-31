@@ -324,7 +324,9 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
             name="nric"
             render={({ field }) => (
               <FormItem className="relative">
-                <FormLabel>NRIC / FIN </FormLabel>
+                <FormLabel>
+                  NRIC / FIN <span className="text-xs text-muted-foreground">(optional)</span>
+                </FormLabel>
 
                 <FormControl>
                   <Input {...field} />

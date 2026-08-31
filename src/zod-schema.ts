@@ -111,31 +111,9 @@ export const studentDetailsSchema = z
     stpApplicationType: z.string().optional().nullable(),
   })
   .superRefine((schema, ctx) => {
-    if (schema.stpApplicationType === "New Student Pass Application") {
-      if (!schema.nric || schema.nric.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["nric"],
-          message: "NRIC/FIN is required for this application type",
-        });
-      } else {
-        if (!/^[STFGM]\d{7}[A-Z]$/.test(schema.nric)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["nric"],
-            message: "Invalid NRIC or FIN format",
-          });
-        }
-
-        if (schema.nric.length !== 9) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["nric"],
-            message: "NRIC/FIN must be exactly 9 characters",
-          });
-        }
-      }
-    }
+    // NRIC/FIN is optional for every application type. A new Student Pass applicant usually has
+    // no FIN yet — that is what they are applying for — so requiring one blocked exactly the
+    // families it was meant to cover. The format check below still runs on anything entered.
 
     if (schema.nric && schema.nric.trim() !== "") {
       const trimmedNric = schema.nric.trim();

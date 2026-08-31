@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
-import { applicationTypes, religions } from "@/data";
+import { religions } from "@/data";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import { cn } from "@/lib/utils";
@@ -51,10 +51,11 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
     },
   });
 
-  // stpApplicationType is never a user-editable field on this form — it's carried through so
-  // the schema's superRefine can require NRIC when an STP application is in progress. Without
-  // this, that requirement silently never fires because the value is otherwise never part of
-  // the form's tracked values.
+  // stpApplicationType is never a user-editable field on this form — it's carried through so it
+  // stays part of the form's tracked values, and so lands in the saved draft alongside the rest
+  // of studentDetails. It no longer gates any validation: NRIC used to be required when an STP
+  // application was in progress, which is exactly when the applicant is least likely to have a
+  // FIN yet, so that rule is gone.
   useEffect(() => {
     form.setValue("stpApplicationType", stpApplicationType);
   }, [stpApplicationType]);
@@ -359,9 +360,7 @@ const StudentDetails = memo(function StudentDetails({ setTabOpened }: { setTabOp
               <FormItem className="relative">
                 <FormLabel>
                   NRIC / FIN{" "}
-                  {applicationTypes.includes(stpApplicationType) && (
-                    <span className="text-xs text-muted-foreground">(optional)</span>
-                  )}
+                  <span className="text-xs text-muted-foreground">(optional)</span>
                 </FormLabel>
 
                 <FormControl>
