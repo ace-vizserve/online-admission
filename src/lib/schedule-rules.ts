@@ -48,7 +48,7 @@ export const MORNING_ONLY_CLASS_TYPE_MARKER = "global";
  * for one class type, it does not replace it.
  * Empty this array to restore Morning once classroom capacity frees up.
  */
-export const AFTERNOON_ONLY_CLASS_LEVEL = ["Primary Two", "Primary Three", "Primary Four", "Primary Six"];
+export const AFTERNOON_ONLY_CLASS_LEVEL = ["Primary Three", "Primary Four", "Primary Six"];
 
 /** The one class type the capacity restriction above applies to, spelled as every HFSE-IS form renders it. */
 export const AFTERNOON_ONLY_CLASS_TYPE = "Standard Class (ENGLISH + FILIPINO)";
