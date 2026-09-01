@@ -33,7 +33,6 @@ describe("scheduleOptionsForLevel", () => {
   });
 
   it("offers only Afternoon for Standard Class at the levels whose morning intake is full", () => {
-    expect(scheduleOptionsForLevel("Primary Two", STANDARD)).toEqual(["Afternoon"]);
     expect(scheduleOptionsForLevel("Primary Three", STANDARD)).toEqual(["Afternoon"]);
     expect(scheduleOptionsForLevel("Primary Four", STANDARD)).toEqual(["Afternoon"]);
     expect(scheduleOptionsForLevel("Primary Six", STANDARD)).toEqual(["Afternoon"]);
@@ -63,6 +62,7 @@ describe("scheduleOptionsForLevel", () => {
 
   it("keeps Morning/Afternoon for Standard and Enrichment at the unrestricted levels", () => {
     expect(scheduleOptionsForLevel("Primary One", STANDARD)).toEqual(["Morning", "Afternoon"]);
+    expect(scheduleOptionsForLevel("Primary Two", STANDARD)).toEqual(["Morning", "Afternoon"]);
     expect(scheduleOptionsForLevel("Primary Five", STANDARD)).toEqual(["Morning", "Afternoon"]);
     expect(scheduleOptionsForLevel("YoungStarter Little Star", "Enrichment Class")).toEqual(["Morning", "Afternoon"]);
     expect(scheduleOptionsForLevel("YoungStarter Junior Star", "Enrichment Class")).toEqual(["Morning", "Afternoon"]);
@@ -98,8 +98,8 @@ describe("scheduleOptionsForLevel", () => {
     expect(scheduleOptionsForLevel("Junior College One", "Global Class (CAMBRIDGE)")).toEqual([]);
   });
 
-  it("restricts exactly the four levels that exceeded morning capacity, on exactly one class type", () => {
-    expect(AFTERNOON_ONLY_CLASS_LEVEL).toEqual(["Primary Two", "Primary Three", "Primary Four", "Primary Six"]);
+  it("restricts exactly the three levels that exceeded morning capacity, on exactly one class type", () => {
+    expect(AFTERNOON_ONLY_CLASS_LEVEL).toEqual(["Primary Three", "Primary Four", "Primary Six"]);
     expect(AFTERNOON_ONLY_CLASS_TYPE).toBe("Standard Class (ENGLISH + FILIPINO)");
   });
 });
