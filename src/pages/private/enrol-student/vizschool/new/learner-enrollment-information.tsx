@@ -38,6 +38,7 @@ import "ldrs/react/Tailspin.css";
 import { ArrowRight, CircleHelp, FilePen, Info, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { firstIncompleteStepUrl } from "@/lib/step-validity";
 import { Navigate, useBeforeUnload, useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -131,8 +132,13 @@ function LearnerEnrollmentInformation() {
     e.preventDefault();
   });
 
-  if (formState.familyInfo?.motherInfo == null) {
-    return <Navigate to={"/vizschool/enrol-student/new/family-info"} />;
+  // Sends the parent to the earliest step whose data is incomplete, so a step is never
+  // rendered on top of unmet prerequisites. Validity-based: the old presence check was
+  // satisfied by a slice the autosave wrote on the first keystroke.
+  const incompleteStepUrl = firstIncompleteStepUrl(formState, "viz-school", "enrollmentInfo");
+
+  if (incompleteStepUrl != null) {
+    return <Navigate to={incompleteStepUrl} replace />;
   }
 
   function onSubmit(values: VizSchoolEnrollmentInformationSchema) {

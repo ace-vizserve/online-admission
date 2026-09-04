@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getStepValidity, isFatherInfoSatisfied, stepKeyFromUrl } from "./step-validity";
+import { firstIncompleteStepUrl, getStepValidity, isFatherInfoSatisfied, stepKeyFromUrl } from "./step-validity";
 
 // ---------------------------------------------------------------------------
 // stepKeyFromUrl
@@ -289,5 +289,76 @@ describe("getStepValidity — viz-school", () => {
       enrollmentInfo: true,
       uploadRequirements: true,
     });
+  });
+});
+
+describe("firstIncompleteStepUrl", () => {
+  const VALID_STUDENT = {
+    studentDetails: { isValid: true },
+    addressContact: { isValid: true },
+    medicalInformation: { isValid: true },
+  };
+  const VALID_FAMILY = { motherInfo: { isValid: true }, fatherInfo: { isValid: true } };
+  const VALID_UPLOADS = {
+    studentUploadRequirements: { isValid: true },
+    parentGuardianUploadRequirements: { isValid: true },
+  };
+
+  it("returns null for the first step, which has nothing ahead of it", () => {
+    expect(firstIncompleteStepUrl({}, "hfse-is", "studentInfo")).toBeNull();
+  });
+
+  it("returns null once every earlier step is valid", () => {
+    const formState = { studentInfo: VALID_STUDENT, familyInfo: VALID_FAMILY };
+    expect(firstIncompleteStepUrl(formState, "hfse-is", "enrollmentInfo")).toBeNull();
+  });
+
+  it("points at the earliest gap, not the nearest one", () => {
+    // familyInfo is also incomplete, but studentInfo comes first.
+    expect(firstIncompleteStepUrl({}, "hfse-is", "uploadRequirements")).toBe("/enrol-student/new/student-info");
+  });
+
+  it("skips past completed steps to the real gap", () => {
+    const formState = { studentInfo: VALID_STUDENT };
+    expect(firstIncompleteStepUrl(formState, "hfse-is", "uploadRequirements")).toBe("/enrol-student/new/family-info");
+  });
+
+  it("treats a started-but-unconfirmed slice as incomplete", () => {
+    // What the per-tab autosave writes on the first keystroke: the slice exists, isValid does
+    // not. The old presence-based guards accepted this and let the parent walk past the step.
+    const formState = { studentInfo: { studentDetails: { firstName: "Juan" }, addressContact: { homeAddress: "1 Main St" } } };
+    expect(firstIncompleteStepUrl(formState, "hfse-is", "familyInfo")).toBe("/enrol-student/new/student-info");
+  });
+
+  it("ignores steps at or after the calling step, so it only ever points backwards", () => {
+    const formState = { studentInfo: VALID_STUDENT };
+    // familyInfo itself is invalid, but it is the caller — its own state must not redirect it.
+    expect(firstIncompleteStepUrl(formState, "hfse-is", "familyInfo")).toBeNull();
+  });
+
+  it("cannot loop: the step it points at is itself satisfied", () => {
+    const formState = { studentInfo: VALID_STUDENT, uploadRequirements: VALID_UPLOADS };
+    const target = firstIncompleteStepUrl(formState, "hfse-is", "uploadRequirements");
+
+    expect(target).toBe("/enrol-student/new/family-info");
+    const targetKey = stepKeyFromUrl(target!)!;
+    expect(firstIncompleteStepUrl(formState, "hfse-is", targetKey)).toBeNull();
+  });
+
+  it("keeps a VizSchool parent inside the VizSchool flow", () => {
+    // This guard used to redirect to the HFSE-IS URL, dropping a VizSchool parent into the
+    // wrong wizard entirely.
+    const target = firstIncompleteStepUrl({}, "viz-school", "uploadRequirements");
+
+    expect(target).toBe("/vizschool/enrol-student/new/student-info");
+    expect(target).not.toMatch(/^\/enrol-student\//);
+  });
+
+  it("applies the VizSchool validity rules, which have no medical requirement", () => {
+    const formState = {
+      studentInfo: { studentDetails: { isValid: true }, addressContact: { isValid: true } },
+    };
+    expect(firstIncompleteStepUrl(formState, "viz-school", "familyInfo")).toBeNull();
+    expect(firstIncompleteStepUrl(formState, "hfse-is", "familyInfo")).toBe("/enrol-student/new/student-info");
   });
 });

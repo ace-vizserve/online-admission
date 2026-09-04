@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
 import { ENROL_NEW_STUDENT_FAMILY_INFORMATION_TITLE_DESCRIPTION } from "@/data";
 import useSession from "@/hooks/use-session";
-import { isFatherInfoSatisfied } from "@/lib/step-validity";
+import { firstIncompleteStepUrl, isFatherInfoSatisfied } from "@/lib/step-validity";
 import { cn } from "@/lib/utils";
 import { VizSchoolEnrolNewStudentFormState } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -53,8 +53,13 @@ function FamilyInformationTabs() {
     });
   }, [data, formState.familyInfo, isSuccess, setFormState]);
 
-  if (formState.studentInfo?.addressContact == null || formState.studentInfo.studentDetails == null) {
-    return <Navigate to={"/vizschool/enrol-student/new/student-info"} />;
+  // Sends the parent to the earliest step whose data is incomplete, so a step is never
+  // rendered on top of unmet prerequisites. Validity-based: the old presence check was
+  // satisfied by a slice the autosave wrote on the first keystroke.
+  const incompleteStepUrl = firstIncompleteStepUrl(formState, "viz-school", "familyInfo");
+
+  if (incompleteStepUrl != null) {
+    return <Navigate to={incompleteStepUrl} replace />;
   }
 
   if (fetchStatus === "fetching" && isPending) {

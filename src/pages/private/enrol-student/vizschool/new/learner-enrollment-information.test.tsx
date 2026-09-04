@@ -17,10 +17,19 @@ beforeEach(() => {
   resetEnrolmentStores();
 });
 
+/**
+ * VizSchool prerequisites for this step — no medical requirement in this flow. See the HFSE-IS
+ * page test for why a bare `motherInfo` seed is no longer enough.
+ */
+const REACHED_ENROLLMENT_STEP = {
+  studentInfo: { studentDetails: { isValid: true }, addressContact: { isValid: true } },
+  familyInfo: { motherInfo: { isValid: true }, fatherInfo: { isValid: true } },
+};
+
 describe("learner-enrollment-information.tsx (VizSchool new)", () => {
   it("does not crash when uploadRequirements is entirely absent", () => {
     seedFormState("vizschool-new", {
-      familyInfo: { motherInfo: { isValid: true } },
+      ...REACHED_ENROLLMENT_STEP,
       enrollmentInfo: { levelApplied: "Primary One" },
       // uploadRequirements intentionally absent
     });
@@ -30,7 +39,7 @@ describe("learner-enrollment-information.tsx (VizSchool new)", () => {
 
   it("does not write to the store on mount (wasDirty gate — fixed: was previously unconditional)", async () => {
     seedFormState("vizschool-new", {
-      familyInfo: { motherInfo: { isValid: true } },
+      ...REACHED_ENROLLMENT_STEP,
       enrollmentInfo: { levelApplied: "Primary One" },
     });
     const setFormStateSpy = vi.spyOn(useVizSchoolEnrolNewStudentStore.getState(), "setFormState");
@@ -44,7 +53,7 @@ describe("learner-enrollment-information.tsx (VizSchool new)", () => {
 
   it("defaults the contract signatory to Father when hasFatherInfo is true", async () => {
     seedFormState("vizschool-new", {
-      familyInfo: { motherInfo: { isValid: true } },
+      ...REACHED_ENROLLMENT_STEP,
       enrollmentInfo: {},
       uploadRequirements: { parentGuardianUploadRequirements: { hasFatherInfo: true } },
     });
@@ -59,7 +68,7 @@ describe("learner-enrollment-information.tsx (VizSchool new)", () => {
 
   it("does not offer Father as a contract signatory option when hasFatherInfo is false", async () => {
     seedFormState("vizschool-new", {
-      familyInfo: { motherInfo: { isValid: true } },
+      ...REACHED_ENROLLMENT_STEP,
       enrollmentInfo: {},
       uploadRequirements: { parentGuardianUploadRequirements: { hasFatherInfo: false } },
     });
@@ -70,5 +79,36 @@ describe("learner-enrollment-information.tsx (VizSchool new)", () => {
       expect(screen.getByText(/parent contract signatory/i)).toBeInTheDocument();
     });
     expect(screen.queryByText("Father")).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * The step guard is what stops a parent standing on Enrolment Information with an unfinished
+ * step behind it — the shape that left Student Information stranded and unreachable.
+ */
+describe("step guard", () => {
+  const SEED = {
+    enrollmentInfo: {},
+    uploadRequirements: { parentGuardianUploadRequirements: { hasFatherInfo: false } },
+  };
+
+  it("refuses to render when an earlier step is incomplete", async () => {
+    seedFormState("vizschool-new", SEED);
+
+    renderForm(<LearnerEnrollmentInformation />, { flow: "vizschool-new" });
+
+    await waitFor(() => {
+      expect(screen.queryByText(/parent contract signatory/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it("renders once those prerequisites are satisfied", async () => {
+    seedFormState("vizschool-new", { ...REACHED_ENROLLMENT_STEP, ...SEED });
+
+    renderForm(<LearnerEnrollmentInformation />, { flow: "vizschool-new" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/parent contract signatory/i)).toBeInTheDocument();
+    });
   });
 });

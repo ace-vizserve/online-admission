@@ -7,14 +7,20 @@ import { Separator } from "@/components/ui/separator";
 import { useEnrolNewLearnerContext } from "@/context/vizschool/enrol-new-learner-context";
 import { ENROL_NEW_STUDENT_UPLOAD_REQUIREMENTS_TITLE_DESCRIPTION } from "@/data";
 import { ErrorBoundary } from "react-error-boundary";
+import { firstIncompleteStepUrl } from "@/lib/step-validity";
 import { Navigate } from "react-router";
 
 function LearnerUploadRequirements() {
   const { title, description } = ENROL_NEW_STUDENT_UPLOAD_REQUIREMENTS_TITLE_DESCRIPTION;
   const { formState } = useEnrolNewLearnerContext();
 
-  if (formState.enrollmentInfo == null) {
-    return <Navigate to={"/enrol-student/new/enrollment-info"} />;
+  // Sends the parent to the earliest step whose data is incomplete, so a step is never
+  // rendered on top of unmet prerequisites. Validity-based: the old presence check was
+  // satisfied by a slice the autosave wrote on the first keystroke.
+  const incompleteStepUrl = firstIncompleteStepUrl(formState, "viz-school", "uploadRequirements");
+
+  if (incompleteStepUrl != null) {
+    return <Navigate to={incompleteStepUrl} replace />;
   }
 
   return (

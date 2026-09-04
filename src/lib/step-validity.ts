@@ -60,3 +60,49 @@ export function getStepValidity(formState: any, flow: WizardFlow): Record<StepKe
       uploadRequirements?.parentGuardianUploadRequirements?.isValid === true,
   };
 }
+
+export const STEP_ORDER: StepKey[] = ["studentInfo", "familyInfo", "enrollmentInfo", "uploadRequirements"];
+
+const STEP_URLS: Record<"hfse-is" | "viz-school", Record<StepKey, string>> = {
+  "hfse-is": {
+    studentInfo: "/enrol-student/new/student-info",
+    familyInfo: "/enrol-student/new/family-info",
+    enrollmentInfo: "/enrol-student/new/enrollment-info",
+    uploadRequirements: "/enrol-student/new/upload-requirements",
+  },
+  "viz-school": {
+    studentInfo: "/vizschool/enrol-student/new/student-info",
+    familyInfo: "/vizschool/enrol-student/new/family-info",
+    enrollmentInfo: "/vizschool/enrol-student/new/enrollment-info",
+    uploadRequirements: "/vizschool/enrol-student/new/upload-requirements",
+  },
+};
+
+/**
+ * URL of the earliest step *before* `step` whose data is incomplete, or null when every step
+ * ahead of it is satisfied. Step pages use it to send a parent to the gap instead of rendering
+ * a step whose prerequisites were never met.
+ *
+ * Two properties this relies on:
+ *
+ * - It only ever points backwards from the calling step, so a chain of these guards always
+ *   terminates at student-info and can never loop.
+ * - It tests validity, not presence. The per-tab autosave writes a slice object on the first
+ *   keystroke, so a presence check ("studentDetails != null") is satisfied by a step the parent
+ *   only started typing into and never confirmed - which is how an unfinished Student
+ *   Information step could sit behind three completed ones.
+ */
+export function firstIncompleteStepUrl(
+  formState: unknown,
+  flow: "hfse-is" | "viz-school",
+  step: StepKey,
+): string | null {
+  const validity = getStepValidity(formState, flow);
+
+  for (const key of STEP_ORDER) {
+    if (key === step) return null;
+    if (!validity[key]) return STEP_URLS[flow][key];
+  }
+
+  return null;
+}
