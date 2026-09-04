@@ -35,6 +35,13 @@ function isLocked(el: HTMLElement) {
   return el.className.includes("cursor-not-allowed");
 }
 
+function badge(el: HTMLElement) {
+  const cls = el.querySelector("svg")?.getAttribute("class") ?? "";
+  if (cls.includes("lucide-check")) return "complete";
+  if (cls.includes("lucide-circle-alert")) return "invalid";
+  return "pending";
+}
+
 describe("new-learner-steps.tsx — step reachability", () => {
   it("unlocks Student Information on a draft where completedTabs lost it", async () => {
     seedFormState("vizschool-new", {
@@ -87,5 +94,51 @@ describe("new-learner-steps.tsx — step reachability", () => {
     renderForm(<NewLearnerSteps />, { flow: "vizschool-new" });
 
     expect(isLocked(step(/upload requirements/i))).toBe(false);
+  });
+});
+
+/**
+ * The green/red/numbered badge is derived from the form data, so a draft whose `completedTabs`
+ * log is missing an entry still reads correctly. The log keeps one job: separating a step that
+ * was never touched from one that was submitted and has since gone incomplete.
+ */
+describe("new-learner-steps.tsx — badge state", () => {
+  it("shows a step as complete when its data is valid but the log never recorded it", () => {
+    seedFormState("vizschool-new", { studentInfo: { studentDetails: { isValid: true }, addressContact: { isValid: true } } });
+    useEnrolNewStudentTabStateStore.setState({
+      currentTab: "/vizschool/enrol-student/new/family-info",
+      activeTab: "/vizschool/enrol-student/new/family-info",
+      completedTabs: [],
+    });
+
+    renderForm(<NewLearnerSteps />, { flow: "vizschool-new" });
+
+    expect(badge(step(/student information/i))).toBe("complete");
+  });
+
+  it("still flags a submitted step whose data is no longer valid", () => {
+    seedFormState("vizschool-new", {});
+    useEnrolNewStudentTabStateStore.setState({
+      currentTab: "/vizschool/enrol-student/new/family-info",
+      activeTab: "/vizschool/enrol-student/new/family-info",
+      completedTabs: ["/vizschool/enrol-student/new/family-info"],
+    });
+
+    renderForm(<NewLearnerSteps />, { flow: "vizschool-new" });
+
+    expect(badge(step(/family information/i))).toBe("invalid");
+  });
+
+  it("leaves an untouched incomplete step as a plain numbered badge", () => {
+    seedFormState("vizschool-new", {});
+    useEnrolNewStudentTabStateStore.setState({
+      currentTab: "/vizschool/enrol-student/new/student-info",
+      activeTab: "/vizschool/enrol-student/new/student-info",
+      completedTabs: [],
+    });
+
+    renderForm(<NewLearnerSteps />, { flow: "vizschool-new" });
+
+    expect(badge(step(/upload requirements/i))).toBe("pending");
   });
 });

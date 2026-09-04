@@ -49,22 +49,34 @@ function NewStudentSteps() {
     return key ? !validity[key] : false;
   });
 
+  // Gates the "Active Tab" badge on the wizard having been started at all. Reads the derived
+  // side too, so a resumed draft whose `completedTabs` is empty or lossy still shows it.
+  const hasAnyProgress = completedTabs.length > 0 || Object.values(validity).some(Boolean);
+
   return (
     <nav className="w-full bg-white mb-12 md:mb-0">
       <ol className="flex flex-col lg:flex-row max-w-screen mx-auto">
         {STEPS.map((step, index) => {
-          const isActive = activeTab === step.url && completedTabs.length > 0;
-          const isCurrent = currentTab === step.url && !completedTabs.includes(step.url);
-          const isCompleted = completedTabs.includes(step.url);
+          // `completedTabs` is an append-only log of "the parent submitted this step at least
+          // once" - a fact about events, not a claim that the step is complete. It keeps exactly
+          // one job here: telling a never-touched step apart from one that was filled in and has
+          // since gone incomplete (the red state). Everything that asserts a step *is* complete
+          // now derives from the form data, so a draft whose log is missing an entry still reads
+          // correctly.
+          const wasSubmitted = completedTabs.includes(step.url);
 
           const stepKey = stepKeyFromUrl(step.url);
           const stepValid = stepKey ? validity[stepKey] : true;
-          const isInvalid = isCompleted && !stepValid;
+
+          const isActive = activeTab === step.url && hasAnyProgress;
+          const isCompleted = stepValid;
+          const isInvalid = wasSubmitted && !stepValid;
+          const isCurrent = currentTab === step.url && !stepValid;
 
           // Unioned with the old completedTabs/currentTab rule rather than replacing it, so this
           // can only ever unlock a step - it never newly locks one that used to be reachable.
           const isReachable = stepValid || firstInvalidIndex === -1 || index <= firstInvalidIndex;
-          const isLocked = !isCurrent && !isCompleted && !isReachable;
+          const isLocked = !isCurrent && !wasSubmitted && !isReachable;
 
           return (
             <li
