@@ -39,6 +39,16 @@ function NewStudentSteps() {
 
   const validity = getStepValidity(formState, "hfse-is");
 
+  // Reachability is derived from the form data, never from the persisted `completedTabs` array.
+  // That array is restored verbatim on draft resume and only ever grows, so a step it missed once
+  // stayed locked forever with no way back in. Deriving it guarantees a step can never be both
+  // incomplete and unreachable: every step whose data is already valid stays reachable, and so
+  // does the earliest one that is still incomplete - exactly the step a parent needs to get into.
+  const firstInvalidIndex = STEPS.findIndex((s) => {
+    const key = stepKeyFromUrl(s.url);
+    return key ? !validity[key] : false;
+  });
+
   return (
     <nav className="w-full bg-white mb-12 md:mb-0">
       <ol className="flex flex-col lg:flex-row max-w-screen mx-auto">
@@ -46,11 +56,15 @@ function NewStudentSteps() {
           const isActive = activeTab === step.url && completedTabs.length > 0;
           const isCurrent = currentTab === step.url && !completedTabs.includes(step.url);
           const isCompleted = completedTabs.includes(step.url);
-          const isLocked = !isCurrent && !isCompleted;
 
           const stepKey = stepKeyFromUrl(step.url);
           const stepValid = stepKey ? validity[stepKey] : true;
           const isInvalid = isCompleted && !stepValid;
+
+          // Unioned with the old completedTabs/currentTab rule rather than replacing it, so this
+          // can only ever unlock a step - it never newly locks one that used to be reachable.
+          const isReachable = stepValid || firstInvalidIndex === -1 || index <= firstInvalidIndex;
+          const isLocked = !isCurrent && !isCompleted && !isReachable;
 
           return (
             <li
