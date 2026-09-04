@@ -167,6 +167,10 @@ export default function MedicalInformationSection() {
       toast.warning("Student Details is missing!", {
         description: "Please fill out all required fields to move forward.",
       });
+      // Leaves an error on the form so RHF keeps `isSubmitSuccessful` false. The effect that
+      // advances the wizard keys off that flag, and a bare `return` here left it true - the guard
+      // warned but the parent was navigated on anyway, stranding this step as never-completed.
+      form.setError("root", {});
       return;
     }
 
@@ -174,6 +178,7 @@ export default function MedicalInformationSection() {
       toast.warning("Student Address & Contact is missing!", {
         description: "Please fill out all required fields to move forward.",
       });
+      form.setError("root", {});
       return;
     }
 
