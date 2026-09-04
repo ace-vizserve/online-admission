@@ -7,16 +7,24 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
 
 import StudentDetails from "./student-details";
 import StudentAddressContact from "./student-address-contact";
 import { renderForm, resetEnrolmentStores, seedFormState } from "@/test/render-form";
-import { useVizSchoolEnrolNewStudentStore } from "@/zustand-store";
+import { useEnrolNewStudentTabStateStore, useVizSchoolEnrolNewStudentStore } from "@/zustand-store";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 
+const navigateSpy = vi.fn();
+vi.mock("react-router", async () => {
+  const actual = await vi.importActual<typeof import("react-router")>("react-router");
+  return { ...actual, useNavigate: () => navigateSpy };
+});
+
 beforeEach(() => {
   resetEnrolmentStores();
+  navigateSpy.mockClear();
 });
 
 const BASE_STUDENT_DETAILS = {
@@ -123,5 +131,40 @@ describe("student-address-contact.tsx (VizSchool new)", () => {
     renderForm(<StudentAddressContact />, { flow: "vizschool-new" });
 
     expect(screen.queryByText(/where has your child/i)).not.toBeInTheDocument();
+  });
+});
+
+const VIZ_STUDENT_INFO_URL = "/vizschool/enrol-student/new/student-info";
+const VIZ_FAMILY_INFO_URL = "/vizschool/enrol-student/new/family-info";
+
+/** Same advance-guard concern as the HFSE-IS medical tab; here the guard lives on this panel. */
+describe("student-address-contact.tsx (VizSchool new) advance guards", () => {
+  async function submitAddressForm() {
+    const user = userEvent.setup();
+    renderForm(<StudentAddressContact />, { flow: "vizschool-new" });
+    await user.click(screen.getAllByRole("button", { name: /save & proceed to next step/i })[0]);
+  }
+
+  it("does not advance when Student Details was never confirmed", async () => {
+    seedFormState("vizschool-new", { studentInfo: { addressContact: BASE_ADDRESS_CONTACT } });
+
+    await submitAddressForm();
+
+    await waitFor(() => {
+      expect(toast.warning).toHaveBeenCalledWith("Student Details is missing!", expect.anything());
+    });
+    expect(navigateSpy).not.toHaveBeenCalledWith(VIZ_FAMILY_INFO_URL);
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).not.toContain(VIZ_STUDENT_INFO_URL);
+  });
+
+  it("advances and marks the step complete once Student Details is confirmed", async () => {
+    seedFormState("vizschool-new", {
+      studentInfo: { studentDetails: { isValid: true }, addressContact: BASE_ADDRESS_CONTACT },
+    });
+
+    await submitAddressForm();
+
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(VIZ_FAMILY_INFO_URL));
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).toContain(VIZ_STUDENT_INFO_URL);
   });
 });

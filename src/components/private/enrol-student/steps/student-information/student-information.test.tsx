@@ -12,12 +12,19 @@ import StudentDetails from "./student-details";
 import StudentAddressContact from "./student-address-contact";
 import MedicalInformationSection from "./medical-information";
 import { renderForm, resetEnrolmentStores, seedFormState } from "@/test/render-form";
-import { usePassTypeStore } from "@/zustand-store";
+import { useEnrolNewStudentTabStateStore, usePassTypeStore } from "@/zustand-store";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 
+const navigateSpy = vi.fn();
+vi.mock("react-router", async () => {
+  const actual = await vi.importActual<typeof import("react-router")>("react-router");
+  return { ...actual, useNavigate: () => navigateSpy };
+});
+
 beforeEach(() => {
   resetEnrolmentStores();
+  navigateSpy.mockClear();
 });
 
 const BASE_STUDENT_DETAILS = {
@@ -179,5 +186,58 @@ describe("medical-information.tsx", () => {
     await waitFor(() => {
       expect(screen.getByText(/please describe the medical condition/i)).toBeInTheDocument();
     });
+  });
+});
+
+const STUDENT_INFO_URL = "/enrol-student/new/student-info";
+const FAMILY_INFO_URL = "/enrol-student/new/family-info";
+
+/**
+ * The wizard advances off RHF's `isSubmitSuccessful`, which stays true when a guard returns
+ * without leaving an error. That let a blocked submit warn the parent and navigate anyway,
+ * stranding Student Information as never-completed and — before the reachability fix — locking
+ * the step permanently once a later step moved `currentTab` past it.
+ */
+describe("medical-information.tsx advance guards", () => {
+  async function submitMedicalForm() {
+    const user = userEvent.setup();
+    renderForm(<MedicalInformationSection />, { flow: "hfse-new" });
+    await user.click(screen.getByRole("checkbox", { name: /none of the above/i }));
+    await user.click(screen.getAllByRole("button", { name: /save & proceed to next step/i })[0]);
+  }
+
+  it("does not advance when Student Details was never confirmed", async () => {
+    seedFormState("hfse-new", { studentInfo: { addressContact: { isValid: true } } });
+
+    await submitMedicalForm();
+
+    await waitFor(() => {
+      expect(toast.warning).toHaveBeenCalledWith("Student Details is missing!", expect.anything());
+    });
+    expect(navigateSpy).not.toHaveBeenCalledWith(FAMILY_INFO_URL);
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).not.toContain(STUDENT_INFO_URL);
+  });
+
+  it("does not advance when Address & Contact was never confirmed", async () => {
+    seedFormState("hfse-new", { studentInfo: { studentDetails: { isValid: true } } });
+
+    await submitMedicalForm();
+
+    await waitFor(() => {
+      expect(toast.warning).toHaveBeenCalledWith("Student Address & Contact is missing!", expect.anything());
+    });
+    expect(navigateSpy).not.toHaveBeenCalledWith(FAMILY_INFO_URL);
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).not.toContain(STUDENT_INFO_URL);
+  });
+
+  it("advances and marks the step complete once both earlier sub-tabs are confirmed", async () => {
+    seedFormState("hfse-new", {
+      studentInfo: { studentDetails: { isValid: true }, addressContact: { isValid: true } },
+    });
+
+    await submitMedicalForm();
+
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(FAMILY_INFO_URL));
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).toContain(STUDENT_INFO_URL);
   });
 });
