@@ -5,14 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useEnrolNewStudentContext } from "@/context/enrol-new-student-context";
 import { ENROL_NEW_STUDENT_UPLOAD_REQUIREMENTS_TITLE_DESCRIPTION } from "@/data";
+import { firstIncompleteStepUrl } from "@/lib/step-validity";
 import { Navigate } from "react-router";
 
 function UploadRequirements() {
   const { title, description } = ENROL_NEW_STUDENT_UPLOAD_REQUIREMENTS_TITLE_DESCRIPTION;
   const { formState } = useEnrolNewStudentContext();
 
-  if (formState.enrollmentInfo == null) {
-    return <Navigate to={"/enrol-student/new/enrollment-info"} />;
+  // Sends the parent to the earliest step whose data is incomplete, so a step is never
+  // rendered on top of unmet prerequisites. Validity-based: the old presence check was
+  // satisfied by a slice the autosave wrote on the first keystroke.
+  const incompleteStepUrl = firstIncompleteStepUrl(formState, "hfse-is", "uploadRequirements");
+
+  if (incompleteStepUrl != null) {
+    return <Navigate to={incompleteStepUrl} replace />;
   }
 
   return (
