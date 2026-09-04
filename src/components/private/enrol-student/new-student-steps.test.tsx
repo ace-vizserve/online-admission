@@ -53,6 +53,13 @@ function isLocked(el: HTMLElement) {
   return el.className.includes("cursor-not-allowed");
 }
 
+function badge(el: HTMLElement) {
+  const cls = el.querySelector("svg")?.getAttribute("class") ?? "";
+  if (cls.includes("lucide-check")) return "complete";
+  if (cls.includes("lucide-circle-alert")) return "invalid";
+  return "pending";
+}
+
 describe("new-student-steps.tsx — step reachability", () => {
   it("unlocks Student Information on a draft where completedTabs lost it", async () => {
     // The reported state: steps 2-4 completed, currentTab past step 1, student data incomplete.
@@ -129,5 +136,51 @@ describe("new-student-steps.tsx — step reachability", () => {
     for (const name of [/student information/i, /family information/i, /enrolment information/i, /upload requirements/i]) {
       expect(isLocked(step(name))).toBe(false);
     }
+  });
+});
+
+/**
+ * The green/red/numbered badge is derived from the form data, so a draft whose `completedTabs`
+ * log is missing an entry still reads correctly. The log keeps one job: separating a step that
+ * was never touched from one that was submitted and has since gone incomplete.
+ */
+describe("new-student-steps.tsx — badge state", () => {
+  it("shows a step as complete when its data is valid but the log never recorded it", () => {
+    seedFormState("hfse-new", { studentInfo: VALID_STUDENT });
+    useEnrolNewStudentTabStateStore.setState({
+      currentTab: "/enrol-student/new/family-info",
+      activeTab: "/enrol-student/new/family-info",
+      completedTabs: [],
+    });
+
+    renderForm(<NewStudentSteps />, { flow: "hfse-new" });
+
+    expect(badge(step(/student information/i))).toBe("complete");
+  });
+
+  it("still flags a submitted step whose data is no longer valid", () => {
+    seedFormState("hfse-new", {});
+    useEnrolNewStudentTabStateStore.setState({
+      currentTab: "/enrol-student/new/family-info",
+      activeTab: "/enrol-student/new/family-info",
+      completedTabs: ["/enrol-student/new/family-info"],
+    });
+
+    renderForm(<NewStudentSteps />, { flow: "hfse-new" });
+
+    expect(badge(step(/family information/i))).toBe("invalid");
+  });
+
+  it("leaves an untouched incomplete step as a plain numbered badge", () => {
+    seedFormState("hfse-new", {});
+    useEnrolNewStudentTabStateStore.setState({
+      currentTab: "/enrol-student/new/student-info",
+      activeTab: "/enrol-student/new/student-info",
+      completedTabs: [],
+    });
+
+    renderForm(<NewStudentSteps />, { flow: "hfse-new" });
+
+    expect(badge(step(/upload requirements/i))).toBe("pending");
   });
 });
