@@ -6,6 +6,10 @@
 const LOGO_URL = "https://vnhklhppftebbcuupfjw.supabase.co/storage/v1/object/public/parent-portal//hfse-logo.png";
 
 export function buildRecoveryEmailHtml(url: string): string {
+  // Read at send time, not hardcoded — the SIS emails already do this, and a
+  // frozen year is the kind of thing nobody notices until a parent does.
+  const year = new Date().getFullYear();
+
   return `<html dir="ltr" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -98,7 +102,7 @@ export function buildRecoveryEmailHtml(url: string): string {
             </p>
 
             <p style="font-size:12px;line-height:20px;color:#6b6b6b;text-align:left;">
-              © 2025 HFSE International School. All rights reserved.
+              © ${year} HFSE International School. All rights reserved.
             </p>
           </td>
         </tr>
