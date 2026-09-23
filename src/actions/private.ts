@@ -1685,7 +1685,8 @@ export async function updateEnrollmentApplicationDetails({
 type Feedback = {
   academicYear: string;
   enroleeNumber: string;
-  feedbackRating: number;
+  // null = the parent skipped the rating. Never 0: that would be averaged in as a real score.
+  feedbackRating: number | null;
   feedbackComments?: string;
   feedbackConsent: boolean;
   howDidYouKnowAboutHFSEIS: string;

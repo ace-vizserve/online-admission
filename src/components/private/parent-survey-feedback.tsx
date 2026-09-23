@@ -24,7 +24,7 @@ import { ArrowLeft, ArrowRight, ChevronLeft, Megaphone, MessageSquarePlus, Shiel
 type Feedback = {
   academicYear: string;
   enroleeNumber: string;
-  feedbackRating: number;
+  feedbackRating: number | null;
   feedbackComments?: string;
   feedbackConsent: boolean;
   howDidYouKnowAboutHFSEIS: string;
@@ -119,13 +119,15 @@ const ParentFeedbackSurvey = ({
     !(howDidYouKnowAboutHFSEIS === "Referral" && !referrerName.trim()) &&
     !(howDidYouKnowAboutHFSEIS === "Other" && !otherSource.trim());
 
-  const submitFeedback = () => {
+  // Skipping stores no rating (null), never 0 — a 0 would be averaged in as a real score. It also
+  // drops a rating/comment picked before clicking Skip, so "skipped" always means "not rated".
+  const submitFeedback = ({ skip = false }: { skip?: boolean } = {}) => {
     mutate({
       academicYear,
       enroleeNumber,
-      feedbackConsent: consent,
-      feedbackRating: selectedRating ? Number(selectedRating) : 0,
-      feedbackComments: comments,
+      feedbackConsent: skip ? false : consent,
+      feedbackRating: !skip && selectedRating ? Number(selectedRating) : null,
+      feedbackComments: skip ? undefined : comments,
       howDidYouKnowAboutHFSEIS: howDidYouKnowAboutHFSEIS === "Other" ? otherSource.trim() : howDidYouKnowAboutHFSEIS,
       marketingReferrerName: howDidYouKnowAboutHFSEIS === "Referral" ? referrerName.trim() : undefined,
     });
@@ -389,7 +391,7 @@ const ParentFeedbackSurvey = ({
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={submitFeedback}
+                  onClick={() => submitFeedback({ skip: true })}
                   disabled={isPending}
                   className="px-4 py-5 rounded-xl font-semibold text-muted-foreground">
                   Skip feedback
