@@ -155,8 +155,32 @@ describe("ParentFeedbackSurvey — submission", () => {
       howDidYouKnowAboutHFSEIS: "Facebook",
       enroleeNumber: "E-1",
       academicYear: "2024-2025",
-      feedbackRating: 0,
+      feedbackRating: null,
     });
+  });
+
+  it("discards a rating picked before skipping, so it is never stored as a score", async () => {
+    const user = userEvent.setup();
+    renderSurvey();
+    await reachStepTwo(user);
+
+    await user.click(screen.getByRole("button", { name: /excellent/i }));
+    await user.click(screen.getByRole("button", { name: /skip feedback/i }));
+
+    await waitFor(() => expect(submitParentFeedback).toHaveBeenCalled());
+    expect(vi.mocked(submitParentFeedback).mock.calls[0][0]).toMatchObject({ feedbackRating: null });
+  });
+
+  it("submits the chosen rating via Submit & Continue", async () => {
+    const user = userEvent.setup();
+    renderSurvey();
+    await reachStepTwo(user);
+
+    await user.click(screen.getByRole("button", { name: /easy/i }));
+    await user.click(screen.getByRole("button", { name: /submit & continue/i }));
+
+    await waitFor(() => expect(submitParentFeedback).toHaveBeenCalled());
+    expect(vi.mocked(submitParentFeedback).mock.calls[0][0]).toMatchObject({ feedbackRating: 4 });
   });
 
   it("collapses 'Other' into the free-text answer on submit", async () => {
