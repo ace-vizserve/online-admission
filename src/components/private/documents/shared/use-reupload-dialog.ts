@@ -1,5 +1,6 @@
 import { MAX_UPLOAD_FILE_SIZE, deleteFile, parentGuardianReuploadDocuments, studentReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
+import { toTableAcademicYear } from "@/config/academic-years";
 import { DocumentConfig, siblingFields } from "@/components/private/shared/upload-requirements/document-config";
 import useSession from "@/hooks/use-session";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
@@ -54,7 +55,8 @@ export function useReuploadDialog({
 
   const uploadProps = useSupabaseUpload({
     bucketName: "parent-portal",
-    path: `${academicYear}/documents`,
+    // Same folder as `documentsFolder` in actions/private (never a `vizschool-` one).
+    path: `${toTableAcademicYear(academicYear)}/documents`,
     allowedMimeTypes: Object.keys(cfg.accept),
     maxFiles: cfg.maxFiles,
     maxFileSize: MAX_UPLOAD_FILE_SIZE,

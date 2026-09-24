@@ -52,11 +52,13 @@ function SubmitLearnerApplicationDialog() {
     onSettled() {
       submitInFlight.current = false;
     },
-    onSuccess() {
+    onSuccess({ generatedEnroleeNumber }) {
+      // The NEW application's enrolee number — as the HFSE re-enrolment dialog does. `params.id` is the
+      // learner's PREVIOUS application, so the feedback survey used to be written onto the old row.
       navigate("/application-submitted", {
         state: {
           academicYear,
-          enroleeNumber: params.id,
+          enroleeNumber: generatedEnroleeNumber,
         },
       });
       queryClient.invalidateQueries({

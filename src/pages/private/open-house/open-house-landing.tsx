@@ -1,17 +1,25 @@
 import students from "@/assets/students.webp";
-import { PARENT_FACING_ACADEMIC_YEARS } from "@/config/academic-years";
 import { Button } from "@/components/ui/button";
+import { useParentAcademicYears } from "@/hooks/use-parent-academic-years";
+import { openHouseAcademicYears } from "@/lib/parent-academic-years";
 import { safeSessionStorage } from "@/lib/safe-storage";
 import { cn } from "@/lib/utils";
 import SEO, { BASE_URL } from "@/pages/seo";
 import { useSelectAcademicYear, useSelectOpenHouseInstitution } from "@/zustand-store";
 import { Radio, RadioGroup } from "@headlessui/react";
 import { ArrowUpRight, CheckCircle2, ChevronRight, GraduationCap, School } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import hfseLogo from "../../../assets/hfse-logo.webp";
 
+/** Year buttons per row, by number of years — two is the layout the page has always had. */
+const YEAR_GRID_COLUMNS: Record<number, string> = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3" };
+
 export default function OpenHouseLanding() {
+  // The SIS's HFSE-IS-open years, or PARENT_FACING_ACADEMIC_YEARS while it loads / if it fails.
+  const { years } = useParentAcademicYears();
+  const parentFacingYears = useMemo(() => openHouseAcademicYears(years), [years]);
+
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const setAcademicYear = useSelectAcademicYear((state) => state.setAcademicYear);
 
@@ -132,8 +140,12 @@ export default function OpenHouseLanding() {
                     Select academic year
                   </label>
 
-                  <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 rounded-xl border border-slate-200">
-                    {PARENT_FACING_ACADEMIC_YEARS.map((ay) => {
+                  <div
+                    className={cn(
+                      "grid gap-3 p-1.5 bg-slate-100 rounded-xl border border-slate-200",
+                      YEAR_GRID_COLUMNS[parentFacingYears.length] ?? "grid-cols-2",
+                    )}>
+                    {parentFacingYears.map((ay) => {
                       const isSelected = academicYear === ay.value;
 
                       return (

@@ -1,4 +1,4 @@
-import { academicYearFromEnroleeNumber, BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
+import { academicYearFromEnroleeNumber, BACKEND_ACADEMIC_YEARS, toTableAcademicYear } from "@/config/academic-years";
 import { supabase } from "@/lib/client";
 import {
   extractFamilyInfo,
@@ -424,8 +424,10 @@ export async function getNewStudentDiscounts(forVizSchool: boolean, academicYear
 
     const discountType = forVizSchool ? "VizSchool New" : "New";
 
+    // The VizSchool flow passes its selector key (`vizschool-ay2026`); VizSchool codes live in the
+    // shared per-year table, told apart by `enroleeType` — see `toTableAcademicYear`.
     const { data: newStudentDiscounts, error: newStudentDiscountsError } = await supabase
-      .from(`${academicYear}_discount_codes`)
+      .from(`${toTableAcademicYear(academicYear)}_discount_codes`)
       .select("*")
       .lte("startDate", today)
       .gte("endDate", today)
@@ -457,8 +459,9 @@ export async function getCurrentStudentDiscounts(forVizSchool: boolean, academic
 
     const discountType = forVizSchool ? "VizSchool Current" : "Current";
 
+    // See getNewStudentDiscounts: the VizSchool key is normalised to the shared per-year table.
     const { data: currentStudentDiscounts, error: currentStudentDiscountsError } = await supabase
-      .from(`${academicYear}_discount_codes`)
+      .from(`${toTableAcademicYear(academicYear)}_discount_codes`)
       .select("*")
       .lte("startDate", today)
       .gte("endDate", today)
@@ -845,10 +848,14 @@ export async function getPreviousParentGuardianDocuments(
 
 export async function submitVizSchoolEnrollment(
   enrollmentDetails: VizSchoolEnrolNewStudentFormState | VizSchoolEnrolOldStudentFormState,
-  academicYear: string,
+  selectedAcademicYear: string,
   schoolFee: string,
   enrolleeType: "VizSchool New" | "VizSchool Current",
 ) {
+  // The VizSchool wizards pass their selector key (`vizschool-ay2026`), but VizSchool applications live in
+  // the shared per-year tables (`ay2026_*`) — there is no `vizschool-ay2026_*` table (42P01). Normalised
+  // ONCE here so every table name below, the V/E number prefix and processParentGuardian all see `ay2026`.
+  const academicYear = toTableAcademicYear(selectedAcademicYear);
   try {
     const built = buildEnrolmentApplicationPayload(enrollmentDetails, {
       category: enrolleeType,
@@ -1289,11 +1296,14 @@ export async function vizSchoolLookupNewEnrolledStudent({
     if (!session?.user?.email) throw new Error("Not authenticated");
 
     const namePattern = `%${fullName}%`;
+    // VizSchool student numbers are `V<yy>####` for the year the learner enrolled in (see
+    // submitVizSchoolEnrollment) — this used to be hardcoded "V26%", which would miss every AY2027 learner.
+    const tableYear = toTableAcademicYear(academicYear);
 
     const { data, error } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
+      .from(`${tableYear}_enrolment_applications`)
       .select("*", { count: "exact" })
-      .ilike("studentNumber", "V26%")
+      .ilike("studentNumber", `V${tableYear.slice(-2)}%`)
       .ilike("enroleeFullName", namePattern)
       .or(`nric.eq.${nric},birthDay.eq.${birthDay}`)
       .or(`fatherEmail.eq.${session.user.email},motherEmail.eq.${session.user.email}`);
@@ -1506,7 +1516,44 @@ export async function mergeAndUploadPDF(files: File[]) {
 // sync with a second hardcoded value.
 export const MAX_UPLOAD_FILE_SIZE = 4 * 1024 * 1024;
 
+/**
+ * The storage folder a document is uploaded to: `<table year>/documents`, e.g. `ay2026/documents`.
+ *
+ * Normalised with `toTableAcademicYear` so the VizSchool wizards (which hold `vizschool-ay2026`) upload to
+ * the same folder the documents page later reads and re-uploads into. NOTE: VizSchool files uploaded before
+ * this fix live under `vizschool-ay2026/documents/…` and were NOT moved — `deleteFile` deletes by the path
+ * recorded in the stored URL, so those old files are still cleaned up correctly.
+ */
+export function documentsFolder(academicYear: string): string {
+  return `${toTableAcademicYear(academicYear)}/documents`;
+}
+
+const PARENT_PORTAL_BUCKET_MARKER = "/parent-portal/";
+
+/**
+ * The storage paths to remove for a stored document (a public URL, or a bare file name).
+ *
+ * Prefers the path recorded in the URL itself (`…/object/public/parent-portal/<path>`), so a file is deleted
+ * from wherever it was actually uploaded — including the legacy `vizschool-ay2026/documents/` folder. Only
+ * when the value carries no path is one recomputed from the year; for a VizSchool key that also tries the
+ * legacy folder (removing a path that does not exist is not an error in Supabase storage).
+ */
+export function storagePathsForDelete(file: string, academicYear: string): string[] {
+  const markerAt = file.indexOf(PARENT_PORTAL_BUCKET_MARKER);
+  if (markerAt !== -1) {
+    const recorded = file.slice(markerAt + PARENT_PORTAL_BUCKET_MARKER.length).split(/[?#]/)[0];
+    if (recorded) return [decodeURIComponent(recorded)];
+  }
+
+  const fileName = file.split(/[?#]/)[0].split("/").pop() ?? "";
+  const paths = [`${documentsFolder(academicYear)}/${fileName}`];
+  const legacy = `${academicYear}/documents/${fileName}`;
+  if (!paths.includes(legacy)) paths.push(legacy);
+  return paths;
+}
+
 export async function uploadFileToBucket(isImage: boolean, files: File[], academicYear: string) {
+  const folder = documentsFolder(academicYear);
   try {
     const {
       data: { session },
@@ -1519,7 +1566,7 @@ export async function uploadFileToBucket(isImage: boolean, files: File[], academ
 
       const { data: fileUpload, error: uploadError } = await supabase.storage
         .from("parent-portal")
-        .upload(`${academicYear}/documents/${Date.now()}_${file.name}`, file, {
+        .upload(`${folder}/${Date.now()}_${file.name}`, file, {
           upsert: false,
         });
 
@@ -1549,7 +1596,7 @@ export async function uploadFileToBucket(isImage: boolean, files: File[], academ
 
       const { data: fileUpload, error: uploadError } = await supabase.storage
         .from("parent-portal")
-        .upload(`${academicYear}/documents/${Date.now()}_${mergedFile.name}`, mergedFile, {
+        .upload(`${folder}/${Date.now()}_${mergedFile.name}`, mergedFile, {
           upsert: false,
         });
 
@@ -1579,9 +1626,9 @@ export async function deleteFile(file: string, academicYear: string) {
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
-    const fileName = file.split("/").pop();
-
-    const { error } = await supabase.storage.from("parent-portal").remove([`${academicYear}/documents/${fileName}`]);
+    const { error } = await supabase.storage
+      .from("parent-portal")
+      .remove(storagePathsForDelete(file, academicYear));
 
     if (error) {
       throw new Error(error.message);
@@ -1709,8 +1756,10 @@ export async function submitParentFeedback({
 
     if (!session?.user?.email) throw new Error("Not authenticated");
 
+    // A VizSchool submission hands the confirmation page its selector key (`vizschool-ay2026`);
+    // the row itself is in the shared per-year table — see `toTableAcademicYear`.
     const { error } = await supabase
-      .from(`${academicYear}_enrolment_applications`)
+      .from(`${toTableAcademicYear(academicYear)}_enrolment_applications`)
       .update({
         howDidYouKnowAboutHFSEIS,
         feedbackRating,

@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }));
 vi.mock("@/lib/client", () => ({ supabase: { auth: { getSession } } }));
 
-const { SIS_BASE, SisError, sisFetch, fetchAdmissionOptions } = await import("./sis");
+const { SIS_BASE, SisError, sisFetch, fetchAdmissionOptions, fetchParentAcademicYears } = await import("./sis");
 
 /** A `fetch` stand-in resolving one canned Response, with the captured call arguments. */
 function stubFetch(response: Partial<Response> & { json?: () => Promise<unknown> }) {
@@ -203,6 +203,47 @@ describe("fetchAdmissionOptions — the public admission-options endpoint", () =
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
 
     const error = await fetchAdmissionOptions("AY2027").catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(SisError);
+    expect((error as InstanceType<typeof SisError>).status).toBe(0);
+  });
+});
+
+describe("fetchParentAcademicYears — the public academic-years endpoint", () => {
+  const BODY = {
+    years: [
+      { ayCode: "AY2026", isCurrent: true, hfseOpen: true, vizschoolOpen: true },
+      { ayCode: "AY2027", isCurrent: false, hfseOpen: true, vizschoolOpen: false },
+    ],
+  };
+
+  it("GETs the endpoint WITHOUT a bearer token (the open-house landing has no session)", async () => {
+    const fetchMock = stubFetch({ json: async () => BODY });
+
+    await expect(fetchParentAcademicYears()).resolves.toEqual(BODY);
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`${SIS_BASE}api/parent/v2/academic-years`);
+    expect(new Headers(fetchMock.mock.calls[0][1].headers).get("Authorization")).toBeNull();
+    expect(getSession).not.toHaveBeenCalled();
+  });
+
+  it("throws a SisError carrying the status when rate-limited", async () => {
+    stubFetch({ ok: false, status: 429, json: async () => ({ error: "Too many requests" }) });
+
+    const error = await fetchParentAcademicYears().catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(SisError);
+    expect((error as InstanceType<typeof SisError>).status).toBe(429);
+  });
+
+  it("throws for a body that is not the expected shape, so the selector falls back", async () => {
+    stubFetch({ json: async () => ({ years: [{ ayCode: "AY2026" }] }) });
+
+    await expect(fetchParentAcademicYears()).rejects.toBeInstanceOf(SisError);
+  });
+
+  it("throws a status-0 SisError when the network fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+
+    const error = await fetchParentAcademicYears().catch((e: unknown) => e);
     expect(error).toBeInstanceOf(SisError);
     expect((error as InstanceType<typeof SisError>).status).toBe(0);
   });

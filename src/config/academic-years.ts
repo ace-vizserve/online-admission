@@ -37,6 +37,18 @@ export const BACKEND_ACADEMIC_YEARS: string[] = ["ay2027", "ay2026", "ay2025"];
 /** VizSchool mirrors the same years behind a `vizschool-` prefix. */
 export const VIZSCHOOL_ACADEMIC_YEARS: string[] = BACKEND_ACADEMIC_YEARS.map((ay) => `vizschool-${ay}`);
 
+/**
+ * The academic-year key a table name is built from: `vizschool-ay2026` → `ay2026`, anything else unchanged.
+ *
+ * The `vizschool-` prefix is a portal-only selector key. VizSchool applications live in the SAME per-year
+ * tables as HFSE-IS ones (`ay2026_enrolment_applications`, told apart by `category`), so there is no
+ * `vizschool-ay2026_*` table — building one from the stored key fails with 42P01 ("relation does not exist").
+ * Every function that builds a table name from a key that may be a VizSchool one passes it through here.
+ */
+export function toTableAcademicYear(academicYear: string): string {
+  return academicYear.replace(/^vizschool-/, "");
+}
+
 /** The academic year currently in session — used as a sensible default/fallback. */
 export const CURRENT_ACADEMIC_YEAR: string =
   PARENT_FACING_ACADEMIC_YEARS.find((ay) => ay.isCurrent)?.value ?? PARENT_FACING_ACADEMIC_YEARS[0].value;

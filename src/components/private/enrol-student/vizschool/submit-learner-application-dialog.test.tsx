@@ -394,7 +394,10 @@ describe("SubmitLearnerApplicationDialog — happy path & family info branch cov
     );
 
     await waitFor(() => expect(locationText()).toContain("/application-submitted"));
-    expect(locationText()).toContain(`"enroleeNumber":"enrolee-1"`);
+    // The NEW application's number, so the feedback survey lands on the row just submitted —
+    // not the learner's previous application (the route's `:id`, "enrolee-1").
+    expect(locationText()).toContain(`"enroleeNumber":"E00001"`);
+    expect(locationText()).not.toContain("enrolee-1");
   });
 
   it("submits when guardian & father info are present with valid mobiles", async () => {
