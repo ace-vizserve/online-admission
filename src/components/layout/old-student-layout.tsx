@@ -1,7 +1,7 @@
 import { deleteReenrolDraftRemote } from "@/actions/drafts";
-import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
 import EnrolOldStudentContextProvider, { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import { useHydrateReEnrollment } from "@/hooks/use-hydrate-reenrollment";
+import { useRecognisedAcademicYears } from "@/hooks/use-parent-academic-years";
 import { useSyncReenrolDraft } from "@/hooks/use-sync-reenrol-draft";
 import { ArrowLeft, FolderOpen } from "lucide-react";
 import { Link, Outlet, useNavigate, useParams, useSearchParams } from "react-router";
@@ -37,9 +37,9 @@ import { OctagonAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 
-const academicYears = BACKEND_ACADEMIC_YEARS;
-
 function OldStudentLayout() {
+  // BACKEND_ACADEMIC_YEARS plus whatever the SIS has open, so a newly opened year is not bounced.
+  const { years: academicYears, isLoading: isLoadingAcademicYears } = useRecognisedAcademicYears("hfse");
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const params = useParams();
@@ -52,6 +52,8 @@ function OldStudentLayout() {
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
       setIsPending(true);
+      // A year the portal does not know may be one the SIS has just opened: wait for its answer before bouncing.
+      if (isLoadingAcademicYears) return;
 
       const timeout = setTimeout(() => {
         navigate("/admission/dashboard");
@@ -65,7 +67,7 @@ function OldStudentLayout() {
     }
 
     setIsPending(false);
-  }, [academicYear, navigate]);
+  }, [academicYear, navigate, academicYears, isLoadingAcademicYears]);
 
   return (
     <EnrolOldStudentContextProvider>

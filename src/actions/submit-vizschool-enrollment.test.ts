@@ -10,7 +10,8 @@ const mockState = vi.hoisted(() => ({
 vi.mock("@/lib/client", () => ({ supabase: mockState }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 
-const { submitVizSchoolEnrollment } = await import("./private");
+const { submitVizSchoolEnrollment, getNewStudentDiscounts, getCurrentStudentDiscounts, submitParentFeedback } =
+  await import("./private");
 
 const ACADEMIC_YEAR = "ay2026";
 const SCHOOL_FEE = "Full Fee";
@@ -135,5 +136,72 @@ describe("submitVizSchoolEnrollment", () => {
     await expect(
       submitVizSchoolEnrollment(vizSchoolNewStudentFixture(), ACADEMIC_YEAR, SCHOOL_FEE, "VizSchool New"),
     ).rejects.toThrow("insert failed");
+  });
+});
+
+// The VizSchool wizards store the selector key `vizschool-ay2026`, but there is no `vizschool-ay2026_*`
+// table in production (42P01) — VizSchool rows live in the shared per-year tables.
+describe("the VizSchool selector key reaches the shared per-year tables", () => {
+  let harness: ReturnType<typeof createSupabaseMock>;
+
+  beforeEach(() => {
+    harness = createSupabaseMock();
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+  });
+
+  it.each(["VizSchool New", "VizSchool Current"] as const)(
+    "submitVizSchoolEnrollment(%s) with vizschool-ay2026 writes every row to ay2026_* and numbers it for 26",
+    async (enrolleeType) => {
+      const result = await submitVizSchoolEnrollment(
+        vizSchoolNewStudentFixture(),
+        "vizschool-ay2026",
+        SCHOOL_FEE,
+        enrolleeType,
+      );
+
+      expect(result).toEqual({ generatedEnroleeNumber: "E260001" });
+      const tables = [...new Set(harness.calls.map((call) => call.table))];
+      expect(tables.length).toBeGreaterThan(0);
+      for (const table of tables) {
+        expect(table).toMatch(/^ay2026_/);
+      }
+      expect(tables).toEqual(
+        expect.arrayContaining(["ay2026_enrolment_applications", "ay2026_enrolment_documents", "ay2026_enrolment_status"]),
+      );
+      const studentNumberUpdate = findCall(harness.calls, {
+        table: "ay2026_enrolment_applications",
+        op: "update",
+        hasKey: "studentNumber",
+      });
+      expect(studentNumberUpdate?.payload?.studentNumber).toBe("V260001");
+    },
+  );
+
+  it("the discount lookups read ay2026_discount_codes, still filtered to VizSchool codes", async () => {
+    await getNewStudentDiscounts(true, "vizschool-ay2026");
+    await getCurrentStudentDiscounts(true, "vizschool-ay2026");
+
+    expect(harness.calls.map((call) => call.table)).toEqual(["ay2026_discount_codes", "ay2026_discount_codes"]);
+    expect(harness.calls[0].filters.or).toContain("VizSchool New");
+    expect(harness.calls[1].filters.or).toContain("VizSchool Current");
+  });
+
+  it("an HFSE-IS key is left as it is", async () => {
+    await getNewStudentDiscounts(false, "ay2027");
+    expect(harness.calls[0].table).toBe("ay2027_discount_codes");
+  });
+
+  it("the post-submit feedback survey updates ay2026_enrolment_applications", async () => {
+    await submitParentFeedback({
+      academicYear: "vizschool-ay2026",
+      enroleeNumber: "E260001",
+      feedbackRating: null,
+      feedbackConsent: false,
+      howDidYouKnowAboutHFSEIS: "Facebook",
+    });
+
+    expect(harness.calls).toHaveLength(1);
+    expect(harness.calls[0]).toMatchObject({ table: "ay2026_enrolment_applications", op: "update" });
   });
 });

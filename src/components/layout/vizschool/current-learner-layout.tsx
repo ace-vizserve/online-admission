@@ -1,4 +1,4 @@
-import { VIZSCHOOL_ACADEMIC_YEARS } from "@/config/academic-years";
+import { useRecognisedAcademicYears } from "@/hooks/use-parent-academic-years";
 import { safeSessionStorage } from "@/lib/safe-storage";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import CurrentLearnerSteps from "@/components/private/enrol-student/vizschool/current-learner-steps";
@@ -34,9 +34,9 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { Outlet, useNavigate, useSearchParams } from "react-router";
 
-const academicYears = VIZSCHOOL_ACADEMIC_YEARS;
-
 function CurrentLearnerLayout() {
+  // VIZSCHOOL_ACADEMIC_YEARS plus whatever the SIS has open for VizSchool, so a newly opened year is not bounced.
+  const { years: academicYears, isLoading: isLoadingAcademicYears } = useRecognisedAcademicYears("vizschool");
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,6 +46,8 @@ function CurrentLearnerLayout() {
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
       setIsPending(true);
+      // A year the portal does not know may be one the SIS has just opened: wait for its answer before bouncing.
+      if (isLoadingAcademicYears) return;
 
       const timeout = setTimeout(() => {
         navigate("/admission/dashboard");
@@ -59,7 +61,7 @@ function CurrentLearnerLayout() {
     }
 
     setIsPending(false);
-  }, [academicYear, navigate]);
+  }, [academicYear, navigate, academicYears, isLoadingAcademicYears]);
 
   return (
     <EnrolCurrentLearnerContextProvider>

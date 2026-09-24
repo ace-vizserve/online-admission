@@ -129,6 +129,20 @@ export function createSupabaseMock(options: SupabaseMockOptions = {}) {
         filters[col] = values;
         return builder;
       },
+      // The VizSchool lookup's pattern filters: `.ilike("studentNumber", "V26%")`.
+      ilike(col: string, pattern: string) {
+        filters[`${col}.ilike`] = pattern;
+        return builder;
+      },
+      // The discount-code lookups' date window: `.lte("startDate", today).gte("endDate", today)`.
+      lte(col: string, value: unknown) {
+        filters[`${col}.lte`] = value;
+        return builder;
+      },
+      gte(col: string, value: unknown) {
+        filters[`${col}.gte`] = value;
+        return builder;
+      },
       order() {
         return builder;
       },

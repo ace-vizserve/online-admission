@@ -5,7 +5,7 @@ import { Outlet, useNavigate, useSearchParams } from "react-router";
 
 import { discardDraft } from "@/actions/discard-draft";
 import { submitVizSchoolEnrollment } from "@/actions/private";
-import { VIZSCHOOL_ACADEMIC_YEARS } from "@/config/academic-years";
+import { useRecognisedAcademicYears } from "@/hooks/use-parent-academic-years";
 import { safeSessionStorage } from "@/lib/safe-storage";
 import MaxWidthWrapper from "@/components/max-width-wrapper";
 import NewLearnerSteps from "@/components/private/enrol-student/vizschool/new-learner-steps";
@@ -57,9 +57,9 @@ import { useMediaQuery } from "react-responsive";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 
-const academicYears = VIZSCHOOL_ACADEMIC_YEARS;
-
 function NewLearnerLayout() {
+  // VIZSCHOOL_ACADEMIC_YEARS plus whatever the SIS has open for VizSchool, so a newly opened year is not bounced.
+  const { years: academicYears, isLoading: isLoadingAcademicYears } = useRecognisedAcademicYears("vizschool");
   const studentDrafts = listNewStudentDrafts("viz-school").reverse() || [];
   const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
@@ -75,6 +75,8 @@ function NewLearnerLayout() {
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
       setIsPending(true);
+      // A year the portal does not know may be one the SIS has just opened: wait for its answer before bouncing.
+      if (isLoadingAcademicYears) return;
 
       const timeout = setTimeout(() => {
         navigate("/admission/dashboard");
@@ -88,7 +90,7 @@ function NewLearnerLayout() {
     }
 
     setIsPending(false);
-  }, [academicYear, navigate]);
+  }, [academicYear, navigate, academicYears, isLoadingAcademicYears]);
 
   const hasCheckedDrafts = useRef<boolean>(false);
 

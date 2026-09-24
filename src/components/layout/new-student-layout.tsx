@@ -9,7 +9,7 @@ import { buttonVariants } from "../ui/button";
 
 import { discardDraft } from "@/actions/discard-draft";
 import { submitEnrollment } from "@/actions/private";
-import { BACKEND_ACADEMIC_YEARS } from "@/config/academic-years";
+import { useRecognisedAcademicYears } from "@/hooks/use-parent-academic-years";
 import { safeSessionStorage } from "@/lib/safe-storage";
 import {
   AlertDialog,
@@ -57,9 +57,9 @@ import { useLocation } from "react-router";
 import { toast } from "sonner";
 import ISSavedDraftsDialog from "../private/is-saved-drafts-list";
 
-const academicYears = BACKEND_ACADEMIC_YEARS;
-
 function NewStudentLayout() {
+  // BACKEND_ACADEMIC_YEARS plus whatever the SIS has open, so a newly opened year is not bounced.
+  const { years: academicYears, isLoading: isLoadingAcademicYears } = useRecognisedAcademicYears("hfse");
   const studentDrafts = listNewStudentDrafts("hfse-is") || [];
   const isOpen = useApplicationDraftsDialogStore((state) => state.isOpen);
   const setIsOpen = useApplicationDraftsDialogStore((state) => state.setIsOpen);
@@ -75,6 +75,8 @@ function NewStudentLayout() {
   useEffect(() => {
     if (!academicYears.includes(academicYear)) {
       setIsPending(true);
+      // A year the portal does not know may be one the SIS has just opened: wait for its answer before bouncing.
+      if (isLoadingAcademicYears) return;
 
       const timeout = setTimeout(() => {
         navigate("/admission/dashboard");
@@ -88,7 +90,7 @@ function NewStudentLayout() {
     }
 
     setIsPending(false);
-  }, [academicYear, navigate]);
+  }, [academicYear, navigate, academicYears, isLoadingAcademicYears]);
 
   const hasCheckedDrafts = useRef<boolean>(false);
 

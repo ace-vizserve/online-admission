@@ -3,55 +3,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import VizSchoolLogo from "@/components/vizschool-logo";
+import { useParentAcademicYears } from "@/hooks/use-parent-academic-years";
+import { academicYearCards } from "@/lib/parent-academic-years";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, CircleCheck } from "lucide-react";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
-const academicYears = [
-  {
-    value: "ay2026",
-    name: "AY 2026",
-    label: "Academic Year 2026",
-    description: "Enrol your child for the ongoing school year.",
+const PROGRAM_LOGO = { hfse: Logo, vizschool: VizSchoolLogo } as const;
 
-    details: [
-      "Classes are currently ongoing",
-      "Late enrolment still accepted",
-      "Ideal for students transferring mid-year",
-    ],
-    buttonText: "Register for AY 2026",
-    isUpcoming: false,
-    logo: Logo,
-  },
-
-  {
-    value: "vizschool-ay2026",
-    name: "Vizschool AY2026",
-    label: "Vizschool AY2026",
-    description: "Early registration for AY 2026 starts Jan 2026.",
-    details: ["Enrolling now for upcoming term", "Secure your spot early"],
-    buttonText: "Enrol in Vizschool AY 2026",
-    isPopular: true,
-    logo: VizSchoolLogo,
-  },
-  {
-    value: "ay2027",
-    name: "AY 2027",
-    label: "Academic Year 2027",
-    description: "Early registration for AY 2027 starts July 2026.",
-    details: ["Secure a slot early", "Registration opens 1 July 2026", "Classes begin January 2027"],
-    buttonText: "Enrol for AY 2027",
-    logo: Logo,
-    isUpcoming: true,
-    isClosed: false,
-  },
-];
+/**
+ * Column count at `lg` and up, by number of cards. Three is the layout the page has always had; one and two
+ * are narrowed so a lone card does not stretch across the screen; four goes two-by-two before four across.
+ * Literal class names so Tailwind generates them.
+ */
+const GRID_COLUMNS: Record<number, string> = {
+  1: "lg:grid-cols-1 max-w-md",
+  2: "lg:grid-cols-2 max-w-4xl",
+  3: "lg:grid-cols-3 max-w-(--breakpoint-xl)",
+  4: "lg:grid-cols-2 xl:grid-cols-4 max-w-(--breakpoint-xl)",
+};
 
 type Props = {
   setSelectedAy: (schoolYear: string) => void;
 };
 
 const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
+  // The SIS's open years, or today's hardcoded ones while it loads / if it fails — never an empty screen.
+  const { years } = useParentAcademicYears();
+  const academicYears = useMemo(
+    () => academicYearCards(years).map((card) => ({ ...card, logo: PROGRAM_LOGO[card.program] })),
+    [years],
+  );
+
   return (
     <div className="animate-in fade-in duration-500 relative min-h-screen flex items-center justify-center flex-col px-4 py-12 md:py-16 lg:py-0">
       <div className="text-center space-y-6 max-w-3xl">
@@ -60,10 +43,14 @@ const AcademicYearSelector = memo(function ({ setSelectedAy }: Props) {
           Select the academic year for your child's enrolment journey
         </p>
       </div>
-      <div className="mt-8 md:mt-12 w-full mx-auto max-w-(--breakpoint-xl) grid grid-cols-1 lg:grid-cols-3 items-center gap-8">
+      <div
+        className={cn(
+          "mt-8 md:mt-12 w-full mx-auto grid grid-cols-1 items-center gap-8",
+          GRID_COLUMNS[Math.min(Math.max(academicYears.length, 1), 4)],
+        )}>
         {academicYears.map((year) => (
           <div
-            key={year.name}
+            key={year.value}
             className={cn(
               "relative bg-card transition-all duration-300 border border-border rounded-xl p-8 flex flex-col",
               {
