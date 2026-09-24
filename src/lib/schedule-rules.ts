@@ -1,10 +1,13 @@
 /**
- * Single source of truth for the class level + class type → preferred schedule rules used by every HFSE-IS
- * enrolment form (new student, re-enrolment, open house, and the public completion page).
+ * FALLBACK ONLY. The HFSE-IS enrolment forms (new student, re-enrolment, open house, and the public
+ * completion page) now take their level → class type → schedule lists from the SIS, per academic year
+ * (`useAdmissionOptions`, src/lib/admission-options.ts), so staff close a full session there without a
+ * deploy. These rules are what the forms fall back to when the SIS cannot be reached:
+ * `buildFallbackOptions` turns them into the endpoint's shape, so there is still one derivation path.
  *
- * Both the schedule dropdown and the submit-time guard in those forms are derived from
- * `scheduleOptionsForLevel`, so they can never disagree. The VizSchool flows have their own
- * schedule handling and deliberately do not use this module.
+ * Changing a rule here changes ONLY the fallback. To change what parents are offered, change the SIS's
+ * enrolment form options for that year. The VizSchool flows have their own schedule handling and
+ * deliberately do not use this module.
  */
 
 export const MORNING_AFTERNOON_CLASS_LEVEL = [

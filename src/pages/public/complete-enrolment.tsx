@@ -12,12 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/lib/client";
-import { scheduleOptionsForLevel } from "@/lib/schedule-rules";
+import { useAdmissionOptions } from "@/hooks/use-admission-options";
+import { checkAdmissionChoice, classTypeOptionsFor, levelOptions, scheduleOptionsFor } from "@/lib/admission-options";
 import { cn } from "@/lib/utils";
 import {
   campusDevelopmentFeePrimary,
   campusDevelopmentFeeSecondary,
-  classLevels,
   medicalConditions,
   preferredPaymentMethod,
   preferredPaymentScheme,
@@ -44,10 +44,10 @@ import { z } from "zod";
  * `recoveryFormSchema` in zod-schema.ts) and a fresh, compact set of fields — see that
  * schema's comment for the scope this deliberately leaves out (VizSchool categories,
  * discounts, referrer, learning needs, PDF-merge uploads). The level↔classType↔schedule↔fee
- * business rules ARE ported (see classTypeOptionsForLevel/feeOptionsForLevel/
- * contractSignatoryOptions below and the guard-rails in onSubmit), mirroring
- * src/pages/private/enrol-student/new/enrollment-information.tsx exactly; the schedule
- * rules are shared outright via scheduleOptionsForLevel in src/lib/schedule-rules.ts. The
+ * business rules ARE ported (see feeOptionsForLevel/contractSignatoryOptions below and the
+ * guard-rails in onSubmit), mirroring src/pages/private/enrol-student/new/enrollment-information.tsx
+ * exactly; the level → class type → schedule lists are shared outright via useAdmissionOptions
+ * (the SIS's per-year options, with a hardcoded fallback — src/lib/admission-options.ts). The
  * visual language (numbered stepper, plain uppercase FormLabels, no per-field Card boxing,
  * soft-tint Alert banner) mirrors that same wizard + new-student-steps.tsx, rather than the
  * more compact admin-tool style used elsewhere in this app — this page is parent-facing.
@@ -80,64 +80,9 @@ const SECTION_LABEL: Record<RecoverySection, string> = {
   uploads: "Documents",
 };
 
-// Class-level → classType/fee business rules, ported verbatim from the authenticated wizard's
-// enrollment-info step (src/pages/private/enrol-student/new/enrollment-information.tsx) so a level
-// applied here maps to the exact same allowed class types and fees. The schedule rules come from
-// @/lib/schedule-rules, which that wizard uses too.
-const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
-const CAMBRIDGE_YEAR_1_LEVELS = ["HFSE International Education Programme – Year 1 (equivalent to K2)"];
-const CAMBRIDGE_YEAR_2_LEVELS = ["HFSE International Education Programme – Year 2 (equivalent to Primary One)"];
-const CAMBRIDGE_SECONDARY_LEVELS = [
-  "HFSE International Education Programme – Year 8",
-  "HFSE International Education Programme – Year 9",
-  "HFSE International Education Programme – Year 10",
-];
-const CAMBRIDGE_YEAR_2_CLASS_TYPES = [
-  "Global Class-Cambridge (ENGLISH+FILIPINO)",
-  "Global Class-Cambridge (ENGLISH+MANDARIN)",
-  "Global Class-Cambridge (ENGLISH+FRENCH)",
-];
-const GLOBAL_LANGUAGE_LEVELS = ["Primary Two", "Primary Three", "Primary Four", "Primary Five", "Primary Six"];
-const STANDARD_CLASS_LEVELS = [
-  "Primary One",
-  "Primary Two",
-  "Primary Three",
-  "Primary Four",
-  "Primary Five",
-  "Primary Six",
-  "Secondary One",
-  "Secondary Two",
-  "Secondary Three",
-  "Secondary Four",
-];
-
-export function classTypeOptionsForLevel(level: string): { label: string; value: string }[] {
-  if (ENRICHMENT_CLASS_LEVELS.includes(level)) return [{ label: "Enrichment Class", value: "Enrichment Class" }];
-  if (CAMBRIDGE_YEAR_2_LEVELS.includes(level)) {
-    return CAMBRIDGE_YEAR_2_CLASS_TYPES.map((type) => ({ label: type, value: type }));
-  }
-  if (CAMBRIDGE_YEAR_1_LEVELS.includes(level)) {
-    return [{ label: "Global Class-Cambridge", value: "Global Class-Cambridge" }];
-  }
-  if (CAMBRIDGE_SECONDARY_LEVELS.includes(level)) {
-    return [{ label: "Global Class (CAMBRIDGE)", value: "Global Class (CAMBRIDGE)" }];
-  }
-  if (STANDARD_CLASS_LEVELS.includes(level)) {
-    const options = [
-      { label: "Standard Class (ENGLISH + FILIPINO)", value: "Standard Class (ENGLISH + FILIPINO)" },
-    ];
-    if (GLOBAL_LANGUAGE_LEVELS.includes(level)) {
-      options.push(
-        { label: "GLOBAL (ENGLISH + MANDARIN)", value: "GLOBAL (ENGLISH + MANDARIN)" },
-        { label: "GLOBAL (ENGLISH + FRENCH)", value: "GLOBAL (ENGLISH + FRENCH)" },
-        { label: "GLOBAL (ENGLISH + TAMIL)", value: "GLOBAL (ENGLISH + TAMIL)" },
-      );
-    }
-    return options;
-  }
-  return [];
-}
-
+// Class-level → fee business rules, ported verbatim from the authenticated wizard's enrollment-info step
+// (src/pages/private/enrol-student/new/enrollment-information.tsx). The level → class type → schedule
+// lists come from the SIS via useAdmissionOptions (src/lib/admission-options.ts), exactly as that wizard's.
 export function feeOptionsForLevel(level: string): { label: string; value: string }[] {
   if (PRIMARY_CLASS_LEVELS.includes(level)) return [...campusDevelopmentFeePrimary];
   if (SECONDARY_SDF_CLASS_LEVELS.includes(level)) return [...campusDevelopmentFeeSecondary];
@@ -751,6 +696,9 @@ function RecoveryForm({
   const sections = useMemo(() => new Set<RecoverySection>(tokenState.sections), [tokenState.sections]);
   const sectionList = useMemo(() => SECTION_ORDER.filter((s) => sections.has(s)), [sections]);
   const [activeTab, setActiveTab] = useState<RecoverySection>(sectionList[0]);
+  // Level → class type → schedule, as the SIS offers them for the application's year (hardcoded
+  // fallback if it can't be reached or doesn't serve that year).
+  const admissionOptions = useAdmissionOptions(tokenState.academicYear);
 
   // Tabs the admin didn't select are still submitted (as whatever they were prefilled with —
   // untouched, already-correct data), just not validated/rendered — see the "sections must be
@@ -819,58 +767,12 @@ function RecoveryForm({
         setActiveTab("enrollmentInfo");
         return;
       }
-      const allowedSchedules = scheduleOptionsForLevel(levelApplied, classType);
-      if (allowedSchedules.length > 0 && !allowedSchedules.includes(preferredSchedule)) {
-        const allowed = allowedSchedules.map((schedule) => `'${schedule}'`).join(" or ");
-        toast.warning("Schedule not available!", {
-          description: `Only ${allowed} is available for the selected grade level and class type.`,
-        });
-        form.setError("enrollmentInfo.preferredSchedule", { message: "Please select your preferred schedule." });
-        setActiveTab("enrollmentInfo");
-        return;
-      }
-      if (CAMBRIDGE_YEAR_2_LEVELS.includes(levelApplied) && !CAMBRIDGE_YEAR_2_CLASS_TYPES.includes(classType)) {
-        toast.warning("Class type mismatch!", {
-          description: "Please select a 'Global Class-Cambridge' language track for this level.",
-        });
-        form.setError("enrollmentInfo.classType", { message: "Please select a 'Global Class-Cambridge' language track." });
-        setActiveTab("enrollmentInfo");
-        return;
-      }
-      if (CAMBRIDGE_YEAR_1_LEVELS.includes(levelApplied) && classType !== "Global Class-Cambridge") {
-        toast.warning("Class type mismatch!", { description: "Only 'Global Class-Cambridge' is available for this level." });
-        form.setError("enrollmentInfo.classType", { message: "Please select 'Global Class-Cambridge'." });
-        setActiveTab("enrollmentInfo");
-        return;
-      }
-      if (CAMBRIDGE_SECONDARY_LEVELS.includes(levelApplied) && classType !== "Global Class (CAMBRIDGE)") {
-        toast.warning("Class type mismatch!", { description: "Only 'Global Class (CAMBRIDGE)' is available for this level." });
-        form.setError("enrollmentInfo.classType", { message: "Please select 'Global Class (CAMBRIDGE)'." });
-        setActiveTab("enrollmentInfo");
-        return;
-      }
-      if (
-        STANDARD_CLASS_LEVELS.includes(levelApplied) &&
-        classType !== "Standard Class (ENGLISH + FILIPINO)" &&
-        !(
-          GLOBAL_LANGUAGE_LEVELS.includes(levelApplied) &&
-          ["GLOBAL (ENGLISH + MANDARIN)", "GLOBAL (ENGLISH + FRENCH)", "GLOBAL (ENGLISH + TAMIL)"].includes(classType)
-        )
-      ) {
-        toast.warning("Class type mismatch!", { description: "Please select a valid class type for this grade level." });
-        form.setError("enrollmentInfo.classType", { message: "Please select a valid class type for this grade level." });
-        setActiveTab("enrollmentInfo");
-        return;
-      }
-      if (ENRICHMENT_CLASS_LEVELS.includes(levelApplied) && classType !== "Enrichment Class") {
-        toast.warning("Class type mismatch!", { description: "Only 'Enrichment Class' is available for this level." });
-        form.setError("enrollmentInfo.classType", { message: "Please select 'Enrichment Class' for this level." });
-        setActiveTab("enrollmentInfo");
-        return;
-      }
-      if (!ENRICHMENT_CLASS_LEVELS.includes(levelApplied) && classType === "Enrichment Class") {
-        toast.warning("Class type mismatch!", { description: "'Enrichment Class' is not available for this grade level." });
-        form.setError("enrollmentInfo.classType", { message: "Please select a valid class type for this grade level." });
+      // The chosen level / class type / schedule must be one the dropdowns offer — blocks while the
+      // SIS has not answered, since the fallback on screen may include a session it has closed.
+      const choiceProblem = checkAdmissionChoice(admissionOptions, { levelApplied, classType, preferredSchedule });
+      if (choiceProblem) {
+        toast.warning(choiceProblem.title, { description: choiceProblem.description });
+        form.setError(`enrollmentInfo.${choiceProblem.field}`, { message: choiceProblem.message });
         setActiveTab("enrollmentInfo");
         return;
       }
@@ -1362,20 +1264,20 @@ function RecoveryForm({
                         control={form.control}
                         name="enrollmentInfo.levelApplied"
                         label="Class level"
-                        options={classLevels as unknown as { label: string; value: string }[]}
+                        options={levelOptions(admissionOptions.derived)}
                       />
                       <SelectField
                         control={form.control}
                         name="enrollmentInfo.classType"
                         label="Class type"
-                        options={classTypeOptionsForLevel(levelApplied)}
+                        options={classTypeOptionsFor(admissionOptions.derived, levelApplied)}
                         placeholder={levelApplied ? "Select a class type" : "Select a class level first"}
                       />
                       <SelectField
                         control={form.control}
                         name="enrollmentInfo.preferredSchedule"
                         label="Preferred schedule"
-                        options={scheduleOptionsForLevel(levelApplied, selectedClassType)}
+                        options={scheduleOptionsFor(admissionOptions.derived, levelApplied, selectedClassType)}
                         placeholder={levelApplied ? "Select a schedule" : "Select a class level first"}
                       />
                     </div>

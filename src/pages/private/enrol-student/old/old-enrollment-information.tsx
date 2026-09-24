@@ -26,16 +26,16 @@ import { useEnrolOldStudentContext } from "@/context/enrol-old-student-context";
 import {
   campusDevelopmentFeePrimary,
   campusDevelopmentFeeSecondary,
-  classLevels,
   ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION,
   preferredPaymentMethod,
   preferredPaymentScheme,
   PRIMARY_CLASS_LEVELS,
   SECONDARY_SDF_CLASS_LEVELS,
 } from "@/data";
+import { useAdmissionOptions } from "@/hooks/use-admission-options";
 import { useDebounce } from "@/hooks/use-debounce";
 import useSession from "@/hooks/use-session";
-import { scheduleOptionsForLevel } from "@/lib/schedule-rules";
+import { checkAdmissionChoice, classTypeOptionsFor, levelOptions, scheduleOptionsFor } from "@/lib/admission-options";
 import { cn, getNextGradeLevels } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
@@ -49,43 +49,16 @@ import { useForm } from "react-hook-form";
 import { useLocation, useParams } from "react-router";
 import { toast } from "sonner";
 
-const ENRICHMENT_CLASS_LEVELS = ["YoungStarter Little Star", "YoungStarter Junior Star"];
-
-const CAMBRIDGE_YEAR_1_LEVELS = ["HFSE International Education Programme – Year 1 (equivalent to K2)"];
-const CAMBRIDGE_YEAR_2_LEVELS = ["HFSE International Education Programme – Year 2 (equivalent to Primary One)"];
-const CAMBRIDGE_SECONDARY_LEVELS = [
-  "HFSE International Education Programme – Year 8",
-  "HFSE International Education Programme – Year 9",
-  "HFSE International Education Programme – Year 10",
-];
-const CAMBRIDGE_YEAR_2_CLASS_TYPES = [
-  "Global Class-Cambridge (ENGLISH+FILIPINO)",
-  "Global Class-Cambridge (ENGLISH+MANDARIN)",
-  "Global Class-Cambridge (ENGLISH+FRENCH)",
-];
-
-const GLOBAL_LANGUAGE_LEVELS = ["Primary Two", "Primary Three", "Primary Four", "Primary Five", "Primary Six"];
-
-const STANDARD_CLASS_LEVELS = [
-  "Primary One",
-  "Primary Two",
-  "Primary Three",
-  "Primary Four",
-  "Primary Five",
-  "Primary Six",
-  "Secondary One",
-  "Secondary Two",
-  "Secondary Three",
-  "Secondary Four",
-];
-
 function OldEnrollmentInformation() {
   const location = useLocation();
   const { title, description } = ENROL_NEW_STUDENT_ENROLLMENT_INFORMATION_TITLE_DESCRIPTION;
   const { formState, setFormState } = useEnrolOldStudentContext();
   const academicYear = useSelectAcademicYear((state) => state.academicYear);
+  // Level → class type → schedule, as the SIS offers them this year (hardcoded fallback if it can't be reached).
+  const admissionOptions = useAdmissionOptions(academicYear);
   const { session } = useSession();
   const [selectedLevel, setSelectedLevel] = useState<string>(formState.enrollmentInfo?.levelApplied ?? "");
+  const classTypeChoices = classTypeOptionsFor(admissionOptions.derived, selectedLevel);
   const [isSelectedReferredBySomeone, setIsSelectedReferredBySomeone] = useState<boolean>(
     formState.enrollmentInfo?.discount?.includes("Referred by someone") ?? false,
   );
@@ -113,6 +86,11 @@ function OldEnrollmentInformation() {
   });
 
   const nextGradeLevels = data?.levelApplied ? getNextGradeLevels(data.levelApplied) : [];
+  // Progression narrows the levels on offer to the student's next step; the SIS (or fallback) decides which
+  // of those are open. Kept in the offered order, as the dropdown rendered it before.
+  const nextLevelChoices = levelOptions(admissionOptions.derived).filter((level) =>
+    nextGradeLevels.includes(level.value),
+  );
 
   useEffect(() => {
     const triggerForm = location.state?.triggerForm as boolean | undefined;
@@ -176,94 +154,12 @@ function OldEnrollmentInformation() {
       return;
     }
 
-    const allowedSchedules = scheduleOptionsForLevel(values.levelApplied, values.classType);
-
-    if (allowedSchedules.length > 0 && !allowedSchedules.includes(values.preferredSchedule)) {
-      const allowed = allowedSchedules.map((schedule) => `'${schedule}'`).join(" or ");
-
-      toast.warning("Schedule Not Available!", {
-        description: `Only ${allowed} is available for the selected grade level and class type.`,
-      });
-      form.setError("preferredSchedule", { message: "Please select your preferred schedule for the student." });
-      return;
-    }
-
-    if (CAMBRIDGE_YEAR_2_LEVELS.includes(values.levelApplied) && !CAMBRIDGE_YEAR_2_CLASS_TYPES.includes(values.classType)) {
-      toast.warning("Class Type Mismatch!", {
-        description: "Please select a 'Global Class-Cambridge' language track for this grade level.",
-      });
-
-      form.setError("classType", {
-        message: "Please select a 'Global Class-Cambridge' language track.",
-      });
-
-      return;
-    }
-
-    if (CAMBRIDGE_YEAR_1_LEVELS.includes(values.levelApplied) && values.classType !== "Global Class-Cambridge") {
-      toast.warning("Class Type Mismatch!", {
-        description: "Only 'Global Class-Cambridge' is available for this grade level.",
-      });
-
-      form.setError("classType", {
-        message: "Please select 'Global Class-Cambridge'.",
-      });
-
-      return;
-    }
-
-    if (CAMBRIDGE_SECONDARY_LEVELS.includes(values.levelApplied) && values.classType !== "Global Class (CAMBRIDGE)") {
-      toast.warning("Class Type Mismatch!", {
-        description: "Only 'Global Class (CAMBRIDGE)' is available for this grade level.",
-      });
-
-      form.setError("classType", {
-        message: "Please select 'Global Class (CAMBRIDGE)'.",
-      });
-
-      return;
-    }
-
-    if (
-      STANDARD_CLASS_LEVELS.includes(values.levelApplied) &&
-      values.classType !== "Standard Class (ENGLISH + FILIPINO)" &&
-      !(
-        GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied) &&
-        ["GLOBAL (ENGLISH + MANDARIN)", "GLOBAL (ENGLISH + FRENCH)", "GLOBAL (ENGLISH + TAMIL)"].includes(
-          values.classType,
-        )
-      )
-    ) {
-      toast.warning("Class Type Mismatch!", {
-        description: GLOBAL_LANGUAGE_LEVELS.includes(values.levelApplied)
-          ? "Please select 'Standard Class (ENGLISH + FILIPINO)' or a GLOBAL language track."
-          : "Only 'Standard Class (ENGLISH + FILIPINO)' is available for this grade level.",
-      });
-
-      form.setError("classType", {
-        message: "Please select a valid class type for this grade level.",
-      });
-
-      return;
-    }
-
-    if (ENRICHMENT_CLASS_LEVELS.includes(values.levelApplied) && values.classType !== "Enrichment Class") {
-      toast.warning("Class Type Mismatch!", {
-        description: "Only 'Enrichment Class' is available for this grade level.",
-      });
-      form.setError("classType", {
-        message: "Please select 'Enrichment Class' for this level.",
-      });
-      return;
-    }
-
-    if (!ENRICHMENT_CLASS_LEVELS.includes(values.levelApplied) && values.classType === "Enrichment Class") {
-      toast.warning("Class Type Mismatch!", {
-        description: "'Enrichment Class' is not available for the selected grade level.",
-      });
-      form.setError("classType", {
-        message: "Please select a valid class type for this grade level.",
-      });
+    // The chosen level / class type / schedule must be one the dropdowns offer. Blocks while the SIS
+    // has not answered.
+    const choiceProblem = checkAdmissionChoice(admissionOptions, values);
+    if (choiceProblem) {
+      toast.warning(choiceProblem.title, { description: choiceProblem.description });
+      form.setError(choiceProblem.field, { message: choiceProblem.message });
       return;
     }
 
@@ -360,7 +256,7 @@ function OldEnrollmentInformation() {
                             field.onChange(value);
                             setSelectedLevel(value);
                           }}
-                          defaultValue={field.value || nextGradeLevels[0] || ""}>
+                          defaultValue={field.value || nextLevelChoices[0]?.value || ""}>
                           <FormControl>
                             <SelectTrigger className="min-w-0 w-full">
                               <SelectValue placeholder="Select a class level" />
@@ -369,13 +265,11 @@ function OldEnrollmentInformation() {
 
                           <SelectContent>
                             <ScrollArea className="h-52">
-                              {classLevels
-                                .filter((level) => nextGradeLevels.includes(level.value))
-                                .map((level) => (
-                                  <SelectItem key={level.value} value={level.value}>
-                                    {level.label}
-                                  </SelectItem>
-                                ))}
+                              {nextLevelChoices.map((level) => (
+                                <SelectItem key={level.value} value={level.value}>
+                                  {level.label}
+                                </SelectItem>
+                              ))}
                             </ScrollArea>
                           </SelectContent>
                         </Select>
@@ -400,44 +294,12 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {ENRICHMENT_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value="Enrichment Class">Enrichment Class</SelectItem>
-                            ) : CAMBRIDGE_YEAR_2_LEVELS.includes(selectedLevel) ? (
-                              <>
-                                <SelectItem value="Global Class-Cambridge (ENGLISH+FILIPINO)">
-                                  Global Class-Cambridge (ENGLISH+FILIPINO)
+                            {classTypeChoices.length > 0 ? (
+                              classTypeChoices.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {type.label}
                                 </SelectItem>
-                                <SelectItem value="Global Class-Cambridge (ENGLISH+MANDARIN)">
-                                  Global Class-Cambridge (ENGLISH+MANDARIN)
-                                </SelectItem>
-                                <SelectItem value="Global Class-Cambridge (ENGLISH+FRENCH)">
-                                  Global Class-Cambridge (ENGLISH+FRENCH)
-                                </SelectItem>
-                              </>
-                            ) : CAMBRIDGE_YEAR_1_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value="Global Class-Cambridge">Global Class-Cambridge</SelectItem>
-                            ) : CAMBRIDGE_SECONDARY_LEVELS.includes(selectedLevel) ? (
-                              <SelectItem value="Global Class (CAMBRIDGE)">Global Class (CAMBRIDGE)</SelectItem>
-                            ) : STANDARD_CLASS_LEVELS.includes(selectedLevel) ? (
-                              <>
-                                <SelectItem value="Standard Class (ENGLISH + FILIPINO)">
-                                  Standard Class (ENGLISH + FILIPINO)
-                                </SelectItem>
-
-                                {GLOBAL_LANGUAGE_LEVELS.includes(selectedLevel) && (
-                                  <>
-                                    <SelectItem value="GLOBAL (ENGLISH + MANDARIN)">
-                                      GLOBAL (ENGLISH + MANDARIN)
-                                    </SelectItem>
-
-                                    <SelectItem value="GLOBAL (ENGLISH + FRENCH)">
-                                      GLOBAL (ENGLISH + FRENCH)
-                                    </SelectItem>
-
-                                    <SelectItem value="GLOBAL (ENGLISH + TAMIL)">GLOBAL (ENGLISH + TAMIL)</SelectItem>
-                                  </>
-                                )}
-                              </>
+                              ))
                             ) : (
                               <SelectItem disabled value="None">
                                 Select a class level
@@ -467,7 +329,7 @@ function OldEnrollmentInformation() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {scheduleOptionsForLevel(selectedLevel, form.watch("classType")).map((schedule) => (
+                            {scheduleOptionsFor(admissionOptions.derived, selectedLevel, form.watch("classType")).map((schedule) => (
                               <SelectItem key={schedule} value={schedule}>
                                 {schedule}
                               </SelectItem>

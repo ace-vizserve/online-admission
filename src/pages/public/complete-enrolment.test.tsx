@@ -11,18 +11,22 @@ import { ReactElement } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import CompleteEnrolment, {
-  classTypeOptionsForLevel,
-  contractSignatoryOptions,
-  feeOptionsForLevel,
-} from "./complete-enrolment";
+import CompleteEnrolment, { contractSignatoryOptions, feeOptionsForLevel } from "./complete-enrolment";
 import { getRecoveryToken } from "@/actions/recovery";
+import { classTypeOptionsFor, FALLBACK_DERIVED_OPTIONS } from "@/lib/admission-options";
 import { recoveryFormSchema } from "@/zod-schema";
 
 vi.mock("@/actions/recovery", () => ({
   getRecoveryToken: vi.fn(),
   signRecoveryUpload: vi.fn(),
   submitRecovery: vi.fn(),
+}));
+
+// The form asks the SIS for the year's admission options; keep the test off the network. A refusal
+// is what an unreachable SIS looks like, so the form renders from the hardcoded fallback.
+vi.mock("@/lib/sis", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/sis")>()),
+  fetchAdmissionOptions: vi.fn(() => Promise.reject(new Error("SIS unreachable in tests"))),
 }));
 
 function renderAt(token: string) {
@@ -257,9 +261,11 @@ describe("recoveryFormSchema", () => {
   });
 });
 
-// Ported from src/pages/private/enrol-student/new/enrollment-information.tsx — same class
-// level → classType/schedule/fee matrix, same expected results for representative levels.
-describe("classTypeOptionsForLevel", () => {
+// The class-type list this page builds when the SIS can't be reached: the hardcoded fallback, which must
+// still match the matrix every HFSE-IS form used before the SIS owned it.
+const classTypeOptionsForLevel = (level: string) => classTypeOptionsFor(FALLBACK_DERIVED_OPTIONS, level);
+
+describe("class types offered by the fallback", () => {
   it("limits YoungStarter levels to Enrichment Class", () => {
     expect(classTypeOptionsForLevel("YoungStarter Little Star")).toEqual([
       { label: "Enrichment Class", value: "Enrichment Class" },
