@@ -1,3 +1,4 @@
+import { AdmissionOptionsResponse, parseAdmissionOptionsResponse } from "@/lib/admission-options";
 import { supabase } from "@/lib/client";
 
 /** Where the SIS runs during local development. */
@@ -125,4 +126,48 @@ export async function sisFetch<T>(path: string, init: SisFetchInit = {}): Promis
   }
 
   return payload as T;
+}
+
+/** How long one attempt at the admission-options endpoint may take before the forms stop waiting for it. */
+const ADMISSION_OPTIONS_TIMEOUT_MS = 6000;
+
+/**
+ * The level / class type / schedule combinations the SIS currently offers for one academic year
+ * (`GET /api/parent/v2/admission-options?ay=AY2027`).
+ *
+ * Deliberately NOT `sisFetch`: the endpoint is public (no Bearer token) because the
+ * `/complete-enrolment/:token` page has no signed-in parent. Throws `SisError` for any non-2xx
+ * (404 = a year the SIS does not serve, 400 = a malformed code, 429 = rate-limited), for a body that is
+ * not the expected shape, for a network failure, and after `ADMISSION_OPTIONS_TIMEOUT_MS` — every one of
+ * which the caller answers with the hardcoded fallback. A network failure or timeout carries status 0.
+ */
+export async function fetchAdmissionOptions(ayCode: string, signal?: AbortSignal): Promise<AdmissionOptionsResponse> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ADMISSION_OPTIONS_TIMEOUT_MS);
+  const forwardAbort = () => controller.abort();
+  signal?.addEventListener("abort", forwardAbort);
+
+  try {
+    let response: Response;
+    try {
+      response = await fetch(`${SIS_BASE}api/parent/v2/admission-options?ay=${encodeURIComponent(ayCode)}`, {
+        signal: controller.signal,
+      });
+    } catch {
+      throw new SisError(UNREADABLE_FAILURE, 0);
+    }
+
+    const payload = (await response.json().catch(() => null)) as unknown;
+    if (!response.ok) {
+      const message = (payload as { error?: unknown } | null)?.error;
+      throw new SisError(typeof message === "string" ? message : UNREADABLE_FAILURE, response.status);
+    }
+
+    const parsed = parseAdmissionOptionsResponse(payload);
+    if (!parsed) throw new SisError(UNREADABLE_FAILURE, response.status);
+    return parsed;
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener("abort", forwardAbort);
+  }
 }

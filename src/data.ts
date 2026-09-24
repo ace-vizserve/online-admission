@@ -177,6 +177,11 @@ export const religions = [
   { label: "Other", value: "Other" },
 ] as const;
 
+/**
+ * FALLBACK ONLY for the HFSE-IS forms: the level list they show comes from the SIS per academic year
+ * (`useAdmissionOptions`, src/lib/admission-options.ts). This list seeds the fallback used when the SIS
+ * cannot be reached — changing it here does not change what parents are offered while the SIS answers.
+ */
 export const classLevels = [
   {
     label: "YoungStarter Little Star",

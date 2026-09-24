@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }));
 vi.mock("@/lib/client", () => ({ supabase: { auth: { getSession } } }));
 
-const { SIS_BASE, SisError, sisFetch } = await import("./sis");
+const { SIS_BASE, SisError, sisFetch, fetchAdmissionOptions } = await import("./sis");
 
 /** A `fetch` stand-in resolving one canned Response, with the captured call arguments. */
 function stubFetch(response: Partial<Response> & { json?: () => Promise<unknown> }) {
@@ -158,5 +158,52 @@ describe("sisFetch — error contract", () => {
     expect(error).toBeInstanceOf(SisError);
     expect((error as InstanceType<typeof SisError>).status).toBe(502);
     expect((error as InstanceType<typeof SisError>).message).toMatch(/\S/);
+  });
+});
+
+describe("fetchAdmissionOptions — the public admission-options endpoint", () => {
+  const BODY = {
+    ayCode: "AY2027",
+    options: [
+      {
+        levelLabel: "Primary One",
+        levelCode: "P1",
+        classTypeLabel: "Standard Class (ENGLISH + FILIPINO)",
+        schedule: "Morning",
+        sortOrder: 0,
+      },
+    ],
+  };
+
+  it("asks for the year by its SIS code, WITHOUT a bearer token (the completion page has no session)", async () => {
+    const fetchMock = stubFetch({ json: async () => BODY });
+
+    await expect(fetchAdmissionOptions("AY2027")).resolves.toEqual(BODY);
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`${SIS_BASE}api/parent/v2/admission-options?ay=AY2027`);
+    expect(new Headers(fetchMock.mock.calls[0][1].headers).get("Authorization")).toBeNull();
+    expect(getSession).not.toHaveBeenCalled();
+  });
+
+  it("throws a SisError carrying the status for a year the SIS does not serve", async () => {
+    stubFetch({ ok: false, status: 404, json: async () => ({ error: "no admission options for that academic year" }) });
+
+    const error = await fetchAdmissionOptions("AY2031").catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(SisError);
+    expect((error as InstanceType<typeof SisError>).status).toBe(404);
+  });
+
+  it("throws for a body that is not the expected shape, so the forms fall back", async () => {
+    stubFetch({ json: async () => ({ ayCode: "AY2027", options: [{ levelLabel: "Primary One" }] }) });
+
+    await expect(fetchAdmissionOptions("AY2027")).rejects.toBeInstanceOf(SisError);
+  });
+
+  it("throws a status-0 SisError when the network fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+
+    const error = await fetchAdmissionOptions("AY2027").catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(SisError);
+    expect((error as InstanceType<typeof SisError>).status).toBe(0);
   });
 });
