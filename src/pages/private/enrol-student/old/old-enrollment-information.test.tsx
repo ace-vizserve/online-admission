@@ -1,7 +1,7 @@
 /**
  * Phase 7 — HFSE-IS Re-enrollment, Enrollment Info tab (`enrollmentInformationSchema`).
  */
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -34,7 +34,9 @@ describe("old-enrollment-information.tsx", () => {
     renderForm(<OldEnrollmentInformation />, { flow: "hfse-old" });
 
     await waitFor(() => {
-      expect(screen.getByRole("checkbox", { name: /social media consent/i })).toBeChecked();
+      expect(
+      within(screen.getByRole("radiogroup", { name: /social media consent/i })).getByRole("radio", { name: /^yes$/i }),
+    ).toBeChecked();
     });
   });
 

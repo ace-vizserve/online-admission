@@ -56,6 +56,7 @@ const BASE_MOTHER = {
   motherEmail: "maria@example.com",
   motherCompanyName: "Acme Pte Ltd",
   motherPosition: "Manager",
+  motherWhatsappTeamsConsent: true,
 };
 
 describe("father-information.tsx", () => {
@@ -138,6 +139,31 @@ describe("mother-information.tsx", () => {
     expect(useEnrolNewStudentTabStateStore.getState().completedTabs).not.toContain(
       "/enrol-student/new/family-info",
     );
+  });
+
+  it("blocks confirming until the WhatsApp/Teams consent is answered", async () => {
+    const unanswered = { ...BASE_MOTHER, motherWhatsappTeamsConsent: undefined };
+    seedFormState("hfse-new", {
+      familyInfo: { motherInfo: unanswered, fatherInfo: { noFatherInfo: true } },
+    });
+    const user = userEvent.setup();
+
+    renderForm(<MotherInformation />, { flow: "hfse-new" });
+
+    const [submitButton] = screen.getAllByRole("button", { name: /confirm details/i });
+    await user.click(submitButton);
+
+    await waitFor(() => expect(screen.getByText("Please choose Yes or No")).toBeInTheDocument());
+    expect(useEnrolNewStudentTabStateStore.getState().completedTabs).not.toContain(
+      "/enrol-student/new/family-info",
+    );
+
+    await user.click(screen.getByRole("radio", { name: /^no$/i }));
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(useEnrolNewStudentTabStateStore.getState().completedTabs).toContain("/enrol-student/new/family-info");
+    });
   });
 });
 

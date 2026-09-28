@@ -147,7 +147,7 @@ const DEFAULT_VALUES: RecoveryFormInput = {
         foodAllergyDetails: "",
         otherMedicalConditions: "",
       },
-      paracetamolConsent: false,
+      paracetamolConsent: undefined as unknown as boolean,
     },
   },
   familyInfo: {
@@ -164,6 +164,7 @@ const DEFAULT_VALUES: RecoveryFormInput = {
       motherEmail: "",
       motherCompanyName: "",
       motherPosition: "",
+      motherWhatsappTeamsConsent: undefined as unknown as boolean,
     },
     fatherInfo: {
       noFatherInfo: false,
@@ -206,7 +207,7 @@ const DEFAULT_VALUES: RecoveryFormInput = {
     studentCareProgram: "",
     paymentOption: "",
     contractSignatory: "",
-    socialMediaConsent: false,
+    socialMediaConsent: undefined as unknown as boolean,
     preferredPaymentScheme: "",
     preferredPaymentMethod: "",
   },
@@ -1046,6 +1047,11 @@ function RecoveryForm({
                           label="Company name"
                         />
                         <TextField control={form.control} name="familyInfo.motherInfo.motherPosition" label="Position" />
+                        <BooleanRadioField
+                          control={form.control}
+                          name="familyInfo.motherInfo.motherWhatsappTeamsConsent"
+                          label="Include this mobile number in the class WhatsApp/Teams group chat"
+                        />
                       </div>
                     </div>
 
@@ -1108,6 +1114,11 @@ function RecoveryForm({
                             control={form.control}
                             name="familyInfo.fatherInfo.fatherPosition"
                             label="Position"
+                          />
+                          <BooleanRadioField
+                            control={form.control}
+                            name="familyInfo.fatherInfo.fatherWhatsappTeamsConsent"
+                            label="Include this mobile number in the class WhatsApp/Teams group chat"
                           />
                         </div>
                       )}
@@ -1184,6 +1195,11 @@ function RecoveryForm({
                             control={form.control}
                             name="familyInfo.guardianInfo.guardianPosition"
                             label="Position"
+                          />
+                          <BooleanRadioField
+                            control={form.control}
+                            name="familyInfo.guardianInfo.guardianWhatsappTeamsConsent"
+                            label="Include this mobile number in the class WhatsApp/Teams group chat"
                           />
                         </div>
                       )}
@@ -1337,7 +1353,7 @@ function RecoveryForm({
                       />
                     </div>
 
-                    <CheckboxField
+                    <BooleanRadioField
                       control={form.control}
                       name="enrollmentInfo.socialMediaConsent"
                       label="Consent to appear in school social media / marketing materials"

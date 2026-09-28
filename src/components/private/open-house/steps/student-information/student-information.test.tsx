@@ -140,7 +140,7 @@ describe("medical-information.tsx (Open House)", () => {
 
     renderForm(<MedicalInformationSection />, { flow: "open-house" });
 
-    expect(screen.getByRole("checkbox", { name: /medication consent/i })).toBeChecked();
+    expect(screen.getByRole("radio", { name: /^yes$/i })).toBeChecked();
   });
 
   it("does not write to the store on mount (wasDirty gate — fixed: was previously unconditional)", async () => {

@@ -1,7 +1,8 @@
+import { ConsentField } from "@/components/private/shared/consent-field";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +29,7 @@ export default function MedicalInformationSection() {
     defaultValues: {
       ...formState.studentInfo?.medicalInformation,
       medicalChecklist: formState.studentInfo?.medicalInformation?.medicalChecklist,
-      paracetamolConsent: formState.studentInfo?.medicalInformation?.paracetamolConsent ?? false,
+      paracetamolConsent: formState.studentInfo?.medicalInformation?.paracetamolConsent ?? undefined,
     },
   });
 
@@ -265,45 +266,14 @@ export default function MedicalInformationSection() {
 
         {/* Consent Section */}
         <div className="pt-6">
-          <FormField
+          <ConsentField
             control={form.control}
             name="paracetamolConsent"
-            render={({ field }) => (
-              <FormItem className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Pill className="w-5 h-5 text-primary" />
-                  <FormLabel>Medication Consent</FormLabel>
-                </div>
-
-                <div
-                  className={cn(
-                    "p-6 rounded-xl border-2 transition-all duration-300",
-                    field.value ? "bg-emerald-50/50 border-emerald-200 shadow-sm" : "bg-slate-50 border-slate-100",
-                  )}>
-                  <label className="flex items-start gap-4 cursor-pointer">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="mt-1 size-5 rounded-md data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                      />
-                    </FormControl>
-                    <div className="flex-1">
-                      <span className="text-sm font-bold leading-relaxed text-slate-800">
-                        I give consent for HFSE staff to administer{" "}
-                        <span className="text-emerald-700">paracetamol</span> if needed.
-                      </span>
-                      <FormDescription className="mt-2 text-xs font-semibold text-amber-700 leading-normal">
-                        Note: Staff will always attempt to contact you first. Administration follows standard pediatric
-                        dosing guidelines.
-                      </FormDescription>
-                      <FormMessage />
-                    </div>
-                  </label>
-                </div>
-              </FormItem>
-            )}
-          />
+            icon={Pill}
+            title="Medication Consent"
+            note="Note: Staff will always attempt to contact you first. Administration follows standard pediatric dosing guidelines.">
+            I give consent for HFSE staff to administer paracetamol if needed.
+          </ConsentField>
         </div>
 
         <br />

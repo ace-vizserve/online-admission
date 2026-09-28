@@ -6,6 +6,13 @@ function capitalizeWords(str: string) {
   return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
 }
 
+export const CONSENT_REQUIRED_MESSAGE = "Please choose Yes or No";
+
+// A consent is an explicit Yes/No. An unanswered one is `undefined` (or `null` from the DB), and
+// must not pass as "No" — that is the whole reason these are radios and not checkboxes.
+const consentAnswer = () =>
+  z.boolean({ required_error: CONSENT_REQUIRED_MESSAGE, invalid_type_error: CONSENT_REQUIRED_MESSAGE });
+
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters long"),
@@ -303,7 +310,7 @@ export const medicalChecklistSchema = z
       foodAllergyDetails: z.string().optional(),
       otherMedicalConditions: z.string().optional(),
     }),
-    paracetamolConsent: z.boolean(),
+    paracetamolConsent: consentAnswer(),
   })
   .superRefine((data, ctx) => {
     const c = data.medicalChecklist;
@@ -347,7 +354,7 @@ export const medicalChecklistSchema = z
 
 export const guardianInformationSchema = z
   .object({
-    guardianWhatsappTeamsConsent: z.boolean().default(false).optional(),
+    guardianWhatsappTeamsConsent: consentAnswer().nullish(),
     guardianFirstName: z.string().transform(capitalizeWords).optional(),
     guardianMiddleName: z.string().transform(capitalizeWords).optional(),
     guardianLastName: z.string().transform(capitalizeWords).optional(),
@@ -409,6 +416,15 @@ export const guardianInformationSchema = z
             message: `${field.label} is required`,
           });
         }
+      }
+
+      // Checked apart from the loop above: `false` ("No") is a valid answer, only unanswered isn't.
+      if (schema.guardianWhatsappTeamsConsent == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["guardianWhatsappTeamsConsent"],
+          message: CONSENT_REQUIRED_MESSAGE,
+        });
       }
     }
   });
@@ -482,7 +498,7 @@ export const vizSchoolGuardianInformationSchema = z
 export const fatherInformationSchema = z
   .object({
     isValid: z.boolean().default(false).optional(),
-    fatherWhatsappTeamsConsent: z.boolean().default(false).optional(),
+    fatherWhatsappTeamsConsent: consentAnswer().nullish(),
     noFatherInfo: z.boolean().default(false).optional(),
     fatherFirstName: z.string().transform(capitalizeWords).optional(),
     fatherMiddleName: z.string().transform(capitalizeWords).optional(),
@@ -543,6 +559,15 @@ export const fatherInformationSchema = z
             message: `${field.label} is required`,
           });
         }
+      }
+
+      // Checked apart from the loop above: `false` ("No") is a valid answer, only unanswered isn't.
+      if (schema.fatherWhatsappTeamsConsent == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["fatherWhatsappTeamsConsent"],
+          message: CONSENT_REQUIRED_MESSAGE,
+        });
       }
     }
   });
@@ -614,7 +639,7 @@ export const vizSchoolFatherInformationSchema = z
   });
 
 export const motherInformationSchema = z.object({
-  motherWhatsappTeamsConsent: z.boolean().default(false).optional(),
+  motherWhatsappTeamsConsent: consentAnswer(),
   isValid: z.boolean().default(false).optional(),
   motherFirstName: z
     .string()
@@ -812,7 +837,7 @@ export const enrollmentInformationSchema = z
     contractSignatory: z.string().min(1, {
       message: "Parent contract signatory is required",
     }),
-    socialMediaConsent: z.boolean().default(false).optional(),
+    socialMediaConsent: consentAnswer(),
     preferredPaymentScheme: z.string().min(1, {
       message: "Preferred payment scheme selection is required",
     }),

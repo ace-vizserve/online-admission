@@ -1,3 +1,4 @@
+import { ConsentField } from "@/components/private/shared/consent-field";
 import { getNewStudentDiscounts } from "@/actions/private";
 import cdfDetails from "@/assets/cdfdetails.jpg";
 import PageMetaData from "@/components/page-metadata";
@@ -5,7 +6,6 @@ import AdditionalLearningNeedsComboBox from "@/components/ui/additional-learning
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +37,6 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useSaveApplication } from "@/hooks/use-save-application";
 import useSession from "@/hooks/use-session";
 import { checkAdmissionChoice, classTypeOptionsFor, levelOptions, scheduleOptionsFor } from "@/lib/admission-options";
-import { cn } from "@/lib/utils";
 import { EnrollmentInformationSchema, enrollmentInformationSchema } from "@/zod-schema";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -525,45 +524,15 @@ function EnrollmentInformation() {
                   />
                 </div>
 
-                <FormField
+                <ConsentField
                   control={form.control}
                   name="socialMediaConsent"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div
-                        className={cn(
-                          "max-w-xl mx-auto w-full p-6 rounded-xl border-2 transition-all duration-300",
-                          field.value
-                            ? "bg-emerald-50/50 border-emerald-200 shadow-sm"
-                            : "bg-slate-50 border-slate-100",
-                        )}>
-                        <label className="flex items-start gap-4 cursor-pointer">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              className="mt-1 size-5 rounded-md data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                            />
-                          </FormControl>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <ImageIcon className="size-4 text-emerald-600" />
-                              <span className="text-sm font-bold text-slate-800">Social Media Consent</span>
-                            </div>
-                            <span className="text-sm leading-relaxed text-slate-700">
-                              I give consent for <span className="font-bold text-emerald-700">HFSE</span> to use my
-                              child's photo/videos on official school social media platforms.
-                            </span>
-                            <FormDescription className="mt-2 text-xs font-semibold text-amber-700 leading-normal">
-                              Note: Photos will never include full names or personal details.
-                            </FormDescription>
-                          </div>
-                        </label>
-                      </div>
-                      <FormMessage className="text-[10px] font-bold uppercase" />
-                    </FormItem>
-                  )}
-                />
+                  icon={ImageIcon}
+                  title="Social Media Consent"
+                  note="Note: Photos will never include full names or personal details."
+                  className="mx-auto w-full max-w-xl">
+                  I give consent for HFSE to use my child's photo/videos on official school social media platforms.
+                </ConsentField>
 
                 <div className="max-w-2xl mx-auto space-y-4 bg-secondary p-6 rounded-2xl border border-muted shadow-sm">
                   <FormField

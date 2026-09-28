@@ -282,7 +282,7 @@ describe("getReEnrollmentData", () => {
     });
   });
 
-  it("marks medicalChecklist.none true and dietaryRestrictions/paracetamolConsent default when the row has no medical data at all", async () => {
+  it("marks medicalChecklist.none true and leaves paracetamolConsent unanswered when the row has no medical data at all", async () => {
     harness = createSupabaseMock({
       rows: {
         [APPLICATIONS_TABLE]: [baseApplicationRow()],
@@ -296,7 +296,7 @@ describe("getReEnrollmentData", () => {
 
     expect(result?.studentInfo.studentDetails.dietaryRestrictions).toBe("");
     expect(result?.studentInfo.medicalInformation?.medicalChecklist.none).toBe(true);
-    expect(result?.studentInfo.medicalInformation?.paracetamolConsent).toBe(false);
+    expect(result?.studentInfo.medicalInformation?.paracetamolConsent).toBeUndefined();
   });
 
   it("returns null without a toast when the ownership-scoped lookup finds no owned application", async () => {

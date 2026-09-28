@@ -143,7 +143,7 @@ describe("medical-information.tsx", () => {
 
     renderForm(<MedicalInformationSection />, { flow: "hfse-new" });
 
-    expect(screen.getByRole("checkbox", { name: /medication consent/i })).toBeChecked();
+    expect(screen.getByRole("radio", { name: /^yes$/i })).toBeChecked();
   });
 
   it("requires at least one condition (or 'None of the above') to be selected", async () => {
@@ -181,11 +181,45 @@ describe("medical-information.tsx", () => {
     renderForm(<MedicalInformationSection />, { flow: "hfse-new" });
 
     await user.click(screen.getByRole("checkbox", { name: /other medical condition/i }));
+    await user.click(screen.getByRole("radio", { name: /^yes$/i }));
     await user.click(screen.getAllByRole("button", { name: /save & proceed to next step/i })[0]);
 
     await waitFor(() => {
       expect(screen.getByText(/please describe the medical condition/i)).toBeInTheDocument();
     });
+  });
+
+  it("starts the medication consent unanswered and requires a Yes or No", async () => {
+    seedFormState("hfse-new", {
+      studentInfo: { studentDetails: { isValid: true }, addressContact: { isValid: true } },
+    });
+
+    const user = userEvent.setup();
+    renderForm(<MedicalInformationSection />, { flow: "hfse-new" });
+
+    expect(screen.getByRole("radio", { name: /^yes$/i })).not.toBeChecked();
+    expect(screen.getByRole("radio", { name: /^no$/i })).not.toBeChecked();
+
+    await user.click(screen.getByRole("checkbox", { name: /none of the above/i }));
+    await user.click(screen.getAllByRole("button", { name: /save & proceed to next step/i })[0]);
+
+    await waitFor(() => expect(screen.getByText("Please choose Yes or No")).toBeInTheDocument());
+    expect(navigateSpy).not.toHaveBeenCalledWith(FAMILY_INFO_URL);
+  });
+
+  it("accepts No as an answer to the medication consent", async () => {
+    seedFormState("hfse-new", {
+      studentInfo: { studentDetails: { isValid: true }, addressContact: { isValid: true } },
+    });
+
+    const user = userEvent.setup();
+    renderForm(<MedicalInformationSection />, { flow: "hfse-new" });
+
+    await user.click(screen.getByRole("checkbox", { name: /none of the above/i }));
+    await user.click(screen.getByRole("radio", { name: /^no$/i }));
+    await user.click(screen.getAllByRole("button", { name: /save & proceed to next step/i })[0]);
+
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(FAMILY_INFO_URL));
   });
 });
 
@@ -203,6 +237,7 @@ describe("medical-information.tsx advance guards", () => {
     const user = userEvent.setup();
     renderForm(<MedicalInformationSection />, { flow: "hfse-new" });
     await user.click(screen.getByRole("checkbox", { name: /none of the above/i }));
+    await user.click(screen.getByRole("radio", { name: /^yes$/i }));
     await user.click(screen.getAllByRole("button", { name: /save & proceed to next step/i })[0]);
   }
 

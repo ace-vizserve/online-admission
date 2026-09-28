@@ -1,7 +1,7 @@
 /**
  * Phase 3 — HFSE-IS New Student, Enrollment Info tab (page-level, `enrollmentInformationSchema`).
  */
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import EnrollmentInformation from "./enrollment-information";
@@ -49,7 +49,9 @@ describe("enrollment-information.tsx (HFSE new)", () => {
 
     renderForm(<EnrollmentInformation />, { flow: "hfse-new" });
 
-    expect(screen.getByRole("checkbox", { name: /social media consent/i })).toBeChecked();
+    expect(
+      within(screen.getByRole("radiogroup", { name: /social media consent/i })).getByRole("radio", { name: /^yes$/i }),
+    ).toBeChecked();
   });
 
   it("does not auto-select a contract signatory when hasFatherInfo is true — the parent must choose", () => {
@@ -103,7 +105,7 @@ describe("step guard", () => {
 
     renderForm(<EnrollmentInformation />, { flow: "hfse-new" });
 
-    expect(screen.queryByRole("checkbox", { name: /social media consent/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("radiogroup", { name: /social media consent/i })).not.toBeInTheDocument();
   });
 
   it("renders once those prerequisites are satisfied", () => {
@@ -114,6 +116,6 @@ describe("step guard", () => {
 
     renderForm(<EnrollmentInformation />, { flow: "hfse-new" });
 
-    expect(screen.getByRole("checkbox", { name: /social media consent/i })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: /social media consent/i })).toBeInTheDocument();
   });
 });

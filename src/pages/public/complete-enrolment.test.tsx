@@ -203,6 +203,7 @@ describe("recoveryFormSchema", () => {
         motherEmail: "mary@example.com",
         motherCompanyName: "Example Co",
         motherPosition: "Manager",
+        motherWhatsappTeamsConsent: false,
       },
       fatherInfo: { noFatherInfo: true },
       guardianInfo: { noGuardianInfo: true },
@@ -218,6 +219,7 @@ describe("recoveryFormSchema", () => {
       contractSignatory: "Mother",
       preferredPaymentScheme: "Annual (Full Payment)",
       preferredPaymentMethod: "Bank Transfer",
+      socialMediaConsent: false,
     },
     uploadRequirements: {
       // Only 3 student docs may be deferred (idPicture/passport/birthCert/pass are the 4
@@ -236,6 +238,14 @@ describe("recoveryFormSchema", () => {
 
   it("accepts a minimal valid payload with everything deferrable marked 'to follow'", () => {
     expect(recoveryFormSchema.safeParse(validPayload).success).toBe(true);
+  });
+
+  it("rejects a payload whose social media consent was never answered", () => {
+    const invalid = {
+      ...validPayload,
+      enrollmentInfo: { ...validPayload.enrollmentInfo, socialMediaConsent: undefined },
+    };
+    expect(recoveryFormSchema.safeParse(invalid).success).toBe(false);
   });
 
   it("rejects a payload missing required student details", () => {

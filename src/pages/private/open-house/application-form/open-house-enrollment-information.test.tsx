@@ -1,7 +1,7 @@
 /**
  * Phase 20 — Open House, Enrollment Info tab (`enrollmentInformationSchema`).
  */
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import OpenHouseEnrollmentInformation from "./open-house-enrollment-information";
@@ -36,7 +36,9 @@ describe("open-house-enrollment-information.tsx", () => {
 
     renderForm(<OpenHouseEnrollmentInformation />, { flow: "open-house" });
 
-    expect(screen.getByRole("checkbox", { name: /social media consent/i })).toBeChecked();
+    expect(
+      within(screen.getByRole("radiogroup", { name: /social media consent/i })).getByRole("radio", { name: /^yes$/i }),
+    ).toBeChecked();
   });
 
   it("does not write to the store on mount (wasDirty gate — fixed: was previously unconditional, confirming Phase 11's predicted gap)", async () => {
