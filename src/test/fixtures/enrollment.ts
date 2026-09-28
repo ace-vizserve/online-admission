@@ -73,6 +73,7 @@ export function hfseNewStudentFixture(overrides: Partial<EnrolNewStudentFormStat
         motherEmail: "maria@example.com",
         motherCompanyName: "Acme Pte Ltd",
         motherPosition: "Manager",
+        motherWhatsappTeamsConsent: true,
       },
       fatherInfo: {
         isValid: true,
@@ -89,6 +90,7 @@ export function hfseNewStudentFixture(overrides: Partial<EnrolNewStudentFormStat
         fatherEmail: "jose@example.com",
         fatherCompanyName: "Acme Pte Ltd",
         fatherPosition: "Engineer",
+        fatherWhatsappTeamsConsent: false,
       },
       guardianInfo: {
         noGuardianInfo: true,

@@ -153,7 +153,7 @@ describe("medical-information.tsx (HFSE old)", () => {
 
     renderForm(<MedicalInformationSection />, { flow: "hfse-old" });
 
-    expect(screen.getByRole("checkbox", { name: /medication consent/i })).toBeChecked();
+    expect(screen.getByRole("radio", { name: /^yes$/i })).toBeChecked();
   });
 
   it("does not write to the store on mount (wasDirty gate — fixed: was previously unconditional)", async () => {

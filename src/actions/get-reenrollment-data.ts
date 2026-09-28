@@ -114,7 +114,7 @@ export async function getReEnrollmentData({
         foodAllergyDetails: application.foodAllergyDetails ?? "",
         otherMedicalConditions,
       },
-      paracetamolConsent: Boolean(application.paracetamolConsent),
+      paracetamolConsent: application.paracetamolConsent ?? undefined,
     };
 
     // familyInfo — same mother/father/guardian key-split + siblings as getFamilyInformation,
