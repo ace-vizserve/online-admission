@@ -155,3 +155,42 @@ describe("marking the pass 'to follow' (HFSE new student upload)", () => {
     expect(usePassTypeStore.getState().passType).toBe("Dependent Pass");
   });
 });
+
+describe("residency status card on the HFSE new student upload", () => {
+  const seedPass = (toFollowDocs: string[]) =>
+    seedFormState("hfse-new", {
+      uploadRequirements: { studentUploadRequirements: { pass: "", passType: "", toFollowDocs } },
+    });
+
+  it("is shown while the pass is being uploaded now", async () => {
+    seedPass([]);
+    renderForm(<StudentUpload />, { flow: "hfse-new" });
+    expect(await screen.findByText(/Student's residency \/ pass/)).toBeInTheDocument();
+  });
+
+  it("is hidden while the pass is marked 'to follow'", async () => {
+    seedPass(["pass"]);
+    renderForm(<StudentUpload />, { flow: "hfse-new" });
+    await screen.findAllByRole("button", { name: /save documents/i });
+    expect(screen.queryByText(/Student's residency \/ pass/)).not.toBeInTheDocument();
+  });
+
+  it("re-validates when the residency changes: a new STP application no longer requires the pass", async () => {
+    const { toast } = await import("sonner");
+    usePassTypeStore.getState().setPassType("Dependent Pass");
+    seedPass([]);
+    const user = userEvent.setup();
+    renderForm(<StudentUpload />, { flow: "hfse-new" });
+
+    const [save] = await screen.findAllByRole("button", { name: /save documents/i });
+    await user.click(save);
+    expect(toast.warning).toHaveBeenCalledWith("Invalid student pass document!", expect.anything());
+
+    vi.mocked(toast.warning).mockClear();
+    await user.click(screen.getByRole("button", { name: "Change" }));
+    await user.click(await screen.findByRole("option", { name: /Needs a new Student's Pass/ }));
+    await user.click(save);
+
+    expect(toast.warning).not.toHaveBeenCalledWith("Invalid student pass document!", expect.anything());
+  });
+});
