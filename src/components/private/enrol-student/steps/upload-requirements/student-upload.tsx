@@ -14,7 +14,7 @@ import {
 import { usePassTypeStore, useSelectAcademicYear } from "@/zustand-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Clock, FilePen, Info, Loader2, Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
@@ -42,6 +42,7 @@ function StudentUpload() {
   const [medicalExam, setMedicalExam] = useState<File[] | null>(null);
   const [passport, setPassport] = useState<File[] | null>(null);
   const [pass, setPass] = useState<File[] | null>(null);
+  const [isResidencyOpen, setIsResidencyOpen] = useState(false);
 
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
   const passType = usePassTypeStore((state) => state.passType);
@@ -103,6 +104,19 @@ function StudentUpload() {
     form.trigger();
   }, []);
 
+  // A residency change can flip whether the pass is required (a new STP application needs none)
+  // and settle an earlier mismatch, so re-validate against it instead of keeping stale errors.
+  const isFirstResidencyRun = useRef(true);
+  useEffect(() => {
+    if (isFirstResidencyRun.current) {
+      isFirstResidencyRun.current = false;
+      return;
+    }
+    form.setValue("stpApplicationType", stpApplicationType);
+    form.clearErrors(["pass", "passType"]);
+    form.trigger();
+  }, [passType, stpApplicationType]);
+
   useEffect(() => {
     if (form.formState.isSubmitSuccessful) {
       (async () => {
@@ -137,7 +151,14 @@ function StudentUpload() {
         message: "Selected pass type does not match the student’s current pass.",
       });
       toast.error("Pass type mismatch!", {
-        description: "The selected pass type does not match the residency status. Update either one to continue.",
+        description: "The uploaded pass type does not match the student's residency status.",
+        action: {
+          label: "Change residency status",
+          onClick: () => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            setIsResidencyOpen(true);
+          },
+        },
       });
       return;
     }
@@ -279,7 +300,10 @@ function StudentUpload() {
             </span>
           </div>
         </Alert>
-        <ResidencyStatusPopover />
+        {/* Only relevant to a pass being uploaded now — hidden while the pass is marked "to follow". */}
+        {!toFollowDocs?.includes("pass") && (
+          <ResidencyStatusPopover open={isResidencyOpen} onOpenChange={setIsResidencyOpen} />
+        )}
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           {STUDENT_DOCUMENTS.slice(0, 3).map((cfg) => {
