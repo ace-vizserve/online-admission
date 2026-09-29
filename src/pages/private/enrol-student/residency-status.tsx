@@ -67,7 +67,8 @@ export default function StudentResidencyPage() {
       icon: FileCheck2,
       detailsTitle: "What you need:",
       details: ["Current pass number and expiry date", "Copy of existing Student's Pass", "Previous school details"],
-      store: { stpApplicationType: "Student Pass Transfer Application", passType: "" },
+      // A transfer student already holds a Student's Pass, which they upload - so it is the pass on file.
+      store: { stpApplicationType: "Student Pass Transfer Application", passType: "Student Pass" },
       willRender: (type) => type === "New",
     },
     {

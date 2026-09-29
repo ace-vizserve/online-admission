@@ -60,4 +60,17 @@ describe("ResidencyStatusPopover", () => {
 
     expect(usePassTypeStore.getState()).toMatchObject({ stpApplicationType: "", passType: "Singapore PR" });
   });
+
+  it("picking a transfer records the Student's Pass it holds", async () => {
+    const user = userEvent.setup();
+    render(<ResidencyStatusPopover />);
+
+    await user.click(screen.getByRole("button", { name: "Choose" }));
+    await user.click(screen.getByRole("option", { name: /Student's Pass transfer/ }));
+
+    expect(usePassTypeStore.getState()).toMatchObject({
+      stpApplicationType: "Student Pass Transfer Application",
+      passType: "Student Pass",
+    });
+  });
 });

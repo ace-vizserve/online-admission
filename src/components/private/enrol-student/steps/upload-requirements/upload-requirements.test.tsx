@@ -79,6 +79,30 @@ describe("student-upload.tsx (HFSE new)", () => {
     });
   });
 
+  it.each([
+    ["accepts", "Student Pass", false],
+    ["still rejects", "Dependent Pass", true],
+  ])("a Student's Pass transfer %s an uploaded %s", async (_, uploadedPassType, isMismatch) => {
+    const { toast } = await import("sonner");
+    vi.mocked(toast.error).mockClear();
+    usePassTypeStore.getState().setStpApplicationType("Student Pass Transfer Application");
+    usePassTypeStore.getState().setPassType("Student Pass");
+    seedFormState("hfse-new", {
+      uploadRequirements: { studentUploadRequirements: { ...VALID_STUDENT_DOCS, passType: uploadedPassType } },
+    });
+
+    const user = userEvent.setup();
+    renderForm(<StudentUpload />, { flow: "hfse-new" });
+    const [submitButton] = screen.getAllByRole("button", { name: /save documents/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      if (isMismatch) expect(toast.error).toHaveBeenCalledWith("Pass type mismatch!", expect.anything());
+      else expect(toast.success).toHaveBeenCalled();
+    });
+    if (!isMismatch) expect(toast.error).not.toHaveBeenCalledWith("Pass type mismatch!", expect.anything());
+  });
+
   it("does not write to the store on mount (wasDirty gate)", async () => {
     seedFormState("hfse-new", { uploadRequirements: { studentUploadRequirements: VALID_STUDENT_DOCS } });
     const setFormStateSpy = vi.spyOn(useEnrolNewStudentStore.getState(), "setFormState");
