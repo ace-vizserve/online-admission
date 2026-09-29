@@ -9,7 +9,7 @@ import { useState } from "react";
 // one choice. Only the pass store changes — the draft (and anything already uploaded) is untouched.
 export const RESIDENCY_CHOICES = [
   { label: "Needs a new Student's Pass", stpApplicationType: "New Student Pass Application", passType: "" },
-  { label: "Student's Pass transfer", stpApplicationType: "Student Pass Transfer Application", passType: "" },
+  { label: "Student's Pass transfer", stpApplicationType: "Student Pass Transfer Application", passType: "Student Pass" },
   { label: "Long Term Visit Pass", stpApplicationType: "", passType: "Long Term Visit Pass" },
   { label: "Dependent Pass", stpApplicationType: "", passType: "Dependent Pass" },
   { label: "Singaporean", stpApplicationType: "", passType: "Singaporean" },
@@ -32,8 +32,12 @@ export default function ResidencyStatusPopover({ open: controlledOpen, onOpenCha
   const setPassType = usePassTypeStore((state) => state.setPassType);
   const setStpApplicationType = usePassTypeStore((state) => state.setStpApplicationType);
 
-  const current = RESIDENCY_CHOICES.find(
-    (choice) => choice.passType === passType && choice.stpApplicationType === stpApplicationType,
+  // An STP application type identifies the choice on its own: transfers saved before they carried
+  // "Student Pass" have an empty pass type and must still show as a transfer.
+  const current = RESIDENCY_CHOICES.find((choice) =>
+    stpApplicationType
+      ? choice.stpApplicationType === stpApplicationType
+      : !choice.stpApplicationType && choice.passType === passType,
   );
 
   function select(choice: (typeof RESIDENCY_CHOICES)[number]) {

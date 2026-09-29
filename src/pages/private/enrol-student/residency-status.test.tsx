@@ -149,4 +149,16 @@ describe("StudentResidencyPage", () => {
     });
     expect(continueButton).toBeEnabled();
   });
+
+  it("records a transfer as holding a Student's Pass, so uploading it does not read as a mismatch", async () => {
+    const user = userEvent.setup();
+    renderPage({ enroleeType: "New", enroleeNumber: "E3" });
+
+    await user.click(screen.getByRole("radio", { name: /STP Transfer/ }));
+
+    expect(usePassTypeStore.getState()).toMatchObject({
+      stpApplicationType: "Student Pass Transfer Application",
+      passType: "Student Pass",
+    });
+  });
 });
