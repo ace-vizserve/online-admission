@@ -102,6 +102,7 @@ export default function ISSavedDraftsDialog() {
   const clearEnrolNewStudentTabState = useEnrolNewStudentTabStateStore((state) => state.clearState);
   const clearAcademicYearState = useSelectAcademicYear((state) => state.clearState);
   const stpApplicationType = usePassTypeStore((state) => state.stpApplicationType);
+  const passType = usePassTypeStore((state) => state.passType);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const isEmpty = !isDraftsPending && drafts.length === 0;
@@ -132,7 +133,9 @@ export default function ISSavedDraftsDialog() {
     setActiveTab(internalState.activeTab);
     setCurrentTab(internalState.currentTab);
     setCompletedTabs(internalState.completedTabs);
-    setFormState({ ...formState, draftId: internalState.draftId, stpApplicationType });
+    // A residency choice made just now (residency page) wins; otherwise keep the one saved in the draft.
+    const residency = stpApplicationType || passType ? { stpApplicationType, passType } : {};
+    setFormState({ ...formState, draftId: internalState.draftId, ...residency });
 
     setIsOpen(false);
     setIsLoading(false);

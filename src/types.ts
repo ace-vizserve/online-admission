@@ -244,6 +244,7 @@ export type EnrolNewStudentFormState = {
   draftId?: string;
   createdAt?: Date;
   stpApplicationType?: string;
+  passType?: string;
   preCourseAnswer?: string;
   preCourseDate?: Date;
   studentInfo: {

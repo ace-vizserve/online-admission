@@ -56,6 +56,7 @@ import { useMediaQuery } from "react-responsive";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 import ISSavedDraftsDialog from "../private/is-saved-drafts-list";
+import { useSyncResidencyToDraft } from "@/hooks/use-sync-residency-to-draft";
 
 function NewStudentLayout() {
   // BACKEND_ACADEMIC_YEARS plus whatever the SIS has open, so a newly opened year is not bounced.
@@ -107,6 +108,7 @@ function NewStudentLayout() {
   return (
     <EnrolNewStudentContextProvider>
       <AutoResumeDraft />
+      <ResidencyDraftSync />
       {isOpen ? (
         <ISSavedDraftsDialog />
       ) : (
@@ -149,6 +151,11 @@ function NewStudentLayout() {
       )}
     </EnrolNewStudentContextProvider>
   );
+}
+
+function ResidencyDraftSync() {
+  useSyncResidencyToDraft();
+  return null;
 }
 
 function AutoResumeDraft() {
