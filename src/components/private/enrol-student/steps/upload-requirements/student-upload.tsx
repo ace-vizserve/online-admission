@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { useBeforeUnload } from "react-router";
 import { toast } from "sonner";
 import { DocumentUploader, STUDENT_DOCUMENTS } from "@/components/private/shared/upload-requirements";
+import ResidencyStatusPopover from "@/components/private/enrol-student/residency-status-popover";
 
 const MAX_SKIPS = 3;
 
@@ -136,7 +137,7 @@ function StudentUpload() {
         message: "Selected pass type does not match the student’s current pass.",
       });
       toast.error("Pass type mismatch!", {
-        description: "The selected pass type does not match what the student currently holds.",
+        description: "The selected pass type does not match the residency status. Update either one to continue.",
       });
       return;
     }
@@ -278,6 +279,7 @@ function StudentUpload() {
             </span>
           </div>
         </Alert>
+        <ResidencyStatusPopover />
         <DocumentSkipBadge MAX_SKIPS={MAX_SKIPS} skippedDocsCount={skippedDocsCount} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           {STUDENT_DOCUMENTS.slice(0, 3).map((cfg) => {
