@@ -190,6 +190,14 @@ function STPGuidelines() {
                       <strong>may be longer</strong> depending on case-by-case assessment and volume of applications.
                     </span>
                   </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-secondary mt-0.5 font-bold">•</span>
+                    <span>
+                      Student's Pass holders <strong>may not take up any employment</strong> or attend an industrial
+                      attachment/internship, paid or unpaid, <strong>without a valid work pass</strong> from the
+                      Ministry of Manpower (MOM), and must comply with all relevant Singapore laws.
+                    </span>
+                  </li>
                 </ul>
 
                 <div
@@ -210,7 +218,8 @@ function STPGuidelines() {
                         icaAcknowledged ? "text-success" : "text-foreground/80",
                       )}>
                       I understand that HFSE provides assistance, but ICA alone decides the Student's Pass approval and
-                      the school cannot guarantee the outcome.
+                      the school cannot guarantee the outcome. I also understand the Student's Pass employment and
+                      internship restrictions.
                     </span>
                   </label>
                 </div>
@@ -367,7 +376,7 @@ function STPGuidelines() {
                     <p className="font-medium text-sm leading-relaxed">
                       Our Admissions Officer will reach out to schedule a{" "}
                       <strong>Pre‑Course Counselling session</strong>. You can continue with the online enrolment now,
-                      but the counselling must be completed and acknowledged before your child begins the course.
+                      but the counselling must be completed and acknowledged before your child's enrolment is confirmed.
                     </p>
                   </div>
                 )}
