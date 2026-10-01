@@ -32,3 +32,31 @@ coverage
 
 # Local Claude Code settings (machine-specific permissions)
 .claude/settings.local.json
+
+# Environment files and secrets (keep only a template)
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+
+# Supabase CLI local state
+supabase/.branches/
+supabase/.temp/
+
+# Local tooling output
+.fallow/
+.superpowers/
+.claude/scheduled_tasks.lock
+.claude/worktrees/
+
+# Reference documents dropped in the repo root (policies, exports)
+/*.docx
+/*.doc
+/*.xlsx
+/*.xls
+/*.csv
+/*.pdf
+/*.pptx
