@@ -144,3 +144,27 @@ describe("AppSidebar — Document Requirements badge", () => {
     expect(badgeOf(/Document Requirements/)).toHaveTextContent("4");
   });
 });
+
+/**
+ * Services is a collapsible section rather than a single destination, because it grows: the
+ * absence/travel filing lands first and the school calendar follows.
+ */
+describe("AppSidebar — Services", () => {
+  it("offers Services as a fold-out section", () => {
+    renderSidebar();
+
+    expect(screen.getByRole("button", { name: /Services/ })).toBeInTheDocument();
+  });
+
+  it("links to the absence and travel declaration page once opened", async () => {
+    const user = (await import("@testing-library/user-event")).default;
+    renderSidebar();
+
+    await user.click(screen.getByRole("button", { name: /Services/ }));
+
+    expect(screen.getByRole("link", { name: /Absence & Travel/ })).toHaveAttribute(
+      "href",
+      "/admission/services/declarations",
+    );
+  });
+});
