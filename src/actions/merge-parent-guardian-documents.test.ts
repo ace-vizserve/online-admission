@@ -6,6 +6,12 @@ import {
   mergeYearIntoState,
   PARENT_GUARDIAN_DOC_GROUPS,
 } from "./merge-parent-guardian-documents";
+import { withValidStatuses } from "@/test/document-status";
+
+/** A docsByEnrolee map whose files are all stamped `Valid` (unless a row gives its own status). */
+function validDocs(entries: [string, Record<string, unknown>][]) {
+  return new Map(entries.map(([enroleeNumber, row]) => [enroleeNumber, withValidStatuses(row)]));
+}
 
 describe("PARENT_GUARDIAN_DOC_GROUPS", () => {
   it("has exactly 6 groups — mother/father/guardian x passport/pass", () => {
@@ -55,7 +61,7 @@ describe("mergeYearIntoState", () => {
         guardianPassExpiry: "2028-03-01",
       },
     ];
-    const docsByEnrolee = new Map([
+    const docsByEnrolee = validDocs([
       [
         "E260001",
         {
@@ -98,7 +104,7 @@ describe("mergeYearIntoState", () => {
     const appRows = [
       { enroleeNumber: "E260001", motherPassport: "M1234567", motherPassportExpiry: "2030-01-01" },
     ];
-    const docsByEnrolee = new Map([
+    const docsByEnrolee = validDocs([
       ["E260001", { motherPassport: "https://files.example.com/mother-passport.pdf" }],
     ]);
 
@@ -118,7 +124,7 @@ describe("mergeYearIntoState", () => {
     const newerState = mergeYearIntoState(
       createMergeState(),
       [{ enroleeNumber: "E260001", motherPassport: "M1234567", motherPassportExpiry: "2030-01-01" }],
-      new Map([["E260001", { motherPassport: "https://files.example.com/new-mother-passport.pdf" }]]),
+      validDocs([["E260001", { motherPassport: "https://files.example.com/new-mother-passport.pdf" }]]),
     );
 
     // Older year: has both mother's AND father's passport — mother's must NOT be overwritten
@@ -134,7 +140,7 @@ describe("mergeYearIntoState", () => {
           fatherPassportExpiry: "2029-01-01",
         },
       ],
-      new Map([
+      validDocs([
         [
           "E250099",
           {
@@ -154,7 +160,7 @@ describe("mergeYearIntoState", () => {
   it("does not mutate the state object passed in", () => {
     const initial = createMergeState();
     const appRows = [{ enroleeNumber: "E260001", motherPassport: "M1234567" }];
-    const docsByEnrolee = new Map([["E260001", { motherPassport: "https://files.example.com/mother-passport.pdf" }]]);
+    const docsByEnrolee = validDocs([["E260001", { motherPassport: "https://files.example.com/mother-passport.pdf" }]]);
 
     mergeYearIntoState(initial, appRows, docsByEnrolee);
 
@@ -174,7 +180,7 @@ describe("mergeYearIntoState", () => {
 
   it("does not treat an empty-string file value as filled", () => {
     const appRows = [{ enroleeNumber: "E260001", motherPassport: "M1234567" }];
-    const docsByEnrolee = new Map([["E260001", { motherPassport: "" }]]);
+    const docsByEnrolee = validDocs([["E260001", { motherPassport: "" }]]);
 
     const state = mergeYearIntoState(createMergeState(), appRows, docsByEnrolee);
 
@@ -184,7 +190,7 @@ describe("mergeYearIntoState", () => {
 
   it("omits metadata/expiry independently when they're empty even though the file is present", () => {
     const appRows = [{ enroleeNumber: "E260001", motherPassport: null, motherPassportExpiry: "" }];
-    const docsByEnrolee = new Map([["E260001", { motherPassport: "https://files.example.com/mother-passport.pdf" }]]);
+    const docsByEnrolee = validDocs([["E260001", { motherPassport: "https://files.example.com/mother-passport.pdf" }]]);
 
     const state = mergeYearIntoState(createMergeState(), appRows, docsByEnrolee);
 
@@ -207,7 +213,7 @@ describe("mergeYearIntoState", () => {
       },
       { enroleeNumber: "E260002", motherPassport: "SHOULD_NOT_BE_READ" },
     ];
-    const docsByEnrolee = new Map([
+    const docsByEnrolee = validDocs([
       [
         "E260001",
         {
@@ -241,7 +247,7 @@ describe("mergeYearIntoState", () => {
           guardianPass: "Type3",
         },
       ],
-      new Map([
+      validDocs([
         [
           "E260001",
           {
@@ -259,11 +265,41 @@ describe("mergeYearIntoState", () => {
     const state = mergeYearIntoState(
       complete,
       [{ enroleeNumber: "E250099", motherPassport: "SHOULD_NOT_OVERWRITE" }],
-      new Map([["E250099", { motherPassport: "https://files.example.com/should-not-overwrite.pdf" }]]),
+      validDocs([["E250099", { motherPassport: "https://files.example.com/should-not-overwrite.pdf" }]]),
     );
 
     expect(state.docs.motherPassport).toBe("https://files.example.com/1.pdf");
   });
+
+  it.each(["Rejected", "Expired", "For submission", "To follow", null])(
+    "does not carry a %s file — the slot stays open for an older accepted copy",
+    (status) => {
+      const newer = mergeYearIntoState(
+        createMergeState(),
+        [{ enroleeNumber: "E270001", motherPassport: "M2", motherPassportExpiry: "2031-01-01" }],
+        validDocs([
+          ["E270001", { motherPassport: "https://files.example.com/bad.pdf", motherPassportStatus: status }],
+        ]),
+      );
+
+      expect(newer.filled.has("motherPassport")).toBe(false);
+      expect(newer.docs).toEqual({});
+
+      const older = mergeYearIntoState(
+        newer,
+        [{ enroleeNumber: "E260001", motherPassport: "M1", motherPassportExpiry: "2030-01-01" }],
+        validDocs([
+          ["E260001", { motherPassport: "https://files.example.com/good.pdf", motherPassportStatus: "Uploaded" }],
+        ]),
+      );
+
+      expect(older.docs).toEqual({
+        motherPassport: "https://files.example.com/good.pdf",
+        motherPassportNumber: "M1",
+        motherPassportExpiry: "2030-01-01",
+      });
+    },
+  );
 
   it("handles an empty appRows array", () => {
     const state = mergeYearIntoState(createMergeState(), [], new Map());

@@ -31,6 +31,7 @@ import {
   buildStudentDocumentUpdatePayload,
   processParentGuardian,
 } from "@/actions/enrolment-payload";
+import { carriedFile } from "@/actions/carry-over-status";
 import {
   createMergeState,
   isMergeComplete,
@@ -643,7 +644,9 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
 
     const { data: documents, error: studentDocumentsError } = await supabase
       .from(`${academicYear}_enrolment_documents`)
-      .select("medical, passport, birthCert, pass, educCert")
+      .select(
+        "medical, medicalStatus, passport, passportStatus, birthCert, birthCertStatus, pass, passStatus, educCert, educCertStatus",
+      )
       .eq("enroleeNumber", enroleeNumber);
 
     if (studentDocumentsError) {
@@ -652,17 +655,20 @@ export async function getPreviousStudentDocuments(enroleeNumber: string) {
 
     const { passportNumber, pass: passType, passportExpiry, passExpiry } = studentInformation[0] ?? {};
 
-    const { medical, passport, birthCert, pass, educCert } = documents[0] ?? {};
+    const documentRow = documents[0];
+    const passport = carriedFile(documentRow, "passport");
+    const pass = carriedFile(documentRow, "pass");
 
+    // Only Valid/Uploaded files carry over (carry-over-status.ts); a dropped file takes its expiry with it.
     const previousStudentDocuments = {
-      birthCert: birthCert ?? "",
-      medical: medical ?? "",
-      educCert: educCert ?? "",
+      birthCert: carriedFile(documentRow, "birthCert") ?? "",
+      medical: carriedFile(documentRow, "medical") ?? "",
+      educCert: carriedFile(documentRow, "educCert") ?? "",
       passport: passport ?? "",
       passportNumber,
-      passportExpiry: passportExpiry ?? "",
+      passportExpiry: passport ? (passportExpiry ?? "") : "",
       pass: pass ?? "",
-      passExpiry: passExpiry ?? "",
+      passExpiry: pass ? (passExpiry ?? "") : "",
       passType: passType ?? "",
     };
 
@@ -720,7 +726,7 @@ export async function getPreviousParentGuardianDocuments(
         const docResult = await supabase
           .from(`${academicYear}_enrolment_documents`)
           .select(
-            "motherPass, motherPassportExpiry, motherPassExpiry, motherPassport, fatherPass, fatherPassportExpiry, fatherPassExpiry, fatherPassport, guardianPass, guardianPassportExpiry, guardianPassExpiry, guardianPassport",
+            "motherPass, motherPassStatus, motherPassport, motherPassportStatus, fatherPass, fatherPassStatus, fatherPassport, fatherPassportStatus, guardianPass, guardianPassStatus, guardianPassport, guardianPassportStatus",
           )
           .eq("enroleeNumber", applicationsData.enroleeNumber)
           .maybeSingle();
@@ -728,40 +734,45 @@ export async function getPreviousParentGuardianDocuments(
         documentsData = docResult.data;
       }
 
+      // Only Valid/Uploaded files carry over (carry-over-status.ts); a dropped file takes its expiry with it.
+      const carried = (column: string) => carriedFile(documentsData, column);
+      const expiryIfCarried = (column: string) =>
+        carried(column) ? (applicationsData as Record<string, unknown> | null)?.[`${column}Expiry`] : undefined;
+
       const motherPassDocument = {
-        motherPass: documentsData?.motherPass,
+        motherPass: carried("motherPass"),
         motherPassType: applicationsData?.motherPass,
-        motherPassExpiry: applicationsData?.motherPassExpiry,
+        motherPassExpiry: expiryIfCarried("motherPass"),
       };
 
       const motherPassportDocument = {
-        motherPassport: documentsData?.motherPassport,
+        motherPassport: carried("motherPassport"),
         motherPassportNumber: applicationsData?.motherPassport,
-        motherPassportExpiry: applicationsData?.motherPassportExpiry,
+        motherPassportExpiry: expiryIfCarried("motherPassport"),
       };
 
       const fatherPassDocument = {
-        fatherPass: documentsData?.fatherPass,
+        fatherPass: carried("fatherPass"),
         fatherPassType: applicationsData?.fatherPass,
-        fatherPassExpiry: applicationsData?.fatherPassExpiry,
+        fatherPassExpiry: expiryIfCarried("fatherPass"),
       };
 
       const fatherPassportDocument = {
-        fatherPassport: documentsData?.fatherPassport,
+        fatherPassport: carried("fatherPassport"),
         fatherPassportNumber: applicationsData?.fatherPassport,
-        fatherPassportExpiry: applicationsData?.fatherPassportExpiry,
+        fatherPassportExpiry: expiryIfCarried("fatherPassport"),
       };
 
       const guardianPassDocument = {
-        guardianPass: documentsData?.guardianPass,
+        guardianPass: carried("guardianPass"),
         guardianPassType: applicationsData?.guardianPass,
-        guardianPassExpiry: applicationsData?.guardianPassExpiry,
+        guardianPassExpiry: expiryIfCarried("guardianPass"),
       };
 
       const guardianPassportDocument = {
-        guardianPassport: documentsData?.guardianPassport,
+        guardianPassport: carried("guardianPassport"),
         guardianPassportNumber: applicationsData?.guardianPassport,
-        guardianPassportExpiry: applicationsData?.guardianPassportExpiry,
+        guardianPassportExpiry: expiryIfCarried("guardianPassport"),
       };
 
       docs = {
@@ -800,7 +811,9 @@ export async function getPreviousParentGuardianDocuments(
 
         const { data: docRows, error: docError } = await supabase
           .from(`${academicYear}_enrolment_documents`)
-          .select("enroleeNumber, motherPassport, motherPass, fatherPassport, fatherPass, guardianPassport, guardianPass")
+          .select(
+            "enroleeNumber, motherPassport, motherPassportStatus, motherPass, motherPassStatus, fatherPassport, fatherPassportStatus, fatherPass, fatherPassStatus, guardianPassport, guardianPassportStatus, guardianPass, guardianPassStatus",
+          )
           .in(
             "enroleeNumber",
             applicationRows.map((row) => row.enroleeNumber),

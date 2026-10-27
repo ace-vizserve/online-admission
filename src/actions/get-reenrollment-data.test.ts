@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { withValidStatuses } from "@/test/document-status";
 import { createSupabaseMock } from "@/test/supabase-mock";
 
 const mockState = vi.hoisted(() => ({
@@ -68,8 +69,9 @@ function baseApplicationRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
+/** Every file in the row is stamped `Valid` unless its status is given too. */
 function baseDocumentRow(overrides: Record<string, unknown> = {}) {
-  return {
+  return withValidStatuses({
     medical: "https://files.example.com/medical.pdf",
     passport: "https://files.example.com/student-passport.pdf",
     birthCert: "https://files.example.com/birth-cert.pdf",
@@ -80,7 +82,7 @@ function baseDocumentRow(overrides: Record<string, unknown> = {}) {
     fatherPass: "https://files.example.com/father-pass.pdf",
     fatherPassport: "https://files.example.com/father-passport.pdf",
     ...overrides,
-  };
+  });
 }
 
 describe("getReEnrollmentData", () => {
@@ -181,6 +183,46 @@ describe("getReEnrollmentData", () => {
     expect(result?.levelApplied).toBe("Primary One");
     expect(result?.fatherEmail).toBe("jose@example.com");
     expect(result?.guardianEmail).toBeNull();
+  });
+
+  it("leaves Rejected, Expired and dead-link files behind, with the expiry of a dropped passport/pass", async () => {
+    harness = createSupabaseMock({
+      rows: {
+        [APPLICATIONS_TABLE]: [baseApplicationRow()],
+        [DOCUMENTS_TABLE]: [
+          baseDocumentRow({
+            passportStatus: "Rejected",
+            medicalStatus: "Expired",
+            birthCert: "https://hgochparbrqtgeigvnzx.supabase.co/storage/v1/object/public/docs/birth-cert.pdf",
+            motherPassportStatus: "Rejected",
+            fatherPassStatus: "For submission",
+          }),
+        ],
+      },
+    });
+    mockState.from = harness.supabase.from;
+    mockState.auth.getSession = harness.supabase.auth.getSession;
+
+    const result = await getReEnrollmentData({ enroleeNumber: ENROLEE_NUMBER });
+
+    expect(result?.studentUploadRequirements).not.toHaveProperty("passport");
+    expect(result?.studentUploadRequirements).not.toHaveProperty("passportExpiry");
+    expect(result?.studentUploadRequirements).not.toHaveProperty("medical");
+    expect(result?.studentUploadRequirements).not.toHaveProperty("birthCert");
+    expect(result?.studentUploadRequirements).toMatchObject({
+      passportNumber: "P1234567",
+      pass: "https://files.example.com/student-pass.pdf",
+      educCert: "https://files.example.com/educ-cert.pdf",
+    });
+
+    expect(result?.parentGuardianUploadRequirements).not.toHaveProperty("motherPassport");
+    expect(result?.parentGuardianUploadRequirements).not.toHaveProperty("motherPassportExpiry");
+    expect(result?.parentGuardianUploadRequirements).not.toHaveProperty("fatherPass");
+    expect(result?.parentGuardianUploadRequirements).toMatchObject({
+      motherPass: "https://files.example.com/mother-pass.pdf",
+      motherPassportNumber: "M1234567",
+      fatherPassport: "https://files.example.com/father-passport.pdf",
+    });
   });
 
   it("omits mother/father slices and marks hasFatherInfo false when only guardian info is present (no siblings)", async () => {

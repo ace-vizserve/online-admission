@@ -19,6 +19,8 @@
  * feeding in that year's already-fetched rows and stopping as soon as every slot is filled.
  */
 
+import { isCarriedFile } from "./carry-over-status";
+
 export type ParentGuardianDocGroup = {
   /** Column name shared by both tables: `<documents-table>.<column>` is the file URL,
    * `<applications-table>.<column>` is the metadata (passport number, or pass type). */
@@ -40,7 +42,7 @@ export const PARENT_GUARDIAN_DOC_GROUPS: ParentGuardianDocGroup[] = ROLES.flatMa
 /** One row from a `*_enrolment_applications` select — metadata columns only. */
 export type ParentGuardianApplicationRow = { enroleeNumber: string } & Record<string, unknown>;
 
-/** One row from a `*_enrolment_documents` select — file-URL columns only. */
+/** One row from a `*_enrolment_documents` select — file-URL columns + their `<column>Status`. */
 export type ParentGuardianDocumentRow = Record<string, unknown>;
 
 export type MergeState = {
@@ -89,10 +91,10 @@ export function mergeYearIntoState(
     for (const group of PARENT_GUARDIAN_DOC_GROUPS) {
       if (filled.has(group.column)) continue;
 
-      const fileValue = docRow[group.column];
-      if (!isPresent(fileValue)) continue;
+      // A Rejected/Expired file doesn't fill the slot — an older application's accepted copy can.
+      if (!isCarriedFile(docRow, group.column)) continue;
 
-      docs[group.column] = fileValue;
+      docs[group.column] = docRow[group.column];
 
       const metaValue = appRow[group.column];
       if (isPresent(metaValue)) docs[group.metaOutputKey] = metaValue;

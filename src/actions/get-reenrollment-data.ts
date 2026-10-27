@@ -1,3 +1,4 @@
+import { carriedFile } from "@/actions/carry-over-status";
 import { academicYearFromEnroleeNumber } from "@/config/academic-years";
 import { supabase } from "@/lib/client";
 import { extractSiblings, removeEmptyKeys } from "@/lib/utils";
@@ -147,58 +148,63 @@ export async function getReEnrollmentData({
     const familyInfo = removeEmptyKeys(familyInfoResult) as unknown as EnrolOldStudentFormState["familyInfo"];
 
     // studentUploadRequirements — same as getPreviousStudentDocuments
-    const { passportNumber, pass: passType, passportExpiry, passExpiry } = application;
-    const { medical, passport, birthCert, pass, educCert } = document;
+    // Only Valid/Uploaded files carry over (carry-over-status.ts); a dropped file takes its expiry with it.
+    const carried = (column: string) => carriedFile(document, column);
+    const expiryIfCarried = (column: string) => (carried(column) ? application[`${column}Expiry`] : undefined);
+
+    const { passportNumber, pass: passType } = application;
+    const passport = carried("passport");
+    const pass = carried("pass");
 
     const studentUploadRequirements = removeEmptyKeys({
-      birthCert: birthCert ?? "",
-      medical: medical ?? "",
-      educCert: educCert ?? "",
+      birthCert: carried("birthCert") ?? "",
+      medical: carried("medical") ?? "",
+      educCert: carried("educCert") ?? "",
       passport: passport ?? "",
       passportNumber,
-      passportExpiry: passportExpiry ?? "",
+      passportExpiry: expiryIfCarried("passport") ?? "",
       pass: pass ?? "",
-      passExpiry: passExpiry ?? "",
+      passExpiry: expiryIfCarried("pass") ?? "",
       passType: passType ?? "",
     });
 
     // parentGuardianUploadRequirements — same as getPreviousParentGuardianDocuments
     const motherDocuments = {
       ...removeEmptyKeys({
-        motherPass: document.motherPass,
+        motherPass: carried("motherPass"),
         motherPassType: application.motherPass,
-        motherPassExpiry: application.motherPassExpiry,
+        motherPassExpiry: expiryIfCarried("motherPass"),
       }),
       ...removeEmptyKeys({
-        motherPassport: document.motherPassport,
+        motherPassport: carried("motherPassport"),
         motherPassportNumber: application.motherPassport,
-        motherPassportExpiry: application.motherPassportExpiry,
+        motherPassportExpiry: expiryIfCarried("motherPassport"),
       }),
     };
 
     const fatherDocuments = {
       ...removeEmptyKeys({
-        fatherPass: document.fatherPass,
+        fatherPass: carried("fatherPass"),
         fatherPassType: application.fatherPass,
-        fatherPassExpiry: application.fatherPassExpiry,
+        fatherPassExpiry: expiryIfCarried("fatherPass"),
       }),
       ...removeEmptyKeys({
-        fatherPassport: document.fatherPassport,
+        fatherPassport: carried("fatherPassport"),
         fatherPassportNumber: application.fatherPassport,
-        fatherPassportExpiry: application.fatherPassportExpiry,
+        fatherPassportExpiry: expiryIfCarried("fatherPassport"),
       }),
     };
 
     const guardianDocuments = {
       ...removeEmptyKeys({
-        guardianPass: document.guardianPass,
+        guardianPass: carried("guardianPass"),
         guardianPassType: application.guardianPass,
-        guardianPassExpiry: application.guardianPassExpiry,
+        guardianPassExpiry: expiryIfCarried("guardianPass"),
       }),
       ...removeEmptyKeys({
-        guardianPassport: document.guardianPassport,
+        guardianPassport: carried("guardianPassport"),
         guardianPassportNumber: application.guardianPassport,
-        guardianPassportExpiry: application.guardianPassportExpiry,
+        guardianPassportExpiry: expiryIfCarried("guardianPassport"),
       }),
     };
 

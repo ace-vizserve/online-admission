@@ -14,6 +14,7 @@
  * can return distinct single-row results.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { withValidStatuses } from "@/test/document-status";
 import { createSupabaseMock, type SupabaseMockOptions } from "@/test/supabase-mock";
 
 const mockState = vi.hoisted(() => ({
@@ -56,8 +57,9 @@ function appRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
+/** A documents row; every file in `overrides` is stamped `Valid` unless its status is given too. */
 function docRow(overrides: Record<string, unknown> = {}) {
-  return {
+  return withValidStatuses({
     enroleeNumber: "E270001",
     motherPassport: null,
     motherPass: null,
@@ -66,7 +68,7 @@ function docRow(overrides: Record<string, unknown> = {}) {
     guardianPassport: null,
     guardianPass: null,
     ...overrides,
-  };
+  });
 }
 
 function harnessWith(options: Omit<SupabaseMockOptions, "sessionEmail"> = {}) {
