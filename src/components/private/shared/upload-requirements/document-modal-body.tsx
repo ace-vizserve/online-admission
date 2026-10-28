@@ -23,6 +23,7 @@ import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { Link } from "react-router";
 
 import fileSvg from "@/assets/file.svg";
+import { DocumentCheckNotice } from "./document-check-notice";
 import { DocumentConfig } from "./document-config";
 import { DocumentSubFields } from "./document-sub-fields";
 import { SetUploadRequirementsFn, SharedUploadFormState } from "./types";
@@ -59,6 +60,7 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
     dropZoneConfig,
     isPending,
     uploadFile,
+    documentCheck,
     isChangingDocument,
     confirmOpen,
     setConfirmOpen,
@@ -211,8 +213,10 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
         />
       )}
 
+      {!isUploaded && <DocumentCheckNotice check={documentCheck} />}
+
       {value != null && value.length > 0 && (
-        <Button disabled={isPending} onClick={uploadFile} className="gap-2 font-bold">
+        <Button disabled={isPending || !!documentCheck.blockReason} onClick={uploadFile} className="gap-2 font-bold">
           {isPending ? (
             <>
               Uploading <DotPulse size="30" speed="1.3" color="white" />

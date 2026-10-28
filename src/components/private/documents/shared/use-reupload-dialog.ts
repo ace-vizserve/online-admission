@@ -2,6 +2,7 @@ import { MAX_UPLOAD_FILE_SIZE, deleteFile, parentGuardianReuploadDocuments, stud
 import { sendEmailNotification } from "@/actions/send-email-notification";
 import { toTableAcademicYear } from "@/config/academic-years";
 import { DocumentConfig, siblingFields } from "@/components/private/shared/upload-requirements/document-config";
+import { useStagedDocumentCheck } from "@/components/private/shared/upload-requirements/use-document-check";
 import useSession from "@/hooks/use-session";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -99,6 +100,24 @@ export function useReuploadDialog({
     if (!decorated.length) setMainValue("");
 
     uploadProps.setFiles(decorated as never);
+  }
+
+  // Same OCR check as the enrolment wizard: fills the details it can read and holds the upload
+  // back while the document is blurry, expired, or contradicts what the parent entered.
+  const documentCheck = useStagedDocumentCheck({
+    cfg,
+    files: stagedFiles,
+    current: { type: typeValue, number: numberValue, expiry: expiryValue },
+    onFill: (patch) => {
+      if (patch.type) setTypeValue(patch.type);
+      if (patch.number) setNumberValue(patch.number);
+      if (patch.expiry) setExpiryValue(patch.expiry);
+    },
+  });
+
+  function uploadFile() {
+    if (documentCheck.blockReason) return;
+    return uploadProps.onUpload();
   }
 
   const dropZoneConfig = {
@@ -209,7 +228,8 @@ export function useReuploadDialog({
     stagedFiles,
     setStagedFiles,
     dropZoneConfig,
-    uploadFile: uploadProps.onUpload,
+    uploadFile,
+    documentCheck,
     isUploading: uploadProps.loading,
     typeValue,
     setTypeValue,

@@ -23,7 +23,10 @@ import { deleteFile, parentGuardianReuploadDocuments, studentReuploadDocuments }
 import { sendEmailNotification } from "@/actions/send-email-notification";
 import { toast } from "sonner";
 import { PARENT_GUARDIAN_DOCUMENTS, STUDENT_DOCUMENTS } from "@/components/private/shared/upload-requirements/document-config";
+import { checkDocument } from "@/lib/document-check/check-document";
 import { useReuploadDialog } from "./use-reupload-dialog";
+
+vi.mock("@/lib/document-check/check-document", () => ({ checkDocument: vi.fn() }));
 
 vi.mock("@/actions/private", () => ({
   MAX_UPLOAD_FILE_SIZE: 4 * 1024 * 1024,
@@ -80,6 +83,7 @@ beforeEach(() => {
   uploadLoading = false;
   setFilesMock.mockReset();
   onUploadMock.mockReset();
+  vi.mocked(checkDocument).mockReset();
   vi.mocked(toast.error).mockReset();
   vi.stubGlobal("URL", { ...URL, createObjectURL: () => "blob:mock", revokeObjectURL: () => {} });
   vi.mocked(studentReuploadDocuments).mockReset();
@@ -494,5 +498,71 @@ describe("FileUploader bridge", () => {
     expect(result.current.isUploading).toBe(true);
     result.current.uploadFile();
     expect(onUploadMock).toHaveBeenCalled();
+  });
+});
+
+describe("OCR document check", () => {
+  const staged = [new File(["x"], "passport.pdf", { type: "application/pdf" })];
+  const FUTURE = new Date(Date.UTC(2035, 10, 14));
+
+  function renderPassport() {
+    uploadFiles = staged;
+    return renderHook(
+      () =>
+        useReuploadDialog({
+          cfg: passportCfg,
+          academicYear: "ay2026",
+          enroleeNumber: "E260050",
+          queryKeysToInvalidate: [],
+          emailSection: "Student Documents",
+        }),
+      { wrapper },
+    );
+  }
+
+  it("fills the passport number and expiry it reads from the staged file", async () => {
+    vi.mocked(checkDocument).mockResolvedValue({
+      status: "read",
+      reading: { expiry: FUTURE, passType: null, passportNumber: "K1234567", source: "mrz" },
+      text: "",
+      pages: [],
+    });
+    const { result } = renderPassport();
+
+    await waitFor(() => expect(result.current.numberValue).toBe("K1234567"));
+    expect(result.current.expiryValue).toEqual(FUTURE);
+    expect(result.current.documentCheck.blockReason).toBeNull();
+  });
+
+  it("fills a pass's type", async () => {
+    vi.mocked(checkDocument).mockResolvedValue({
+      status: "read",
+      reading: { expiry: null, passType: "Student Pass", passportNumber: null, source: null },
+      text: "",
+      pages: [],
+    });
+    uploadFiles = staged;
+    const { result } = renderHook(
+      () =>
+        useReuploadDialog({
+          cfg: passCfg,
+          academicYear: "ay2026",
+          enroleeNumber: "E260050",
+          queryKeysToInvalidate: [],
+          emailSection: "Student Documents",
+        }),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.typeValue).toBe("Student Pass"));
+  });
+
+  it("won't upload a document the check is blocking", async () => {
+    vi.mocked(checkDocument).mockResolvedValue({ status: "poor-quality", pages: [] });
+    const { result } = renderPassport();
+
+    await waitFor(() => expect(result.current.documentCheck.blockReason).toMatch(/blurry/));
+    result.current.uploadFile();
+    expect(onUploadMock).not.toHaveBeenCalled();
   });
 });

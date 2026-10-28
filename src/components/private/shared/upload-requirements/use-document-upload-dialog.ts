@@ -14,6 +14,7 @@ import {
   UploadRequirementsPatch,
   UploadRequirementsSlice,
 } from "./types";
+import { useDocumentCheck } from "./use-document-check";
 
 /** Merges a partial update into whichever `uploadRequirements` sub-slice a document belongs to,
  * spreading the CURRENT value of both sub-slices through first — mirrors the defensive "spread
@@ -101,8 +102,10 @@ export function useDocumentUploadDialog<TFieldValues extends FieldValues>({
     accept: cfg.accept,
   };
 
+  const documentCheck = useDocumentCheck({ cfg, form, value, formState, setFormState });
+
   function uploadFile() {
-    if (!value?.length) return;
+    if (!value?.length || documentCheck.blockReason) return;
     mutate(value);
   }
 
@@ -233,6 +236,7 @@ export function useDocumentUploadDialog<TFieldValues extends FieldValues>({
     dropZoneConfig,
     isPending,
     uploadFile,
+    documentCheck,
     isChangingDocument,
     confirmOpen,
     setConfirmOpen,
