@@ -1,3 +1,4 @@
+import { DocumentCheckNotice } from "@/components/private/shared/upload-requirements/document-check-notice";
 import { DocumentConfig } from "@/components/private/shared/upload-requirements/document-config";
 import DocumentPreviewDialog from "@/components/document-preview-dialog";
 import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
@@ -58,7 +59,7 @@ export function ReuploadDialog({
   emailSection,
 }: ReuploadDialogProps) {
   const dialog = useReuploadDialog({ cfg, academicYear, enroleeNumber, existingFileUrl, queryKeysToInvalidate, emailSection });
-  const { isOpen, setIsOpen, stagedFiles, setStagedFiles, dropZoneConfig, uploadFile, isUploading, typeValue, setTypeValue, numberValue, setNumberValue, expiryValue, setExpiryValue, submitReupload, isPending, canSave, siblingFieldNames } = dialog;
+  const { isOpen, setIsOpen, stagedFiles, setStagedFiles, dropZoneConfig, uploadFile, isUploading, typeValue, setTypeValue, numberValue, setNumberValue, expiryValue, setExpiryValue, submitReupload, isPending, canSave, siblingFieldNames, documentCheck } = dialog;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -154,10 +155,12 @@ export function ReuploadDialog({
           {/* Staged and uploaded are deliberately different-looking: parents read "file selected"
               as "file uploaded" and then can't tell why Save changes is disabled, so the pending
               state names the button they still owe us and the uploaded state confirms it landed. */}
+          {stagedFiles.length > 0 && !canSave && <DocumentCheckNotice check={documentCheck} />}
+
           {stagedFiles.length > 0 && !canSave && (
             <Button
               type="button"
-              disabled={isUploading}
+              disabled={isUploading || !!documentCheck.blockReason}
               onClick={uploadFile}
               className="w-full gap-2 font-bold">
               {isUploading ? (
