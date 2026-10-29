@@ -16,6 +16,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/hooks/use-draft-rows", () => ({ useDraftRows: vi.fn() }));
 vi.mock("@/hooks/use-pending-tasks", () => ({ usePendingTasks: vi.fn() }));
+// NavUser's sign-out needs a QueryClient (it clears the cache); the sidebar tests never sign out.
+vi.mock("@/hooks/use-sign-out", () => ({ useSignOut: () => vi.fn() }));
 
 // Mounting AppSidebar pulls in NavUser's dropdown menu and the Logo's framer-motion animation,
 // which is measurably slower to first-render under a full parallel suite run than the default
