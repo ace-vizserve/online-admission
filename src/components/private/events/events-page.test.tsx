@@ -29,6 +29,7 @@ function row(over: Partial<ParentEventRow>): ParentEventRow {
     timeLabel: "Fri, 8:00 am – 1:00 pm",
     venue: "School hall",
     scopeLabel: "Whole school",
+    opensAt: "2026-10-01T00:00:00.000Z",
     closesAt: "2026-11-13T09:00:00.000Z",
     canRegister: true,
     children: [ian("not_registered")],
@@ -100,7 +101,19 @@ describe("Events page", () => {
   it("shows the banner date once", () => {
     renderPage();
     expect(screen.getByText(/Science Centre trip — Ian Louise, closes tomorrow \(Fri 30 Oct\)/)).toBeTruthy();
-    expect(screen.getByText(/Parent–Teacher Conference — Ian Louise and Mia, closes tue 3 nov/)).toBeTruthy();
+    expect(screen.getByText(/Parent–Teacher Conference — Ian Louise and Mia, closes Tue 3 Nov/)).toBeTruthy();
+  });
+
+  it("falls back to the newest year when no year is current", () => {
+    data = {
+      open: [],
+      mine: [row({ slug: "later", title: "Sports Day", startsOn: "2099-11-20", children: [ian("registered")] })],
+      academicYears: ["AY2027", "AY2026"],
+      currentAy: "",
+    };
+    renderPage();
+    fireEvent.click(screen.getByRole("tab", { name: /My registrations/ }));
+    expect(screen.getByRole("combobox", { name: "School year" }).textContent).toContain("AY2027");
   });
 
   it("groups My registrations and defaults the year to the current one", () => {

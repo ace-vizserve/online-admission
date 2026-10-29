@@ -65,7 +65,9 @@ function ClosingBanner({ events }: { events: ParentEventRow[] }) {
   const detail = events
     .map((event) => {
       const names = event.children.filter((c) => c.status === "not_registered").map((c) => c.name);
-      const label = closesLabel(event.closesAt).toLowerCase();
+      // Only the first letter goes lower case: "closes Tue 3 Nov", not "closes tue 3 nov".
+      const full = closesLabel(event.closesAt);
+      const label = full.charAt(0).toLowerCase() + full.slice(1);
       const relative = label === "closes today" || label === "closes tomorrow";
       const when = relative ? `${label} (${format(parseISO(event.closesAt), "EEE d MMM")})` : label;
       return `${event.title} — ${joinNames(names)}, ${when}`;
@@ -114,7 +116,8 @@ export default function Events() {
   const open = data?.open ?? [];
   const mine = data?.mine ?? [];
   const years = data?.academicYears ?? [];
-  const selectedYear = year ?? data?.currentAy ?? years[0] ?? "";
+  // `||`, not `??`: the SIS sends currentAy "" when no year is current.
+  const selectedYear = year ?? (data?.currentAy || years[0] || "");
   const closingSoon = open.filter((event) => needsAttention(event));
 
   const pageCount = Math.max(1, Math.ceil(open.length / PAGE_SIZE));
