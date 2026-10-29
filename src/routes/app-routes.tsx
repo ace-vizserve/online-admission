@@ -56,6 +56,7 @@ import RegistrationSubmitted from "@/pages/private/open-house/registration-submi
 import PendingTasks from "@/pages/private/pending-tasks";
 import { ReportCards } from "@/pages/private/report-cards";
 import Declarations from "@/pages/private/services/declarations";
+import EventFormPage from "@/pages/private/services/event-form";
 import Events from "@/pages/private/services/events";
 import FileDeclaration from "@/pages/private/services/file-declaration";
 import SingleEnrol from "@/pages/private/Single-enrol";
@@ -65,7 +66,13 @@ import Uploaded from "@/pages/private/uploaded";
 import CompleteEnrolment from "@/pages/public/complete-enrolment";
 import Homepage from "@/pages/public/home-page";
 import { ErrorBoundary } from "react-error-boundary";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router";
+
+/** `/e/<slug>`: the short link the school shares for one event. */
+function EventShortLink() {
+  const { slug = "" } = useParams();
+  return <Navigate to={`/admission/services/events/${encodeURIComponent(slug)}`} replace />;
+}
 
 function AppRoutes() {
   return (
@@ -120,6 +127,8 @@ function AppRoutes() {
             </UnauthenticatedGuard>
           }
         />
+
+        <Route path="/e/:slug" element={<EventShortLink />} />
 
         <Route
           path="/open-house-registration"
@@ -285,6 +294,17 @@ function AppRoutes() {
               <AuthGuard>
                 <ErrorBoundary fallback={<ErrorPage />}>
                   <Events />
+                </ErrorBoundary>
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="services/events/:slug"
+            element={
+              <AuthGuard>
+                <ErrorBoundary fallback={<ErrorPage />}>
+                  <EventFormPage />
                 </ErrorBoundary>
               </AuthGuard>
             }
