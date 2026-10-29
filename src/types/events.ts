@@ -62,6 +62,7 @@ export type ParentEventList = {
   open: ParentEventRow[];
   mine: ParentEventRow[];
   academicYears: string[];
+  currentAy: string;
 };
 
 export type ParentEventDetail = {

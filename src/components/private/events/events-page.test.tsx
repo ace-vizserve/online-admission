@@ -1,5 +1,5 @@
 import type { ParentEventList, ParentEventRow } from "@/types/events";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Events from "@/pages/private/services/events";
@@ -51,7 +51,7 @@ const fixture = (): ParentEventList => {
       children: [ian("registered"), mia("not_joining")],
     }),
   ];
-  return { open, mine: [open[2]], academicYears: ["AY2026"] };
+  return { open, mine: [open[2]], academicYears: ["AY2027", "AY2026"], currentAy: "AY2026" };
 };
 
 beforeEach(() => {
@@ -92,8 +92,41 @@ describe("Events page", () => {
   });
 
   it("says so when no events are open", () => {
-    data = { open: [], mine: [], academicYears: ["AY2026"] };
+    data = { open: [], mine: [], academicYears: ["AY2027", "AY2026"], currentAy: "AY2026" };
     renderPage();
     expect(screen.getByText("No events are open for your children right now.")).toBeTruthy();
+  });
+
+  it("shows the banner date once", () => {
+    renderPage();
+    expect(screen.getByText(/Science Centre trip — Ian Louise, closes tomorrow \(Fri 30 Oct\)/)).toBeTruthy();
+    expect(screen.getByText(/Parent–Teacher Conference — Ian Louise and Mia, closes Tue 3 Nov/)).toBeTruthy();
+  });
+
+  it("groups My registrations and defaults the year to the current one", () => {
+    data = {
+      open: [],
+      mine: [
+        row({ slug: "later", title: "Sports Day", startsOn: "2026-11-20", children: [ian("registered")] }),
+        row({ slug: "past", title: "Open House", startsOn: "2026-09-12", children: [mia("registered")] }),
+      ],
+      academicYears: ["AY2027", "AY2026"],
+      currentAy: "AY2026",
+    };
+    renderPage();
+    fireEvent.click(screen.getByRole("tab", { name: /My registrations/ }));
+
+    expect(screen.getByRole("combobox", { name: "School year" }).textContent).toContain("AY2026");
+    expect(screen.getByText("Coming up")).toBeTruthy();
+    expect(screen.getByText("Earlier in AY2026")).toBeTruthy();
+    expect(screen.getByText("Sports Day")).toBeTruthy();
+    expect(screen.getByText("Open House")).toBeTruthy();
+  });
+
+  it("says so when nothing was registered in the year", () => {
+    data = { open: [], mine: [], academicYears: ["AY2026"], currentAy: "AY2026" };
+    renderPage();
+    fireEvent.click(screen.getByRole("tab", { name: /My registrations/ }));
+    expect(screen.getByText("You haven't registered for any events in AY2026.")).toBeTruthy();
   });
 });

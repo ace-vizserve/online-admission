@@ -65,7 +65,10 @@ function ClosingBanner({ events }: { events: ParentEventRow[] }) {
   const detail = events
     .map((event) => {
       const names = event.children.filter((c) => c.status === "not_registered").map((c) => c.name);
-      return `${event.title} — ${joinNames(names)}, ${closesLabel(event.closesAt).toLowerCase()} (${format(parseISO(event.closesAt), "EEE d MMM")})`;
+      const label = closesLabel(event.closesAt).toLowerCase();
+      const relative = label === "closes today" || label === "closes tomorrow";
+      const when = relative ? `${label} (${format(parseISO(event.closesAt), "EEE d MMM")})` : label;
+      return `${event.title} — ${joinNames(names)}, ${when}`;
     })
     .join(" · ");
 
@@ -111,11 +114,12 @@ export default function Events() {
   const open = data?.open ?? [];
   const mine = data?.mine ?? [];
   const years = data?.academicYears ?? [];
-  const selectedYear = year ?? years[0] ?? "";
+  const selectedYear = year ?? data?.currentAy ?? years[0] ?? "";
   const closingSoon = open.filter((event) => needsAttention(event));
 
   const pageCount = Math.max(1, Math.ceil(open.length / PAGE_SIZE));
-  const shown = open.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pageIndex = Math.min(page, pageCount - 1);
+  const shown = open.slice(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE);
 
   const today = format(new Date(), "yyyy-MM-dd");
   const comingUp = mine.filter((event) => (event.endsOn ?? event.startsOn) >= today);
@@ -202,16 +206,16 @@ export default function Events() {
                     variant="outline"
                     size="sm"
                     className="rounded-lg px-4"
-                    disabled={page === 0}
-                    onClick={() => setPage(page - 1)}>
+                    disabled={pageIndex === 0}
+                    onClick={() => setPage(pageIndex - 1)}>
                     Previous
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     className="rounded-lg px-4"
-                    disabled={page >= pageCount - 1}
-                    onClick={() => setPage(page + 1)}>
+                    disabled={pageIndex >= pageCount - 1}
+                    onClick={() => setPage(pageIndex + 1)}>
                     Next
                   </Button>
                 </div>

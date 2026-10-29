@@ -1,7 +1,7 @@
 import { getEvent, listEvents, saveRegistration } from "@/actions/events";
 import useSession from "@/hooks/use-session";
 import type { RegistrationBody } from "@/types/events";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /** Open events and this family's answered events. Keyed by email like the other account-wide queries. */
 export function useEvents(ay?: string) {
@@ -10,6 +10,7 @@ export function useEvents(ay?: string) {
   return useQuery({
     queryKey: ["events", session?.user.email, ay ?? null],
     queryFn: () => listEvents(ay),
+    placeholderData: keepPreviousData,
     enabled: session != null,
   });
 }
