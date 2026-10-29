@@ -100,7 +100,7 @@ describe("Events page", () => {
   it("shows the banner date once", () => {
     renderPage();
     expect(screen.getByText(/Science Centre trip — Ian Louise, closes tomorrow \(Fri 30 Oct\)/)).toBeTruthy();
-    expect(screen.getByText(/Parent–Teacher Conference — Ian Louise and Mia, closes Tue 3 Nov/)).toBeTruthy();
+    expect(screen.getByText(/Parent–Teacher Conference — Ian Louise and Mia, closes tue 3 nov/)).toBeTruthy();
   });
 
   it("groups My registrations and defaults the year to the current one", () => {
