@@ -53,6 +53,8 @@ export type ParentEventRow = {
   timeLabel: string;
   venue: string;
   scopeLabel: string;
+  /** When registration opens; before then the form says "Registration opens on …". */
+  opensAt: string;
   closesAt: string;
   canRegister: boolean;
   children: ParentChildStatus[];

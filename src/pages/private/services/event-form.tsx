@@ -21,7 +21,7 @@ import { buildSteps, type Step } from "@/lib/event-form";
 import { SisError } from "@/lib/sis";
 import type { AnswerValue, Consent, ParentEventDetail } from "@/types/events";
 import { format, parseISO } from "date-fns";
-import { ArrowLeft, ArrowRight, CalendarX2, Loader2, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarClock, CalendarX2, Loader2, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -29,6 +29,13 @@ import { toast } from "sonner";
 const LIST = "/admission/services/events";
 const CLOSED = "Registration for this event has closed.";
 const FALLBACK = "Something went wrong. Please try again.";
+
+type Blocked = null | "closed" | "upcoming";
+
+/** Published but registration has not opened yet. */
+function notOpenYet(event: { opensAt?: string }, now = Date.now()) {
+  return !!event.opensAt && now < Date.parse(event.opensAt);
+}
 
 function BackToEvents() {
   return (
@@ -99,7 +106,11 @@ function EventFormBody({ detail }: { detail: ParentEventDetail }) {
   const [state, setState] = useState<RegistrationState>(() => initialState(detail));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [stepIndex, setStepIndex] = useState(0);
-  const [closed, setClosed] = useState(!detail.event.canRegister);
+  // A published event that has not opened yet is not "closed": it says when it opens.
+  const [blocked, setBlocked] = useState<Blocked>(() =>
+    detail.event.canRegister ? null : notOpenYet(detail.event) ? "upcoming" : "closed",
+  );
+  const closed = blocked !== null;
   const [formError, setFormError] = useState<string | null>(null);
 
   const eligible = eligibleChildren(detail);
@@ -184,7 +195,7 @@ function EventFormBody({ detail }: { detail: ParentEventDetail }) {
       },
       onError: (err) => {
         if (err instanceof SisError && err.status === 409) {
-          setClosed(true);
+          setBlocked(/opens on/i.test(err.message) ? "upcoming" : "closed");
           return;
         }
         if (err instanceof SisError && err.status === 401) {
@@ -223,7 +234,11 @@ function EventFormBody({ detail }: { detail: ParentEventDetail }) {
             </p>
           </div>
           <p className="w-fit shrink-0 rounded-md bg-amber-50 px-2 py-1 text-[12px] font-bold text-amber-800">
-            {closed ? "Registration closed" : `Register by ${format(parseISO(detail.event.closesAt), "EEE d MMM")}`}
+            {blocked === "upcoming"
+              ? `Opens ${format(parseISO(detail.event.opensAt), "EEE d MMM")}`
+              : closed
+                ? "Registration closed"
+                : `Register by ${format(parseISO(detail.event.closesAt), "EEE d MMM")}`}
           </p>
         </div>
         {current === 0 && detail.event.description && (
@@ -233,7 +248,15 @@ function EventFormBody({ detail }: { detail: ParentEventDetail }) {
         )}
       </div>
 
-      {closed && (
+      {blocked === "upcoming" && (
+        <div role="alert" className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-5 py-4">
+          <CalendarClock className="size-5 shrink-0 text-amber-700" />
+          <p className="text-sm font-bold text-amber-900">
+            Registration opens on {format(parseISO(detail.event.opensAt), "EEE d MMM, h:mm aaa")}.
+          </p>
+        </div>
+      )}
+      {blocked === "closed" && (
         <div role="alert" className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-4">
           <CalendarX2 className="size-5 shrink-0 text-destructive" />
           <p className="text-sm font-bold text-destructive">{CLOSED}</p>

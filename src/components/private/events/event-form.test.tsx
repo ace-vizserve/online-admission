@@ -31,6 +31,7 @@ function fixture(): ParentEventDetail {
       timeLabel: "8:15 am – 12:15 pm",
       venue: "Mint Museum of Toys",
       scopeLabel: "Primary",
+      opensAt: "2026-10-01T00:00:00.000Z",
       closesAt: "2026-11-13T09:00:00.000Z",
       canRegister: true,
       children: [],
@@ -180,6 +181,30 @@ describe("Event form", () => {
     expect(saved[0].children.map((c) => c.consent)).toEqual(["not_allowing", "not_allowing"]);
     expect(screen.getByText("Registration for this event has closed.")).toBeTruthy();
     expect((button("Register") as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("says when registration opens for an event that has not opened yet", () => {
+    detail.event.canRegister = false;
+    detail.event.opensAt = "2999-11-05T09:00:00.000Z";
+    renderPage();
+    expect(screen.getByText(/^Registration opens on Tue 5 Nov, /)).toBeTruthy();
+    expect(screen.queryByText("Registration for this event has closed.")).toBeNull();
+    expect(screen.queryByText("Registration closed")).toBeNull();
+    expect((button("Register") as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("shows the opening date, not closed, when the save answers 409 'opens on'", () => {
+    saveError = new SisError("Registration for this event opens on Thu 5 Nov, 5:00 pm.", 409);
+    detail.event.opensAt = "2999-11-05T09:00:00.000Z";
+    renderPage();
+    choose("Ian Louise Lim", /Not allowing/);
+    choose("Mia Lim", /Not allowing/);
+    for (const input of screen.getAllByLabelText(/Reason for not allowing/)) {
+      fireEvent.change(input, { target: { value: "Away that week" } });
+    }
+    fireEvent.click(button("Register"));
+    expect(screen.getByText(/^Registration opens on /)).toBeTruthy();
+    expect(screen.queryByText("Registration for this event has closed.")).toBeNull();
   });
 
   it("sends only visible answers and the signature", () => {
