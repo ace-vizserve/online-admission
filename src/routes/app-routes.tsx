@@ -56,6 +56,7 @@ import RegistrationSubmitted from "@/pages/private/open-house/registration-submi
 import PendingTasks from "@/pages/private/pending-tasks";
 import { ReportCards } from "@/pages/private/report-cards";
 import Declarations from "@/pages/private/services/declarations";
+import Events from "@/pages/private/services/events";
 import FileDeclaration from "@/pages/private/services/file-declaration";
 import SingleEnrol from "@/pages/private/Single-enrol";
 import StudentPhoto from "@/pages/private/student-photo";
@@ -273,6 +274,17 @@ function AppRoutes() {
               <AuthGuard>
                 <ErrorBoundary fallback={<ErrorPage />}>
                   <FileDeclaration />
+                </ErrorBoundary>
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="services/events"
+            element={
+              <AuthGuard>
+                <ErrorBoundary fallback={<ErrorPage />}>
+                  <Events />
                 </ErrorBoundary>
               </AuthGuard>
             }

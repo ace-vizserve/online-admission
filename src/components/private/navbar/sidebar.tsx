@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useDraftRows } from "@/hooks/use-draft-rows";
 import { usePendingTasks } from "@/hooks/use-pending-tasks";
-import { BookOpenText, CalendarOff, ClipboardList, FileClock, FilePen, FileText, LayoutDashboardIcon } from "lucide-react";
+import { BookOpenText, CalendarCheck, CalendarOff, ClipboardList, FileClock, FilePen, FileText, LayoutDashboardIcon } from "lucide-react";
 import * as React from "react";
 import Logo from "../../logo";
 import { NavMain } from "./nav-main";
@@ -49,6 +49,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       collapsible: true,
       items: [
         { title: "Absence & Travel", url: "/admission/services/declarations", icon: CalendarOff },
+        { title: "Events", url: "/admission/services/events", icon: CalendarCheck },
       ],
     },
     {
