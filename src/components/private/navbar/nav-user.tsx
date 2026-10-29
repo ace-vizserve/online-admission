@@ -1,6 +1,5 @@
 "use client";
 
-import { userLogout } from "@/actions/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import useSession from "@/hooks/use-session";
+import { useSignOut } from "@/hooks/use-sign-out";
 import { cn } from "@/lib/utils";
 import { ChevronsUpDown, LogOut, Settings, ShieldAlert, User } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -20,6 +20,7 @@ export function NavUser() {
   const { session } = useSession();
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const signOut = useSignOut();
 
   const passwordChanged = session?.user.user_metadata?.password_changed as boolean;
   const showWarning = !passwordChanged;
@@ -109,7 +110,7 @@ export function NavUser() {
 
             <DropdownMenuItem
               className="cursor-pointer flex items-center gap-3 p-2.5 rounded-lg text-slate-600 hover:!text-red-600 hover:!bg-red-50 transition-colors"
-              onClick={async () => await userLogout()}>
+              onClick={signOut}>
               <div className="p-1.5 rounded-md !bg-slate-100 group-hover:!bg-red-100">
                 <LogOut className="size-4" />
               </div>

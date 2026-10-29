@@ -23,6 +23,14 @@ function App({ start, state }: { start: string; state?: unknown }) {
         <Route path="/admission/dashboard" element={<p>Dashboard</p>} />
         <Route path="/admin/move-student" element={<p>Admin</p>} />
         <Route
+          path="/admission/students/:id"
+          element={
+            <AuthGuard>
+              <p>Student profile</p>
+            </AuthGuard>
+          }
+        />
+        <Route
           path="/admission/services/events/:slug"
           element={
             <AuthGuard>
@@ -61,6 +69,20 @@ describe("Return to the requested page after login", () => {
     expect(screen.getByText("Dashboard")).toBeTruthy();
     unmount();
     render(<App start="/login" state={{ from: "//evil.example.com/x" }} />);
+    expect(screen.getByText("Dashboard")).toBeTruthy();
+  });
+
+  it("sends the next person to the dashboard after a sign-out on another family's page", () => {
+    session = { user: { email: "first@example.com" } };
+    const { rerender } = render(<App start="/admission/students/X" />);
+    expect(screen.getByText("Student profile")).toBeTruthy();
+
+    session = null;
+    rerender(<App start="/admission/students/X" />);
+    expect(screen.getByText("Login page")).toBeTruthy();
+
+    session = { user: { email: "second@example.com" } };
+    rerender(<App start="/admission/students/X" />);
     expect(screen.getByText("Dashboard")).toBeTruthy();
   });
 

@@ -3,10 +3,13 @@ import useSession from "@/hooks/use-session";
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 
-/** The portal page AuthGuard sent the visitor away from, if it is one; anything else is ignored. */
+/**
+ * The event page AuthGuard sent the visitor away from, if it was one. Only event links are followed:
+ * any other remembered page could belong to the family who signed out before, on a shared device.
+ */
 function requestedPage(state: unknown): string | null {
   const from = (state as { from?: unknown } | null)?.from;
-  return typeof from === "string" && from.startsWith("/admission/") ? from : null;
+  return typeof from === "string" && from.startsWith("/admission/services/events/") ? from : null;
 }
 
 function UnauthenticatedGuard({ children }: { children: ReactNode }) {
