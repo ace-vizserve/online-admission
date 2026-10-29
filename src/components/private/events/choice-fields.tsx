@@ -12,11 +12,13 @@ type ChoiceProps = {
   value: AnswerValue | undefined;
   onChange: (value: AnswerValue) => void;
   id: string;
+  invalid?: boolean;
   disabled?: boolean;
 };
 
 /** One answer from a list; "Other" stores whatever the parent types. */
-export function PickOneField({ question, value, onChange, id, disabled }: ChoiceProps) {
+export function PickOneField({ question, value, onChange, id, invalid, disabled }: ChoiceProps) {
+  const errorAria = { "aria-invalid": invalid || undefined, "aria-describedby": invalid ? `${id}-error` : undefined };
   const text = typeof value === "string" ? value : "";
   const isChoice = question.choices.includes(text);
   const [otherPicked, setOtherPicked] = useState(question.allowOther && text !== "" && !isChoice);
@@ -29,6 +31,7 @@ export function PickOneField({ question, value, onChange, id, disabled }: Choice
         value={selected}
         disabled={disabled}
         aria-labelledby={`${id}-label`}
+        {...errorAria}
         onValueChange={(v) => {
           if (v === OTHER) {
             setOtherPicked(true);
@@ -75,7 +78,8 @@ export function PickOneField({ question, value, onChange, id, disabled }: Choice
  * Any number of answers from a list. No "Other" here: the school's system only accepts the listed
  * choices for this kind of question.
  */
-export function TickManyField({ question, value, onChange, id, disabled }: ChoiceProps) {
+export function TickManyField({ question, value, onChange, id, invalid, disabled }: ChoiceProps) {
+  const errorAria = { "aria-invalid": invalid || undefined, "aria-describedby": invalid ? `${id}-error` : undefined };
   const ticked = Array.isArray(value) ? value : [];
 
   function toggle(choice: string, on: boolean) {
@@ -85,7 +89,7 @@ export function TickManyField({ question, value, onChange, id, disabled }: Choic
   }
 
   return (
-    <div role="group" aria-labelledby={`${id}-label`} className="flex flex-col gap-2.5">
+    <div role="group" aria-labelledby={`${id}-label`} {...errorAria} className="flex flex-col gap-2.5">
       {question.choices.map((choice, i) => (
         <div key={choice} className="flex items-center gap-2">
           <Checkbox

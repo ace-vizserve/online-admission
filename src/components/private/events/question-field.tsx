@@ -75,7 +75,11 @@ export default function QuestionField({
         disabled={disabled}
       />
 
-      {error && <p className="text-[13px] font-medium text-destructive">{error}</p>}
+      {error && (
+        <p id={`${id}-error`} className="text-[13px] font-medium text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -103,6 +107,7 @@ function NumberInput({
       value={raw}
       disabled={disabled}
       aria-invalid={invalid || undefined}
+      aria-describedby={invalid ? `${id}-error` : undefined}
       onChange={(e) => {
         const next = e.target.value;
         setRaw(next);
@@ -134,7 +139,7 @@ function Answer({
   disabled?: boolean;
 }) {
   const text = typeof value === "string" ? value : "";
-  const aria = { "aria-invalid": invalid || undefined };
+  const aria = { "aria-invalid": invalid || undefined, "aria-describedby": invalid ? `${id}-error` : undefined };
 
   switch (question.type) {
     case "info":
@@ -171,9 +176,9 @@ function Answer({
         />
       );
     case "pick_one":
-      return <PickOneField question={question} value={value} onChange={onChange} id={id} disabled={disabled} />;
+      return <PickOneField question={question} value={value} onChange={onChange} id={id} invalid={invalid} disabled={disabled} />;
     case "tick_many":
-      return <TickManyField question={question} value={value} onChange={onChange} id={id} disabled={disabled} />;
+      return <TickManyField question={question} value={value} onChange={onChange} id={id} invalid={invalid} disabled={disabled} />;
     case "signature":
       return (
         <SignatureField

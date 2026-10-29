@@ -25,6 +25,11 @@ export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] ?? name;
 }
 
+/** The children the parent can answer for now. Others are shown read-only with their saved answer. */
+export function eligibleChildren(detail: ParentEventDetail) {
+  return detail.children.filter((c) => c.canRegister);
+}
+
 export function isEditing(detail: ParentEventDetail): boolean {
   return detail.submission != null || Object.keys(detail.registrations).length > 0;
 }
@@ -96,7 +101,7 @@ export function validateStep(step: Step, detail: ParentEventDetail, state: Regis
   if (step.kind === "who") {
     if (state.parentName.trim() === "") errors.parentName = "Enter your name.";
     if (state.parentPhone.trim() === "") errors.parentPhone = "Enter your phone number.";
-    for (const child of detail.children) {
+    for (const child of eligibleChildren(detail)) {
       const sn = child.studentNumber;
       const consent = state.consent[sn];
       if (!consent) {
@@ -136,11 +141,14 @@ function visibleAnswers(
   return out;
 }
 
-/** The PUT body. Every child is included; family answers and the signature only when someone is joining. */
+/**
+ * The PUT body. Every child who can still register is included: the SIS requires all of them and
+ * refuses any who cannot. Family answers and the signature only when someone is joining.
+ */
 export function buildBody(detail: ParentEventDetail, state: RegistrationState): RegistrationBody {
   const consentMode = detail.event.answerMode === "consent";
   const allowingSections = childSectionsFor(detail.form, "allowing");
-  const children = detail.children.map((child) => {
+  const children = eligibleChildren(detail).map((child) => {
     const sn = child.studentNumber;
     const consent: Consent = state.consent[sn] ?? "not_allowing";
     if (consent === "allowing") {

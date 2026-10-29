@@ -2,7 +2,7 @@ import { SisError } from "@/lib/sis";
 import EventFormPage from "@/pages/private/services/event-form";
 import type { ParentEventDetail, RegistrationBody } from "@/types/events";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let detail: ParentEventDetail;
@@ -68,8 +68,8 @@ function fixture(): ParentEventDetail {
       ],
     },
     children: [
-      { studentNumber: "S1", name: "Ian Louise Lim", levelLabel: "P3", className: "Courtesy" },
-      { studentNumber: "S2", name: "Mia Lim", levelLabel: "P1", className: "Kindness" },
+      { studentNumber: "S1", name: "Ian Louise Lim", levelLabel: "P3", className: "Courtesy", canRegister: true },
+      { studentNumber: "S2", name: "Mia Lim", levelLabel: "P1", className: "Kindness", canRegister: true },
     ],
     submission: null,
     registrations: {},
@@ -99,9 +99,15 @@ const renderPage = () =>
       <Routes>
         <Route path="/admission/services/events/:slug" element={<EventFormPage />} />
         <Route path="/admission/services/events" element={<p>Events list</p>} />
+        <Route path="/login" element={<LoginProbe />} />
       </Routes>
     </MemoryRouter>,
   );
+
+function LoginProbe() {
+  const location = useLocation();
+  return <p>Login from {(location.state as { from?: string } | null)?.from ?? "nowhere"}</p>;
+}
 
 const childCard = (name: string) => screen.getByText(name).closest("[data-child]") as HTMLElement;
 const choose = (name: string, option: RegExp) => fireEvent.click(within(childCard(name)).getByRole("radio", { name: option }));
@@ -220,5 +226,40 @@ describe("Event form", () => {
 
     expect(screen.getByText(/Step 2 of 3/)).toBeTruthy();
     expect(screen.getByText("Enter some text.")).toBeTruthy();
+    const input = screen.getByLabelText(/Food allergies/);
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(document.getElementById(input.getAttribute("aria-describedby") ?? "")?.textContent).toBe("Enter some text.");
+    // The answer carries the message; no generic banner on top.
+    expect(screen.queryByText("Check the highlighted answers.")).toBeNull();
+  });
+
+  it("shows a child who can no longer register read-only and leaves them out of the save", () => {
+    detail.children[1].canRegister = false;
+    detail.registrations = { S2: { status: "registered", reason: null, answers: {} } };
+    renderPage();
+
+    const mia = childCard("Mia Lim");
+    expect(within(mia).getByText("No longer able to register for this event.")).toBeTruthy();
+    expect(within(mia).getByText("Registered")).toBeTruthy();
+    expect(within(mia).queryByRole("radio")).toBeNull();
+
+    choose("Ian Louise Lim", /Not allowing/);
+    fireEvent.change(screen.getByLabelText(/Reason for not allowing/), { target: { value: "Away" } });
+    fireEvent.click(button("Save changes"));
+
+    expect(saved[0].children).toEqual([{ studentNumber: "S1", consent: "not_allowing", reason: "Away", answers: {} }]);
+  });
+
+  it("sends a parent whose session ended to login, to come back to this event", () => {
+    saveError = new SisError("Please sign in again.", 401);
+    renderPage();
+    choose("Ian Louise Lim", /Not allowing/);
+    choose("Mia Lim", /Not allowing/);
+    for (const input of screen.getAllByLabelText(/Reason for not allowing/)) {
+      fireEvent.change(input, { target: { value: "Away" } });
+    }
+    fireEvent.click(button("Register"));
+
+    expect(screen.getByText("Login from /admission/services/events/trip")).toBeTruthy();
   });
 });

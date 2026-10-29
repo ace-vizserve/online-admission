@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import type { Consent, ParentEventDetail } from "@/types/events";
 import { useState } from "react";
 import ChildHeader from "./child-header";
-import { REASON_MAX, type FieldErrors, type RegistrationState } from "./registration-state";
+import EventStatusBadge from "./status-badge";
+import { REASON_MAX, eligibleChildren, type FieldErrors, type RegistrationState } from "./registration-state";
 
 type Props = {
   detail: ParentEventDetail;
@@ -36,6 +37,7 @@ export default function WhoStep(props: Props) {
         </p>
       </div>
       {consentMode ? <ConsentCards {...props} /> : <Ticks {...props} />}
+      <NoLongerEligible detail={detail} />
     </div>
   );
 }
@@ -108,10 +110,15 @@ function ContactInput(props: {
         autoComplete={props.autoComplete}
         maxLength={props.id === "parent-phone" ? 50 : 200}
         aria-invalid={!!props.error || undefined}
+        aria-describedby={props.error ? `${props.id}-error` : undefined}
         onChange={(e) => props.onChange(e.target.value)}
         className="h-9 rounded-lg border-slate-200 bg-white shadow-sm"
       />
-      {props.error && <p className="text-[13px] font-medium text-destructive">{props.error}</p>}
+      {props.error && (
+        <p id={`${props.id}-error`} className="text-[13px] font-medium text-destructive">
+          {props.error}
+        </p>
+      )}
     </div>
   );
 }
@@ -124,7 +131,7 @@ const CHOICES: { value: Consent; label: string; hint: string }[] = [
 function ConsentCards({ detail, state, errors, disabled, onConsent, onReason }: Props) {
   return (
     <div className="space-y-4">
-      {detail.children.map((child) => {
+      {eligibleChildren(detail).map((child) => {
         const sn = child.studentNumber;
         const consent = state.consent[sn];
         const reasonId = `reason-${sn}`;
@@ -136,6 +143,8 @@ function ConsentCards({ detail, state, errors, disabled, onConsent, onReason }: 
                 value={consent ?? ""}
                 disabled={disabled}
                 aria-label={`Is ${child.name} joining?`}
+                aria-invalid={!!errors[`${sn}.consent`] || undefined}
+                aria-describedby={errors[`${sn}.consent`] ? `consent-${sn}-error` : undefined}
                 onValueChange={(v) => onConsent(sn, v as Consent)}
                 className="grid gap-3 sm:grid-cols-2">
                 {CHOICES.map((choice) => {
@@ -161,7 +170,9 @@ function ConsentCards({ detail, state, errors, disabled, onConsent, onReason }: 
                 })}
               </RadioGroup>
               {errors[`${sn}.consent`] && (
-                <p className="text-[13px] font-medium text-destructive">{errors[`${sn}.consent`]}</p>
+                <p id={`consent-${sn}-error`} className="text-[13px] font-medium text-destructive">
+                  {errors[`${sn}.consent`]}
+                </p>
               )}
 
               {consent === "not_allowing" && (
@@ -176,11 +187,14 @@ function ConsentCards({ detail, state, errors, disabled, onConsent, onReason }: 
                     disabled={disabled}
                     value={state.reasons[sn] ?? ""}
                     aria-invalid={!!errors[`${sn}.reason`] || undefined}
+                    aria-describedby={`${reasonId}-error`}
                     onChange={(e) => onReason(sn, e.target.value)}
                     className="rounded-lg border-slate-200 bg-white shadow-sm"
                   />
                   <div className="flex justify-between gap-3 text-xs">
-                    <p className="font-medium text-destructive">{errors[`${sn}.reason`]}</p>
+                    <p id={`${reasonId}-error`} className="font-medium text-destructive">
+                      {errors[`${sn}.reason`]}
+                    </p>
                     <p className="shrink-0 text-muted-foreground">
                       {(state.reasons[sn] ?? "").length}/{REASON_MAX}
                     </p>
@@ -198,7 +212,7 @@ function ConsentCards({ detail, state, errors, disabled, onConsent, onReason }: 
 function Ticks({ detail, state, disabled, onConsent }: Props) {
   return (
     <div className="space-y-2">
-      {detail.children.map((child) => {
+      {eligibleChildren(detail).map((child) => {
         const sn = child.studentNumber;
         const coming = state.consent[sn] === "allowing";
         return (
@@ -223,6 +237,29 @@ function Ticks({ detail, state, disabled, onConsent }: Props) {
               </span>
             </span>
           </label>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Children who answered earlier but can no longer register (withdrawn, or moved class): shown, not editable. */
+function NoLongerEligible({ detail }: { detail: ParentEventDetail }) {
+  const others = detail.children.filter((c) => !c.canRegister);
+  if (others.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      {others.map((child) => {
+        const saved = detail.registrations[child.studentNumber];
+        return (
+          <div key={child.studentNumber} data-child className="rounded-xl border bg-slate-50 shadow-sm">
+            <ChildHeader
+              child={child}
+              badge={<EventStatusBadge status={saved?.status ?? "not_registered"} />}
+            />
+            <p className="px-5 py-3 text-[13px] text-muted-foreground">No longer able to register for this event.</p>
+          </div>
         );
       })}
     </div>

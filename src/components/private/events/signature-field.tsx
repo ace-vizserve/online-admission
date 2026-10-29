@@ -65,6 +65,7 @@ export default function SignatureField({
             maxLength={200}
             autoComplete="name"
             aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? `${id}-error` : undefined}
             onChange={(e) => onChange(e.target.value)}
             className="h-10 rounded-lg border-slate-200 bg-white font-semibold italic shadow-sm"
           />

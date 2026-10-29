@@ -76,6 +76,8 @@ export type ParentEventDetail = {
     name: string;
     levelLabel: string;
     className: string;
+    /** False for a child shown only because they answered earlier; the SIS refuses them on save. */
+    canRegister: boolean;
   }[];
   submission: {
     parentName: string;

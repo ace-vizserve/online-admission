@@ -1,6 +1,7 @@
 import ChildHeader from "@/components/private/events/child-header";
 import {
   buildBody,
+  eligibleChildren,
   firstName,
   initialState,
   isEditing,
@@ -22,7 +23,7 @@ import type { AnswerValue, Consent, ParentEventDetail } from "@/types/events";
 import { format, parseISO } from "date-fns";
 import { ArrowLeft, ArrowRight, CalendarX2, Loader2, TriangleAlert } from "lucide-react";
 import { useState } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router";
+import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 const LIST = "/admission/services/events";
@@ -40,9 +41,12 @@ function BackToEvents() {
 /** One event's form, a step at a time: who is joining, each joining child, then the family's answers. */
 export default function EventFormPage() {
   const { slug } = useParams();
+  const location = useLocation();
   const { data, isPending, error } = useEvent(slug);
 
-  if (error instanceof SisError && error.status === 401) return <Navigate to="/login" replace />;
+  if (error instanceof SisError && error.status === 401) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
 
   if (isPending) {
     return (
@@ -87,6 +91,7 @@ function eventWhen(event: ParentEventDetail["event"]) {
 
 function EventFormBody({ detail }: { detail: ParentEventDetail }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const save = useSaveRegistration(detail.event.slug);
   const editing = isEditing(detail);
   const consentMode = detail.event.answerMode === "consent";
@@ -97,11 +102,13 @@ function EventFormBody({ detail }: { detail: ParentEventDetail }) {
   const [closed, setClosed] = useState(!detail.event.canRegister);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const steps = buildSteps(detail.form, detail.children, state.consent);
+  const eligible = eligibleChildren(detail);
+  const steps = buildSteps(detail.form, eligible, state.consent);
   const current = Math.min(stepIndex, steps.length - 1);
   const step = steps[current];
   const isLast = current === steps.length - 1;
-  const disabled = closed || save.isPending;
+  // Every child shown answered earlier but can no longer register: there is nothing to send.
+  const disabled = closed || save.isPending || eligible.length === 0;
   const sectionsById = new Map(detail.form.sections.map((s) => [s.id, s]));
   const childOf = (sn: string) => detail.children.find((c) => c.studentNumber === sn);
 
@@ -181,14 +188,16 @@ function EventFormBody({ detail }: { detail: ParentEventDetail }) {
           return;
         }
         if (err instanceof SisError && err.status === 401) {
-          navigate("/login", { replace: true });
+          navigate("/login", { replace: true, state: { from: location.pathname } });
           return;
         }
         const mapped = mapRegistrationErrors(err);
         const keys = Object.keys(mapped.fields);
         if (keys.length > 0) {
+          // The messages sit on the answers themselves; a banner on top would only repeat "check them".
           setErrors(mapped.fields);
           goTo(Math.min(...keys.map((k) => stepOfError(k, steps))));
+          return;
         }
         setFormError(err instanceof SisError ? (mapped.form ?? FALLBACK) : FALLBACK);
       },
@@ -352,9 +361,10 @@ function stepperItem(
   consentMode: boolean,
 ): StepperItem {
   if (step.kind === "who") {
-    const total = detail.children.length;
-    const joining = detail.children.filter((c) => state.consent[c.studentNumber] === "allowing").length;
-    const undecided = detail.children.some((c) => !state.consent[c.studentNumber]);
+    const kids = eligibleChildren(detail);
+    const total = kids.length;
+    const joining = kids.filter((c) => state.consent[c.studentNumber] === "allowing").length;
+    const undecided = kids.some((c) => !state.consent[c.studentNumber]);
     const hint = undecided
       ? "Choose for each child"
       : total === 1
