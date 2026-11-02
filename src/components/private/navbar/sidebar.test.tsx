@@ -158,11 +158,8 @@ describe("AppSidebar — Services", () => {
     expect(screen.getByRole("button", { name: /Services/ })).toBeInTheDocument();
   });
 
-  it("links to the absence and travel declaration page once opened", async () => {
-    const user = (await import("@testing-library/user-event")).default;
+  it("links to the absence and travel declaration page from the start", () => {
     renderSidebar();
-
-    await user.click(screen.getByRole("button", { name: /Services/ }));
 
     expect(screen.getByRole("link", { name: /Absence & Travel/ })).toHaveAttribute(
       "href",

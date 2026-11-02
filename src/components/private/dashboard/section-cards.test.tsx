@@ -49,6 +49,30 @@ beforeEach(() => {
   } as never);
 });
 
+describe("SectionCards — greeting", () => {
+  it("greets a parent by name", async () => {
+    vi.mocked(useDraftRows).mockReturnValue({ data: [], isPending: false } as never);
+
+    renderSectionCards();
+
+    expect(await screen.findByText("Mr. John!")).toBeInTheDocument();
+  });
+
+  it("still opens for an account with no saved name", async () => {
+    vi.mocked(useDraftRows).mockReturnValue({ data: [], isPending: false } as never);
+    const metadata = mockSession.user.user_metadata;
+    mockSession.user.user_metadata = {};
+
+    try {
+      renderSectionCards();
+
+      expect(await screen.findByText("Parent!")).toBeInTheDocument();
+    } finally {
+      mockSession.user.user_metadata = metadata;
+    }
+  });
+});
+
 describe("SectionCards — Saved Drafts count widget", () => {
   it("does not render the Saved Drafts widget when the database has zero drafts", async () => {
     vi.mocked(useDraftRows).mockReturnValue({ data: [], isPending: false } as never);

@@ -1,3 +1,4 @@
+import { ParentPortalGuide } from "@/components/private/guide/parent-portal-guide";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // Added Accordion imports
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1736,52 +1737,9 @@ function AdmissionGuidelines() {
           </TabsContent>
         </Tabs>
 
-        <Card className="border-none shadow-none overflow-hidden py-0 mt-12">
-          <CardHeader className="space-y-4 pt-6 pb-6 bg-muted/30">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-card rounded-xl shadow-sm">
-                <BookOpen className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant="secondary" className="text-base font-semibold bg-card text-primary">
-                Resources
-              </Badge>
-            </div>
-            <CardTitle className="text-3xl font-bold text-foreground">Parent Portal Guide</CardTitle>
-            <p className="text-muted-foreground">Learn how to navigate and use the parent portal effectively</p>
-          </CardHeader>
-
-          <CardContent className="p-6">
-            <div
-              className="relative w-full rounded-xl overflow-hidden shadow-md border-4 border-card"
-              style={{ paddingTop: "56.25%" }}>
-              <iframe
-                loading="lazy"
-                className="absolute top-0 left-0 w-full h-full border-none"
-                src="https://www.canva.com/design/DAGsorqq-Co/lHEDFsXWfMrp4U8rsVQY-Q/view?embed"
-                allowFullScreen
-              />
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 pb-8 px-6 bg-muted/30">
-            <div className="space-y-1">
-              <p className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Heart className="w-4 h-4 text-destructive" />
-                Created by HFSE Creatives Team
-              </p>
-              <p className="text-sm text-muted-foreground">Last updated: 2024</p>
-            </div>
-            <Button asChild variant="default" size="lg">
-              <a
-                href="https://www.canva.com/design/DAGsorqq-Co/lHEDFsXWfMrp4U8rsVQY-Q/view?utm_content=DAGsorqq-Co&utm_campaign=designshare&utm_medium=embeds&utm_source=link"
-                target="_blank"
-                rel="noopener noreferrer">
-                View Full Guide
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </Button>
-          </CardFooter>
-        </Card>
+        <section className="mt-16 border-t border-border pt-12">
+          <ParentPortalGuide />
+        </section>
       </div>
     </div>
   );

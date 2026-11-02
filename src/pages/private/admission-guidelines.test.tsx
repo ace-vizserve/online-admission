@@ -64,6 +64,28 @@ describe("AdmissionGuidelines", () => {
     expect(within(faqSection as HTMLElement).getByText(/Immigration & Checkpoints Authority/)).toBeInTheDocument();
   });
 
+  it("shows the Parent Portal Guide videos instead of the old Canva slides", () => {
+    const { container } = render(<AdmissionGuidelines />);
+
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Parent Portal Guide" })).toBeInTheDocument();
+    expect(screen.getByText("Learn how to navigate and use the parent portal effectively")).toBeInTheDocument();
+
+    const nav = screen.getByRole("navigation", { name: "Guide videos" });
+    expect(within(nav).getAllByRole("button")).toHaveLength(12);
+    expect(container.querySelector("video")).toHaveAttribute("src", "/guide/create-account.mp4");
+  });
+
+  it("switches the guide video when a topic is chosen", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AdmissionGuidelines />);
+
+    await user.click(screen.getByRole("button", { name: "Register for a school event" }));
+
+    expect(container.querySelector("video")).toHaveAttribute("src", "/guide/school-event.mp4");
+    expect(screen.getByRole("button", { name: "Register for a school event" })).toHaveAttribute("aria-current", "true");
+  });
+
   it("links the Contact Admissions button to the admissions phone number", async () => {
     const user = userEvent.setup();
     render(<AdmissionGuidelines />);

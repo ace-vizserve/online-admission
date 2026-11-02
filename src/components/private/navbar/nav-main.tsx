@@ -74,8 +74,8 @@ export function NavMain({ groups }: { groups: NavGroup[] }) {
       {groups.map((group, i) => (
         <SidebarGroup key={group.label ?? "__home"} className={cn(i > 0 && "border-t border-border mt-2 pt-4")}>
           {group.collapsible ? (
-            // Always starts collapsed, even on one of its own pages; the parent opens it.
-            <Collapsible>
+            // Starts open; the parent can fold it.
+            <Collapsible defaultOpen>
               <CollapsibleTrigger
                 className={cn(
                   LABEL_CLASS,

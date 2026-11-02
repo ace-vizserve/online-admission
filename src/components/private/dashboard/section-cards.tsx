@@ -15,9 +15,14 @@ export function SectionCards() {
   const { session } = useSession();
   const { data, isPending } = usePendingTasks();
 
-  const nameParts = session?.user.user_metadata.fullName.replace(/,/g, "").split(" ");
+  // An account can have no saved name, so the dashboard must not depend on one.
+  const fullName: string | undefined = session?.user.user_metadata.fullName;
+  const nameParts = fullName?.replace(/,/g, "").split(" ") ?? [];
+  const firstName = nameParts[1] ?? nameParts[0];
 
-  const greet = `${session?.user.user_metadata.relationship === "mother" ? "Ms." : "Mr."} ${nameParts[1]}`;
+  const greet = firstName
+    ? `${session?.user.user_metadata.relationship === "mother" ? "Ms." : "Mr."} ${firstName}`
+    : "Parent";
 
   const btnStyles =
     "group gap-2 shadow-xl bg-gradient-to-br from-primary via-blue-600 to-blue-700 text-white !rounded-xl border-b-4 border-blue-900 hover:brightness-110 hover:-translate-y-0.5 active:border-b-0 active:translate-y-0 transition-all duration-150 !font-bold uppercase tracking-wider";
