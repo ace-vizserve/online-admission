@@ -1,9 +1,8 @@
 /**
  * Behaviour tests for NavMain's collapsible groups.
  *
- * Services is a section rather than a single destination, so its group folds. The rule that
- * matters is the auto-open one: a parent who deep-links to a Services page must not land with
- * their own location hidden inside a closed drawer.
+ * Services is a section rather than a single destination, so its group folds. It always starts
+ * collapsed, including on one of its own pages.
  */
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { render, screen } from "@testing-library/react";
@@ -62,10 +61,10 @@ describe("NavMain — collapsible groups", () => {
     expect(screen.queryByRole("link", { name: /Absence & Travel/ })).not.toBeInTheDocument();
   });
 
-  it("starts open when the current route is inside the group", () => {
+  it("starts collapsed even when the current route is inside the group", () => {
     renderNav([SERVICES], "/admission/services/declarations");
 
-    expect(screen.getByRole("link", { name: /Absence & Travel/ })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Absence & Travel/ })).not.toBeInTheDocument();
   });
 
   it("leaves non-collapsible groups expanded with no toggle, as before", () => {

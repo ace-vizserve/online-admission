@@ -4,7 +4,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { ChevronDown, type LucideIcon } from "lucide-react";
-import { NavLink, useLocation } from "react-router";
+import { NavLink } from "react-router";
 
 type NavItem = {
   title: string;
@@ -69,16 +69,13 @@ function NavItems({ items }: { items: NavItem[] }) {
 }
 
 export function NavMain({ groups }: { groups: NavGroup[] }) {
-  const { pathname } = useLocation();
-
   return (
     <>
       {groups.map((group, i) => (
         <SidebarGroup key={group.label ?? "__home"} className={cn(i > 0 && "border-t border-border mt-2 pt-4")}>
           {group.collapsible ? (
-            // Open on mount whenever the current route lives in this group, so deep-linking to
-            // one of its pages never hides the parent's own location inside a closed drawer.
-            <Collapsible defaultOpen={group.items.some((item) => pathname.startsWith(item.url))}>
+            // Always starts collapsed, even on one of its own pages; the parent opens it.
+            <Collapsible>
               <CollapsibleTrigger
                 className={cn(
                   LABEL_CLASS,
