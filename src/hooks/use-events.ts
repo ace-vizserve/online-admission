@@ -12,6 +12,9 @@ export function useEvents(ay?: string) {
     queryFn: () => listEvents(ay),
     placeholderData: keepPreviousData,
     enabled: session != null,
+    // The app's default is not to refetch on mount; this list must be current
+    // whenever it opens (a new event, a closed one, the family's own answers).
+    refetchOnMount: true,
   });
 }
 
@@ -26,7 +29,11 @@ export function useEvent(slug: string | undefined) {
   });
 }
 
-/** Saves the whole family's answers; refreshes the list and this event afterwards. */
+/**
+ * Saves the whole family's answers; refreshes the list and this event afterwards. `refetchType: "all"`
+ * because the list is not on screen during the form: it must be current before the parent lands back on
+ * it, and Edit must reopen with the saved answers.
+ */
 export function useSaveRegistration(slug: string) {
   const queryClient = useQueryClient();
 
@@ -34,8 +41,8 @@ export function useSaveRegistration(slug: string) {
     mutationFn: (body: RegistrationBody) => saveRegistration(slug, body),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["events"] }),
-        queryClient.invalidateQueries({ queryKey: ["event", slug] }),
+        queryClient.invalidateQueries({ queryKey: ["events"], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["event", slug], refetchType: "all" }),
       ]);
     },
   });
