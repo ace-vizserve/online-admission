@@ -68,7 +68,7 @@ import Homepage from "@/pages/public/home-page";
 import { ErrorBoundary } from "react-error-boundary";
 import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router";
 
-/** `/e/<slug>`: the short link the school shares for one event. */
+/** `/events/<slug>`: the short link the school shares for one event. */
 function EventShortLink() {
   const { slug = "" } = useParams();
   return <Navigate to={`/admission/services/events/${encodeURIComponent(slug)}`} replace />;
@@ -128,7 +128,7 @@ function AppRoutes() {
           }
         />
 
-        <Route path="/e/:slug" element={<EventShortLink />} />
+        <Route path="/events/:slug" element={<EventShortLink />} />
 
         <Route
           path="/open-house-registration"

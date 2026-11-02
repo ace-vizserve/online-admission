@@ -20,7 +20,7 @@ function UnauthenticatedGuard({ children }: { children: ReactNode }) {
     if (ADMIN_EMAILS.includes(session.user.email ?? "")) {
       return <Navigate to="/admin/move-student" />;
     }
-    // A shared link (an event's /e/<slug>, say) lands where it pointed rather than on the dashboard.
+    // A shared link (an event's /events/<slug>, say) lands where it pointed rather than on the dashboard.
     const requested = requestedPage(location.state);
     if (requested) return <Navigate to={requested} replace />;
     return <Navigate to={"/admission/dashboard"} />;
