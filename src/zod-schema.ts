@@ -34,11 +34,6 @@ export const updatePasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
-export const adminSetPasswordSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-});
-
 export const updateAccountNameSchema = z.object({
   lastName: z.string().min(1, "Last name is required").transform(capitalizeWords),
   firstName: z.string().min(1, "First name is required").transform(capitalizeWords),
@@ -56,24 +51,6 @@ export const registrationSchema = z
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
     relationship: z.enum(["mother", "father", "guardian"], {
-      message: "Please select a valid role",
-    }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Passwords do not match",
-  });
-
-// Admin-created parent accounts: same shape as self-registration, but guardian is
-// deliberately excluded — admins only provision mother/father accounts.
-export const adminCreateParentSchema = z
-  .object({
-    firstName: z.string().min(1, "First name is required").transform(capitalizeWords),
-    lastName: z.string().min(1, "Last name is required").transform(capitalizeWords),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string(),
-    relationship: z.enum(["mother", "father"], {
       message: "Please select a valid role",
     }),
   })
@@ -1345,7 +1322,6 @@ export type FamilyInformationSchema = Omit<z.infer<typeof familyInformationSchem
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 export type UpdatePasswordSchema = z.infer<typeof updatePasswordSchema>;
-export type AdminSetPasswordSchema = z.infer<typeof adminSetPasswordSchema>;
 export type UpdateAccountNameSchema = z.input<typeof updateAccountNameSchema>;
 export type StudentDetailsSchema = z.infer<typeof studentDetailsSchema>;
 export type StudentAddressContactSchema = z.infer<typeof studentAddressContactSchema>;
@@ -1358,38 +1334,6 @@ export type StudentUploadRequirementsSchema = z.infer<typeof studentUploadRequir
 export type ParentGuardianUploadRequirementsSchema = z.infer<typeof parentGuardianUploadRequirementsSchema>;
 export type MedicalChecklistFormValues = z.infer<typeof medicalChecklistSchema>;
 export type RegistrationSchema = z.infer<typeof registrationSchema>;
-export const adminRecoveryLookupSchema = z.object({
-  enroleeNumber: z
-    .string()
-    .min(1, "Enrolee number is required")
-    .transform((value) => value.trim().toUpperCase()),
-});
-
-/**
- * The recovery-link admin page's recipient field: one free-text input, comma-separated for
- * multiple addresses (e.g. both parents). Validates each non-empty entry is a plausible email
- * — Resend itself is the final authority on deliverability, this just catches obvious typos
- * before a send attempt.
- */
-export const recoveryRecipientEmailsSchema = z.object({
-  // Deliberately no `.min(1)` on the raw string before `.transform()` — Zod still invokes
-  // downstream `.refine()`s with the untransformed string when a preceding check on the base
-  // schema fails, so an empty-string refine here would receive a string instead of the
-  // transformed array. The `emails.length > 0` refine below already covers emptiness.
-  recipientEmails: z
-    .string()
-    .transform((value) =>
-      value
-        .split(",")
-        .map((email) => email.trim())
-        .filter((email) => email.length > 0),
-    )
-    .refine((emails) => emails.length > 0, "At least one recipient email is required")
-    .refine(
-      (emails) => emails.every((email) => z.string().email().safeParse(email).success),
-      "Enter a valid email address for every recipient",
-    ),
-});
 
 /**
  * The zero-login "complete my application" recovery form (src/pages/public/complete-enrolment.tsx).
@@ -1419,9 +1363,6 @@ export const recoveryFormSchema = z.object({
 
 export type RecoveryFormInput = z.input<typeof recoveryFormSchema>;
 export type RecoveryFormOutput = z.output<typeof recoveryFormSchema>;
-
-export type AdminCreateParentSchema = z.infer<typeof adminCreateParentSchema>;
-export type AdminRecoveryLookupSchema = z.infer<typeof adminRecoveryLookupSchema>;
 
 export type VizSchoolStudentDetailsSchema = z.infer<typeof vizSchoolStudentDetailsSchema>;
 export type VizSchoolEnrollmentInformationSchema = z.infer<typeof vizSchoolEnrollmentInformationSchema>;

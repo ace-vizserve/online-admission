@@ -1,4 +1,3 @@
-import { ADMIN_EMAILS } from "@/config/admin";
 import useSession from "@/hooks/use-session";
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
@@ -17,9 +16,6 @@ function UnauthenticatedGuard({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (session && !passwordResetState) {
-    if (ADMIN_EMAILS.includes(session.user.email ?? "")) {
-      return <Navigate to="/admin/move-student" />;
-    }
     // A shared link (an event's /events/<slug>, say) lands where it pointed rather than on the dashboard.
     const requested = requestedPage(location.state);
     if (requested) return <Navigate to={requested} replace />;

@@ -4,9 +4,9 @@ import { supabase } from "@/lib/client";
 /**
  * Public (no-login) wrappers around the `recovery-link` edge function's parent-facing
  * actions. Mirrors the `supabase.functions.invoke` pattern already used by
- * `checkEmailExists` (src/lib/utils.ts) for anon-key edge function calls — unlike
- * `src/actions/admin.ts`, there is no session to attach here, the token itself is the
- * authorization.
+ * `checkEmailExists` (src/lib/utils.ts) for anon-key edge function calls: there is no
+ * session to attach here, the token itself is the authorization. Links are made in the
+ * SIS (SIS Admin, Parent Portal).
  */
 
 export type RecoverySection = "studentInfo" | "familyInfo" | "enrollmentInfo" | "uploads";
