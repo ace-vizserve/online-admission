@@ -31,7 +31,7 @@ const DOC_URL_FIELDS = [
 const APP_URL_FIELDS = ["enroleePhoto"];
 
 // Auto-generated columns to strip before re-inserting into the target table
-const STRIP_FIELDS = new Set(["id", "idx", "created_at"]);
+const STRIP_FIELDS = new Set(["id", "idx", "created_at", "fts"]);
 
 function storagePath(url: string): string | null {
   const marker = `/parent-portal/`;
