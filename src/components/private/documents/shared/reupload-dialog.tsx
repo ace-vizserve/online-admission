@@ -1,4 +1,5 @@
-import { DocumentCheckNotice } from "@/components/private/shared/upload-requirements/document-check-notice";
+import { DocumentCheckCard } from "@/components/private/shared/upload-requirements/document-check-notice";
+import { readHints } from "@/components/private/shared/upload-requirements/read-hints";
 import { DocumentConfig } from "@/components/private/shared/upload-requirements/document-config";
 import DocumentPreviewDialog from "@/components/document-preview-dialog";
 import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CalendarIcon, CheckCircle2, CloudUpload, Download, Eye, Paperclip, RotateCcw, Save, Trash2, Upload } from "lucide-react";
+import { CalendarIcon, CheckCircle2, CloudUpload, Download, Eye, Paperclip, Plus, RotateCcw, Save, Trash2, Upload } from "lucide-react";
 import { Link } from "react-router";
 
 import { useReuploadDialog } from "./use-reupload-dialog";
@@ -61,6 +62,80 @@ export function ReuploadDialog({
   const dialog = useReuploadDialog({ cfg, academicYear, enroleeNumber, existingFileUrl, queryKeysToInvalidate, emailSection });
   const { isOpen, setIsOpen, stagedFiles, setStagedFiles, dropZoneConfig, uploadFile, isUploading, typeValue, setTypeValue, numberValue, setNumberValue, expiryValue, setExpiryValue, submitReupload, isPending, canSave, siblingFieldNames, documentCheck } = dialog;
 
+  // Passports go step by step, each showing only what it needs: choose the file, check the details
+  // read from it and confirm the upload, then save.
+  const guided = documentCheck.enabled;
+  const staged = stagedFiles.length > 0;
+  const reviewing = guided && staged && !canSave;
+  const hints = readHints(documentCheck);
+  const detailFields = (
+    <>
+      {siblingFieldNames.type && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+          <Select onValueChange={setTypeValue} value={typeValue}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a pass type" />
+            </SelectTrigger>
+            <SelectContent>
+              {cfg.passTypeOptions?.map((passType) => (
+                <SelectItem key={passType.value} value={passType.value}>
+                  {passType.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Popover modal>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant={"outline"}
+                className={cn("w-full pl-3 text-left font-normal", !expiryValue && "text-muted-foreground")}>
+                {expiryValue ? format(expiryValue, "dd/MM/yyyy") : <span>Pick a date</span>}
+                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <AdvancedCalendarSelection date={expiryValue} setDate={setExpiryValue} disablePastDates />
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+
+      {siblingFieldNames.number && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+          <div className="space-y-1">
+            <PassportInput
+              required
+              placeholder={cfg.numberPlaceholder}
+              value={numberValue}
+              onChange={(e) => setNumberValue(e.target.value)}
+            />
+            {hints.number}
+          </div>
+
+          <div className="space-y-1">
+            <Popover modal>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant={"outline"}
+                  className={cn("w-full pl-3 text-left font-normal", !expiryValue && "text-muted-foreground")}>
+                  {expiryValue ? format(expiryValue, "dd/MM/yyyy") : <span>Pick a date</span>}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <AdvancedCalendarSelection date={expiryValue} setDate={setExpiryValue} disablePastDates />
+              </PopoverContent>
+            </Popover>
+            {hints.expiry}
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -80,7 +155,7 @@ export function ReuploadDialog({
             </DialogDescription>
           </DialogHeader>
 
-          {cfg.maxFiles > 1 && (
+          {cfg.maxFiles > 1 && !(guided && staged) && (
             <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
               Upload up to {cfg.maxFiles} PDF documents. Provide all necessary information, then click Upload Files
               and Save Changes.
@@ -101,14 +176,16 @@ export function ReuploadDialog({
             onValueChange={setStagedFiles}
             dropzoneOptions={dropZoneConfig}
             className="relative rounded-lg bg-background">
-            <FileInput className="border-2 border-dashed bg-muted">
-              <div className="flex w-full flex-col items-center justify-center p-8">
-                <CloudUpload className="h-10 w-10 text-gray-500" />
-                <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-              </div>
-            </FileInput>
+            {!(guided && staged) && (
+              <FileInput className="border-2 border-dashed bg-muted">
+                <div className="flex w-full flex-col items-center justify-center p-8">
+                  <CloudUpload className="h-10 w-10 text-gray-500" />
+                  <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Click to upload</span> or drag and drop
+                  </p>
+                </div>
+              </FileInput>
+            )}
 
             <FileUploaderContent>
               {stagedFiles.map((file, i) => (
@@ -144,6 +221,14 @@ export function ReuploadDialog({
                 </FileUploaderItem>
               ))}
             </FileUploaderContent>
+
+            {reviewing && stagedFiles.length < cfg.maxFiles && (
+              <FileInput className="w-max">
+                <span className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                  <Plus className="size-4" /> Add another page
+                </span>
+              </FileInput>
+            )}
           </FileUploader>
 
           {stagedFiles.length > 1 && !canSave && (
@@ -155,12 +240,10 @@ export function ReuploadDialog({
           {/* Staged and uploaded are deliberately different-looking: parents read "file selected"
               as "file uploaded" and then can't tell why Save changes is disabled, so the pending
               state names the button they still owe us and the uploaded state confirms it landed. */}
-          {stagedFiles.length > 0 && !canSave && <DocumentCheckNotice check={documentCheck} />}
-
-          {stagedFiles.length > 0 && !canSave && (
+          {staged && !canSave && !guided && (
             <Button
               type="button"
-              disabled={isUploading || !!documentCheck.blockReason}
+              disabled={isUploading}
               onClick={uploadFile}
               className="w-full gap-2 font-bold">
               {isUploading ? (
@@ -182,81 +265,49 @@ export function ReuploadDialog({
             </p>
           )}
 
-          {siblingFieldNames.type && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <Select onValueChange={setTypeValue} value={typeValue}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a pass type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {cfg.passTypeOptions?.map((passType) => (
-                    <SelectItem key={passType.value} value={passType.value}>
-                      {passType.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Popover modal>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant={"outline"}
-                    className={cn("w-full pl-3 text-left font-normal", !expiryValue && "text-muted-foreground")}>
-                    {expiryValue ? format(expiryValue, "dd/MM/yyyy") : <span>Pick a date</span>}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <AdvancedCalendarSelection date={expiryValue} setDate={setExpiryValue} disablePastDates />
-                </PopoverContent>
-              </Popover>
-            </div>
+          {reviewing ? (
+            <DocumentCheckCard check={documentCheck}>{detailFields}</DocumentCheckCard>
+          ) : (
+            !guided && detailFields
           )}
 
-          {siblingFieldNames.number && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <PassportInput
-                required
-                placeholder={cfg.numberPlaceholder}
-                value={numberValue}
-                onChange={(e) => setNumberValue(e.target.value)}
-              />
-
-              <Popover modal>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant={"outline"}
-                    className={cn("w-full pl-3 text-left font-normal", !expiryValue && "text-muted-foreground")}>
-                    {expiryValue ? format(expiryValue, "dd/MM/yyyy") : <span>Pick a date</span>}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <AdvancedCalendarSelection date={expiryValue} setDate={setExpiryValue} disablePastDates />
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
-
-          <DialogFooter>
+          {reviewing && (
             <Button
-              disabled={!canSave || isPending}
-              className="w-full py-6 rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 text-base font-bold"
-              type="submit">
-              {isPending ? (
+              type="button"
+              disabled={isUploading || !documentCheck.detailsComplete || documentCheck.waiting || documentCheck.blocked}
+              onClick={uploadFile}
+              className="w-full gap-2 font-bold">
+              {isUploading ? (
                 <>
-                  Saving <DotPulse size="30" speed="1.3" color="white" />
+                  Uploading <DotPulse size="30" speed="1.3" color="white" />
                 </>
               ) : (
                 <>
-                  Save changes
-                  <Save />
+                  Confirm and upload <Upload />
                 </>
               )}
             </Button>
-          </DialogFooter>
+          )}
+
+          {(!guided || canSave) && (
+            <DialogFooter>
+              <Button
+                disabled={!canSave || isPending}
+                className="w-full py-6 rounded-xl shadow-xl shadow-indigo-200 transition-all gap-3 text-base font-bold"
+                type="submit">
+                {isPending ? (
+                  <>
+                    Saving <DotPulse size="30" speed="1.3" color="white" />
+                  </>
+                ) : (
+                  <>
+                    Save changes
+                    <Save />
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          )}
         </form>
       </DialogContent>
     </Dialog>

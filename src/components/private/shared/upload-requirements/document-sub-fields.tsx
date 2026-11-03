@@ -10,6 +10,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
+import { ReadHints } from "./read-hints";
 import { DocumentConfig, siblingFields } from "./document-config";
 import { SetUploadRequirementsFn, SharedUploadFormState } from "./types";
 import { updateUploadRequirementsSlice } from "./use-document-upload-dialog";
@@ -19,6 +20,8 @@ type SubFieldsProps<TFieldValues extends FieldValues> = {
   form: UseFormReturn<TFieldValues>;
   formState: SharedUploadFormState;
   setUploadRequirements: SetUploadRequirementsFn;
+  /** Per-field notes on what the OCR check read, shown in place of the usual descriptions. */
+  hints?: ReadHints;
 };
 
 /** "Pass Type" select + "Pass Expiry" date picker, config-driven — replaces the 6 hand-written
@@ -124,6 +127,7 @@ export function PassportFields<TFieldValues extends FieldValues>({
   form,
   formState,
   setUploadRequirements,
+  hints,
 }: SubFieldsProps<TFieldValues>) {
   const { number, expiry } = siblingFields(cfg);
   if (!number || !expiry) return null;
@@ -141,7 +145,7 @@ export function PassportFields<TFieldValues extends FieldValues>({
             <FormControl>
               <PassportInput disabled={disabled} {...field} placeholder={cfg.numberPlaceholder} />
             </FormControl>
-            <FormDescription>{cfg.passportNumberDescription}</FormDescription>
+            {hints?.number ?? <FormDescription>{cfg.passportNumberDescription}</FormDescription>}
             <FormMessage />
           </FormItem>
         )}
@@ -183,7 +187,7 @@ export function PassportFields<TFieldValues extends FieldValues>({
                 />
               </PopoverContent>
             </Popover>
-            <FormDescription>Passport expiration date.</FormDescription>
+            {hints?.expiry ?? <FormDescription>Passport expiration date.</FormDescription>}
             <FormMessage />
           </FormItem>
         )}

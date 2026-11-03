@@ -1,3 +1,4 @@
+import { sendDocumentReading } from "@/actions/document-reading";
 import { deleteFile, uploadFileToBucket } from "@/actions/private";
 import { useSelectAcademicYear } from "@/zustand-store";
 import { useMutation } from "@tanstack/react-query";
@@ -89,6 +90,12 @@ export function useDocumentUploadDialog<TFieldValues extends FieldValues>({
       if (data?.imagePath) {
         form.setValue(cfg.name as Path<TFieldValues>, data.imagePath as never);
         updateUploadRequirementsSlice(formState, setFormState, cfg.group, { [cfg.name]: data.imagePath });
+        const { number, expiry } = siblingFields(cfg);
+        const entered = form.getValues();
+        void sendDocumentReading(data.imagePath, documentCheck, {
+          number: number && entered[number],
+          expiry: expiry && entered[expiry],
+        });
       }
     },
     onSettled() {
@@ -105,7 +112,7 @@ export function useDocumentUploadDialog<TFieldValues extends FieldValues>({
   const documentCheck = useDocumentCheck({ cfg, form, value, formState, setFormState });
 
   function uploadFile() {
-    if (!value?.length || documentCheck.blockReason) return;
+    if (!value?.length) return;
     mutate(value);
   }
 

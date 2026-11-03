@@ -109,11 +109,12 @@ export function DocumentUploader<TFieldValues extends FieldValues>({
           </Badge>
         }
         description={
-          <>
-            {cfg.description && <span className="block">{cfg.description}</span>}
-            Upload a clear and recent document in{" "}
-            <strong>{cfg.maxFiles > 1 ? "PDF" : "PNG, JPG, or JPEG"}</strong> format.
-          </>
+          cfg.description ?? (
+            <>
+              Upload a clear and recent document in <strong>{cfg.maxFiles > 1 ? "PDF" : "PNG, JPG, or JPEG"}</strong>{" "}
+              format.
+            </>
+          )
         }>
         <DocumentModalBody
           cfg={cfg}

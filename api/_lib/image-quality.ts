@@ -6,14 +6,13 @@
  * 2.5 ~120 (the MRZ no longer reads). Expected to move once real parent uploads have been run
  * through staging — the OCR debug readout shows the numbers per page.
  *
- * OCR confidence is a weak blur signal on its own: Tesseract still reported 93% on a pass blurred
- * at radius 3. It only guards against pages that are unreadable for other reasons.
+ * OCR confidence is not used: it's unreliable in both directions — Tesseract reported 93% on a pass
+ * blurred at radius 3, and 29% on a sharp real passport photo whose patterned background it read
+ * as noise. It's still reported per page in the debug readout.
  */
 
 /** Content-normalised Laplacian variance below this reads as out of focus. */
 export const SHARPNESS_MIN = 200;
-/** Tesseract's mean word confidence (0–100) below this reads as unreadable. */
-export const OCR_CONFIDENCE_MIN = 40;
 /** Pages with less non-white coverage than this are treated as blank (e.g. the back of a card). */
 export const INK_RATIO_MIN = 0.005;
 /** Anything darker than this counts as content. Not 128: blurred text smears out to light grey. */
@@ -53,9 +52,8 @@ export function measurePageQuality(rgba: ArrayLike<number>, width: number, heigh
   return { sharpness: inkRatio ? variance / inkRatio : 0, inkRatio };
 }
 
-/** A page fails the quality check when it has content but is out of focus or unreadable. Blank
- * pages pass — there's nothing on them to read. */
-export function isPoorQuality(quality: PageQuality, ocrConfidence: number): boolean {
-  if (quality.inkRatio < INK_RATIO_MIN) return false;
-  return quality.sharpness < SHARPNESS_MIN || ocrConfidence < OCR_CONFIDENCE_MIN;
+/** A page fails the quality check when it has content but is out of focus. Blank pages pass —
+ * there's nothing on them to read. */
+export function isPoorQuality(quality: PageQuality): boolean {
+  return quality.inkRatio >= INK_RATIO_MIN && quality.sharpness < SHARPNESS_MIN;
 }
