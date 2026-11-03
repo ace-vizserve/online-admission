@@ -1,3 +1,4 @@
+import { sendDocumentReading } from "@/actions/document-reading";
 import { MAX_UPLOAD_FILE_SIZE, deleteFile, parentGuardianReuploadDocuments, studentReuploadDocuments } from "@/actions/private";
 import { sendEmailNotification } from "@/actions/send-email-notification";
 import { toTableAcademicYear } from "@/config/academic-years";
@@ -102,23 +103,25 @@ export function useReuploadDialog({
     uploadProps.setFiles(decorated as never);
   }
 
-  // Same OCR check as the enrolment wizard: fills the details it can read and holds the upload
-  // back while the document is blurry, expired, or contradicts what the parent entered.
+  // Same passport OCR check as the enrolment wizard: fills in what it read where the parent hasn't
+  // typed yet, and holds the upload while the details disagree with a verified read.
   const documentCheck = useStagedDocumentCheck({
     cfg,
     files: stagedFiles,
-    current: { type: typeValue, number: numberValue, expiry: expiryValue },
+    current: { number: numberValue, expiry: expiryValue },
     onFill: (patch) => {
-      if (patch.type) setTypeValue(patch.type);
       if (patch.number) setNumberValue(patch.number);
       if (patch.expiry) setExpiryValue(patch.expiry);
     },
   });
 
-  function uploadFile() {
-    if (documentCheck.blockReason) return;
-    return uploadProps.onUpload();
-  }
+  useEffect(() => {
+    if (mainValue) {
+      void sendDocumentReading(mainValue, documentCheck, { number: numberValue, expiry: expiryValue });
+    }
+    // Once per uploaded file, with the check and details as they were when it landed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mainValue]);
 
   const dropZoneConfig = {
     accept: cfg.accept,
@@ -228,7 +231,7 @@ export function useReuploadDialog({
     stagedFiles,
     setStagedFiles,
     dropZoneConfig,
-    uploadFile,
+    uploadFile: uploadProps.onUpload,
     documentCheck,
     isUploading: uploadProps.loading,
     typeValue,

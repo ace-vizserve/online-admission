@@ -520,49 +520,66 @@ describe("OCR document check", () => {
     );
   }
 
-  it("fills the passport number and expiry it reads from the staged file", async () => {
+  it("fills in the passport number and expiry it read", async () => {
     vi.mocked(checkDocument).mockResolvedValue({
-      status: "read",
-      reading: { expiry: FUTURE, passType: null, passportNumber: "K1234567", source: "mrz" },
+      reading: { expiry: FUTURE, passportNumber: "K1234567", source: "mrz" },
+      passports: [],
+      poorQuality: false,
+      outOfTime: false,
       text: "",
-      pages: [],
     });
     const { result } = renderPassport();
 
     await waitFor(() => expect(result.current.numberValue).toBe("K1234567"));
     expect(result.current.expiryValue).toEqual(FUTURE);
-    expect(result.current.documentCheck.blockReason).toBeNull();
   });
 
-  it("fills a pass's type", async () => {
-    vi.mocked(checkDocument).mockResolvedValue({
-      status: "read",
-      reading: { expiry: null, passType: "Student Pass", passportNumber: null, source: null },
-      text: "",
-      pages: [],
-    });
-    uploadFiles = staged;
-    const { result } = renderHook(
-      () =>
-        useReuploadDialog({
-          cfg: passCfg,
-          academicYear: "ay2026",
-          enroleeNumber: "E260050",
-          queryKeysToInvalidate: [],
-          emailSection: "Student Documents",
-        }),
-      { wrapper },
-    );
-
-    await waitFor(() => expect(result.current.typeValue).toBe("Student Pass"));
-  });
-
-  it("won't upload a document the check is blocking", async () => {
-    vi.mocked(checkDocument).mockResolvedValue({ status: "poor-quality", pages: [] });
+  it("keeps a passport number the parent typed before the read finished", async () => {
+    let finish!: (r: Awaited<ReturnType<typeof checkDocument>>) => void;
+    vi.mocked(checkDocument).mockReturnValue(new Promise((r) => (finish = r)));
     const { result } = renderPassport();
 
-    await waitFor(() => expect(result.current.documentCheck.blockReason).toMatch(/blurry/));
+    act(() => result.current.setNumberValue("P7654321"));
+    await act(async () =>
+      finish({
+        reading: { expiry: FUTURE, passportNumber: "K1234567", source: "mrz" },
+        passports: [],
+        poorQuality: false,
+        outOfTime: false,
+        text: "",
+      }),
+    );
+
+    expect(result.current.numberValue).toBe("P7654321");
+    expect(result.current.expiryValue).toEqual(FUTURE);
+  });
+
+  it("fills only the passport number when that's all it could verify", async () => {
+    vi.mocked(checkDocument).mockResolvedValue({
+      reading: { expiry: null, passportNumber: "K1234567", source: null },
+      passports: [],
+      poorQuality: false,
+      outOfTime: false,
+      text: "",
+    });
+    const { result } = renderPassport();
+
+    await waitFor(() => expect(result.current.numberValue).toBe("K1234567"));
+    expect(result.current.expiryValue).toBeUndefined();
+  });
+
+  it("still uploads a document the check has doubts about", async () => {
+    vi.mocked(checkDocument).mockResolvedValue({
+      reading: { expiry: null, passportNumber: null, source: null },
+      passports: [],
+      poorQuality: true,
+      outOfTime: false,
+      text: "",
+    });
+    const { result } = renderPassport();
+
+    await waitFor(() => expect(result.current.documentCheck.state.phase).toBe("done"));
     result.current.uploadFile();
-    expect(onUploadMock).not.toHaveBeenCalled();
+    expect(onUploadMock).toHaveBeenCalled();
   });
 });

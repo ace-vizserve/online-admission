@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 
 const PassportInput = React.forwardRef<HTMLInputElement, React.ComponentPropsWithRef<"input">>(
   ({ className, ...props }, ref) => {
-    const [showPassword, setShowPassword] = React.useState(false);
+    // Shown by default: parents check the number against their passport (and the OCR-filled value).
+    const [showPassword, setShowPassword] = React.useState(true);
 
     return (
       <div className="relative">

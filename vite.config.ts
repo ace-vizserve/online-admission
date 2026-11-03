@@ -2,8 +2,37 @@ import tailwindcss from "@tailwindcss/vite";
 import legacy from "@vitejs/plugin-legacy";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { Readable } from "stream";
+import { loadEnv, type Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import ViteSitemap from "vite-plugin-sitemap";
+
+/** Vercel runs the functions in `api/` when deployed. Vite doesn't, so in dev this does. */
+function devApi(): Plugin {
+  return {
+    name: "dev-api",
+    apply: "serve",
+    configureServer(server) {
+      for (const name of ["scan-passport", "document-quality"]) {
+        server.middlewares.use(`/api/${name}`, async (req, res) => {
+          Object.assign(process.env, loadEnv(server.config.mode, process.cwd(), "VITE_"));
+          const { default: handler } = await server.ssrLoadModule(`/api/${name}.ts`);
+          const response: Response = await handler.fetch(
+            new Request(`http://localhost/api/${name}`, {
+              method: req.method,
+              headers: req.headers as Record<string, string>,
+              body: req.method === "POST" ? (Readable.toWeb(req) as ReadableStream) : undefined,
+              duplex: "half",
+            } as RequestInit),
+          );
+          res.statusCode = response.status;
+          res.setHeader("Content-Type", response.headers.get("Content-Type") ?? "application/json");
+          res.end(Buffer.from(await response.arrayBuffer()));
+        });
+      }
+    },
+  };
+}
 
 const routes = ["/", "/login", "/registration", "/welcome", "/open-house-registration"];
 
@@ -12,6 +41,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    devApi(),
     // Reads the `browserslist` field in package.json. Emits a second, Babel + core-js polyfilled
     // build alongside the modern one, with a `nomodule` fallback script — without this, a browser
     // that can't load native ES modules gets a silent blank page (no error, nothing in `#root`).

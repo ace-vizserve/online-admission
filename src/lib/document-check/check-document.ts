@@ -1,131 +1,89 @@
-import { isPoorQuality, measurePageQuality } from "./image-quality";
-import { DocumentReading } from "./read-document-text";
+import { supabase } from "@/lib/client";
 
 /**
- * Reads the passport / pass PDFs a parent has staged for upload, entirely in the browser: each
- * page's text layer when the PDF has one (digital passes from MOM/ICA), otherwise a rendered image
- * run through a quality check and Tesseract OCR (scans and phone photos).
- *
- * pdf.js and Tesseract are imported lazily so neither lands in the main bundle, and every asset
- * they fetch is self-hosted under `/ocr/` (copied there by `scripts/copy-ocr-assets.mjs`) so the
- * CSP doesn't need any third-party origins.
+ * Reads the passport PDFs a parent has staged for upload, by sending each to the portal's own server
+ * (`api/scan-passport.ts`), so every device gets the same answer: a cheap phone only has to send the
+ * file. The server keeps nothing; the upload itself still happens afterwards, when the parent confirms.
  */
 
-/** Passes and passport photo pages are on the first page or two; reading further only costs time. */
-const PAGES_PER_FILE = 2;
-const MAX_PAGES = 4;
-/** OCR accuracy drops sharply below ~300 DPI-equivalent; an A4 page at this width is ~215 DPI. */
-const RENDER_WIDTH = 1800;
-/** A text layer shorter than this is a scan's stray metadata, not the document's printed text. */
-const TEXT_LAYER_MIN_CHARS = 40;
+export type DocumentReading = {
+  /** UTC midnight of the expiry day — the same shape `toUTCDateOnly` gives the form. */
+  expiry: Date | null;
+  passportNumber: string | null;
+  /** Where the expiry came from: the passport's machine-readable zone (check-digit verified) or a
+   * printed "Date of Expiry"-style label. */
+  source: "mrz" | "label" | null;
+};
 
-export type PageReport = {
-  file: string;
-  page: number;
-  /** Read from the PDF's own text — exact, no OCR or quality check needed. */
-  textLayer: boolean;
-  sharpness?: number;
-  inkRatio?: number;
-  ocrConfidence?: number;
+/** One passport found in a file, with only the values that were verified. */
+export type PassportRead = { expiry: Date | null; passportNumber: string | null };
+
+export type DocumentCheckResult = {
+  reading: DocumentReading;
+  /** Every passport with a verified value in the files; some uploads hold more than one. */
+  passports: PassportRead[];
+  /** Some page looked out of focus, so the reading deserves a careful second look. */
   poorQuality: boolean;
+  /** The read ran out of time, so this is only what was verified by then. */
+  outOfTime: boolean;
+  /** Every read's text, for the debug panel. Local development only. */
+  text: string;
 };
 
-export type DocumentCheckResult =
-  | { status: "poor-quality"; pages: PageReport[] }
-  | { status: "read"; reading: DocumentReading; text: string; pages: PageReport[] };
-
-type OcrWorker = {
-  recognize: (image: HTMLCanvasElement) => Promise<{ data: { text: string; confidence: number } }>;
-  terminate: () => Promise<unknown>;
+type ScanResponse = {
+  reading: { expiry: string | null; passportNumber: string | null; source: DocumentReading["source"] };
+  passports: { expiry: string | null; passportNumber: string | null }[];
+  poorQuality: boolean;
+  outOfTime: boolean;
+  text?: string;
 };
 
-async function loadPdfjs() {
-  const [pdfjs, { default: workerSrc }] = await Promise.all([
-    import("pdfjs-dist/legacy/build/pdf.mjs"),
-    import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url"),
-  ]);
-  pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
-  return pdfjs;
-}
+const asDate = (value: string | null) => (value ? new Date(value) : null);
 
-async function createOcrWorker(): Promise<OcrWorker> {
-  const { createWorker, OEM } = await import("tesseract.js");
-  return createWorker("eng", OEM.LSTM_ONLY, {
-    workerPath: "/ocr/worker.min.js",
-    corePath: "/ocr/core",
-    langPath: "/ocr/lang",
-    // A blob: worker would need `worker-src blob:` in the CSP; the self-hosted file doesn't.
-    workerBlobURL: false,
+async function scan(file: File): Promise<ScanResponse> {
+  const body = new FormData();
+  body.append("file", file);
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  const response = await fetch("/api/scan-passport", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body,
   });
+  const payload = (await response.json().catch(() => null)) as (ScanResponse & { error?: string }) | null;
+  if (!response.ok || !payload) throw new Error(payload?.error ?? `Passport scan failed (${response.status})`);
+  return payload;
 }
 
-export async function checkDocument(
-  files: File[],
-  read: (text: string) => DocumentReading,
-): Promise<DocumentCheckResult> {
-  const pdfjs = await loadPdfjs();
-  const pages: PageReport[] = [];
-  const texts: string[] = [];
-  let worker: OcrWorker | null = null;
+export async function checkDocument(files: File[]): Promise<DocumentCheckResult> {
+  // One at a time: each file is a request of its own, because a request can only carry so much.
+  const scans: ScanResponse[] = [];
+  for (const file of files) scans.push(await scan(file));
 
-  try {
-    for (const file of files) {
-      if (pages.length >= MAX_PAGES) break;
-      const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), wasmUrl: "/ocr/pdfjs-wasm/" });
-      const pdf = await loadingTask.promise;
+  const seen = new Set<string>();
+  const passports = scans
+    .flatMap((s) => s.passports)
+    .filter((p) => {
+      const key = `${p.expiry}|${p.passportNumber}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map((p) => ({ expiry: asDate(p.expiry), passportNumber: p.passportNumber }));
 
-      try {
-        const last = Math.min(pdf.numPages, PAGES_PER_FILE, MAX_PAGES - pages.length);
-        for (let pageNumber = 1; pageNumber <= last; pageNumber++) {
-          const page = await pdf.getPage(pageNumber);
+  // The first file's reading that verified, else the first that found anything at all.
+  const best =
+    scans.find((s) => s.reading.source === "mrz") ??
+    scans.find((s) => s.reading.source) ??
+    scans.find((s) => s.reading.passportNumber) ??
+    scans[0];
+  const verified = best.reading.source === "mrz";
 
-          const content = await page.getTextContent();
-          const layerText = content.items
-            .map((item) => ("str" in item ? item.str + (item.hasEOL ? "\n" : " ") : ""))
-            .join("");
-          if (layerText.replace(/\s/g, "").length >= TEXT_LAYER_MIN_CHARS) {
-            texts.push(layerText);
-            pages.push({ file: file.name, page: pageNumber, textLayer: true, poorQuality: false });
-            continue;
-          }
-
-          const base = page.getViewport({ scale: 1 });
-          const viewport = page.getViewport({ scale: RENDER_WIDTH / base.width });
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.round(viewport.width);
-          canvas.height = Math.round(viewport.height);
-          const context = canvas.getContext("2d", { willReadFrequently: true });
-          if (!context) throw new Error("Canvas 2D context unavailable");
-          await page.render({ canvas, canvasContext: context, viewport }).promise;
-
-          const quality = measurePageQuality(
-            context.getImageData(0, 0, canvas.width, canvas.height).data,
-            canvas.width,
-            canvas.height,
-          );
-          worker ??= await createOcrWorker();
-          const { data } = await worker.recognize(canvas);
-
-          texts.push(data.text);
-          pages.push({
-            file: file.name,
-            page: pageNumber,
-            textLayer: false,
-            sharpness: Math.round(quality.sharpness),
-            inkRatio: quality.inkRatio,
-            ocrConfidence: Math.round(data.confidence),
-            poorQuality: isPoorQuality(quality, data.confidence),
-          });
-        }
-      } finally {
-        await loadingTask.destroy();
-      }
-    }
-  } finally {
-    await worker?.terminate();
-  }
-
-  if (pages.some((p) => p.poorQuality)) return { status: "poor-quality", pages };
-  const text = texts.join("\n");
-  return { status: "read", reading: read(text), text, pages };
+  return {
+    reading: { ...best.reading, expiry: asDate(best.reading.expiry) },
+    passports,
+    poorQuality: !verified && scans.some((s) => s.poorQuality),
+    outOfTime: scans.some((s) => s.outOfTime),
+    text: scans.map((s) => s.text ?? "").join("\n"),
+  };
 }

@@ -18,12 +18,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CloudUpload, Download, Eye, InfoIcon, Loader2, Paperclip, Trash2, Upload } from "lucide-react";
+import { CloudUpload, Download, Eye, InfoIcon, Loader2, Paperclip, Plus, Trash2, Upload } from "lucide-react";
 import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { Link } from "react-router";
 
 import fileSvg from "@/assets/file.svg";
-import { DocumentCheckNotice } from "./document-check-notice";
+import { DocumentCheckCard } from "./document-check-notice";
+import { readHints } from "./read-hints";
 import { DocumentConfig } from "./document-config";
 import { DocumentSubFields } from "./document-sub-fields";
 import { SetUploadRequirementsFn, SharedUploadFormState } from "./types";
@@ -73,11 +74,15 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
     sliceValue,
   } = dialog;
 
-  const showToFollowSwitch = !isUploaded && cfg.toFollowEligible && !cfg.optional;
+  // Passports go in two steps, each showing only what it needs: choose the file, then check the
+  // details read from it and confirm the upload.
+  const guided = documentCheck.enabled && !isUploaded;
+  const reviewing = guided && !!value?.length;
+  const showToFollowSwitch = !isUploaded && cfg.toFollowEligible && !cfg.optional && !reviewing;
 
   return (
     <>
-      {cfg.maxFiles > 1 && (
+      {cfg.maxFiles > 1 && !reviewing && (
         <Badge className="text-center !whitespace-normal mx-auto text-xs bg-amber-600/10 hover:bg-amber-600/10 text-amber-500 shadow-none">
           Upload up to {cfg.maxFiles} PDF documents. Provide all necessary information, then click Upload Files and
           Save Changes.
@@ -149,19 +154,21 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
                   onValueChange={onValueChange}
                   dropzoneOptions={dropZoneConfig}
                   className="relative bg-background rounded-lg cursor-no-drop">
-                  <FileInput
-                    {...field}
-                    id="fileInput"
-                    className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
-                      "opacity-70 cursor-not-allowed pointer-events-none": isToFollow,
-                    })}>
-                    <div className="flex items-center justify-center flex-col p-8 w-full">
-                      <CloudUpload className="text-gray-500 w-10 h-10" />
-                      <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
-                      </p>
-                    </div>
-                  </FileInput>
+                  {!reviewing && (
+                    <FileInput
+                      {...field}
+                      id="fileInput"
+                      className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
+                        "opacity-70 cursor-not-allowed pointer-events-none": isToFollow,
+                      })}>
+                      <div className="flex items-center justify-center flex-col p-8 w-full">
+                        <CloudUpload className="text-gray-500 w-10 h-10" />
+                        <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                      </div>
+                    </FileInput>
+                  )}
 
                   <FileUploaderContent>
                     {value &&
@@ -200,6 +207,14 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
                         </FileUploaderItem>
                       ))}
                   </FileUploaderContent>
+
+                  {reviewing && value.length < cfg.maxFiles && (
+                    <FileInput {...field} className="w-max">
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                        <Plus className="size-4" /> Add another page
+                      </span>
+                    </FileInput>
+                  )}
                 </FileUploader>
               </FormControl>
               {value && value.length > 1 && (
@@ -213,17 +228,36 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
         />
       )}
 
-      {!isUploaded && <DocumentCheckNotice check={documentCheck} />}
+      {reviewing ? (
+        <DocumentCheckCard check={documentCheck}>
+          <DocumentSubFields
+            cfg={cfg}
+            form={form}
+            formState={formState}
+            setUploadRequirements={setUploadRequirements}
+            hints={readHints(documentCheck)}
+          />
+        </DocumentCheckCard>
+      ) : (
+        !guided && (
+          <DocumentSubFields cfg={cfg} form={form} formState={formState} setUploadRequirements={setUploadRequirements} />
+        )
+      )}
 
       {value != null && value.length > 0 && (
-        <Button disabled={isPending || !!documentCheck.blockReason} onClick={uploadFile} className="gap-2 font-bold">
+        <Button
+          disabled={
+            isPending || (reviewing && (!documentCheck.detailsComplete || documentCheck.waiting || documentCheck.blocked))
+          }
+          onClick={uploadFile}
+          className="gap-2 font-bold">
           {isPending ? (
             <>
               Uploading <DotPulse size="30" speed="1.3" color="white" />
             </>
           ) : (
             <>
-              Upload file <Upload />
+              {reviewing ? "Confirm and upload" : "Upload file"} <Upload />
             </>
           )}
         </Button>
@@ -256,8 +290,6 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
           )}
         />
       )}
-
-      <DocumentSubFields cfg={cfg} form={form} formState={formState} setUploadRequirements={setUploadRequirements} />
 
       {/* Announces status changes (uploaded/expired/missing) to assistive tech — the visible
           status text lives in the row outside this modal, so screen-reader users get the same

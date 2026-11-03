@@ -1,5 +1,4 @@
-import { checkDocument, DocumentCheckResult } from "@/lib/document-check/check-document";
-import { readPass, readPassport } from "@/lib/document-check/read-document-text";
+import { checkDocument, DocumentCheckResult, PassportRead } from "@/lib/document-check/check-document";
 import { format, isAfter } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import { FieldValues, Path, UseFormReturn, useWatch } from "react-hook-form";
@@ -11,27 +10,56 @@ import { updateUploadRequirementsSlice } from "./use-document-upload-dialog";
 type CheckState =
   | { phase: "idle" }
   | { phase: "checking" }
-  | { phase: "failed" }
+  | { phase: "failed"; error: string }
   | { phase: "done"; result: DocumentCheckResult };
 
-export type DocumentCheck = {
-  state: CheckState;
-  /** Why the staged files can't be uploaded yet, or null when they can. */
-  blockReason: string | null;
-  /** Non-blocking guidance: what was filled in, or that the parent needs to fill it in. */
-  notice: string | null;
+type Role = "number" | "expiry";
+
+/** How long a parent waits for the read before they can carry on without it. Most take seconds; the
+ * server stops reading after a minute, and this leaves time to send the file on a slow connection. */
+const CHECK_TIME_LIMIT_MS = 90_000;
+export const CHECK_TIMED_OUT = "Took too long to read";
+
+/** One value read off the document, set against what the parent has entered for it. */
+export type ReadField = {
+  role: Role;
+  label: string;
+  /** Display form of the value read. */
+  value: string;
+  /** `empty`: nothing entered; `expired`: an expiry date already past (never filled in). */
+  status: "match" | "differs" | "empty" | "expired";
+  /** Passed the passport's check digits, so a difference is the parent's to fix, not a misread. */
+  verified: boolean;
 };
 
-/** The pass type / passport number / expiry, keyed by role rather than by form field name. */
-export type DocumentDetails = { type?: unknown; number?: unknown; expiry?: unknown };
-export type DocumentDetailsPatch = { type?: string; number?: string; expiry?: Date };
+export type DocumentCheck = {
+  /** This document is a passport, so it gets the read-then-confirm upload steps. */
+  enabled: boolean;
+  state: CheckState;
+  /** For copy. */
+  docName: string;
+  /** The values read, for the fields this document has. Empty until a read finishes. */
+  readFields: ReadField[];
+  /** Every detail field for this document has a value — ready to confirm. */
+  detailsComplete: boolean;
+  /** Still reading, so there's nothing yet to check the details against. */
+  waiting: boolean;
+  /** What was entered disagrees with a verified read of the document, or the document has expired. */
+  blocked: boolean;
+  /** The file holds more than one passport, so nothing was filled in for the parent. */
+  severalPassports: boolean;
+};
+
+/** The passport number / expiry, keyed by role rather than by form field name. */
+export type DocumentDetails = { number?: unknown; expiry?: unknown };
+export type DocumentDetailsPatch = { number?: string; expiry?: Date };
 
 type UseStagedDocumentCheckArgs = {
   cfg: DocumentConfig;
   files: File[] | null;
   /** What the parent has entered right now — compared against what the document says. */
   current: DocumentDetails;
-  /** Called once per read with the details worth filling in (never an expired date). */
+  /** Writes the values read into the fields the parent hasn't filled in yet. */
   onFill: (patch: DocumentDetailsPatch) => void;
 };
 
@@ -41,24 +69,41 @@ const dayKey = (value: unknown) => {
   return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
 };
 const normalizeNumber = (value: unknown) => String(value).replace(/\s/g, "").toUpperCase();
+const isBlank = (value: unknown) => !value || String(value).trim() === "";
+
+/** The passport in the file the parent means: the one matching what they entered, else the first. */
+function passportToCompare(passports: PassportRead[], current: DocumentDetails) {
+  return (
+    passports.find((p) => p.passportNumber && normalizeNumber(current.number) === normalizeNumber(p.passportNumber)) ??
+    passports.find((p) => p.expiry && dayKey(current.expiry) === dayKey(p.expiry)) ??
+    passports[0]
+  );
+}
 
 /**
- * Reads a staged passport / pass before it's uploaded: rejects blurry or unreadable scans and
- * expired documents, hands back the pass type / passport number / expiry it read to be filled in,
- * and blocks the upload if the parent then changes a filled-in value to something the document
- * contradicts. When nothing can be read the parent simply fills the fields in by hand, as before.
+ * Reads a staged passport before it's uploaded, to stop wrong details being submitted. The fields stay
+ * hidden until it finishes, and then the ones still empty get filled. Details that disagree with a verified read stop the upload until the parent corrects them
+ * or uploads the right passport. Only check-digit-verified values do that (a real upload hasn't
+ * misread yet); a printed date without one is only shown. A document it can't read, or can't read in
+ * time, isn't held up: the admin reviewing the upload checks it either way.
+ *
+ * Singapore passes aren't read: on real uploads (mostly a card's front) the expiry usually isn't on
+ * the page, and for PRs the expiry asked for is the re-entry permit's, which isn't on the IC at all.
  *
  * Form-agnostic: the enrolment wizard uses it through `useDocumentCheck` (React Hook Form), the
  * Documents page's reupload dialog with plain `useState`.
  */
 export function useStagedDocumentCheck({ cfg, files, current, onFill }: UseStagedDocumentCheckArgs): DocumentCheck {
-  const enabled = cfg.expiring && cfg.fieldKind !== "plain";
+  const enabled = cfg.fieldKind === "passportNumber+expiry";
   const fields = siblingFields(cfg);
+  const docName = "passport";
   const [state, setState] = useState<CheckState>({ phase: "idle" });
 
-  // OCR takes seconds; fill through whatever callback is current when it finishes.
+  // OCR takes seconds; fill through whatever callback and values are current when it finishes.
   const onFillRef = useRef(onFill);
   onFillRef.current = onFill;
+  const currentRef = useRef(current);
+  currentRef.current = current;
 
   useEffect(() => {
     if (!enabled || !files?.length) {
@@ -68,81 +113,79 @@ export function useStagedDocumentCheck({ cfg, files, current, onFill }: UseStage
 
     let cancelled = false;
     setState({ phase: "checking" });
+    const timeLimit = setTimeout(() => {
+      cancelled = true;
+      setState({ phase: "failed", error: CHECK_TIMED_OUT });
+    }, CHECK_TIME_LIMIT_MS);
 
-    const read =
-      cfg.fieldKind === "passportNumber+expiry"
-        ? readPassport
-        : (text: string) => readPass(text, cfg.passTypeOptions ?? []);
-
-    checkDocument(files, read)
+    checkDocument(files)
       .then((result) => {
         if (cancelled) return;
+        clearTimeout(timeLimit);
         setState({ phase: "done", result });
-        if (result.status !== "read") return;
 
-        const { reading } = result;
-        const { type, number, expiry } = siblingFields(cfg);
+        const { reading, passports } = result;
+        // Which passport in the file is this person's is for the parent to say.
+        if (passports.length > 1) return;
+        // What the parent typed while it was reading wins; a difference shows as a hint instead.
+        const empty = (role: Role) => isBlank(currentRef.current[role]);
         const patch: DocumentDetailsPatch = {};
-        if (type && reading.passType) patch.type = reading.passType;
-        if (number && reading.passportNumber) patch.number = reading.passportNumber;
-        // An expired date is never filled in — the upload is blocked instead, and the date picker
-        // doesn't accept past dates anyway.
-        if (expiry && reading.expiry && isAfter(reading.expiry, new Date())) patch.expiry = reading.expiry;
+        if (fields.number && reading.passportNumber && empty("number")) patch.number = reading.passportNumber;
+        // An expired date is never filled in; the date picker doesn't take past dates anyway.
+        // Already UTC midnight, the shape toUTCDateOnly gives the picker.
+        if (fields.expiry && reading.expiry && isAfter(reading.expiry, new Date()) && empty("expiry")) {
+          patch.expiry = reading.expiry;
+        }
         if (Object.keys(patch).length) onFillRef.current(patch);
       })
-      .catch(() => {
-        if (!cancelled) setState({ phase: "failed" });
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        clearTimeout(timeLimit);
+        console.error("Document check failed", error);
+        setState({ phase: "failed", error: error instanceof Error ? error.message : String(error) });
       });
 
     return () => {
       cancelled = true;
+      clearTimeout(timeLimit);
     };
+    // `fields` is derived from `cfg`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, files, cfg]);
 
-  const docName = cfg.fieldKind === "passportNumber+expiry" ? "passport" : "pass";
-  let blockReason: string | null = null;
-  let notice: string | null = null;
+  const readFields: ReadField[] = [];
 
-  if (state.phase === "checking") {
-    blockReason = `Checking your ${docName}…`;
-  } else if (state.phase === "failed") {
-    notice = `We couldn't read this ${docName} automatically. Please fill in the details below.`;
-  } else if (state.phase === "done" && state.result.status === "poor-quality") {
-    blockReason = `This ${docName} is blurry or hard to read. Please upload a clearer scan.`;
-  } else if (state.phase === "done" && state.result.status === "read") {
-    const { reading } = state.result;
+  if (state.phase === "done") {
+    const { reading, passports } = state.result;
+    const compared = passportToCompare(passports, current);
+    const number = compared?.passportNumber ?? reading.passportNumber;
+    const expiry = compared?.expiry ?? reading.expiry;
+    const add = (role: Role, label: string, value: string, matches: boolean, verified: boolean, expired = false) => {
+      const status = expired ? "expired" : !current[role] ? "empty" : matches ? "match" : "differs";
+      readFields.push({ role, label, value, status, verified });
+    };
 
-    if (reading.expiry && !isAfter(reading.expiry, new Date())) {
-      blockReason = `This ${docName} expired on ${displayDate(reading.expiry)}. Please upload a valid one.`;
-    } else {
-      const mismatches: string[] = [];
-      if (fields.type && reading.passType && current.type && current.type !== reading.passType) {
-        mismatches.push(`pass type (document shows ${reading.passType})`);
-      }
-      if (
-        fields.number &&
-        reading.passportNumber &&
-        current.number &&
-        normalizeNumber(current.number) !== normalizeNumber(reading.passportNumber)
-      ) {
-        mismatches.push("passport number");
-      }
-      if (fields.expiry && reading.expiry && current.expiry && dayKey(current.expiry) !== dayKey(reading.expiry)) {
-        mismatches.push(`expiry date (document shows ${displayDate(reading.expiry)})`);
-      }
-
-      const found = [reading.passType, reading.passportNumber, reading.expiry].filter(Boolean).length;
-      if (mismatches.length) {
-        blockReason = `The ${mismatches.join(" and ")} you entered doesn't match the ${docName}. Please correct it.`;
-      } else if (found) {
-        notice = `We filled in the details we could read from your ${docName}. Please check they're correct.`;
-      } else {
-        notice = `We couldn't read the details from this ${docName}. Please fill them in below.`;
-      }
+    if (fields.number && number) {
+      const matches = normalizeNumber(current.number) === normalizeNumber(number);
+      add("number", "passport number", number, matches, !!compared?.passportNumber);
+    }
+    if (fields.expiry && expiry) {
+      const expired = !isAfter(expiry, new Date());
+      add("expiry", "expiry date", displayDate(expiry), dayKey(current.expiry) === dayKey(expiry), !!compared?.expiry, expired);
     }
   }
 
-  return { state, blockReason, notice };
+  const roles = (["number", "expiry"] as const).filter((role) => fields[role]);
+  return {
+    enabled,
+    state,
+    docName,
+    readFields,
+    detailsComplete: roles.every((role) => !isBlank(current[role])),
+    waiting: state.phase === "checking",
+    blocked: readFields.some((field) => field.verified && (field.status === "differs" || field.status === "expired")),
+    severalPassports: state.phase === "done" && state.result.passports.length > 1,
+  };
 }
 
 type UseDocumentCheckArgs<TFieldValues extends FieldValues> = {
@@ -163,12 +206,7 @@ export function useDocumentCheck<TFieldValues extends FieldValues>({
 }: UseDocumentCheckArgs<TFieldValues>): DocumentCheck {
   const fields = siblingFields(cfg);
 
-  // The store write after OCR must merge into the form state as it is THEN, not as it was when
-  // the check started, or it would undo anything edited in the meantime.
-  const latest = useRef({ formState, setFormState });
-  latest.current = { formState, setFormState };
-
-  const roles = (["type", "number", "expiry"] as const).filter((role) => fields[role]);
+  const roles = (["number", "expiry"] as const).filter((role) => fields[role]);
   const watched = useWatch({
     control: form.control,
     name: roles.map((role) => fields[role]) as Path<TFieldValues>[],
@@ -182,15 +220,13 @@ export function useDocumentCheck<TFieldValues extends FieldValues>({
     current,
     onFill: (patch) => {
       const byField: Record<string, unknown> = {};
-      if (patch.type) byField[fields.type!] = patch.type;
       if (patch.number) byField[fields.number!] = patch.number;
-      // Already UTC midnight, the shape toUTCDateOnly gives the picker.
       if (patch.expiry) byField[fields.expiry!] = patch.expiry;
 
       for (const [name, fieldValue] of Object.entries(byField)) {
         form.setValue(name as Path<TFieldValues>, fieldValue as never, { shouldDirty: true });
       }
-      updateUploadRequirementsSlice(latest.current.formState, latest.current.setFormState, cfg.group, byField);
+      updateUploadRequirementsSlice(formState, setFormState, cfg.group, byField);
       form.trigger();
     },
   });

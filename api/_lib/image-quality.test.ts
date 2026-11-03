@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { INK_RATIO_MIN, isPoorQuality, measurePageQuality, OCR_CONFIDENCE_MIN, SHARPNESS_MIN } from "./image-quality";
+import { INK_RATIO_MIN, isPoorQuality, measurePageQuality, SHARPNESS_MIN } from "./image-quality";
 
 /** RGBA image of `width`×`height` filled by `shade(x, y)` (0 = black, 255 = white). */
 function image(width: number, height: number, shade: (x: number, y: number) => number) {
@@ -47,19 +47,20 @@ describe("measurePageQuality", () => {
 describe("isPoorQuality", () => {
   const inked = INK_RATIO_MIN * 2;
 
-  it("passes a sharp, confidently read page", () => {
-    expect(isPoorQuality({ sharpness: SHARPNESS_MIN, inkRatio: inked }, OCR_CONFIDENCE_MIN)).toBe(false);
+  it("passes a sharp page", () => {
+    expect(isPoorQuality({ sharpness: SHARPNESS_MIN, inkRatio: inked })).toBe(false);
   });
 
   it("fails a blurry page", () => {
-    expect(isPoorQuality({ sharpness: SHARPNESS_MIN - 1, inkRatio: inked }, 90)).toBe(true);
+    expect(isPoorQuality({ sharpness: SHARPNESS_MIN - 1, inkRatio: inked })).toBe(true);
   });
 
-  it("fails a page OCR can barely read", () => {
-    expect(isPoorQuality({ sharpness: 500, inkRatio: inked }, OCR_CONFIDENCE_MIN - 1)).toBe(true);
+  it("passes a sharp page OCR is unsure of, like a real passport photo's patterned page", () => {
+    // Real upload: sharpness 459, OCR confidence 29 — clearly legible to a person.
+    expect(isPoorQuality({ sharpness: 459, inkRatio: 0.8 })).toBe(false);
   });
 
   it("passes a blank page", () => {
-    expect(isPoorQuality({ sharpness: 0, inkRatio: 0 }, 0)).toBe(false);
+    expect(isPoorQuality({ sharpness: 0, inkRatio: 0 })).toBe(false);
   });
 });
