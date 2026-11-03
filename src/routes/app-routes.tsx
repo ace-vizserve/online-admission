@@ -1,9 +1,6 @@
-import AdminGuard from "@/components/auth/admin-guard";
-import AdminUnauthenticatedGuard from "@/components/auth/admin-unauthenticated-guard";
 import AuthGuard from "@/components/auth/auth-guard";
 import UnauthenticatedGuard from "@/components/auth/unauthenticated-guard";
 import ErrorPage from "@/components/error-page";
-import AdminLayout from "@/components/layout/admin-layout";
 import AdmissionLayout from "@/components/layout/admission";
 import NewStudentLayout from "@/components/layout/new-student-layout";
 import OldStudentLayout from "@/components/layout/old-student-layout";
@@ -15,11 +12,6 @@ import ForgotPassword from "@/pages/auth/forgot-password";
 import Login from "@/pages/auth/login";
 import Registration from "@/pages/auth/Registration";
 import UpdatePassword from "@/pages/auth/update-password";
-import CreateParent from "@/pages/admin/create-parent";
-import AdminLogin from "@/pages/admin/login";
-import MoveStudent from "@/pages/admin/move-student";
-import RecoveryLink from "@/pages/admin/recovery-link";
-import ResetPassword from "@/pages/admin/reset-password";
 import NotFound from "@/pages/not-found";
 import AccountSettings from "@/pages/private/account-settings";
 import AdmissionGuidelines from "@/pages/private/admission-guidelines";
@@ -574,50 +566,6 @@ function AppRoutes() {
             </UnauthenticatedGuard>
           }
         />
-        {/* Admin */}
-        <Route
-          path="/admin/login"
-          element={
-            <AdminUnauthenticatedGuard>
-              <AdminLogin />
-            </AdminUnauthenticatedGuard>
-          }
-        />
-        <Route path="admin" element={<AdminLayout />}>
-          <Route
-            path="move-student"
-            element={
-              <AdminGuard>
-                <MoveStudent />
-              </AdminGuard>
-            }
-          />
-          <Route
-            path="reset-password"
-            element={
-              <AdminGuard>
-                <ResetPassword />
-              </AdminGuard>
-            }
-          />
-          <Route
-            path="create-parent"
-            element={
-              <AdminGuard>
-                <CreateParent />
-              </AdminGuard>
-            }
-          />
-          <Route
-            path="recovery-link"
-            element={
-              <AdminGuard>
-                <RecoveryLink />
-              </AdminGuard>
-            }
-          />
-        </Route>
-
         {/* Public — token-gated, no login required */}
         <Route
           path="/complete-enrolment/:token"

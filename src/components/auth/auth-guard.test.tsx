@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let session: { user: { email: string } } | null = null;
 vi.mock("@/hooks/use-session", () => ({ default: () => ({ session, passwordResetState: false }) }));
-vi.mock("@/config/admin", () => ({ ADMIN_EMAILS: ["admin@hfse.test"] }));
 
 function App({ start, state }: { start: string; state?: unknown }) {
   return (
@@ -21,7 +20,6 @@ function App({ start, state }: { start: string; state?: unknown }) {
           }
         />
         <Route path="/admission/dashboard" element={<p>Dashboard</p>} />
-        <Route path="/admin/move-student" element={<p>Admin</p>} />
         <Route
           path="/admission/students/:id"
           element={
@@ -84,11 +82,5 @@ describe("Return to the requested page after login", () => {
     session = { user: { email: "second@example.com" } };
     rerender(<App start="/admission/students/X" />);
     expect(screen.getByText("Dashboard")).toBeTruthy();
-  });
-
-  it("keeps sending admins to their own page", () => {
-    session = { user: { email: "admin@hfse.test" } };
-    render(<App start="/login" state={{ from: "/admission/services/events/trip" }} />);
-    expect(screen.getByText("Admin")).toBeTruthy();
   });
 });
