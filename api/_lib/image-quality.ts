@@ -4,7 +4,7 @@
  * Calibrated on synthetic passport/pass scans rendered at 1800px wide and Gaussian-blurred: sharp
  * scans score ~57,000, blur radius 1 ~3,800, radius 2 ~330 (the passport MRZ still reads), radius
  * 2.5 ~120 (the MRZ no longer reads). Expected to move once real parent uploads have been run
- * through staging — the OCR debug readout shows the numbers per page.
+ * through staging.
  *
  * OCR confidence is not used: it's unreliable in both directions — Tesseract reported 93% on a pass
  * blurred at radius 3, and 29% on a sharp real passport photo whose patterned background it read

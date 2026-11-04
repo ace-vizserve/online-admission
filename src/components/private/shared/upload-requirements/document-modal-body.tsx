@@ -18,12 +18,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CloudUpload, Download, Eye, InfoIcon, Loader2, Paperclip, Plus, Trash2, Upload } from "lucide-react";
+import { CloudUpload, Download, Eye, InfoIcon, Loader2, Paperclip, Trash2, Upload } from "lucide-react";
 import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { Link } from "react-router";
 
 import fileSvg from "@/assets/file.svg";
-import { DocumentCheckCard } from "./document-check-notice";
+import { DocumentCheckCard, DocumentCheckStatus } from "./document-check-notice";
 import { readHints } from "./read-hints";
 import { DocumentConfig } from "./document-config";
 import { DocumentSubFields } from "./document-sub-fields";
@@ -154,21 +154,24 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
                   onValueChange={onValueChange}
                   dropzoneOptions={dropZoneConfig}
                   className="relative bg-background rounded-lg cursor-no-drop">
-                  {!reviewing && (
-                    <FileInput
-                      {...field}
-                      id="fileInput"
-                      className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
-                        "opacity-70 cursor-not-allowed pointer-events-none": isToFollow,
-                      })}>
+                  <FileInput
+                    {...field}
+                    id="fileInput"
+                    className={cn("bg-muted border-2 border-dashed pointer-events-auto", {
+                      "opacity-70 cursor-not-allowed pointer-events-none": isToFollow,
+                      "cursor-wait pointer-events-none": reviewing && documentCheck.waiting,
+                    })}>
+                    {reviewing ? (
+                      <DocumentCheckStatus check={documentCheck} />
+                    ) : (
                       <div className="flex items-center justify-center flex-col p-8 w-full">
                         <CloudUpload className="text-gray-500 w-10 h-10" />
                         <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
                           <span className="font-semibold">Click to upload</span> or drag and drop
                         </p>
                       </div>
-                    </FileInput>
-                  )}
+                    )}
+                  </FileInput>
 
                   <FileUploaderContent>
                     {value &&
@@ -208,13 +211,6 @@ export function DocumentModalBody<TFieldValues extends FieldValues>({
                       ))}
                   </FileUploaderContent>
 
-                  {reviewing && value.length < cfg.maxFiles && (
-                    <FileInput {...field} className="w-max">
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-                        <Plus className="size-4" /> Add another page
-                      </span>
-                    </FileInput>
-                  )}
                 </FileUploader>
               </FormControl>
               {value && value.length > 1 && (

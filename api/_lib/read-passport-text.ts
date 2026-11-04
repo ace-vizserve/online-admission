@@ -104,7 +104,20 @@ export type MrzReading = {
   birth: string;
 };
 
-type CheckedReading = MrzReading & { checks: number };
+type CheckedReading = MrzReading & {
+  checks: number;
+  birthVerified: boolean;
+  nationality: string;
+  sex: string;
+  name: string | null;
+};
+
+/** "SURNAME, GIVEN NAMES" from the MRZ's first line, which has no check digit: shown to a person as
+ * read, never relied on. */
+function readMrzName(line: string): string | null {
+  const m = line.match(/P[<A-Z][A-Z<]{3}([A-Z]+(?:<[A-Z]+)*)<<([A-Z]+(?:<[A-Z]+)*)/);
+  return m ? `${m[1].replace(/</g, " ")}, ${m[2].replace(/</g, " ")}` : null;
+}
 
 /** The line's best reading, wherever in the line it sits. */
 function readMrzLine(line: string): CheckedReading | null {
@@ -130,6 +143,10 @@ function readMrzLine(line: string): CheckedReading | null {
       documentNumber: numberOk ? number.replace(/<+$/, "") : null,
       birth,
       checks,
+      birthVerified: birthOk,
+      nationality: nationality.replace(/</g, ""),
+      sex: sex === "<" ? "" : sex,
+      name: null,
     };
   }
   return best;
@@ -137,9 +154,15 @@ function readMrzLine(line: string): CheckedReading | null {
 
 /** Every line's reading: one scanned page can hold more than one passport. */
 function readMrzLines(text: string): CheckedReading[] {
-  return normalize(text)
+  const lines = normalize(text)
     .split(/\r?\n/)
-    .map((line) => readMrzLine(line.replace(/\s+/g, "")))
+    .map((line) => line.replace(/\s+/g, ""));
+  return lines
+    .map((line, i) => {
+      const reading = readMrzLine(line);
+      // The name line sits just above, sometimes with a stray line of noise between.
+      return reading && { ...reading, name: readMrzName(lines[i - 1] ?? "") ?? readMrzName(lines[i - 2] ?? "") };
+    })
     .filter((r): r is CheckedReading => !!r && !!(r.expiry || r.documentNumber));
 }
 
@@ -162,8 +185,30 @@ export function confirmations(number: string, reads: readonly PageRead[]): numbe
   return reads.reduce((n, read) => n + (compact(read.text).includes(number) ? (read.exact ? 2 : 1) : 0), 0);
 }
 
-/** One passport found in a file, with only the values that were verified. */
-export type PassportRead = { expiry: Date | null; passportNumber: string | null };
+/** One passport found in a file. The expiry, number and birth date are only there if verified; the
+ * name, nationality and sex have no check digit of their own, so they're for a person to look at. */
+export type PassportRead = {
+  expiry: Date | null;
+  passportNumber: string | null;
+  birthDate: string | null;
+  name: string | null;
+  nationality: string | null;
+  sex: string | null;
+};
+
+/** YYMMDD to YYYY-MM-DD. A birth date is never in the future, which settles the century. */
+function birthDateOf(yymmdd: string): string {
+  const yy = +yymmdd.slice(0, 2);
+  const century = yy > new Date().getUTCFullYear() % 100 ? 19 : 20;
+  return `${century}${yymmdd.slice(0, 2)}-${yymmdd.slice(2, 4)}-${yymmdd.slice(4, 6)}`;
+}
+
+/** The value most reads agree on: OCR garbles a line differently each time. */
+function mostCommon(values: (string | null)[]): string | null {
+  const counts = new Map<string, number>();
+  for (const v of values) if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+}
 
 /**
  * Every passport in a file, from every read of its pages (some files hold both parents' in one
@@ -175,7 +220,7 @@ export type PassportRead = { expiry: Date | null; passportNumber: string | null 
  */
 export function readPassports(reads: readonly PageRead[]): PassportRead[] {
   const sameDay = (a: Date, b: Date) => a.getTime() === b.getTime();
-  const groups: MrzReading[][] = [];
+  const groups: CheckedReading[][] = [];
   for (const reading of reads.flatMap((read) => readMrzLines(read.text))) {
     const group = groups.find((members) => {
       const expiry = members.find((m) => m.expiry)?.expiry;
@@ -196,6 +241,10 @@ export function readPassports(reads: readonly PageRead[]): PassportRead[] {
       expiry: members.find((m) => m.expiry)?.expiry ?? null,
       passportNumber:
         members.map((m) => m.documentNumber).find((n): n is string => !!n && confirmations(n, reads) >= 2) ?? null,
+      birthDate: mostCommon(members.filter((m) => m.birthVerified).map((m) => birthDateOf(m.birth))),
+      name: mostCommon(members.map((m) => m.name)),
+      nationality: mostCommon(members.map((m) => m.nationality)),
+      sex: mostCommon(members.map((m) => m.sex)),
     }))
     .filter((passport) => passport.expiry || passport.passportNumber);
 }

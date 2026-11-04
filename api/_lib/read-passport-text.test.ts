@@ -222,12 +222,45 @@ describe("readPassport", () => {
 });
 
 describe("readPassports", () => {
+  it("reads the name, birth date, nationality and sex as well", () => {
+    expect(readPassports([{ text: TD3.join("\n"), exact: true }])).toEqual([
+      {
+        expiry: utc(2012, 4, 15),
+        passportNumber: "L898902C3",
+        birthDate: "1974-08-12",
+        name: "ERIKSSON, ANNA MARIA",
+        nationality: "UTO",
+        sex: "F",
+      },
+    ]);
+  });
+
+  it("takes the name a stray line away, and takes the version most reads agree on", () => {
+    const garbled = `P<UTOERIKSSOX<<ANNA<<<<<<<<<<\nnoise\n${TD3[1]}`;
+    const reads = [{ text: garbled }, { text: TD3.join("\n") }, { text: TD3.join("\n") }];
+    expect(readPassports(reads)[0].name).toBe("ERIKSSON, ANNA MARIA");
+  });
+
+  it("leaves out a birth date its check digit doesn't back up, and a name it can't find", () => {
+    const [passport] = readPassports([{ text: TD3[1].replace("7408122", "7408192"), exact: true }]);
+    expect(passport).toMatchObject({ birthDate: null, name: null });
+  });
+
+  it("puts a birth date in the past whatever its two-digit year", () => {
+    const young = TD3[1].replace("7408122", "1501010");
+    expect(readPassports([{ text: young, exact: true }])[0].birthDate).toBe("2015-01-01");
+  });
+
+  it("has no sex when the MRZ leaves it blank", () => {
+    expect(readPassports([{ text: TD3[1].replace("2F12", "2<12"), exact: true }])[0].sex).toBeNull();
+  });
+
   const mrz = { text: TD3[1] };
   const second = TD3[1].replace("L898902C36", "P2263418B0").replace("7408122", "8707084").replace("1204159", "2905224");
 
   it("finds two passports on one page", () => {
     const page = { text: `${TD3[1]}\n${second}`, exact: true };
-    expect(readPassports([page])).toEqual([
+    expect(readPassports([page])).toMatchObject([
       { expiry: utc(2012, 4, 15), passportNumber: "L898902C3" },
       { expiry: utc(2029, 5, 22), passportNumber: "P2263418B" },
     ]);
@@ -243,8 +276,8 @@ describe("readPassports", () => {
     const noNumber = { text: TD3[1].replace("L898902C36", "L898902C37") }; // birth date, expiry
     const otherBirth = { text: TD3[1].replace("7408122", "7408192") }; // number, expiry
     const one = [{ expiry: utc(2012, 4, 15), passportNumber: "L898902C3" }];
-    expect(readPassports([noExpiry, noNumber])).toEqual(one);
-    expect(readPassports([noNumber, otherBirth])).toEqual(one);
+    expect(readPassports([noExpiry, noNumber])).toMatchObject(one);
+    expect(readPassports([noNumber, otherBirth])).toMatchObject(one);
   });
 
   it("joins two number-only reads through their number when the birth dates disagree", () => {
@@ -252,7 +285,7 @@ describe("readPassports", () => {
     // valid one, so only the number links them.
     const first = TD3[1].replace("1204159", "1204169");
     const misread = first.replace("7408122", "7408130");
-    expect(readPassports([{ text: first }, { text: misread }])).toEqual([{ expiry: null, passportNumber: "L898902C3" }]);
+    expect(readPassports([{ text: first }, { text: misread }])).toMatchObject([{ expiry: null, passportNumber: "L898902C3" }]);
   });
 
   it("keeps apart readings with nothing in common", () => {
@@ -265,7 +298,7 @@ describe("readPassports", () => {
   });
 
   it("drops a passport with nothing verified", () => {
-    expect(readPassports([{ text: TD3[1].replace("1204159", "1204169") }])).toEqual([]);
+    expect(readPassports([{ text: TD3[1].replace("1204159", "1204169") }])).toMatchObject([]);
   });
 });
 

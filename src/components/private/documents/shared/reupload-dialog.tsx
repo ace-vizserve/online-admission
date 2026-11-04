@@ -1,4 +1,4 @@
-import { DocumentCheckCard } from "@/components/private/shared/upload-requirements/document-check-notice";
+import { DocumentCheckCard, DocumentCheckStatus } from "@/components/private/shared/upload-requirements/document-check-notice";
 import { readHints } from "@/components/private/shared/upload-requirements/read-hints";
 import { DocumentConfig } from "@/components/private/shared/upload-requirements/document-config";
 import DocumentPreviewDialog from "@/components/document-preview-dialog";
@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DotPulse } from "ldrs/react";
 import "ldrs/react/DotPulse.css";
-import { CalendarIcon, CheckCircle2, CloudUpload, Download, Eye, Paperclip, Plus, RotateCcw, Save, Trash2, Upload } from "lucide-react";
+import { CalendarIcon, CheckCircle2, CloudUpload, Download, Eye, Paperclip, RotateCcw, Save, Trash2, Upload } from "lucide-react";
 import { Link } from "react-router";
 
 import { useReuploadDialog } from "./use-reupload-dialog";
@@ -176,14 +176,21 @@ export function ReuploadDialog({
             onValueChange={setStagedFiles}
             dropzoneOptions={dropZoneConfig}
             className="relative rounded-lg bg-background">
-            {!(guided && staged) && (
-              <FileInput className="border-2 border-dashed bg-muted">
-                <div className="flex w-full flex-col items-center justify-center p-8">
-                  <CloudUpload className="h-10 w-10 text-gray-500" />
-                  <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span> or drag and drop
-                  </p>
-                </div>
+            {(!(guided && staged) || reviewing) && (
+              <FileInput
+                className={cn("border-2 border-dashed bg-muted", {
+                  "cursor-wait pointer-events-none": reviewing && documentCheck.waiting,
+                })}>
+                {reviewing ? (
+                  <DocumentCheckStatus check={documentCheck} />
+                ) : (
+                  <div className="flex w-full flex-col items-center justify-center p-8">
+                    <CloudUpload className="h-10 w-10 text-gray-500" />
+                    <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                  </div>
+                )}
               </FileInput>
             )}
 
@@ -222,13 +229,6 @@ export function ReuploadDialog({
               ))}
             </FileUploaderContent>
 
-            {reviewing && stagedFiles.length < cfg.maxFiles && (
-              <FileInput className="w-max">
-                <span className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-                  <Plus className="size-4" /> Add another page
-                </span>
-              </FileInput>
-            )}
           </FileUploader>
 
           {stagedFiles.length > 1 && !canSave && (

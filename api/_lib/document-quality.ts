@@ -13,10 +13,17 @@ import { measurePageQuality } from "./image-quality.js";
 const MEASURE_WIDTH = 1200;
 /** The first pages show what the scan is like; reading further only costs time. */
 const PAGES_MEASURED = 2;
+/** Fewer characters than this is stray metadata. Low, because a real page can say only "MED. EXAM". */
+const TEXT_MIN_CHARS = 5;
 
 export type DocumentQuality = {
   /** Pages measured. */
   pages: number;
+  /** Pages in the whole file. */
+  totalPages: number;
+  fileBytes: number;
+  /** A PDF with real text in it, as opposed to a picture of a page. Null for an image. */
+  hasText: boolean | null;
   /** The file's own size for an image, which a blur score can't reveal. Null for a PDF. */
   width: number | null;
   height: number | null;
@@ -52,7 +59,11 @@ function measure(canvas: Canvas) {
   return { sharpness, inkRatio, brightness, contrast: Math.sqrt(Math.max(squares / count - brightness * brightness, 0)) };
 }
 
-async function measurePdf(bytes: Uint8Array) {
+async function measurePdf(bytes: Uint8Array): Promise<{
+  measured: ReturnType<typeof measure>[];
+  totalPages: number;
+  hasText: boolean;
+}> {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const asset = (folder: string) => `${join(process.cwd(), "node_modules", "pdfjs-dist", folder).replace(/\\/g, "/")}/`;
   const task = pdfjs.getDocument({
@@ -67,20 +78,25 @@ async function measurePdf(bytes: Uint8Array) {
   try {
     const pdf = await task.promise;
     const measured: ReturnType<typeof measure>[] = [];
+    let textChars = 0;
     for (let n = 1; n <= Math.min(pdf.numPages, PAGES_MEASURED); n++) {
       const page = await pdf.getPage(n);
+      const { items } = await page.getTextContent();
+      textChars += items.reduce((sum, item) => sum + ("str" in item ? item.str.trim().length : 0), 0);
       const viewport = page.getViewport({ scale: MEASURE_WIDTH / page.getViewport({ scale: 1 }).width });
       const canvas = createCanvas(Math.round(viewport.width), Math.round(viewport.height));
       await page.render({ canvas: canvas as never, canvasContext: canvas.getContext("2d") as never, viewport }).promise;
       measured.push(measure(canvas));
     }
-    return measured;
+    return { measured, totalPages: pdf.numPages, hasText: textChars >= TEXT_MIN_CHARS };
   } finally {
     await task.destroy();
   }
 }
 
 export async function measureDocument(bytes: Uint8Array): Promise<DocumentQuality> {
+  // Read first: pdf.js takes ownership of the bytes, leaving them empty.
+  const fileBytes = bytes.length;
   const isPdf = new TextDecoder().decode(bytes.subarray(0, 5)) === "%PDF-";
 
   if (!isPdf) {
@@ -88,12 +104,15 @@ export async function measureDocument(bytes: Uint8Array): Promise<DocumentQualit
     const size = fitted(image);
     const canvas = createCanvas(size.width, size.height);
     canvas.getContext("2d").drawImage(image, 0, 0, size.width, size.height);
-    return { pages: 1, width: image.width, height: image.height, ...measure(canvas) };
+    return { pages: 1, totalPages: 1, fileBytes, hasText: null, width: image.width, height: image.height, ...measure(canvas) };
   }
 
-  const measured = await measurePdf(bytes);
+  const { measured, totalPages, hasText } = await measurePdf(bytes);
   return {
     pages: measured.length,
+    totalPages,
+    fileBytes,
+    hasText,
     width: null,
     height: null,
     sharpness: Math.min(...measured.map((m) => m.sharpness)),
