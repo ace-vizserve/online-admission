@@ -526,7 +526,6 @@ describe("OCR document check", () => {
       passports: [],
       poorQuality: false,
       outOfTime: false,
-      text: "",
     });
     const { result } = renderPassport();
 
@@ -546,7 +545,6 @@ describe("OCR document check", () => {
         passports: [],
         poorQuality: false,
         outOfTime: false,
-        text: "",
       }),
     );
 
@@ -560,7 +558,6 @@ describe("OCR document check", () => {
       passports: [],
       poorQuality: false,
       outOfTime: false,
-      text: "",
     });
     const { result } = renderPassport();
 
@@ -574,7 +571,6 @@ describe("OCR document check", () => {
       passports: [],
       poorQuality: true,
       outOfTime: false,
-      text: "",
     });
     const { result } = renderPassport();
 

@@ -16,7 +16,7 @@ const mockFetch = vi.fn();
 
 const SUPABASE = "https://project.supabase.co";
 const FILE = `${SUPABASE}/storage/v1/object/public/parent-portal/ay2027/documents/1_birth.pdf`;
-const QUALITY = { pages: 1, width: null, height: null, sharpness: 900, inkRatio: 0.1, brightness: 200, contrast: 40 };
+const QUALITY = { pages: 1, totalPages: 1, fileBytes: 1000, hasText: true, width: null, height: null, sharpness: 900, inkRatio: 0.1, brightness: 200, contrast: 40 };
 
 function post(body: unknown, token: string | null = "token") {
   return handler.fetch(

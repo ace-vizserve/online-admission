@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CHECK_TIMED_OUT } from "@/components/private/shared/upload-requirements/use-document-check";
+import { PassportRead } from "@/lib/document-check/check-document";
 import { supabase } from "@/lib/client";
 import { sisFetch } from "@/lib/sis";
 
@@ -14,7 +15,7 @@ const mockFetch = vi.fn();
 
 const QUALITY = { pages: 1, sharpness: 900 };
 const EXPIRY = new Date(Date.UTC(2030, 10, 14));
-const done = (passports: { expiry: Date | null; passportNumber: string | null }[], outOfTime = false) => ({
+const done = (passports: PassportRead[], outOfTime = false) => ({
   state: {
     phase: "done" as const,
     result: {
@@ -22,7 +23,6 @@ const done = (passports: { expiry: Date | null; passportNumber: string | null }[
       passports,
       poorQuality: false,
       outOfTime,
-      text: "",
     },
   },
 });
@@ -48,6 +48,20 @@ describe("documentReadingReport", () => {
         { expiry: "2030-11-14", number: "K1234567" },
         { expiry: null, number: "P2263418B" },
       ],
+    });
+  });
+
+  it("passes on what else was read from the passport", () => {
+    const report = documentReadingReport(
+      done([{ expiry: EXPIRY, passportNumber: "K1", birthDate: "2015-01-01", name: "TAN, MEI", nationality: "SGP", sex: "F" }]),
+    );
+    expect(report.passports[0]).toEqual({
+      expiry: "2030-11-14",
+      number: "K1",
+      birthDate: "2015-01-01",
+      name: "TAN, MEI",
+      nationality: "SGP",
+      sex: "F",
     });
   });
 

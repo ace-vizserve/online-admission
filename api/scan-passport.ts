@@ -49,9 +49,7 @@ export default {
     if (new TextDecoder().decode(bytes.subarray(0, 5)) !== "%PDF-") return json({ error: "expected a PDF" }, 400);
 
     try {
-      const { text, ...result } = await readPassportFile(bytes);
-      // The raw text is only for tuning; a deployed parent's browser has no use for it.
-      return json(process.env.VERCEL ? result : { ...result, text });
+      return json(await readPassportFile(bytes));
     } catch (readError) {
       // A PDF that won't open, or a read that failed: the portal treats this as "couldn't read it".
       console.error("[scan-passport] read failed", readError instanceof Error ? readError.message : readError);

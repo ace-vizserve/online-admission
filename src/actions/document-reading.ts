@@ -6,7 +6,14 @@ export type DocumentReadingReport = {
   /** `not_read`: not a document the OCR check reads, so only its scan quality gets reported. */
   status: "read" | "unreadable" | "timed_out" | "failed" | "not_read";
   /** Every passport read from the file, with only its check-digit-verified values. */
-  passports: { expiry: string | null; number: string | null }[];
+  passports: {
+    expiry: string | null;
+    number: string | null;
+    birthDate?: string | null;
+    name?: string | null;
+    nationality?: string | null;
+    sex?: string | null;
+  }[];
 };
 
 const day = (value: unknown) => {
@@ -20,7 +27,11 @@ export function documentReadingReport({ state }: Pick<DocumentCheck, "state">): 
     return { status: state.error === CHECK_TIMED_OUT ? "timed_out" : "failed", passports: [] };
   }
   if (state.phase !== "done") return { status: "not_read", passports: [] };
-  const passports = state.result.passports.map((p) => ({ expiry: day(p.expiry), number: p.passportNumber }));
+  const passports = state.result.passports.map(({ expiry, passportNumber, ...rest }) => ({
+    expiry: day(expiry),
+    number: passportNumber,
+    ...rest,
+  }));
   if (passports.length) return { status: "read", passports };
   return { status: state.result.outOfTime ? "timed_out" : "unreadable", passports };
 }

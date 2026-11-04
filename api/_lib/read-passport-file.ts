@@ -50,8 +50,6 @@ export type PassportFileResult = {
   poorQuality: boolean;
   /** Ran out of time before finishing, so this is what was verified by then. */
   outOfTime: boolean;
-  /** Every read's text, labelled, for debugging. */
-  text: string;
 };
 
 const pagesDir = (...parts: string[]) => join(process.cwd(), ...parts);
@@ -114,7 +112,6 @@ export async function readPassportFile(
   const outOfTime = () => Date.now() - startedAt > READ_BUDGET_MS;
 
   const reads: PageRead[] = [];
-  const texts: string[] = [];
   let poorPage = false;
   let ranOut = false;
   let general: Awaited<ReturnType<typeof createOcrWorker>> | null = null;
@@ -138,7 +135,6 @@ export async function readPassportFile(
 
     for (let pageNumber = 1; pageNumber <= last; pageNumber++) {
       const page = await pdf.getPage(pageNumber);
-      const label = `p${pageNumber}`;
 
       const content = await page.getTextContent();
       const layerText = content.items
@@ -154,7 +150,6 @@ export async function readPassportFile(
         readPassport([layer]).source
       ) {
         reads.push(layer);
-        texts.push(`--- ${label}: text layer ---\n${layerText}`);
         continue;
       }
 
@@ -201,16 +196,11 @@ export async function readPassportFile(
             ranOut = true;
             break;
           }
-          const name =
-            [turn && `turned ${turn}`, ink && `ink ${ink}`]
-              .filter(Boolean)
-              .join(", ") || "page";
           mrz ??= await createOcrWorker("mrz");
           const image = ink === null ? upright : keepDarkInk(upright, ink);
           const { data } = await mrz.recognize(image.toBuffer("image/png"));
           pageReads.push({ text: data.text });
           reads.push({ text: data.text });
-          texts.push(`--- ${label}: mrz model, ${name} ---\n${data.text}`);
           if (readMrz(data.text)) facing ??= turn;
         }
       }
@@ -228,7 +218,6 @@ export async function readPassportFile(
         const image = facing ? turnPage(canvas, facing) : canvas;
         const { data } = await general.recognize(image.toBuffer("image/png"));
         reads.push({ text: data.text });
-        texts.push(`--- ${label}: general ---\n${data.text}`);
       }
       if (ranOut) break;
     }
@@ -246,6 +235,5 @@ export async function readPassportFile(
     // the blur score says.
     poorQuality: poorPage && reading.source !== "mrz",
     outOfTime: ranOut,
-    text: texts.join("\n"),
   };
 }

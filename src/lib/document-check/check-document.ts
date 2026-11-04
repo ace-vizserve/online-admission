@@ -16,7 +16,14 @@ export type DocumentReading = {
 };
 
 /** One passport found in a file, with only the values that were verified. */
-export type PassportRead = { expiry: Date | null; passportNumber: string | null };
+export type PassportRead = {
+  expiry: Date | null;
+  passportNumber: string | null;
+  birthDate?: string | null;
+  name?: string | null;
+  nationality?: string | null;
+  sex?: string | null;
+};
 
 export type DocumentCheckResult = {
   reading: DocumentReading;
@@ -26,16 +33,13 @@ export type DocumentCheckResult = {
   poorQuality: boolean;
   /** The read ran out of time, so this is only what was verified by then. */
   outOfTime: boolean;
-  /** Every read's text, for the debug panel. Local development only. */
-  text: string;
 };
 
 type ScanResponse = {
   reading: { expiry: string | null; passportNumber: string | null; source: DocumentReading["source"] };
-  passports: { expiry: string | null; passportNumber: string | null }[];
+  passports: (Omit<PassportRead, "expiry"> & { expiry: string | null })[];
   poorQuality: boolean;
   outOfTime: boolean;
-  text?: string;
 };
 
 const asDate = (value: string | null) => (value ? new Date(value) : null);
@@ -69,7 +73,7 @@ export async function checkDocument(files: File[]): Promise<DocumentCheckResult>
       seen.add(key);
       return true;
     })
-    .map((p) => ({ expiry: asDate(p.expiry), passportNumber: p.passportNumber }));
+    .map((p) => ({ ...p, expiry: asDate(p.expiry) }));
 
   // The first file's reading that verified, else the first that found anything at all.
   const best =
@@ -84,6 +88,5 @@ export async function checkDocument(files: File[]): Promise<DocumentCheckResult>
     passports,
     poorQuality: !verified && scans.some((s) => s.poorQuality),
     outOfTime: scans.some((s) => s.outOfTime),
-    text: scans.map((s) => s.text ?? "").join("\n"),
   };
 }

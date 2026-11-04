@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { checkDocument, DocumentCheckResult, DocumentReading, PassportRead } from "@/lib/document-check/check-document";
-import { DocumentCheckCard } from "./document-check-notice";
+import { DocumentCheckCard, DocumentCheckStatus } from "./document-check-notice";
 import { readHints } from "./read-hints";
 import { DocumentConfig, STUDENT_DOCUMENTS } from "./document-config";
 import { SharedUploadFormState } from "./types";
@@ -28,7 +28,6 @@ const result = (r: DocumentReading, poorQuality = false, passports: PassportRead
   passports,
   poorQuality,
   outOfTime: false,
-  text: "TEXT",
 });
 
 /** A read that passed the check digits, as opposed to `reading`'s unverified one. */
@@ -332,39 +331,48 @@ const field = (status: ReadField["status"], value = "K1"): ReadField => ({
   verified: true,
 });
 
-describe("DocumentCheckCard", () => {
-  it("renders nothing while idle", () => {
-    const { container } = render(<DocumentCheckCard check={check({})} />);
-    expect(container).toBeEmptyDOMElement();
+describe("DocumentCheckStatus", () => {
+  it.each(["idle", "checking"] as const)("shows the loader inside the box while %s", (phase) => {
+    render(<DocumentCheckStatus check={check({ state: { phase } })} />);
+    expect(screen.getByText("Reading your passport…")).toBeInTheDocument();
+    expect(screen.getByText("This can take a little while. Please keep this open.")).toBeInTheDocument();
   });
 
-  it("says it's reading, and keeps the fields back until it's done", () => {
-    render(
-      <DocumentCheckCard check={check({ state: { phase: "checking" } })}>
+  it("says it read the passport, and that more pages can be added", () => {
+    render(<DocumentCheckStatus check={check({ state: done(result(reading({}))), readFields: [field("match")] })} />);
+    expect(screen.getByText("We read your passport")).toBeInTheDocument();
+    expect(screen.getByText("Check the details below are correct.")).toBeInTheDocument();
+    expect(screen.getByText(/to add another page/)).toBeInTheDocument();
+  });
+
+  it("asks for manual entry when nothing could be read", () => {
+    render(<DocumentCheckStatus check={check({ state: { phase: "failed", error: "boom" } })} />);
+    expect(screen.getByText("Enter your passport details")).toBeInTheDocument();
+    expect(screen.getByText("We couldn't read them from the file.")).toBeInTheDocument();
+  });
+});
+
+describe("DocumentCheckCard", () => {
+  it.each(["idle", "checking"] as const)("shows nothing while %s, holding back the fields", (phase) => {
+    const { container } = render(
+      <DocumentCheckCard check={check({ state: { phase } })}>
         <input aria-label="Passport number" />
       </DocumentCheckCard>,
     );
-    expect(screen.getByText("Reading your passport…")).toBeInTheDocument();
-    expect(screen.getByText("This can take a little while. Please keep this open.")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Passport number")).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it("asks for manual entry, with the error in the debug panel, when the check fails", () => {
+  it("shows the fields when the check fails", () => {
     render(
       <DocumentCheckCard check={check({ state: { phase: "failed", error: "boom" } })}>
         <input aria-label="Passport number" />
       </DocumentCheckCard>,
     );
-    expect(screen.getByText("Enter your passport details")).toBeInTheDocument();
-    expect(screen.getByText("We couldn't read them from the file.")).toBeInTheDocument();
     expect(screen.getByLabelText("Passport number")).toBeInTheDocument();
-    expect(screen.getByText("OCR error: boom")).toBeInTheDocument();
   });
 
-  it("frames the fields as read from the document, warning about a blurry scan", () => {
+  it("warns about a blurry scan", () => {
     render(<DocumentCheckCard check={check({ state: done(result(reading({}), true)), readFields: [field("match")] })} />);
-    expect(screen.getByText("We read your passport")).toBeInTheDocument();
-    expect(screen.getByText("Check the details are correct before uploading.")).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent(
       "The scan looks blurry. Check the details carefully, or upload a sharper scan.",
     );
@@ -391,24 +399,6 @@ describe("DocumentCheckCard", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "This file has more than one passport. Enter the details for the person this upload is for.",
     );
-  });
-
-  it("hides the debug panel on deployed builds unless VITE_OCR_DEBUG is on", () => {
-    const c = check({ state: done(result(reading({}))) });
-    vi.stubEnv("DEV", false);
-    try {
-      vi.stubEnv("VITE_OCR_DEBUG", "");
-      const { unmount } = render(<DocumentCheckCard check={c} />);
-      expect(screen.queryByText("OCR debug")).not.toBeInTheDocument();
-      unmount();
-
-      vi.stubEnv("VITE_OCR_DEBUG", "true");
-      render(<DocumentCheckCard check={c} />);
-      expect(screen.getByText("OCR debug")).toBeInTheDocument();
-      expect(screen.getByText(/--- text ---/)).toBeInTheDocument();
-    } finally {
-      vi.unstubAllEnvs();
-    }
   });
 });
 

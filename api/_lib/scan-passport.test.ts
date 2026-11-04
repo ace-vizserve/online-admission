@@ -18,7 +18,6 @@ const RESULT = {
   passports: [],
   poorQuality: false,
   outOfTime: false,
-  text: "raw",
 };
 
 let user = 0;
@@ -51,12 +50,6 @@ describe("POST /api/scan-passport", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(RESULT);
     expect(mockRead).toHaveBeenCalledOnce();
-  });
-
-  it("keeps the raw text out of a deployed answer", async () => {
-    vi.stubEnv("VERCEL", "1");
-
-    expect(await (await post(pdf())).json()).not.toHaveProperty("text");
   });
 
   it("only takes POST", async () => {

@@ -86,13 +86,12 @@ describe("checkDocument", () => {
       passports: [],
       poorQuality: false,
       outOfTime: false,
-      text: "",
     });
   });
 
   it("passes on a blurry scan and running out of time, unless a read verified anyway", async () => {
-    mockFetch.mockResolvedValueOnce(answer({ ...nothing, poorQuality: true, outOfTime: true, text: "raw" }));
-    expect(await checkDocument([file("a.pdf")])).toMatchObject({ poorQuality: true, outOfTime: true, text: "raw" });
+    mockFetch.mockResolvedValueOnce(answer({ ...nothing, poorQuality: true, outOfTime: true }));
+    expect(await checkDocument([file("a.pdf")])).toMatchObject({ poorQuality: true, outOfTime: true });
 
     mockFetch.mockResolvedValueOnce(answer({ ...nothing, poorQuality: true })).mockResolvedValueOnce(answer(verified("K1")));
     expect((await checkDocument([file("a.pdf"), file("b.pdf")])).poorQuality).toBe(false);
